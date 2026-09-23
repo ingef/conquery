@@ -1,48 +1,30 @@
-import { FunnelIcon, SquareCheckIcon, SquareIcon } from "lucide-react";
+import { FunnelIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { tv } from "tailwind-variants";
 import type { NodeResetConfig } from "../model/node";
 import { tableHasFilterValues, tableIsDisabled } from "../model/table";
 import type { TableWithFilterValueT } from "../standard-query-editor/types";
-import { Button } from "../ui-components/Button";
+import { CheckboxField } from "../ui-components/CheckboxField";
+import { GridListItem } from "../ui-components/GridList";
 import { ToggleButton } from "../ui-components/ToggleButton";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 import { C2 } from "../ui-components/Typography";
 
-const container = tv({
-  base: [
-    "flex flex-row items-center justify-between",
-    "w-full",
-    "bg-transparent",
-    "px-[15px] py-2",
-    "text-left",
-    "cursor-pointer",
-    "hover:underline",
-  ],
-  variants: {
-    disabled: {
-      true: "text-gray-600",
-      false: "text-gray-800",
-    },
-  },
-});
-
+/** a source in the navigation: include it, go to its section, clear its filters */
 const MenuColumnItem = ({
+  id,
   table,
   isOnlyOneTableIncluded,
   blocklistedTables,
   allowlistedTables,
-  onClick,
   onToggleTable,
   onResetTable,
 }: {
+  id: string;
   table: TableWithFilterValueT;
-  isActive: boolean;
   isOnlyOneTableIncluded: boolean;
   blocklistedTables?: string[];
   allowlistedTables?: string[];
-  onClick: () => void;
-  onToggleTable: (value: boolean) => void;
+  onToggleTable: (isExcluded: boolean) => void;
   onResetTable: (config: NodeResetConfig) => void;
 }) => {
   const { t } = useTranslation();
@@ -58,58 +40,37 @@ const MenuColumnItem = ({
   const isFilterActive = tableHasFilterValues(table);
 
   return (
-    // biome-ignore lint/a11y/useKeyWithClickEvents: TODO make the table row a real button
-    // biome-ignore lint/a11y/noStaticElementInteractions: see above
-    <div className={container({ disabled: isDisabled })} onClick={onClick}>
-      <div className="flex items-center">
-        <Button
-          intent="tertiary"
-          isDisabled={isDisabled || (!includable && !excludable)}
-          onPress={() => {
-            // To prevent selecting the table as well, see above
-
-            if (isDisabled) {
-              return;
-            }
-
-            if (includable || excludable) {
-              onToggleTable(!table.exclude);
-            }
-          }}
-          size="sm"
-        >
-          {includable ? (
-            <SquareIcon className="size-5" />
-          ) : (
-            <SquareCheckIcon className="size-5" />
-          )}
-        </Button>
-        <span className="pl-[10px]">
-          <C2 as="span">{table.label}</C2>
-        </span>
+    <GridListItem id={id} textValue={table.label}>
+      <CheckboxField
+        aria-label={t("queryNodeEditor.includeTable", { table: table.label })}
+        isSelected={!table.exclude}
+        isDisabled={isDisabled || (!includable && !excludable)}
+        onChange={(include) => onToggleTable(!include)}
+      />
+      <div className="min-w-0 grow">
+        <C2 truncate tone={isDisabled || table.exclude ? "muted" : undefined}>
+          {table.label}
+        </C2>
       </div>
-      {isFilterActive && (
-        <TooltipTrigger>
-          <ToggleButton
-            aria-label={t("queryNodeEditor.clearSettings")}
-            intent="tertiary"
-            isSelected
-            onChange={() => {
-              // To prevent selecting the table as well, see above
-
-              if (isDisabled) {
-                return;
-              }
-
-              onResetTable({ useDefaults: false });
-            }}
-          >
-            <FunnelIcon />
-          </ToggleButton>
-          <Tooltip>{t("queryNodeEditor.clearSettings")}</Tooltip>
-        </TooltipTrigger>
-      )}
-    </div>
+      {/* a fixed slot, so the row keeps its layout without the button */}
+      <span className="flex size-6 shrink-0 items-center justify-center">
+        {isFilterActive && (
+          <TooltipTrigger>
+            <ToggleButton
+              aria-label={t("queryNodeEditor.clearSettings")}
+              intent="tertiary"
+              size="sm"
+              isSelected
+              isDisabled={isDisabled}
+              onChange={() => onResetTable({ useDefaults: false })}
+            >
+              <FunnelIcon />
+            </ToggleButton>
+            <Tooltip>{t("queryNodeEditor.clearSettings")}</Tooltip>
+          </TooltipTrigger>
+        )}
+      </span>
+    </GridListItem>
   );
 };
 

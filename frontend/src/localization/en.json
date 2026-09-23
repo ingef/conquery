@@ -92,6 +92,8 @@
     "queryNode": "Query Node",
     "conceptNodes": "Concept Nodes",
     "conceptNodeTables": "Input Tables",
+    "sections": "Sections",
+    "includeTable": "Include {{table}}",
     "properties": "Common properties",
     "reset": "Reset",
     "resetSettings": "Reset to default settings",
@@ -113,7 +115,6 @@
     "commonSelects": "Common additional values",
     "nodeNotFound": "Concept not found",
     "selectValidityDate": "Relevant date interval",
-    "dateColumn": "Date column",
     "dropMoreConcepts": "Contained concepts",
     "emptyMenuColumn": "No further settings"
   },

@@ -44,8 +44,9 @@ const NodeSelects = ({
   );
 
   return (
-    <ContentCell headline={t("queryNodeEditor.commonSelects")}>
+    <ContentCell>
       <InputMultiSelect
+        label={t("queryNodeEditor.commonSelects")}
         onChange={onSelectSelects}
         value={value}
         options={options}

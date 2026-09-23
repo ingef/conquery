@@ -63,9 +63,10 @@ const menuColumn = tv({
 const header = tv({
   base: [
     "flex items-center justify-between",
-    "w-full",
-    "border-b border-[#ccc]",
-    "pr-[10px]",
+    "gap-4",
+    "h-10 shrink-0",
+    "pl-[15px] pr-[10px]",
+    "border-b border-gray-100",
   ],
 });
 
@@ -109,7 +110,8 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
   const [selectedTableIdx, setSelectedTableIdx] = useState<number | null>(null);
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-  const onCommonSettingsClick = () => {
+  const onSelectCommonSettings = () => {
+    setSelectedTableIdx(null);
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -182,7 +184,7 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
               showTables={props.showTables}
               blocklistedTables={props.blocklistedTables}
               allowlistedTables={props.allowlistedTables}
-              onCommonSettingsClick={onCommonSettingsClick}
+              onSelectCommonSettings={onSelectCommonSettings}
               onDropConcept={props.onDropConcept}
               onRemoveConcept={props.onRemoveConcept}
               onToggleTable={(tableIdx, isExcluded) => {

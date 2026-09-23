@@ -6,6 +6,7 @@ import type { SelectedSelectorT } from "../standard-query-editor/types";
 import InputMultiSelect from "../ui-components/InputMultiSelect/InputMultiSelect";
 
 interface PropsT {
+  label: string;
   selects: SelectedSelectorT[];
   blocklistedSelects?: SelectorResultType[];
   allowlistedSelects?: SelectorResultType[];
@@ -14,6 +15,7 @@ interface PropsT {
 }
 
 const TableSelects = ({
+  label,
   selects,
   blocklistedSelects,
   allowlistedSelects,
@@ -40,6 +42,7 @@ const TableSelects = ({
   return (
     <div>
       <InputMultiSelect
+        label={label}
         onChange={onSelectTableSelects}
         value={value}
         options={options}

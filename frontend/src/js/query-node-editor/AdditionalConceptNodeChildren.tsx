@@ -1,23 +1,11 @@
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
-import { tv } from "tailwind-variants";
 
 import type { ConceptBaseT, ConceptIdT } from "../api/types";
 import type { DragItemConceptTreeNode } from "../standard-query-editor/types";
-import { H4 } from "../ui-components/Typography";
+import { C2, H4 } from "../ui-components/Typography";
 import ConceptDropzone from "./ConceptDropzone";
 import ConceptEntry from "./ConceptEntry";
-import { HeadingBetween } from "./HeadingBetween";
-
-const padded = tv({
-  base: ["flex flex-col", "h-full", "overflow-hidden", "px-[15px] pb-[15px]"],
-});
-
-const scrollable = tv({
-  base: ["h-full", "overflow-y-auto", "[-webkit-overflow-scrolling:touch]"],
-});
-
-const heading = tv({ base: "mt-[10px] mb-[5px]" });
 
 const AdditionalConceptNodeChildren = ({
   node,
@@ -36,15 +24,11 @@ const AdditionalConceptNodeChildren = ({
 
   return (
     <>
-      <HeadingBetween>{t("queryNodeEditor.dropMoreConcepts")}</HeadingBetween>
-      <div className={padded()}>
-        <div className={heading()}>
-          <H4>{rootConcept.label}</H4>
-        </div>
-        <div>
-          <ConceptDropzone node={node} onDropConcept={onDropConcept} />
-        </div>
-        <div className={scrollable()}>
+      <H4>{t("queryNodeEditor.dropMoreConcepts")}</H4>
+      <div className="flex min-h-0 grow flex-col gap-2">
+        <C2 tone="muted">{rootConcept.label}</C2>
+        <ConceptDropzone node={node} onDropConcept={onDropConcept} />
+        <div className="min-h-0 overflow-y-auto [-webkit-overflow-scrolling:touch]">
           {sortedNodeIds.map((conceptId) => (
             <ConceptEntry
               key={conceptId}

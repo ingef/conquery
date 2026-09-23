@@ -93,6 +93,8 @@
     "queryNode": "Abfrageknoten",
     "conceptNodes": "Konzeptknoten",
     "conceptNodeTables": "Quellen",
+    "sections": "Abschnitte",
+    "includeTable": "{{table}} einbeziehen",
     "properties": "Allgemeine Einstellungen",
     "reset": "Zurücksetzen",
     "resetSettings": "Auf Standard zurücksetzen",
@@ -114,7 +116,6 @@
     "commonSelects": "Allgemeine Ausgabewerte",
     "nodeNotFound": "Konzept nicht gefunden",
     "selectValidityDate": "Relevanter Zeitraum",
-    "dateColumn": "Datumsspalte",
     "dropMoreConcepts": "Konzepte im Knoten",
     "emptyMenuColumn": "Keine weiteren Einstellungen"
   },

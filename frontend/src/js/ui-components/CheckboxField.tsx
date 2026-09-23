@@ -56,28 +56,33 @@ const label = tv({ base: "py-[5px]" });
 // under the label text, past the box
 const error = tv({ base: "pl-[34px]" });
 
-export interface CheckboxFieldProps
-  extends Omit<
-    RacCheckboxFieldProps,
-    | "className"
-    | "style"
-    | "children"
-    | "isInvalid"
-    | "validate"
-    | "validationBehavior"
-  > {
-  /** the label */
-  children: string;
-  /** a help icon after the label, e.g. what selecting does or why it is disabled */
-  tooltip?: string;
-  /** shown below the label; the field is invalid while it is set */
-  errorMessage?: string;
-}
+/** a checkbox is named by its label text or by an aria-label */
+type CheckboxLabelProps =
+  | { children: string; "aria-label"?: never }
+  | { children?: never; "aria-label": string };
+
+export type CheckboxFieldProps = Omit<
+  RacCheckboxFieldProps,
+  | "className"
+  | "style"
+  | "children"
+  | "aria-label"
+  | "isInvalid"
+  | "validate"
+  | "validationBehavior"
+> &
+  CheckboxLabelProps & {
+    /** a help icon after the label, e.g. what selecting does or why it is disabled */
+    tooltip?: string;
+    /** shown below the label; the field is invalid while it is set */
+    errorMessage?: string;
+  };
 
 /**
  * A checkbox with its label, react-aria's CheckboxField + CheckboxButton
  * underneath: `isSelected` / `onChange`, `isDisabled`, keyboard and form
- * support. The children are the label text.
+ * support. The children are the label text; a checkbox inside a row that
+ * names it otherwise takes an `aria-label` instead.
  */
 export const CheckboxField = ({
   children,
@@ -98,12 +103,14 @@ export const CheckboxField = ({
               {isSelected && <CheckIcon className="size-3.5" />}
             </span>
           </span>
-          <span className={label()}>
-            {children}
-            {exists(tooltip) && (
-              <InfoTooltip text={tooltip} excludeFromTabOrder />
-            )}
-          </span>
+          {children && (
+            <span className={label()}>
+              {children}
+              {exists(tooltip) && (
+                <InfoTooltip text={tooltip} excludeFromTabOrder />
+              )}
+            </span>
+          )}
         </>
       )}
     </CheckboxButton>
