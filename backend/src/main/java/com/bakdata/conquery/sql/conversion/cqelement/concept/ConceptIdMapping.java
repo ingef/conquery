@@ -11,7 +11,8 @@ import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.google.common.collect.Sets;
-import lombok.Data;
+import lombok.AccessLevel;
+import lombok.Getter;
 import org.jooq.*;
 import org.jooq.Record;
 import org.jooq.impl.DSL;
@@ -22,7 +23,7 @@ import static org.jooq.impl.SQLDataType.VARCHAR;
 /**
  * Description of the physical lookup table that maps connector values to their most specific concept element.
  */
-@Data
+@Getter
 public final class ConceptIdMapping {
 
 	public static final String RESOLVED_ID_COLUMN = "resolved_id";
@@ -31,16 +32,28 @@ public final class ConceptIdMapping {
 	private final SqlFunctionProvider functionProvider;
 	private final Name tableName;
 	private final List<Field<?>> keyFields;
-	private final List<RowN> rows;
+	@Getter(AccessLevel.NONE)
+	private List<CTCondition.ConceptConditions> expressions;
+	private List<RowN> rows;
 
 	public ConceptIdMapping(TreeConcept concept, SqlFunctionProvider functionProvider) {
 		this.concept = concept;
 		this.functionProvider = functionProvider;
 		CTConditionContext context = CTConditionContext.forJoinTables(functionProvider);
-		List<CTCondition.ConceptConditions> expressions = collectAllExpressions(concept, null, context);
+		this.expressions = collectAllExpressions(concept, null, context);
 		this.keyFields = collectKeyFields(expressions);
-		this.rows = expressionsToRows(concept, expressions, keyFields);
 		this.tableName = tableName(concept.getId());
+	}
+
+	/**
+	 * Materialize mapping rows only while creating the physical mapping table. Query conversion only needs the table metadata.
+	 */
+	public synchronized List<RowN> getRows() {
+		if (rows == null) {
+			rows = expressionsToRows(concept, expressions, keyFields);
+			expressions = null;
+		}
+		return rows;
 	}
 
 	public static Name tableName(ConceptId conceptId) {
