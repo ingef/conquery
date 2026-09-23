@@ -170,6 +170,35 @@
   }
 }
 
+/* replaces `border-dashed`: Firefox draws longer, rounded dashes than Chrome, and
+   CSS cannot tune them, so the dashes are background strips over a transparent
+   3 px border, colored by --dash-color, identical in every browser */
+@utility dashed-frame {
+  --dash: 6px;
+  --gap: 4px;
+  --dash-strip: repeating-linear-gradient(
+    to right,
+    var(--dash-color) 0 var(--dash),
+    transparent var(--dash) calc(var(--dash) + var(--gap))
+  );
+  --dash-strip-vertical: repeating-linear-gradient(
+    to bottom,
+    var(--dash-color) 0 var(--dash),
+    transparent var(--dash) calc(var(--dash) + var(--gap))
+  );
+  background-image:
+    var(--dash-strip), var(--dash-strip), var(--dash-strip-vertical),
+    var(--dash-strip-vertical);
+  background-size:
+    100% 3px,
+    100% 3px,
+    3px 100%,
+    3px 100%;
+  background-position: top, bottom, left, right;
+  background-origin: border-box;
+  background-repeat: no-repeat;
+}
+
 /* react-datepicker inside InputDate */
 .conquery-datepicker {
   /* The popup anchors to this wrapper, so it must cover the input's box */

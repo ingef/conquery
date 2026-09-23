@@ -18,7 +18,8 @@ const root = tv({
     "w-full",
     "p-[10px]",
     "rounded",
-    "border-[3px] border-dashed border-gray-400",
+    "border-[3px] border-transparent",
+    "dashed-frame [--dash-color:var(--color-gray-400)]",
     "bg-bg-50",
     "text-gray-500",
   ],
@@ -28,8 +29,8 @@ const root = tv({
     // later wins when several are set
     transparent: { true: "bg-transparent" },
     canDrop: { true: "bg-gray-50" },
-    isOver: { true: "border-solid border-gray-800 text-gray-800" },
-    naked: { true: "border-none" },
+    isOver: { true: "bg-none border-gray-800 text-gray-800" },
+    naked: { true: "bg-none border-none" },
   },
   compoundVariants: [
     { isOver: true, canDrop: false, class: "border-red text-red" },
