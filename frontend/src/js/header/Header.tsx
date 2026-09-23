@@ -1,10 +1,8 @@
-import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
 import type { StateT } from "../app/reducers";
 import { useAppTheme } from "../app-theme-context";
 import DatasetSelector from "../dataset/DatasetSelector";
-import { textStyle } from "../ui-components/Typography";
 import { HeaderMenu } from "./HeaderMenu";
 
 // position absolute: fix, so content can expand to 100% and scroll
@@ -28,12 +26,7 @@ const logo = tv({
   base: ["h-header", "bg-no-repeat", "[background-position-y:50%]"],
 });
 
-const headline = tv({
-  base: ["mr-auto", textStyle({ size: 3, tone: "muted" })],
-});
-
 const Header = () => {
-  const { t } = useTranslation();
   const { manualUrl, contactEmail } = useSelector<
     StateT,
     StateT["startup"]["config"]
@@ -52,8 +45,6 @@ const Header = () => {
             backgroundSize: img.logoBackgroundSize,
           }}
         />
-        <span className="mx-[5px] h-5" />
-        <h1 className={headline()}>{t("headline")}</h1>
       </div>
       <div className="flex items-center gap-[5px]">
         <DatasetSelector />
