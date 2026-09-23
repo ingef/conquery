@@ -1,6 +1,7 @@
 import { ChevronDownIcon } from "lucide-react";
-import { useContext, useMemo, useState } from "react";
+import { type PointerEvent, useContext, useMemo, useState } from "react";
 import {
+  type ComboBoxState,
   ComboBoxStateContext,
   type Key,
   ListBox,
@@ -44,6 +45,24 @@ const listBoxItem = tv({
   ],
 });
 
+// Press the input, drag onto an option, release: react-aria selects on the option's
+// own pointerup and focuses it on hover, which works in Chrome. Firefox delivers a
+// mouse drag that starts in a text input only to that input, so the input does the
+// same by pointer position; where the option gets the events itself, nothing is under
+// the pointer here and these handlers stay idle
+const optionKeyUnder = (state: ComboBoxState<object>, e: PointerEvent) => {
+  const option = document
+    .elementFromPoint(e.clientX, e.clientY)
+    ?.closest<HTMLElement>('[role="option"][data-key]');
+  const key = [...state.collection.getKeys()].find(
+    (k) => String(k) === option?.dataset.key,
+  );
+
+  return key !== undefined && !state.selectionManager.isDisabled(key)
+    ? key
+    : null;
+};
+
 // the list opens on focus; a press into the already focused input opens it again
 const ComboBoxInput = (props: InputProps) => {
   const state = useContext(ComboBoxStateContext);
@@ -54,6 +73,19 @@ const ComboBoxInput = (props: InputProps) => {
       onPointerDown={(e) => {
         if (e.button === 0 && state && !state.isOpen)
           state.open(null, "manual");
+      }}
+      onPointerMove={(e) => {
+        if (!state || e.pointerType !== "mouse" || e.buttons !== 1) return;
+        const key = optionKeyUnder(state, e);
+        if (key !== null && key !== state.selectionManager.focusedKey) {
+          state.selectionManager.setFocused(true);
+          state.selectionManager.setFocusedKey(key);
+        }
+      }}
+      onPointerUp={(e) => {
+        if (!state || e.pointerType !== "mouse" || e.button !== 0) return;
+        const key = optionKeyUnder(state, e);
+        if (key !== null) state.selectionManager.select(key);
       }}
     />
   );
