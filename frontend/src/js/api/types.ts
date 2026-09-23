@@ -523,6 +523,8 @@ export interface PostLoginResponseT {
 
 export type GetFormConfigsResponseT = FormConfigT[];
 
+export type GetDefaultFoldersResponseT = string[];
+
 export type GetFormConfigResponseT = FormConfigT;
 
 export type UploadQueryResponseT = {
