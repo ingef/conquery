@@ -10,7 +10,7 @@ import { tv } from "tailwind-variants";
 
 import { textStyle } from "./Typography";
 
-const frame = tv({
+export const inputFrame = tv({
   base: [
     "flex items-center",
     "h-[30px]",
@@ -23,9 +23,13 @@ const frame = tv({
     "data-disabled:opacity-50",
     "data-invalid:border-red",
   ],
+  variants: {
+    // grows with wrapped content, e.g. selected tags
+    multiline: { true: "h-auto min-h-[30px]" },
+  },
 });
 
-const input = tv({
+export const inputControl = tv({
   base: [
     "h-full w-full min-w-0",
     "px-[10px]",
@@ -35,6 +39,10 @@ const input = tv({
     "disabled:cursor-not-allowed",
     "[&::-webkit-search-cancel-button]:hidden",
   ],
+  variants: {
+    // shares its line with tags: no width of its own, it fills what the line leaves
+    inline: { true: "h-5 w-0 min-w-[60px] grow px-0" },
+  },
 });
 
 const addon = tv({
@@ -72,11 +80,16 @@ export const Input = ({
   isInvalid,
   ...props
 }: InputProps) => (
-  <Group className={frame()} isDisabled={isDisabled} isInvalid={isInvalid}>
+  <Group className={inputFrame()} isDisabled={isDisabled} isInvalid={isInvalid}>
     {addonLeft && <span className={addon()}>{addonLeft}</span>}
-    <RacInput className={input()} {...props} />
+    <RacInput className={inputControl()} {...props} />
     {addonRight && <span className={addon()}>{addonRight}</span>}
   </Group>
+);
+
+/** the addons' box, for a frame composed by hand */
+export const InputAddons = ({ children }: { children: ReactNode }) => (
+  <span className={addon()}>{children}</span>
 );
 
 /** an icon button inside the input frame; give it an aria-label */

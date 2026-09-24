@@ -39,7 +39,11 @@ export const InfoPaneHeader = memo(() => {
 
   return (
     <>
-      <RacButton className={toggleButton()} onPress={onToggleInfoPane}>
+      <RacButton
+        className={toggleButton()}
+        aria-label={t("infoPane.collapse")}
+        onPress={onToggleInfoPane}
+      >
         <ChevronLeftIcon />
       </RacButton>
       <div className={header()}>

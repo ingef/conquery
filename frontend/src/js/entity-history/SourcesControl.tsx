@@ -1,7 +1,8 @@
 import { memo } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../api/types";
-import InputMultiSelect from "../ui-components/InputMultiSelect/InputMultiSelect";
+import { ComboBoxMultiField } from "../ui-components/ComboBoxMultiField";
 
 interface Props {
   className?: string;
@@ -16,9 +17,12 @@ const SourcesControl = ({
   sourcesFilter,
   setSourcesFilter,
 }: Props) => {
+  const { t } = useTranslation();
+
   return (
     <div className={className}>
-      <InputMultiSelect
+      <ComboBoxMultiField
+        aria-label={t("history.sources")}
         options={options}
         value={sourcesFilter}
         onChange={setSourcesFilter}

@@ -142,6 +142,7 @@ const DropzoneWithFileInput = <
               <Button
                 intent="link"
                 size="sm"
+                excludeFromTabOrder
                 onPress={() => setImportModalOpen(true)}
               >
                 {t("common.import")}

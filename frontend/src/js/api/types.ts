@@ -472,30 +472,25 @@ export interface PostConceptResolveResponseT {
   unknownCodes?: ConceptIdT[]; // TODO: Use "unknownConcepts"
 }
 
+interface FilterSuggestion {
+  label: string;
+  value: string;
+  optionValue?: string;
+  disabled?: boolean;
+}
+
 export interface PostFilterResolveResponseT {
-  resolvedConcepts: null; // TODO: Weird that this unnecessary field comes back, we're not using it
   unknownCodes: string[];
   resolvedFilter?: {
     filterId: FilterT["id"];
     tableId: TableT["id"];
-    value: {
-      label: string;
-      value: string;
-      optionValue: string;
-    }[];
+    value: FilterSuggestion[];
   };
 }
 
-export interface RawFilterSuggestion {
-  label: string;
-  value: string;
-  optionValue: string;
-  templateValues: Record<string, string>;
-  disabled?: boolean;
-}
 export type PostFilterSuggestionsResponseT = {
   total: number;
-  values: RawFilterSuggestion[];
+  values: FilterSuggestion[];
 };
 
 export type GetFormQueriesResponseT = Forms;
@@ -522,6 +517,8 @@ export interface PostLoginResponseT {
 }
 
 export type GetFormConfigsResponseT = FormConfigT[];
+
+export type GetDefaultFoldersResponseT = string[];
 
 export type GetFormConfigResponseT = FormConfigT;
 

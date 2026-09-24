@@ -11,7 +11,7 @@ import InfoTooltip from "./InfoTooltip";
 import { textStyle } from "./Typography";
 
 const label = tv({
-  base: ["flex items-center", "mt-[6px] mb-[3px]"],
+  base: ["flex items-center", "mb-[3px]"],
   variants: {
     size: {
       sm: textStyle({ size: 3 }),

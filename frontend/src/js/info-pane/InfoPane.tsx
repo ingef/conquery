@@ -13,7 +13,6 @@ import { Highlighter } from "../ui-components/Highlighter";
 import { ToggleButton } from "../ui-components/ToggleButton";
 import { C2, C3, H5 } from "../ui-components/Typography";
 import { toggleAdditionalInfos as toggleInfos } from "./actions";
-import InfoPaneCollapsed from "./InfoPaneCollapsed";
 import { InfoPaneHeader } from "./InfoPaneHeader";
 import MatchingStats from "./MatchingStats";
 import type { AdditionalInfosType } from "./reducer";
@@ -141,7 +140,6 @@ const InfoPane = () => {
   } = useSelector<StateT, AdditionalInfosType>(
     (state) => state.infoPane.additionalInfos,
   );
-  const isOpen = useSelector<StateT, boolean>((state) => state.infoPane.isOpen);
   const toggleAdditionalInfos = useSelector<StateT, boolean>(
     (state) => state.infoPane.toggleAdditionalInfos,
   );
@@ -154,8 +152,6 @@ const InfoPane = () => {
 
   const dispatch = useDispatch();
   const onToggleAdditionalInfos = () => dispatch(toggleInfos());
-
-  if (!isOpen) return <InfoPaneCollapsed />;
 
   const mainLabel = rootLabel || label;
   const mainIcon = rootIcon || icon;

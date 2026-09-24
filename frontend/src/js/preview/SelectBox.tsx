@@ -2,7 +2,7 @@ import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { type SetStateAction, useMemo, useRef, useState } from "react";
 import { tv } from "tailwind-variants";
 import { useClickOutside } from "../common/helpers/useClickOutside";
-import { Input } from "../ui-components/InputMultiSelect/InputSelectComponents";
+import { textStyle } from "../ui-components/Typography";
 
 export interface SelectItem {
   label: string;
@@ -15,6 +15,15 @@ interface SelectBoxProps<T extends SelectItem> {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
 }
+
+const input = tv({
+  base: [
+    "mt-[5px] w-[190px] h-5",
+    "border-0 outline-none",
+    textStyle({ size: 2 }),
+    "disabled:cursor-not-allowed disabled:pointer-events-none",
+  ],
+});
 
 const root = tv({
   base: ["flex flex-col", "min-h-[30px]", "w-[20vw]"],
@@ -72,8 +81,8 @@ export default function SelectBox<T extends SelectItem>({
     // biome-ignore lint/a11y/useKeyWithClickEvents: see above
     <div className={root({ className })} onClick={() => setIsOpen(!isOpen)}>
       <div className="flex flex-row">
-        <Input
-          className="mt-[5px] w-[190px]"
+        <input
+          className={input()}
           type="text"
           placeholder=""
           value={searchTerm}

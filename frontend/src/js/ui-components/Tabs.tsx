@@ -71,8 +71,13 @@ const list = tv({
   base: "flex items-start",
   variants: {
     variant: {
-      // a line the tabs sit on
-      primary: ["h-pane-header items-end", "px-5", "border-b border-gray-100"],
+      // a line the tabs sit on, across the whole row
+      primary: [
+        "grow",
+        "h-pane-header items-end",
+        "px-5",
+        "border-b border-gray-100",
+      ],
       secondary: "pt-[3px] pl-[10px]",
     },
   },

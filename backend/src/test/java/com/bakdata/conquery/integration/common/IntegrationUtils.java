@@ -86,10 +86,11 @@ public class IntegrationUtils {
 			}
 
 			// TODO implement this properly: ExecutionStatus status = response.readEntity(ExecutionStatus.Full.class);
-			final JsonNode jsonNode = response.readEntity(JsonNode.class);
-			final String id = jsonNode.get(ExecutionStatus.Fields.id).asText();
+			final FullExecutionStatus executionStatus = response.readEntity(FullExecutionStatus.class);
 
-			final JsonNode execStatusRaw = getRawExecutionStatus(id, conquery, user);
+			final ManagedExecutionId id = executionStatus.getId();
+
+			final JsonNode execStatusRaw = getRawExecutionStatus(id.toString(), conquery, user);
 
 			final String status = execStatusRaw.get(ExecutionStatus.Fields.status).asText();
 			final long numberOfResults = execStatusRaw.get(ExecutionStatus.Fields.numberOfResults).asLong(0);
@@ -102,7 +103,7 @@ public class IntegrationUtils {
 						.isEqualTo(expectedSize);
 			}
 
-			return ManagedExecutionId.Parser.INSTANCE.parse(id);
+			return id;
 		}
 	}
 

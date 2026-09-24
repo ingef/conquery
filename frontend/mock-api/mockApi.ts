@@ -241,6 +241,18 @@ export default function mockApi(app: Application) {
     STORED QUERIES
   */
   app.get(
+    "/api/datasets/:datasetId/queries/default-tags",
+    mockAuthMiddleware,
+    function response(_, res) {
+      res.setHeader("Content-Type", "application/json");
+
+      setTimeout(() => {
+        res.send(JSON.stringify(["research", "group 1", "archive"]));
+      }, SHORT_DELAY);
+    },
+  );
+
+  app.get(
     "/api/datasets/:datasetId/queries",
     mockAuthMiddleware,
     function response(_, res) {
@@ -361,7 +373,9 @@ export default function mockApi(app: Application) {
       setTimeout(() => {
         res.setHeader("Content-Type", "application/json");
 
-        const text = req.body.text.toLowerCase();
+        const text = (req.body.text ?? "").toLowerCase();
+        const page = req.body.page ?? 0;
+        const pageSize = req.body.pageSize ?? 50;
         const countriesRequested = req.params.filterId === "production_country";
         const wordsRequested = req.params.filterId === "words";
 
@@ -382,15 +396,16 @@ export default function mockApi(app: Application) {
                 "1008445564",
               ];
 
-        const suggestions = storedValues
-          .map((v, id) => ({
-            label: v,
-            value: id,
-            templateValues: { company: "Columbia Pictures Corporation" },
-          }))
+        const matching = storedValues
+          .map((v) => ({ label: v, value: v, optionValue: v }))
           .filter((v) => v.label.toLowerCase().startsWith(text));
 
-        res.send(JSON.stringify(suggestions));
+        res.send(
+          JSON.stringify({
+            total: matching.length,
+            values: matching.slice(page * pageSize, (page + 1) * pageSize),
+          }),
+        );
       }, LONG_DELAY);
     },
   );

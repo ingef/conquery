@@ -42,7 +42,6 @@ type Props<T> = T & {
   formField: Field | Tabs;
   defaultValue?: unknown;
   noContainer?: boolean;
-  noLabel?: boolean;
   /** the field shows the error below its input itself */
   errorInField?: boolean;
 };
@@ -50,15 +49,12 @@ const fieldContainer = tv({
   base: [
     "flex flex-col",
     "gap-[5px]",
+    "px-[10px] py-2",
     "bg-white",
     "rounded",
     "border border-gray-100",
   ],
   variants: {
-    noLabel: {
-      true: "px-[10px] py-[7px]",
-      false: "pt-[2px] px-[10px] pb-[7px]",
-    },
     hasError: { true: "", false: "" },
     red: { true: "", false: "" },
   },
@@ -80,7 +76,6 @@ export const ConnectedField = <T extends object>({
   formField,
   defaultValue,
   noContainer,
-  noLabel,
   errorInField,
   ...props
 }: Props<T>) => {
@@ -107,7 +102,6 @@ export const ConnectedField = <T extends object>({
   ) : (
     <div
       className={fieldContainer({
-        noLabel: !!noLabel,
         hasError: exists(fieldState.error),
         red: isRedError,
       })}
