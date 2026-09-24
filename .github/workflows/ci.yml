@@ -34,7 +34,7 @@ jobs:
             echo "backend=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          files=$(gh pr diff "$PR" --name-only)
+          files=$(gh api -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2026-03-10" "repos/$GITHUB_REPOSITORY/pulls/$PR/files" --jq '.[].filename' --paginate)
           echo "$files"
           changed() { if echo "$files" | grep -Eq "$1"; then echo true; else echo false; fi; }
           echo "frontend=$(changed '^(frontend/|\.github/workflows/(ci|test_frontend)\.yml$)')" >> "$GITHUB_OUTPUT"
