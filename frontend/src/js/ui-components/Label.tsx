@@ -14,8 +14,8 @@ const label = tv({
   base: ["flex items-center", "mb-[3px]"],
   variants: {
     size: {
-      sm: textStyle({ size: 3 }),
-      md: textStyle({ size: 2 }),
+      sm: textStyle({ size: 3, tone: "default" }),
+      md: textStyle({ size: 2, tone: "default" }),
     },
     isDisabled: { true: "text-gray-600" },
   },
