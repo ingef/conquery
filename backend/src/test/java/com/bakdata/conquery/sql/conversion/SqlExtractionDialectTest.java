@@ -1,11 +1,16 @@
 package com.bakdata.conquery.sql.conversion;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.sql.Date;
 import java.util.Locale;
 
 import com.bakdata.conquery.sql.conversion.dialect.clickhouse.ClickhouseDialectBundle;
+import com.bakdata.conquery.sql.conversion.dialect.hana.HanaDialectBundle;
+import com.bakdata.conquery.sql.compiler.dialect.clickhouse.ClickhouseCompilerDialect;
+import com.bakdata.conquery.sql.compiler.dialect.hana.HanaCompilerDialect;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Test;
@@ -22,5 +27,20 @@ class SqlExtractionDialectTest {
 			String sql = DSL.using(SQLDialect.CLICKHOUSE).renderInlined(bound).toLowerCase(Locale.ROOT);
 			assertTrue(sql.contains("::nullable(date32)"), sql);
 		}
+	}
+
+	@Test
+	void shouldUseFrameworkNeutralDialectCapabilitiesFromLegacyBundles() {
+		var clickhouse = new ClickhouseDialectBundle();
+		var hana = new HanaDialectBundle();
+
+		assertInstanceOf(ClickhouseCompilerDialect.class, clickhouse.getCompilerDialect());
+		assertInstanceOf(HanaCompilerDialect.class, hana.getCompilerDialect());
+		assertEquals(
+				DSL.using(SQLDialect.CLICKHOUSE).renderInlined(clickhouse.getFunctionProvider().getMinDateExpression()),
+				DSL.using(SQLDialect.CLICKHOUSE).renderInlined(clickhouse.minimumDate()));
+		assertEquals(
+				DSL.using(SQLDialect.DEFAULT).renderInlined(hana.getFunctionProvider().getMaxDateExpression()),
+				DSL.using(SQLDialect.DEFAULT).renderInlined(hana.maximumDate()));
 	}
 }

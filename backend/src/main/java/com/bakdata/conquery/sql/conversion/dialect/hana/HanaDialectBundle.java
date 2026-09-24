@@ -10,6 +10,8 @@ import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
+import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
+import com.bakdata.conquery.sql.compiler.dialect.hana.HanaCompilerDialect;
 import com.bakdata.conquery.sql.execution.DefaultResultSetProcessor;
 import com.bakdata.conquery.sql.execution.HanaSqlCDateSetParser;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
@@ -21,10 +23,12 @@ import org.jooq.SQLDialect;
 public class HanaDialectBundle implements DialectBundle {
 
 	private final SqlFunctionProvider functionProvider;
+	private final CompilerDialect compilerDialect;
 	private final SqlCDateSetParser dateSetParser;
 
 	public HanaDialectBundle() {
 		this.functionProvider = new HanaSqlFunctionProvider();
+		this.compilerDialect = new HanaCompilerDialect();
 		this.dateSetParser = new HanaSqlCDateSetParser();
 	}
 
@@ -80,6 +84,11 @@ public class HanaDialectBundle implements DialectBundle {
 	@Override
 	public SqlFunctionProvider getFunctionProvider() {
 		return this.functionProvider;
+	}
+
+	@Override
+	public CompilerDialect getCompilerDialect() {
+		return compilerDialect;
 	}
 
 }

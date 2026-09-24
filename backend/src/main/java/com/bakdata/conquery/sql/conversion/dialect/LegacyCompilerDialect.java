@@ -12,10 +12,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
+import com.bakdata.conquery.sql.compiler.conversion.operation.SelectConversionContext;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
+import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.rendering.QueryStepRenderer;
@@ -54,129 +56,126 @@ import org.jooq.Table;
 public interface LegacyCompilerDialect extends CompilerDialect {
 
 	@Override
+	default ConnectorSqlSelects distinctSelect(BuiltInSelects.Values select, SelectConversionContext context) {
+		return getCompilerDialect().distinctSelect(select, context);
+	}
+
+	@Override
 	default ColumnDateRange toDualColumn(ColumnDateRange range) {
-		return getFunctionProvider().toDualColumn(range);
+		return getCompilerDialect().toDualColumn(range);
 	}
 
 	@Override
 	default Condition orAgg(Field<Boolean> field) {
-		return getFunctionProvider().orAgg(field);
+		return getCompilerDialect().orAgg(field);
 	}
 
 	@Override
 	default Field<?> arrayOut(List<Field<String>> fields) {
-		return getFunctionProvider().arrayOut(fields);
+		return getCompilerDialect().arrayOut(fields);
 	}
 
 	@Override
 	default <T> Field<T> cast(Field<?> field, DataType<T> type) {
-		return getFunctionProvider().cast(field, type);
+		return getCompilerDialect().cast(field, type);
 	}
 
 	@Override
 	default Field<String> stringAggregation(Field<String> field, Field<String> delimiter, List<Field<?>> orderByFields) {
-		return getFunctionProvider().stringAggregation(field, delimiter, orderByFields);
+		return getCompilerDialect().stringAggregation(field, delimiter, orderByFields);
 	}
 
 	@Override
 	default Collection<? extends OrderField<?>> orderByValidityDates(
 			Function<Field<?>, ? extends SortField<?>> ordering, List<Field<?>> validityDateFields) {
-		return getFunctionProvider().orderByValidityDates(ordering, validityDateFields);
+		return getCompilerDialect().orderByValidityDates(ordering, validityDateFields);
 	}
 
 	@Override
 	default <T> Field<T> random(Field<T> field) {
-		return getFunctionProvider().random(field);
+		return getCompilerDialect().random(field);
 	}
 
 	@Override
 	default Field<Date> minimumDate() {
-		return getFunctionProvider().getMinDateExpression();
+		return getCompilerDialect().minimumDate();
 	}
 
 	@Override
 	default Field<Date> maximumDate() {
-		return getFunctionProvider().getMaxDateExpression();
+		return getCompilerDialect().maximumDate();
 	}
 
 	@Override
 	default <T> Field<T> anyValue(Field<T> field) {
-		return getFunctionProvider().anyValue(field);
+		return getCompilerDialect().anyValue(field);
 	}
 
 	@Override
 	default Field<?> renderDateRange(Field<Date> start, Field<Date> end) {
-		return getFunctionProvider().dateRangeToField(ColumnDateRange.of(start, end));
+		return getCompilerDialect().renderDateRange(start, end);
 	}
 
 	@Override
 	default Field<?> aggregateDateRanges(Field<Date> start, Field<Date> end) {
-		return getFunctionProvider().dateRangeAggregation(ColumnDateRange.of(start, end));
+		return getCompilerDialect().aggregateDateRanges(start, end);
 	}
 
 	@Override
 	default Field<String> externalId(String id) {
-		return getFunctionProvider().externalId(id);
+		return getCompilerDialect().externalId(id);
 	}
 
 	@Override
 	default Field<?> externalStringValues(List<String> values) {
-		return getFunctionProvider().asArrayRepr(values);
+		return getCompilerDialect().externalStringValues(values);
 	}
 
 	@Override
 	default Table<? extends Record> literalSelectTable() {
-		return getFunctionProvider().getNoOpTable();
+		return getCompilerDialect().literalSelectTable();
 	}
 
 	@Override
 	default ColumnDateRange dateRangeLiteral(DateRange dateRange) {
-		CDateRange legacyDateRange = CDateRange.of(
-				dateRange.startInclusive().orElse(null),
-				dateRange.endInclusive().orElse(null)
-		);
-		return getFunctionProvider().forCDateRange(legacyDateRange);
+		return getCompilerDialect().dateRangeLiteral(dateRange);
 	}
 
 	@Override
 	default QueryStep unnestDateRange(ColumnDateRange dateRange, QueryStep predecessor, String cteName) {
-		return getFunctionProvider().unnestDaterange(dateRange, predecessor, cteName);
+		return getCompilerDialect().unnestDateRange(dateRange, predecessor, cteName);
 	}
 
 	@Override
 	default String regexAnyCharacters() {
-		return getFunctionProvider().getAnyCharRegex();
+		return getCompilerDialect().regexAnyCharacters();
 	}
 
 	@Override
 	default Condition regexMatches(Field<String> field, String pattern) {
-		return getFunctionProvider().likeRegex(field, pattern);
+		return getCompilerDialect().regexMatches(field, pattern);
 	}
 
 	@Override
 	default Field<Integer> dateDistance(ChronoUnit unit, Field<Date> startDate, LocalDate endDate) {
-		return getFunctionProvider().dateDistance(
-				unit,
-				startDate,
-				getFunctionProvider().toDateField(endDate.toString())
-		);
+		return getCompilerDialect().dateDistance(unit, startDate, endDate);
 	}
 
 	StratificationFunctions getStratificationFunctions();
 
 	@Override
 	default Field<Integer> dateDistance(ChronoUnit unit, Field<Date> startDate, Field<Date> endDate) {
-		return getFunctionProvider().dateDistance(unit, startDate, endDate);
+		return getCompilerDialect().dateDistance(unit, startDate, endDate);
 	}
 
 	@Override
 	default Field<Date> addDays(Field<Date> date, Field<Integer> days) {
-		return getFunctionProvider().addDays(date, days);
+		return getCompilerDialect().addDays(date, days);
 	}
 
 	@Override
 	default ColumnDateRange dateRange(Field<Date> start, Field<Date> inclusiveEnd) {
-		return getFunctionProvider().dateRange(start, inclusiveEnd);
+		return getCompilerDialect().dateRange(start, inclusiveEnd);
 	}
 
 	@Override
@@ -188,20 +187,22 @@ public interface LegacyCompilerDialect extends CompilerDialect {
 
 	@Override
 	default Field<String> yearQuarter(Field<Date> date) {
-		return getFunctionProvider().yearQuarter(date);
+		return getCompilerDialect().yearQuarter(date);
 	}
 
 	@Override
 	default Field<Date> quarterStart(Field<Date> date) {
-		return getStratificationFunctions().jumpToQuarterStart(date);
+		return getCompilerDialect().quarterStart(date);
 	}
 
 	@Override
 	default Field<Date> nextQuarterStart(Field<Date> date) {
-		return getStratificationFunctions().jumpToNextQuarterStart(date);
+		return getCompilerDialect().nextQuarterStart(date);
 	}
 
 	SqlFunctionProvider getFunctionProvider();
+
+	CompilerDialect getCompilerDialect();
 
 	List<NodeConverter<? extends Visitable>> getNodeConverters(DSLContext context);
 
