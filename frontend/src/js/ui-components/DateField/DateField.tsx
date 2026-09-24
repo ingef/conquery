@@ -117,7 +117,8 @@ export const DateField = ({
                 </InputButton>
               }
               addonRight={
-                value && (
+                // the input is content-sized, so an absent clear button would change its width
+                value ? (
                   <InputClearButton
                     isDisabled={isDisabled || isReadOnly}
                     onPress={() => {
@@ -125,6 +126,8 @@ export const DateField = ({
                       inputRef.current?.focus();
                     }}
                   />
+                ) : (
+                  <span className="size-6" />
                 )
               }
             />
