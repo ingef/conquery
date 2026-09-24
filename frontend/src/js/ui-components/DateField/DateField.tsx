@@ -13,7 +13,7 @@ import { tv } from "tailwind-variants";
 import { formatDate, parseDate } from "../../common/helpers/dateHelper";
 import { exists } from "../../common/helpers/exists";
 import { FieldError } from "../FieldError";
-import { Input, InputButton } from "../Input";
+import { Input, InputButton, InputClearButton } from "../Input";
 import { type FieldLabelProps, Label } from "../Label";
 import { CustomHeader } from "./CustomHeader";
 
@@ -52,8 +52,9 @@ export type DateFieldProps = Omit<
   };
 
 /**
- * A date typed as text, with a calendar to pick it from. The text is the
- * value, so the caller can expand shortcuts like `q2.2020`.
+ * A date typed as text, with a calendar to pick it from and a button that
+ * clears it. The text is the value, so the caller can expand shortcuts
+ * like `q2.2020`.
  */
 export const DateField = ({
   ref,
@@ -71,6 +72,7 @@ export const DateField = ({
 }: DateFieldProps) => {
   const { t } = useTranslation();
   const datePickerRef = useRef<ReactDatePicker>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   return (
     <RacTextField
@@ -86,7 +88,7 @@ export const DateField = ({
       }}
       {...props}
     >
-      {({ isDisabled, isInvalid }) => (
+      {({ isDisabled, isReadOnly, isInvalid }) => (
         <>
           {label && (
             <Label indexPrefix={indexPrefix} tooltip={tooltip}>
@@ -101,6 +103,7 @@ export const DateField = ({
             }}
           >
             <Input
+              ref={inputRef}
               placeholder={placeholder}
               isDisabled={isDisabled}
               isInvalid={isInvalid}
@@ -112,6 +115,17 @@ export const DateField = ({
                 >
                   <CalendarIcon />
                 </InputButton>
+              }
+              addonRight={
+                value && (
+                  <InputClearButton
+                    isDisabled={isDisabled || isReadOnly}
+                    onPress={() => {
+                      onChange("");
+                      inputRef.current?.focus();
+                    }}
+                  />
+                )
               }
             />
             <ReactDatePicker

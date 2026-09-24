@@ -1,3 +1,4 @@
+import { XIcon } from "lucide-react";
 import type { ReactNode, Ref } from "react";
 import {
   Group,
@@ -6,6 +7,7 @@ import {
   Input as RacInput,
   type InputProps as RacInputProps,
 } from "react-aria-components";
+import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
 export const inputFrame = tv({
@@ -58,6 +60,10 @@ const inputButton = tv({
     "hover:bg-gray-50",
     "disabled:cursor-not-allowed disabled:opacity-40",
   ],
+  variants: {
+    // one of two stacked halves, e.g. a stepper
+    half: { true: "h-3 rounded-[3px] [&_svg]:[--icon-size:12px]" },
+  },
 });
 
 export interface InputProps extends Omit<RacInputProps, "className" | "style"> {
@@ -91,9 +97,30 @@ export const InputAddons = ({ children }: { children: ReactNode }) => (
 );
 
 /** an icon button inside the input frame; give it an aria-label */
-export const InputButton = (
-  props: Omit<RacButtonProps, "className" | "style">,
-) => <RacButton className={inputButton()} {...props} />;
+export const InputButton = ({
+  half,
+  ...props
+}: Omit<RacButtonProps, "className" | "style"> & { half?: boolean }) => (
+  <RacButton className={inputButton({ half })} {...props} />
+);
+
+/** clears the field: out of the tab order, the focus stays where it is */
+export const InputClearButton = (
+  props: Omit<RacButtonProps, "className" | "style" | "children">,
+) => {
+  const { t } = useTranslation();
+
+  return (
+    <InputButton
+      aria-label={t("common.clearValue")}
+      excludeFromTabOrder
+      preventFocusOnPress
+      {...props}
+    >
+      <XIcon />
+    </InputButton>
+  );
+};
 
 /** a unit or similar text after the input's text */
 export const InputText = ({ children }: { children: ReactNode }) => (
