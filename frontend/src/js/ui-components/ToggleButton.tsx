@@ -22,15 +22,13 @@ const toggleStyle = tv({
       danger: "data-selected:text-red",
     },
     // a segment of a single-selection group: the frame of a secondary button
-    // shared with its neighbors, filled like a primary button while selected
+    // shared with its neighbors, a light fill in the highlight color while selected
     segmented: {
       true: [
         "rounded-none",
         "border-gray-500",
         "-mt-px -ml-px",
-        "data-selected:relative data-selected:z-10",
-        "data-selected:bg-primary-500 data-selected:border-primary-500 data-selected:text-white",
-        "data-selected:hover:bg-primary-500",
+        "data-selected:bg-primary-50 data-selected:hover:bg-primary-50",
       ],
     },
     orientation: { horizontal: "", vertical: "" },
@@ -40,8 +38,7 @@ const toggleStyle = tv({
     {
       segmented: true,
       highlight: "danger",
-      class:
-        "data-selected:bg-red data-selected:border-red data-selected:hover:bg-red",
+      class: "data-selected:bg-red/10 data-selected:hover:bg-red/10",
     },
     // the outer corners of the bar; a wrapped bar has them at its top left and bottom right
     {

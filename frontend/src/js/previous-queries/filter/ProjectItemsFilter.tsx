@@ -31,6 +31,7 @@ const ProjectItemsFilter = () => {
 
   return (
     <ToggleButtonGroup
+      size="sm"
       aria-label={t("projectItemsFilter.label")}
       selectionMode="single"
       disallowEmptySelection

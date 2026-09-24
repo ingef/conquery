@@ -156,6 +156,7 @@ const SecondaryIdSelectorUI = memo(
         </Label>
         <ToggleButtonGroup
           wrap
+          size="sm"
           selectionMode="single"
           disallowEmptySelection
           selectedKeys={[value || "standard"]}
