@@ -37,6 +37,7 @@ const ContentControl = ({ value, onChange }: Props) => {
       {
         key: "concept" as const,
         icon: FolderIcon,
+        filled: true,
         tooltip: t("history.content.concept"),
       },
       {
@@ -68,7 +69,7 @@ const ContentControl = ({ value, onChange }: Props) => {
       {options.map(({ icon: OptionIcon, ...option }) => (
         <TooltipTrigger key={option.key}>
           <ToggleButton id={option.key} aria-label={option.tooltip}>
-            <OptionIcon />
+            <OptionIcon data-filled={option.filled} />
           </ToggleButton>
           <Tooltip placement="right">{option.tooltip}</Tooltip>
         </TooltipTrigger>

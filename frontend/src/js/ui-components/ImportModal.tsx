@@ -31,32 +31,34 @@ const acceptedDropTypes = [NativeTypes.FILE];
 const useCanReadClipboard = () => {
   const [canReadClipboard, setCanReadClipboard] = useState(false);
   useEffect(() => {
-    const checkPersmission = async () => {
-      const { state } = await navigator.permissions.query({
+    if (!navigator.clipboard?.readText) return;
+
+    navigator.permissions
+      .query({
         // @ts-ignore https://github.com/microsoft/TypeScript/issues/33923
         name: "clipboard-read",
-      });
-
-      if (state === "granted" || state === "prompt") {
-        setCanReadClipboard(true);
-      }
-    };
-    checkPersmission();
+      })
+      .then(({ state }) => setCanReadClipboard(state !== "denied"))
+      // Firefox knows no clipboard-read permission, readText prompts on its own
+      .catch(() => setCanReadClipboard(true));
   }, []);
 
   return canReadClipboard;
 };
 
-export const ImportModal = ({
-  placeholder,
-  description,
-  onSubmit,
-  ...modalProps
-}: Pick<ModalProps, "isOpen" | "onOpenChange"> & {
+type ImportProps = {
   description?: string;
   placeholder?: string;
   onSubmit: (lines: string[], filename?: string) => void;
-}) => {
+};
+
+// rendered only while the modal is open, so nothing here runs for a closed modal
+const ImportModalContent = ({
+  placeholder,
+  description,
+  onSubmit,
+  close,
+}: ImportProps & { close: () => void }) => {
   const { t } = useTranslation();
   const [textInput, setTextInput] = useState("");
   const [droppedFilename, setDroppedFilename] = useState<string>();
@@ -64,7 +66,7 @@ export const ImportModal = ({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const onSubmitClick = (close: () => void) => {
+  const onSubmitClick = () => {
     const lines = textInput
       .split("\n")
       .map((line) => line.trim())
@@ -105,11 +107,10 @@ export const ImportModal = ({
   };
 
   const onPasteClick = async () => {
-    if (navigator.clipboard) {
-      const text = await navigator.clipboard.readText();
+    // rejects when the user denies the browser's clipboard prompt
+    const text = await navigator.clipboard.readText().catch(() => null);
 
-      autoFormatAndSet(text);
-    }
+    if (text) autoFormatAndSet(text);
   };
 
   const onDrop = async ({ files }: DragItemFile) => {
@@ -130,75 +131,89 @@ export const ImportModal = ({
   };
 
   return (
-    <Modal size="lg" {...modalProps}>
-      {({ close }) => (
-        <>
-          <ModalHeader subtitle={t("importModal.subtitle")}>
-            {t("importModal.headline")}
-          </ModalHeader>
-          <ModalBody>
-            <div className={content()}>
-              {description && (
-                <p
-                  className={subtitle()}
-                  // biome-ignore lint/security/noDangerouslySetInnerHtml: description is our own i18n text
-                  dangerouslySetInnerHTML={{ __html: description }}
-                />
-              )}
-              <DropzoneWithFileInput
-                onDrop={onDrop}
-                acceptedDropTypes={acceptedDropTypes}
-                disableClick
-                accept="text/plain,text/csv"
-              >
-                {() => (
-                  <textarea
-                    className={textarea()}
-                    rows={15}
-                    value={textInput}
-                    onChange={onChange}
-                    placeholder={placeholder}
-                  />
-                )}
-              </DropzoneWithFileInput>
-              <input
-                className="hidden"
-                type="file"
-                ref={fileInputRef}
-                accept="text/plain,text/csv"
-                onChange={(e) => {
-                  if (e.target.files) {
-                    onSelectFile(e.target.files[0]);
-                  }
-
-                  if (fileInputRef.current) {
-                    fileInputRef.current.value = "";
-                  }
-                }}
+    <>
+      <ModalHeader subtitle={t("importModal.subtitle")}>
+        {t("importModal.headline")}
+      </ModalHeader>
+      <ModalBody>
+        <div className={content()}>
+          {description && (
+            <p
+              className={subtitle()}
+              // biome-ignore lint/security/noDangerouslySetInnerHtml: description is our own i18n text
+              dangerouslySetInnerHTML={{ __html: description }}
+            />
+          )}
+          <DropzoneWithFileInput
+            onDrop={onDrop}
+            acceptedDropTypes={acceptedDropTypes}
+            disableClick
+            accept="text/plain,text/csv"
+          >
+            {() => (
+              <textarea
+                className={textarea()}
+                rows={15}
+                value={textInput}
+                onChange={onChange}
+                placeholder={placeholder}
               />
-            </div>
-          </ModalBody>
-          <ModalFooter>
-            <Button intent="tertiary" onPress={onOpenFileDialog}>
-              <FileIcon />
-              {t("common.openFileDialog")}
-            </Button>
-            {canReadClipboard && (
-              <Button intent="tertiary" onPress={onPasteClick}>
-                <ClipboardPasteIcon />
-                {t("importModal.paste")}
-              </Button>
             )}
-            <Button
-              intent="primary"
-              isDisabled={textInput.length === 0}
-              onPress={() => onSubmitClick(close)}
-            >
-              {t("importModal.submit")}
-            </Button>
-          </ModalFooter>
-        </>
-      )}
-    </Modal>
+          </DropzoneWithFileInput>
+          <input
+            className="hidden"
+            type="file"
+            ref={fileInputRef}
+            accept="text/plain,text/csv"
+            onChange={(e) => {
+              if (e.target.files) {
+                onSelectFile(e.target.files[0]);
+              }
+
+              if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+              }
+            }}
+          />
+        </div>
+      </ModalBody>
+      <ModalFooter>
+        <Button intent="tertiary" onPress={onOpenFileDialog}>
+          <FileIcon />
+          {t("common.openFileDialog")}
+        </Button>
+        {canReadClipboard && (
+          <Button intent="tertiary" onPress={onPasteClick}>
+            <ClipboardPasteIcon />
+            {t("importModal.paste")}
+          </Button>
+        )}
+        <Button
+          intent="primary"
+          isDisabled={textInput.length === 0}
+          onPress={onSubmitClick}
+        >
+          {t("importModal.submit")}
+        </Button>
+      </ModalFooter>
+    </>
   );
 };
+
+export const ImportModal = ({
+  placeholder,
+  description,
+  onSubmit,
+  ...modalProps
+}: Pick<ModalProps, "isOpen" | "onOpenChange"> & ImportProps) => (
+  <Modal size="lg" {...modalProps}>
+    {({ close }) => (
+      <ImportModalContent
+        placeholder={placeholder}
+        description={description}
+        onSubmit={onSubmit}
+        close={close}
+      />
+    )}
+  </Modal>
+);

@@ -27,6 +27,7 @@ import {
 import DeleteFolderModal from "./DeleteFolderModal";
 import Folder from "./Folder";
 import { useFolders } from "./selector";
+import { useDeleteProjectItemFolder } from "./useDeleteProjectItemFolder";
 
 const DROP_TYPES = [
   DNDType.FORM_CONFIG,
@@ -91,6 +92,7 @@ const Folders = ({ className }: { className?: string }) => {
 
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const onDeleteFolder = useDeleteProjectItemFolder();
   const onToggleNoFoldersActive = () => dispatch(toggleNoFoldersFilter());
   const onResetFolderFilter = useCallback(
     () => dispatch(setFolderFilter([])),
@@ -233,6 +235,7 @@ const Folders = ({ className }: { className?: string }) => {
                         </div>
                         <DeleteFolderModal
                           folder={folder}
+                          onDeleteFolder={onDeleteFolder}
                           onDeleteSuccess={() => dispatch(setFolderFilter([]))}
                         />
                       </DialogTrigger>
