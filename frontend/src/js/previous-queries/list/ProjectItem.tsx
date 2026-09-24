@@ -257,7 +257,7 @@ const ProjectItem = ({
       )}
       <div className={content({ own: !!item.own, system: isSystem })}>
         <div className={topInfos()}>
-          <div className="flex items-center gap-[10px]">
+          <div className="flex items-center gap-1">
             <TooltipTrigger>
               <Button
                 intent="tertiary"
