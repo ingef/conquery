@@ -40,7 +40,7 @@ public class MatchingStatsTests {
 		assertThat(stats.countEntities()).isEqualTo(0);
 
 
-		MatchingStats.Entry entry1 = new MatchingStats.Entry();
+		MatchingStats.Accumulator entry1 = new MatchingStats.Accumulator();
 		entry1.addEvents("1", 1, null);
 		entry1.addEvents("1", 1, null);
 
@@ -54,12 +54,12 @@ public class MatchingStatsTests {
 		entry1.addEvents("4", 1, null);
 
 
-		stats.putEntry(workerId1.toString(), entry1);
+		stats.putEntry(workerId1.toString(), entry1.finish());
 		assertThat(stats.countEvents()).isEqualTo(8);
 		assertThat(stats.countEntities()).isEqualTo(4);
 
 
-		MatchingStats.Entry entry2 = new MatchingStats.Entry();
+		MatchingStats.Accumulator entry2 = new MatchingStats.Accumulator();
 
 		entry2.addEvents("1", 1, null);
 		entry2.addEvents("2", 1, null);
@@ -73,7 +73,7 @@ public class MatchingStatsTests {
 		entry2.addEvents("10", 1, null);
 
 
-		stats.putEntry(workerId2.toString(), entry2);
+		stats.putEntry(workerId2.toString(), entry2.finish());
 		assertThat(stats.countEvents()).isEqualTo(18);
 		assertThat(stats.countEntities()).isEqualTo(14);
 

@@ -28,6 +28,12 @@ public class MatchingStats {
 	@JsonIgnore
 	private long numberOfEntities = -1L;
 
+	public static MatchingStats singleEntry(String source, Entry entry) {
+		MatchingStats matchingStats = new MatchingStats();
+		matchingStats.entries = Map.of(source, entry);
+		return matchingStats;
+	}
+
 	public synchronized long countEvents() {
 		if (numberOfEvents == -1L) {
 			numberOfEvents = entries.values().stream().mapToLong(Entry::getNumberOfEvents).sum();
@@ -63,8 +69,6 @@ public class MatchingStats {
 	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class Entry {
-		@JsonIgnore
-		private final Set<String> foundEntities = new HashSet<>();
 		private long numberOfEvents;
 		private long numberOfEntities;
 		private int minDate = Integer.MAX_VALUE;
@@ -82,23 +86,53 @@ public class MatchingStats {
 			);
 		}
 
+	}
+
+	/**
+	 * Mutable state used only while matching statistics are being calculated.
+	 *
+	 * <p>The potentially large set of entity ids deliberately does not live in {@link Entry}, because entries are attached to
+	 * concept elements and retained for the lifetime of the loaded dataset.</p>
+	 */
+	public static class Accumulator {
+		private Set<String> foundEntities = new HashSet<>();
+		private long numberOfEvents;
+		private long numberOfEntities;
+		private int minDate = Integer.MAX_VALUE;
+		private int maxDate = Integer.MIN_VALUE;
+
 		public void addEvents(String entityForEvent, int events, CDateRange time) {
+			addEvents(
+					entityForEvent,
+					events,
+					time != null && time.hasLowerBound() ? time.getMinValue() : Integer.MAX_VALUE,
+					time != null && time.hasUpperBound() ? time.getMaxValue() : Integer.MIN_VALUE
+			);
+		}
+
+		public void addEvents(String entityForEvent, int events, int eventMinDate, int eventMaxDate) {
+			if (foundEntities == null) {
+				throw new IllegalStateException("Matching stats accumulator was already finished");
+			}
+
 			numberOfEvents += events;
 			if (foundEntities.add(entityForEvent)) {
 				numberOfEntities++;
 			}
 
-			if (time == null) {
-				return;
+			if (eventMaxDate != Integer.MIN_VALUE) {
+				maxDate = Math.max(eventMaxDate, maxDate);
 			}
 
-			if (time.hasUpperBound()) {
-				maxDate = Math.max(time.getMaxValue(), maxDate);
+			if (eventMinDate != Integer.MAX_VALUE) {
+				minDate = Math.min(eventMinDate, minDate);
 			}
+		}
 
-			if (time.hasLowerBound()) {
-				minDate = Math.min(time.getMinValue(), minDate);
-			}
+		public Entry finish() {
+			Entry entry = new Entry(numberOfEvents, numberOfEntities, minDate, maxDate);
+			foundEntities = null;
+			return entry;
 		}
 	}
 
