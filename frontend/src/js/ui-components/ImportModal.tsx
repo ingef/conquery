@@ -31,17 +31,16 @@ const acceptedDropTypes = [NativeTypes.FILE];
 const useCanReadClipboard = () => {
   const [canReadClipboard, setCanReadClipboard] = useState(false);
   useEffect(() => {
-    const checkPersmission = async () => {
-      const { state } = await navigator.permissions.query({
+    if (!navigator.clipboard?.readText) return;
+
+    navigator.permissions
+      .query({
         // @ts-ignore https://github.com/microsoft/TypeScript/issues/33923
         name: "clipboard-read",
-      });
-
-      if (state === "granted" || state === "prompt") {
-        setCanReadClipboard(true);
-      }
-    };
-    checkPersmission();
+      })
+      .then(({ state }) => setCanReadClipboard(state !== "denied"))
+      // Firefox knows no clipboard-read permission, readText prompts on its own
+      .catch(() => setCanReadClipboard(true));
   }, []);
 
   return canReadClipboard;
@@ -105,11 +104,10 @@ export const ImportModal = ({
   };
 
   const onPasteClick = async () => {
-    if (navigator.clipboard) {
-      const text = await navigator.clipboard.readText();
+    // rejects when the user denies the browser's clipboard prompt
+    const text = await navigator.clipboard.readText().catch(() => null);
 
-      autoFormatAndSet(text);
-    }
+    if (text) autoFormatAndSet(text);
   };
 
   const onDrop = async ({ files }: DragItemFile) => {
