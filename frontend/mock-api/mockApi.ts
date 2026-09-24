@@ -241,6 +241,18 @@ export default function mockApi(app: Application) {
     STORED QUERIES
   */
   app.get(
+    "/api/datasets/:datasetId/queries/default-tags",
+    mockAuthMiddleware,
+    function response(_, res) {
+      res.setHeader("Content-Type", "application/json");
+
+      setTimeout(() => {
+        res.send(JSON.stringify(["research", "group 1", "archive"]));
+      }, SHORT_DELAY);
+    },
+  );
+
+  app.get(
     "/api/datasets/:datasetId/queries",
     mockAuthMiddleware,
     function response(_, res) {
