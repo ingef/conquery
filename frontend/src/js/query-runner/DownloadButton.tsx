@@ -48,7 +48,6 @@ interface Props {
   children?: ReactNode;
   simpleIcon?: boolean;
   showColoredIcon?: boolean;
-  size?: "sm" | "md" | "lg";
 }
 
 const DownloadButton = ({
@@ -58,7 +57,6 @@ const DownloadButton = ({
   className,
   children,
   showColoredIcon,
-  size,
 }: Props & { ref?: Ref<HTMLAnchorElement> }) => {
   const { authToken } = useContext(AuthTokenContext);
 
@@ -69,7 +67,7 @@ const DownloadButton = ({
 
   return (
     <a href={href} className={link({ className })} ref={ref}>
-      <Button intent="link" size={size}>
+      <Button intent="tertiary" size="sm">
         <FileTypeIcon style={{ color: showColoredIcon ? color : undefined }} />
         {children}
       </Button>

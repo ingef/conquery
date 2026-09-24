@@ -181,7 +181,6 @@ const ResultsLabel = ({
       <DownloadButton
         className={downloadButton()}
         simpleIcon
-        size="sm"
         resultUrl={resultUrl}
       >
         {label}
