@@ -125,6 +125,15 @@ const tab = tv({
 
 const tabTarget = tv({ base: "block" });
 
+// the label reserves the width of its medium copy in a hidden line below,
+// so the selected tab turning medium moves no neighbor
+const label = tv({
+  base: [
+    "after:invisible after:block after:h-0 after:overflow-hidden",
+    "after:font-medium after:content-[attr(data-text)]",
+  ],
+});
+
 // one cell the content fills; the content defines its own rows inside.
 // minmax(0,1fr) keeps nowrap content from widening the cell past the panel.
 // A force-mounted panel of an unselected tab is inert: hidden, state kept
@@ -230,6 +239,15 @@ export const Tab = ({ id, tooltip, children, ...props }: TabProps) => {
     },
   });
 
+  const content =
+    typeof children === "string" ? (
+      <span data-text={children} className={label()}>
+        {children}
+      </span>
+    ) : (
+      children
+    );
+
   return (
     <RacTab
       id={id}
@@ -246,12 +264,12 @@ export const Tab = ({ id, tooltip, children, ...props }: TabProps) => {
       {tooltip ? (
         <TooltipTrigger delay={tooltipDelay.long}>
           <TooltipTarget as="span" excludeFromTabOrder className={tabTarget()}>
-            {children}
+            {content}
           </TooltipTarget>
           <Tooltip>{tooltip}</Tooltip>
         </TooltipTrigger>
       ) : (
-        children
+        content
       )}
     </RacTab>
   );
