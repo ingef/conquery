@@ -32,10 +32,9 @@ const menuItem = tv({
     "whitespace-nowrap",
     "cursor-pointer",
     "outline-none",
-    "opacity-75",
-    "data-focused:opacity-100 data-focused:bg-gray-50",
+    "data-focused:bg-gray-50",
     "data-disabled:cursor-not-allowed data-disabled:opacity-40",
-    "transition-[opacity,background-color] duration-100",
+    "transition-[background-color] duration-100",
   ],
   variants: {
     danger: { true: "text-red" },
