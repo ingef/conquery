@@ -34,3 +34,22 @@ export const InText: Story = {
     </C2>
   ),
 };
+
+export const InButtonLooks: Story = {
+  render: () => (
+    <div className="flex items-center gap-3">
+      <Link href="#regions" intent="primary">
+        Primary
+      </Link>
+      <Link href="#regions" intent="secondary">
+        Secondary
+      </Link>
+      <Link href="#regions" intent="tertiary">
+        Tertiary
+      </Link>
+      <Link href="#regions" intent="secondary" danger>
+        Danger
+      </Link>
+    </div>
+  ),
+};

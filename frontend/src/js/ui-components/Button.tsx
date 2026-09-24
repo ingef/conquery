@@ -57,8 +57,7 @@ export const buttonStyle = tv({
     danger: { true: "" },
   },
   compoundVariants: [
-    // a link sits in flowing text: no box, no padding, no fixed height,
-    // the surrounding text's size and line-height (after the size variant)
+    // a link sits in flowing text: no box, no padding, no fixed height
     {
       intent: "link",
       class: "h-auto px-0 gap-1 align-baseline",
@@ -85,15 +84,15 @@ interface CommonProps
 }
 
 /** what the button does in its context; the look follows */
-export type ButtonProps = CommonProps &
-  (
-    | {
-        intent?: "secondary" | "tertiary";
-        /** a destructive or warning action: red, in the look of the intent */
-        danger?: boolean;
-      }
-    | { intent: "primary" | "link"; danger?: never }
-  );
+export type ButtonLook =
+  | {
+      intent?: "secondary" | "tertiary";
+      /** a destructive or warning action: red, in the look of the intent */
+      danger?: boolean;
+    }
+  | { intent: "primary" | "link"; danger?: never };
+
+export type ButtonProps = CommonProps & ButtonLook;
 
 // lucide icons are forwardRef components, an object type; ours are functions
 const isIcon = (child: ReactNode) =>
