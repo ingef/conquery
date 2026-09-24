@@ -210,7 +210,6 @@
   },
   "inputSelect": {
     "placeholder": "Choose ...",
-    "searchPlaceholder": "Search ...",
     "empty": "No values found"
   },
   "inputMultiSelect": {
@@ -220,7 +219,8 @@
     "options_other": "{{count}} Options",
     "ofTotal": " of {{count}}",
     "tagPlaceholder": "Folder ...",
-    "createTag": "Create folder: {{label}}"
+    "folders": "Folders",
+    "selectedValues": "Selected values"
   },
   "previousQueries": {
     "loading": "Loading queries and forms",
@@ -486,6 +486,7 @@
   },
   "history": {
     "infoTabs": "Info categories",
+    "sources": "Sources",
     "search": "Search",
     "matches_one": "Match",
     "matches_other": "Matches",

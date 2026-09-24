@@ -6,7 +6,6 @@ import { tv } from "tailwind-variants";
 import type { SelectOptionT } from "../../api/types";
 import { useMonthName, useMonthNames } from "../../common/helpers/dateHelper";
 import { Button } from "../Button";
-import { List, Menu } from "../InputMultiSelect/InputSelectComponents";
 import { ToggleButton } from "../ToggleButton";
 
 const root = tv({
@@ -17,8 +16,17 @@ const selectMenuContainer = tv({
   base: ["absolute top-[40px] left-0", "w-full"],
 });
 
+const menu = tv({
+  base: [
+    "w-full",
+    "rounded-[4px]",
+    "shadow-[0_0_0_1px_hsl(0deg_0%_0%/10%),0_4px_11px_hsl(0deg_0%_0%/10%)]",
+    "bg-bg-50",
+  ],
+});
+
 const optionList = tv({
-  base: "gap-[5px]",
+  base: ["gap-[5px]", "p-[3px]", "overscroll-contain"],
   variants: {
     layout: {
       twoColumns: "grid grid-cols-[auto_auto]",
@@ -48,8 +56,8 @@ const SelectMenu = ({
 }) => {
   return (
     <div className={selectMenuContainer()}>
-      <Menu>
-        <List className={optionList({ layout })}>
+      <div className={menu()}>
+        <div className={optionList({ layout })}>
           {options.map((option) => (
             <ToggleButton
               intent="secondary"
@@ -64,8 +72,8 @@ const SelectMenu = ({
               {option.label}
             </ToggleButton>
           ))}
-        </List>
-      </Menu>
+        </div>
+      </div>
     </div>
   );
 };
