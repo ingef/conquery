@@ -6,6 +6,7 @@ import { type ActionType, createAction } from "typesafe-actions";
 import {
   useDeleteFormConfig,
   useDeleteQuery,
+  useGetDefaultFolders,
   useGetFormConfig,
   useGetFormConfigs,
   useGetQueries,
@@ -31,6 +32,7 @@ export type PreviousQueryListActions = ActionType<
   | typeof deleteQuerySuccess
   | typeof addFolder
   | typeof removeFolder
+  | typeof loadDefaultFoldersSuccess
   | typeof loadFormConfigsSuccess
   | typeof patchFormConfigSuccess
   | typeof deleteFormConfigSuccess
@@ -191,6 +193,33 @@ export const addFolder = createAction("queries/ADD_FOLDER")<{
 export const removeFolder = createAction("queries/REMOVE_FOLDER")<{
   folderName: string;
 }>();
+
+// ---------------------
+// Default folders
+// ---------------------
+
+export const loadDefaultFoldersSuccess = createAction(
+  "queries/LOAD_DEFAULT_FOLDERS_SUCCESS",
+)<{ folders: string[] }>();
+
+export const useLoadDefaultFolders = () => {
+  const dispatch = useDispatch();
+  const getDefaultFolders = useGetDefaultFolders();
+
+  return useCallback(
+    async (datasetId: DatasetT["id"]) => {
+      try {
+        const folders = await getDefaultFolders(datasetId);
+
+        dispatch(loadDefaultFoldersSuccess({ folders }));
+      } catch {
+        // a backend without the endpoint just has no default folders
+        dispatch(loadDefaultFoldersSuccess({ folders: [] }));
+      }
+    },
+    [dispatch, getDefaultFolders],
+  );
+};
 
 // ---------------------
 // FORM CONFIGS
