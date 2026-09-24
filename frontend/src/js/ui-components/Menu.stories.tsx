@@ -2,13 +2,15 @@ import type { Meta, StoryObj } from "@storybook/react";
 import {
   BookIcon,
   EllipsisVerticalIcon,
+  InfoIcon,
+  LogOutIcon,
   SendIcon,
   TrashIcon,
 } from "lucide-react";
 import { MenuTrigger } from "react-aria-components";
 import { Button } from "./Button";
 import { ConfirmMenu } from "./ConfirmMenu";
-import { Menu, MenuItem } from "./Menu";
+import { Menu, MenuItem, MenuSeparator } from "./Menu";
 import { Tooltip, TooltipTrigger } from "./Tooltip";
 
 export default {
@@ -38,6 +40,31 @@ export const Default: Story = {
         </MenuItem>
         <MenuItem id="delete" danger>
           <TrashIcon />A dangerous item
+        </MenuItem>
+      </Menu>
+    </MenuTrigger>
+  ),
+};
+
+export const WithSeparator: Story = {
+  render: () => (
+    <MenuTrigger>
+      <Button intent="secondary">
+        <EllipsisVerticalIcon />
+      </Button>
+      <Menu aria-label="Actions" onAction={(key) => console.log(key)}>
+        <MenuItem id="manual">
+          <BookIcon />
+          Manual
+        </MenuItem>
+        <MenuItem id="version">
+          <InfoIcon />
+          Version
+        </MenuItem>
+        <MenuSeparator />
+        <MenuItem id="logout">
+          <LogOutIcon />
+          Logout
         </MenuItem>
       </Menu>
     </MenuTrigger>

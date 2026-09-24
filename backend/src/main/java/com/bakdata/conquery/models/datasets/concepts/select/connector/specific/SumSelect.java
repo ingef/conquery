@@ -2,14 +2,12 @@ package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
-import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
@@ -26,6 +24,8 @@ import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.conversion.model.aggregator.SumSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
+import com.bakdata.conquery.util.validation.ResolvableId;
+import com.bakdata.conquery.util.validation.SupportedColumnTypes;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
@@ -40,11 +40,15 @@ import lombok.Setter;
 public class SumSelect extends Select {
 
 	@NotNull
-	private List<ColumnId> distinctByColumn = Collections.emptyList();
+	private List<@ResolvableId ColumnId> distinctByColumn = Collections.emptyList();
 
 	@NotNull
+	@ResolvableId
+	@SupportedColumnTypes(numericTypes = true)
 	private ColumnId column;
 
+	@ResolvableId
+	@SupportedColumnTypes(numericTypes = true)
 	private ColumnId subtractColumn;
 
 	public SumSelect(ColumnId column) {
@@ -91,9 +95,6 @@ public class SumSelect extends Select {
 		};
 	}
 
-
-	private static final EnumSet<MajorTypeId> NUMBER_COMPATIBLE = EnumSet.of(MajorTypeId.INTEGER, MajorTypeId.MONEY, MajorTypeId.DECIMAL, MajorTypeId.REAL);
-
 	@Override
 	public List<ColumnId> getRequiredColumns() {
 		final List<ColumnId> out = new ArrayList<>();
@@ -126,16 +127,18 @@ public class SumSelect extends Select {
 		return ResultType.resolveResultType(getColumn().resolve().getType());
 	}
 
-	@ValidationMethod(message = "Column is not of Summable Type.")
-	@JsonIgnore
-	public boolean isSummableColumnType() {
-		return NUMBER_COMPATIBLE.contains(getColumn().resolve().getType());
-	}
-
 	@ValidationMethod(message = "Columns are not of same Type.")
 	@JsonIgnore
 	public boolean isColumnsOfSameType() {
-		return getSubtractColumn() == null || getSubtractColumn().resolve().getType().equals(getColumn().resolve().getType());
+		if (getSubtractColumn() == null) return true;
+		Column resolvedSubstractColumn = getSubtractColumn().get();
+		Column resolvedColumn = getColumn().get();
+
+		if (resolvedSubstractColumn == null || resolvedColumn == null) {
+			return true;
+		}
+
+		return resolvedSubstractColumn.getType().equals(resolvedColumn.getType());
 	}
 
 

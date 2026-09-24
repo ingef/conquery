@@ -5,6 +5,7 @@ import java.util.List;
 import jakarta.validation.Valid;
 import javax.annotation.CheckForNull;
 
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.conditions.CTCondition;
@@ -51,7 +52,14 @@ public class ConceptTreeConnector extends Connector {
 	@JsonIgnore
 	@ValidationMethod(message = "Column is not STRING.")
 	public boolean isColumnForTree() {
-		return column == null || column.resolve().getType().equals(MajorTypeId.STRING);
+		if (column == null) {
+			return true;
+		}
+		Column resolved = column.get();
+		if (resolved == null) {
+			return true;
+		}
+		return resolved.getType().equals(MajorTypeId.STRING);
 	}
 
 	@Override

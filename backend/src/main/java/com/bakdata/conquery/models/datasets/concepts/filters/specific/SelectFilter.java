@@ -1,20 +1,18 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import javax.annotation.CheckForNull;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import javax.annotation.CheckForNull;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.LabelMap;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.jackson.View;
-import com.bakdata.conquery.models.common.ColumnUtils;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
@@ -45,9 +43,13 @@ public abstract class SelectFilter<FE_TYPE> extends EventFilter<FE_TYPE> {
 	 * user given mapping from the values in the columns to shown labels
 	 */
 	protected BiMap<String, String> labels = ImmutableBiMap.of();
+
 	@Valid
 	@NotNull
+	@ResolvableId
+	@SupportedColumnTypes(MajorTypeId.STRING)
 	private ColumnId column;
+
 	@CheckForNull
 	@Valid
 	private Range.IntegerRange substringRange = null;
@@ -59,12 +61,6 @@ public abstract class SelectFilter<FE_TYPE> extends EventFilter<FE_TYPE> {
 	@Override
 	public List<ColumnId> getRequiredColumns() {
 		return List.of(getColumn());
-	}
-
-	@JsonIgnore
-	@ValidationMethod(message = "Columns do not match required Type.")
-	public boolean isValidColumnType() {
-		return ColumnUtils.assertValidColumnTypes(getColumn(), EnumSet.of(MajorTypeId.STRING));
 	}
 
 	@Override

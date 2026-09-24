@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
-import java.util.EnumSet;
 import java.util.List;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -18,8 +17,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.QuartersInYearAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.AggregationFilterNode;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.dropwizard.validation.ValidationMethod;
+import com.bakdata.conquery.util.validation.ResolvableId;
+import com.bakdata.conquery.util.validation.SupportedColumnTypes;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -33,17 +32,13 @@ public class QuartersInYearFilter extends AggregationFilter<Range.LongRange> {
 
 	@Valid
 	@NotNull
+	@ResolvableId
+	@SupportedColumnTypes(MajorTypeId.DATE)
 	private ColumnId column;
 
 	@Override
 	public List<ColumnId> getRequiredColumns() {
 		return List.of(getColumn());
-	}
-
-	@JsonIgnore
-	@ValidationMethod(message = "Column do not match required Type.")
-	public boolean isValidColumnType() {
-		return ColumnUtils.assertValidColumnTypes(getColumn(), EnumSet.of(MajorTypeId.DATE));
 	}
 
 	@Override

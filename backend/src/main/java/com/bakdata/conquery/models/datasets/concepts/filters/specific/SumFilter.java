@@ -3,13 +3,12 @@ package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import jakarta.validation.constraints.NotNull;
 import javax.annotation.Nullable;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.common.ColumnUtils;
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -34,7 +33,6 @@ import com.bakdata.conquery.models.query.queryplan.filter.AggregationFilterNode;
 import com.bakdata.conquery.sql.conversion.model.aggregator.SumSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.dropwizard.validation.ValidationMethod;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -50,13 +48,18 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id = "SUM", base = Filter.class)
 public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends AggregationFilter<RANGE> {
 
+	@NotNull
+	@ResolvableId
+	@SupportedColumnTypes(numericTypes = true)
 	private ColumnId column;
 
 	@Nullable
+	@ResolvableId
+	@SupportedColumnTypes(numericTypes = true)
 	private ColumnId subtractColumn;
 
 	@NotNull
-	private List<ColumnId> distinctByColumn = Collections.emptyList();
+	private List<@ResolvableId ColumnId> distinctByColumn = Collections.emptyList();
 
 	@Override
 	public void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
@@ -135,11 +138,5 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Aggreg
 			case REAL -> new RealDiffSumAggregator(resolvedColumn, subtrahend);
 			default -> throw new IllegalStateException("No Sum Filter for type " + typeId.name());
 		};
-	}
-
-	@JsonIgnore
-	@ValidationMethod(message = "Columns do not match required Type.")
-	public boolean isValidColumnType() {
-		return ColumnUtils.assertValidColumnTypes(getColumn(), MajorTypeId.NUMERIC);
 	}
 }

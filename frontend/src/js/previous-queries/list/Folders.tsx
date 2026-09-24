@@ -73,6 +73,9 @@ const Folders = ({ className }: { className?: string }) => {
   const localFolders = useSelector<StateT, string[]>(
     (state) => state.previousQueries.localFolders,
   );
+  const defaultFolders = useSelector<StateT, string[]>(
+    (state) => state.previousQueries.defaultFolders,
+  );
   const folderFilter = useSelector<StateT, string[]>(
     (state) => state.previousQueriesFolderFilter.folders,
   );
@@ -211,27 +214,31 @@ const Folders = ({ className }: { className?: string }) => {
                     folder={folder}
                     active={folderFilter.includes(folder)}
                     onClick={() => onClickFolder(folder)}
-                    resultCount={searchResult ? searchResult[folder] : null}
+                    resultCount={
+                      searchResult ? (searchResult[folder] ?? 0) : null
+                    }
                     resultWords={searchResultWords}
                   />
-                  <TooltipTrigger>
-                    <DialogTrigger>
-                      <div className={deleteButton()}>
-                        <Button
-                          size="sm"
-                          aria-label={t("common.delete")}
-                          intent="tertiary"
-                        >
-                          <XIcon />
-                        </Button>
-                      </div>
-                      <DeleteFolderModal
-                        folder={folder}
-                        onDeleteSuccess={() => dispatch(setFolderFilter([]))}
-                      />
-                    </DialogTrigger>
-                    <Tooltip>{t("common.delete")}</Tooltip>
-                  </TooltipTrigger>
+                  {!defaultFolders.includes(folder) && (
+                    <TooltipTrigger>
+                      <DialogTrigger>
+                        <div className={deleteButton()}>
+                          <Button
+                            size="sm"
+                            aria-label={t("common.delete")}
+                            intent="tertiary"
+                          >
+                            <XIcon />
+                          </Button>
+                        </div>
+                        <DeleteFolderModal
+                          folder={folder}
+                          onDeleteSuccess={() => dispatch(setFolderFilter([]))}
+                        />
+                      </DialogTrigger>
+                      <Tooltip>{t("common.delete")}</Tooltip>
+                    </TooltipTrigger>
+                  )}
                 </>
               )}
             </Dropzone>

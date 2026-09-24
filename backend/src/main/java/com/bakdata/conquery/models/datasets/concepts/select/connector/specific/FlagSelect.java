@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -25,7 +26,7 @@ import lombok.ToString;
 
 /**
  * Implements a MultiSelect type filter, where an event can meet multiple criteria (as opposed to {@link MultiSelectFilter} which is restricted to one value per event).
- * This is achieved by using multiple {@link com.bakdata.conquery.models.types.ResultType.BooleanT} columns, each defining if one property is met or not.
+ * This is achieved by using multiple {@link com.bakdata.conquery.models.types.ResultType.Primitive#BOOLEAN} columns, each defining if one property is met or not.
  * <p>
  * The selected flags are logically or-ed.
  */
@@ -64,7 +65,7 @@ public class FlagSelect extends Select {
 	@JsonIgnore
 	@ValidationMethod(message = "Columns must be BOOLEAN.")
 	public boolean isAllColumnsBoolean() {
-		return flags.values().stream().map(ColumnId::resolve).map(Column::getType).allMatch(MajorTypeId.BOOLEAN::equals);
+		return flags.values().stream().map(ColumnId::get).filter(Objects::nonNull).map(Column::getType).allMatch(MajorTypeId.BOOLEAN::equals);
 	}
 
 	@Override

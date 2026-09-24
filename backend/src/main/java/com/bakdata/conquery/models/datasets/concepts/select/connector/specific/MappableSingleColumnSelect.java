@@ -131,7 +131,11 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 			return true;
 		}
 
-		return getColumn().resolve().getType().equals(MajorTypeId.STRING);
+		Column column = getColumn().get();
+		if (column == null) {
+			return true;
+		}
+		return column.getType().equals(MajorTypeId.STRING);
 	}
 
 	@JsonIgnore
@@ -141,7 +145,11 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 			return true;
 		}
 
-		return getColumn().resolve().getType().equals(MajorTypeId.STRING);
+		Column column = getColumn().get();
+		if (column == null) {
+			return true;
+		}
+		return column.getType().equals(MajorTypeId.STRING);
 	}
 
 	@JsonIgnore

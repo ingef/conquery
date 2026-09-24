@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorSelectId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.util.validation.ResolvableId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -34,13 +35,14 @@ public class CQTable {
 	private List<FilterValue<?>> filters = Collections.emptyList();
 
 	@NotNull
-	private List<ConnectorSelectId> selects = Collections.emptyList();
+	private List<@ResolvableId ConnectorSelectId> selects = Collections.emptyList();
 
 	@JsonBackReference
 	@EqualsAndHashCode.Exclude
 	private CQConcept concept;
 
 	@JsonProperty("id")
+	@ResolvableId
 	private ConnectorId connector;
 
 	private ValidityDateContainer dateColumn;
@@ -90,9 +92,7 @@ public class CQTable {
 
 	public boolean hasSelectedSecondaryId(SecondaryIdDescriptionId secondaryId) {
 		final Connector resolvedConnector = connector.resolve();
-		return Arrays.stream(resolvedConnector.getResolvedTable().getColumns())
-					 .map(Column::getSecondaryId)
-					 .anyMatch(secondaryId::equals);
+		return Arrays.stream(resolvedConnector.getResolvedTable().getColumns()).map(Column::getSecondaryId).anyMatch(secondaryId::equals);
 	}
 
 }
