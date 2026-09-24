@@ -41,8 +41,8 @@ export const buttonStyle = tv({
       // reads as a text link, see the compound variant for how it flows with text
       link: [
         "bg-transparent border-transparent",
-        "text-gray-600",
-        "hover:text-gray-800 hover:underline",
+        "text-primary-500",
+        "hover:underline",
       ],
     },
     // every size is a fixed height, so text and icon-only buttons line up;
