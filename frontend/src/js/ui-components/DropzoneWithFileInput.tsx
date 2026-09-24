@@ -29,7 +29,7 @@ const dropzone = tv({
   },
 });
 
-// a small text link at the dropzone's top right corner, or above it
+// a small button at the dropzone's top right corner, or above it
 const importButton = tv({
   base: "absolute",
   variants: {
@@ -140,7 +140,7 @@ const DropzoneWithFileInput = <
           {showImportButton && onImportLines && (
             <div className={importButton({ outside: !!importButtonOutside })}>
               <Button
-                intent="link"
+                intent="tertiary"
                 size="sm"
                 excludeFromTabOrder
                 onPress={() => setImportModalOpen(true)}
