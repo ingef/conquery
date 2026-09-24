@@ -95,8 +95,6 @@ const tab = tv({
   ],
   variants: {
     variant: {
-      // one weight for every tab, so switching moves nothing; the selected
-      // one shows by color and its line
       primary: [
         "px-3",
         "border-b-[3px] border-transparent",
@@ -104,7 +102,7 @@ const tab = tv({
         "h-[30px]",
         "text-gray-600",
         "not-data-selected:data-hovered:border-primary-200 not-data-selected:data-hovered:text-gray-800",
-        "data-selected:border-primary-500 data-selected:text-primary-500",
+        "data-selected:border-primary-500 data-selected:text-primary-500 data-selected:font-medium",
       ],
       // sits on the box below it like a folder tab
       secondary: [
