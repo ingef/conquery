@@ -1,14 +1,13 @@
-import { faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { CheckIcon, LoaderCircleIcon } from "lucide-react";
 import { type FormEvent, useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { tv } from "tailwind-variants";
 import { usePostLogin } from "../api/api";
 import { useAppTheme } from "../app-theme-context";
-import PrimaryButton from "../button/PrimaryButton";
 import ErrorMessage from "../error-message/ErrorMessage";
-import FaIcon from "../icon/FaIcon";
-import InputPlain from "../ui-components/InputPlain/InputPlain";
+import { Button } from "../ui-components/Button";
+import { TextField } from "../ui-components/TextField";
 
 import { AuthTokenContext } from "./AuthTokenProvider";
 
@@ -21,7 +20,7 @@ const wrap = tv({
 });
 
 const logo = tv({
-  base: ["h-[35px]", "bg-no-repeat", "[background-position-y:50%]"],
+  base: ["h-9", "bg-no-repeat", "[background-position-y:50%]"],
 });
 
 const headline = tv({
@@ -37,14 +36,14 @@ const headline = tv({
 
 const form = tv({
   base: [
-    "flex flex-col items-center justify-center",
+    "flex flex-col",
+    "gap-[10px]",
+    "w-[255px]",
     "mx-auto mt-[15px] mb-[50px]",
   ],
 });
 
-const submitButton = tv({
-  base: ["flex items-center justify-center", "mt-[35px]", "w-[255px]"],
-});
+const submitButton = tv({ base: ["grid", "mt-[25px]"] });
 
 const LoginPage = () => {
   const [user, setUser] = useState("");
@@ -94,41 +93,30 @@ const LoginPage = () => {
           <ErrorMessage className="mx-[10px] mt-5" message={t("login.error")} />
         )}
         <form className={form()} onSubmit={onSubmit}>
-          <InputPlain
-            className="px-0 py-[5px]"
+          <TextField
             label={t("login.username")}
-            large
             value={user}
-            onChange={(value) => setUser(value as string)}
-            inputProps={{
-              disabled: loading,
-            }}
+            onChange={setUser}
+            isDisabled={loading}
           />
-          <InputPlain
-            className="px-0 py-[5px]"
-            inputType="password"
+          <TextField
+            type="password"
             label={t("login.password")}
-            large
             value={password}
-            onChange={(value) => setPassword(value as string)}
-            inputProps={{
-              disabled: loading,
-            }}
+            onChange={setPassword}
+            isDisabled={loading}
           />
-          <PrimaryButton
-            className={submitButton()}
-            disabled={!user || !password}
-            large
-            type="submit"
-          >
-            <FaIcon
-              className="mr-[10px]"
-              large
-              white
-              icon={loading ? faSpinner : faCheck}
-            />
-            {t("login.submit")}
-          </PrimaryButton>
+          <div className={submitButton()}>
+            <Button
+              intent="primary"
+              isDisabled={!user || !password}
+              size="lg"
+              type="submit"
+            >
+              {loading ? <LoaderCircleIcon /> : <CheckIcon />}
+              {t("login.submit")}
+            </Button>
+          </div>
         </form>
       </div>
     </div>

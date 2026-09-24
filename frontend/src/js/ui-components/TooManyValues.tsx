@@ -1,8 +1,7 @@
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { XIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-
-import IconButton from "../button/IconButton";
+import { Button } from "./Button";
 
 const root = tv({
   base: [
@@ -27,13 +26,14 @@ const TooManyValues = ({
   return (
     <div className={root()}>
       <p className={text()}>{t("queryNodeEditor.tooManyValues", { count })}</p>
-      <IconButton
-        icon={faTimes}
-        tiny
-        title={t("common.clearValue")}
+      <Button
+        intent="tertiary"
+        size="sm"
         aria-label={t("common.clearValue")}
-        onClick={onClear}
-      />
+        onPress={onClear}
+      >
+        <XIcon />
+      </Button>
     </div>
   );
 };

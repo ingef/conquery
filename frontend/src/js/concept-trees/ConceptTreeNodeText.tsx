@@ -1,18 +1,14 @@
-import {
-  faCaretDown,
-  faCaretRight,
-  type IconDefinition,
-} from "@fortawesome/free-solid-svg-icons";
 import type { Ref } from "react";
 import { tv } from "tailwind-variants";
-import { Highlighter } from "../common/components/Highlighter";
-
-import FaIcon from "../icon/FaIcon";
+import type { NodeIconT } from "../model/node";
+import { Highlighter } from "../ui-components/Highlighter";
+import { NodeIcon } from "./NodeIcon";
 
 // Root with transparent background.
 // relative: needed to fix a drag & drop issue in Safari
+// isolate: keeps other layers out of Chrome's drag image of the row
 const root = tv({
-  base: ["relative", "flex", "cursor-pointer", "my-[2px]", "pr-[15px]"],
+  base: ["relative isolate", "flex", "cursor-pointer", "my-[2px]", "pr-[15px]"],
 });
 
 const text = tv({
@@ -37,16 +33,11 @@ const text = tv({
   },
 });
 
-const caretIconContainer = tv({
-  base: ["inline-block", "w-[14px]", "shrink-0"],
-});
-
-const folderIconContainer = tv({
-  base: ["inline-block", "w-5", "shrink-0"],
-});
-
-const dashIconContainer = tv({
-  base: ["flex items-center", "w-[34px]", "shrink-0", "pl-[14px]", "text-left"],
+const nodeIcon = tv({
+  base: "mr-1 text-primary-500",
+  variants: {
+    disabled: { true: "text-gray-400 cursor-not-allowed" },
+  },
 });
 
 const descriptionText = tv({
@@ -59,8 +50,8 @@ const resultsNumber = tv({
     "shrink-0",
     "px-1 py-[2px]",
     "mr-[5px]",
-    "leading-none",
     "text-xs",
+    "leading-none",
     "rounded",
     "text-primary-500",
     "font-bold",
@@ -80,7 +71,6 @@ const ConceptTreeNodeText = ({
   isOpen,
   red,
   disabled,
-  hasChildren,
 
   onClick,
 }: {
@@ -88,14 +78,13 @@ const ConceptTreeNodeText = ({
 
   label: string;
   depth: number;
-  icon: IconDefinition;
+  icon: NodeIconT;
 
   className?: string;
   description?: string;
   resultCount?: number | null;
   searchWords?: string[] | null;
   isOpen?: boolean;
-  hasChildren?: boolean;
   red?: boolean;
   disabled?: boolean;
   onClick?: () => void;
@@ -111,25 +100,7 @@ const ConceptTreeNodeText = ({
         className={text({ disabled: !!disabled, red, isOpen })}
         onClick={onClick}
       >
-        {hasChildren && (
-          <>
-            <span className={caretIconContainer()}>
-              <FaIcon
-                disabled={disabled}
-                active
-                icon={isOpen ? faCaretDown : faCaretRight}
-              />
-            </span>
-            <span className={folderIconContainer()}>
-              <FaIcon active disabled={disabled} icon={icon} />
-            </span>
-          </>
-        )}
-        {!hasChildren && (
-          <span className={dashIconContainer()}>
-            <FaIcon disabled={disabled} large active icon={icon} />
-          </span>
-        )}
+        <NodeIcon icon={icon} className={nodeIcon({ disabled: !!disabled })} />
         {resultCount && <span className={resultsNumber()}>{resultCount}</span>}
         <span>
           {searchWords ? (

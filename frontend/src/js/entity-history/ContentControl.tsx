@@ -1,14 +1,14 @@
 import {
-  faEuroSign,
-  faFingerprint,
-  faFolder,
-  faInfo,
-} from "@fortawesome/free-solid-svg-icons";
+  EuroIcon,
+  FingerprintPatternIcon,
+  FolderIcon,
+  InfoIcon,
+} from "lucide-react";
 import { memo, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-
-import IconButton from "../button/IconButton";
-import WithTooltip from "../tooltip/WithTooltip";
+import { ToggleButton } from "../ui-components/ToggleButton";
+import { ToggleButtonGroup } from "../ui-components/ToggleButtonGroup";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 export type ContentType =
   | "groupId"
@@ -31,22 +31,22 @@ const ContentControl = ({ value, onChange }: Props) => {
     () => [
       {
         key: "money" as const,
-        icon: faEuroSign,
+        icon: EuroIcon,
         tooltip: t("history.content.money"),
       },
       {
         key: "concept" as const,
-        icon: faFolder,
+        icon: FolderIcon,
         tooltip: t("history.content.concept"),
       },
       {
         key: "rest" as const,
-        icon: faInfo,
+        icon: InfoIcon,
         tooltip: t("history.content.rest"),
       },
       {
         key: "groupId" as const,
-        icon: faFingerprint,
+        icon: FingerprintPatternIcon,
         tooltip: t("history.content.fingerprint"),
       },
     ],
@@ -54,23 +54,26 @@ const ContentControl = ({ value, onChange }: Props) => {
   );
 
   return (
-    <div className="flex flex-col items-center">
-      {options.map((option) => {
-        const active = value[option.key];
-        return (
-          <WithTooltip key={option.key} text={option.tooltip}>
-            <IconButton
-              icon={option.icon}
-              active={active}
-              light={!active}
-              onClick={() => {
-                onChange({ ...value, [option.key]: !value[option.key] });
-              }}
-            />
-          </WithTooltip>
-        );
-      })}
-    </div>
+    <ToggleButtonGroup
+      orientation="vertical"
+      selectionMode="multiple"
+      selectedKeys={options.filter((o) => value[o.key]).map((o) => o.key)}
+      onSelectionChange={(keys) =>
+        onChange({
+          ...value,
+          ...Object.fromEntries(options.map((o) => [o.key, keys.has(o.key)])),
+        })
+      }
+    >
+      {options.map(({ icon: OptionIcon, ...option }) => (
+        <TooltipTrigger key={option.key}>
+          <ToggleButton id={option.key} aria-label={option.tooltip}>
+            <OptionIcon />
+          </ToggleButton>
+          <Tooltip placement="right">{option.tooltip}</Tooltip>
+        </TooltipTrigger>
+      ))}
+    </ToggleButtonGroup>
   );
 };
 

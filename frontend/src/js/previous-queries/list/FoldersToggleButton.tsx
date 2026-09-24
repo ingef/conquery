@@ -1,33 +1,30 @@
-import { faFolder } from "@fortawesome/free-solid-svg-icons";
+import { FolderIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { ToggleButton } from "../../ui-components/ToggleButton";
 
-import IconButton from "../../button/IconButton";
-import WithTooltip from "../../tooltip/WithTooltip";
+import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
 
 const FoldersToggleButton = ({
-  className,
   active,
   onClick,
 }: {
-  className?: string;
   active?: boolean;
   onClick: () => void;
 }) => {
   const { t } = useTranslation();
 
   return (
-    <WithTooltip
-      text={t("previousQueriesFolderButton.tooltip")}
-      className={className}
-    >
-      <IconButton
-        className="mr-[5px] px-[6px] py-[9px]"
-        onClick={onClick}
-        icon={faFolder}
-        active={active}
-        frame
-      />
-    </WithTooltip>
+    <TooltipTrigger>
+      <ToggleButton
+        aria-label={t("previousQueriesFolderButton.tooltip")}
+        intent="secondary"
+        onChange={onClick}
+        isSelected={active}
+      >
+        <FolderIcon />
+      </ToggleButton>
+      <Tooltip>{t("previousQueriesFolderButton.tooltip")}</Tooltip>
+    </TooltipTrigger>
   );
 };
 export default FoldersToggleButton;

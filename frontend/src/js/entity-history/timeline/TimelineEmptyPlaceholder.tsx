@@ -1,10 +1,9 @@
-import { faListUl, faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
+import { ListIcon, SearchIcon } from "lucide-react";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
 import type { StateT } from "../../app/reducers";
-import FaIcon from "../../icon/FaIcon";
 import type { EntityHistoryStateT } from "../reducer";
 
 const root = tv({
@@ -22,7 +21,7 @@ const message = tv({
 });
 
 const bigIcon = tv({
-  base: ["text-[120px]", "text-gray-100"],
+  base: ["size-10", "text-gray-100"],
 });
 
 export const TimelineEmptyPlaceholder = ({
@@ -59,10 +58,11 @@ export const TimelineEmptyPlaceholder = ({
   return (
     <div className={root({ className })}>
       <div className="flex items-center gap-[30px]">
-        <FaIcon
-          className={bigIcon()}
-          icon={searchTerm ? faMagnifyingGlass : faListUl}
-        />
+        {searchTerm ? (
+          <SearchIcon className={bigIcon()} />
+        ) : (
+          <ListIcon className={bigIcon()} />
+        )}
         <div>
           <h2 className="text-2xl leading-[1.3]">
             {t("history.emptyTimeline.headline")}

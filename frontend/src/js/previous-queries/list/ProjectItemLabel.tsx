@@ -1,8 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-import { Highlighter } from "../../common/components/Highlighter";
-
 import EditableText from "../../ui-components/EditableText";
+import { Highlighter } from "../../ui-components/Highlighter";
 
 const labelText = tv({
   base: ["font-normal", "whitespace-nowrap", "overflow-hidden text-ellipsis"],

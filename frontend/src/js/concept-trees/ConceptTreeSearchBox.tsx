@@ -1,13 +1,12 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
-
 import type { StateT } from "../app/reducers";
-import { TransparentButton } from "../button/TransparentButton";
-import AnimatedDots from "../common/components/AnimatedDots";
 import ConceptTreesOpenButtons from "../concept-trees-open/ConceptTreesOpenButtons";
-import SearchBar from "../search-bar/SearchBar";
+import AnimatedDots from "../ui-components/AnimatedDots";
+import { Button } from "../ui-components/Button";
+import { SearchField } from "../ui-components/SearchField";
 
 import {
   clearSearchQuery,
@@ -61,16 +60,30 @@ const ConceptTreeSearchBox = ({ className }: { className?: string }) => {
   );
   const onToggleShowMismatches = () => dispatch(toggleShowMismatches());
 
+  const [term, setTerm] = useState(search.query ?? "");
+  useEffect(() => {
+    setTerm(search.query ?? "");
+  }, [search.query]);
+
+  const placeholder = t("conceptTreeList.searchPlaceholder");
+
   return (
     <div className={root({ className })}>
       <div className="flex items-center gap-[5px]">
         <ConceptTreesOpenButtons />
-        <SearchBar
-          searchTerm={search.query}
-          placeholder={t("conceptTreeList.searchPlaceholder")}
-          onClear={onClearQuery}
-          onSearch={onSearch}
-        />
+        <div className="grow">
+          <SearchField
+            aria-label={placeholder}
+            placeholder={placeholder}
+            value={term}
+            onChange={(value) => {
+              setTerm(value);
+              if (!value) onClearQuery();
+            }}
+            onSubmit={onSearch}
+            onClear={onClearQuery}
+          />
+        </div>
       </div>
       {search.loading ? (
         <AnimatedDots />
@@ -84,21 +97,21 @@ const ConceptTreeSearchBox = ({ className }: { className?: string }) => {
                 duration: (search.duration / 1000.0).toFixed(2),
               })}
             </p>
-            <div>
+            <div className="my-[3px] flex items-center gap-[5px]">
               <span className={displaying()}>
                 {showMismatches
                   ? t("conceptTreeList.showingMismatches")
                   : t("conceptTreeList.showingMatchesOnly")}
               </span>
-              <TransparentButton
-                className="my-[3px] ml-[5px]"
-                tiny
-                onClick={onToggleShowMismatches}
+              <Button
+                intent="secondary"
+                size="sm"
+                onPress={onToggleShowMismatches}
               >
                 {showMismatches
                   ? t("conceptTreeList.showMatchesOnly")
                   : t("conceptTreeList.showMismatches")}
-              </TransparentButton>
+              </Button>
             </div>
           </div>
         )

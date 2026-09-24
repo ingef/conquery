@@ -1,31 +1,30 @@
-import {
-  faCalendar,
-  faFolder as faFolderRegular,
-  faUser as faUserRegular,
-} from "@fortawesome/free-regular-svg-icons";
-import {
-  faFolder,
-  faMicroscope,
-  faUser,
-} from "@fortawesome/free-solid-svg-icons";
 import { parseISO } from "date-fns";
 import type { TFunction } from "i18next";
+import {
+  CalendarIcon,
+  FolderIcon,
+  MicroscopeIcon,
+  UserIcon,
+} from "lucide-react";
 import { type Ref, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
 import type { ResultUrlWithLabel, SecondaryId } from "../../api/types";
 import type { StateT } from "../../app/reducers";
-import DownloadButton from "../../button/DownloadButton";
-import IconButton from "../../button/IconButton";
-import { Highlighter } from "../../common/components/Highlighter";
 import { formatDate } from "../../common/helpers/dateHelper";
 import { exists } from "../../common/helpers/exists";
 import { useFormLabelByType } from "../../external-forms/stateSelectors";
-import FaIcon from "../../icon/FaIcon";
+import DownloadButton from "../../query-runner/DownloadButton";
 import FormSymbol from "../../symbols/FormSymbol";
 import QuerySymbol from "../../symbols/QuerySymbol";
-import WithTooltip from "../../tooltip/WithTooltip";
+import { Button } from "../../ui-components/Button";
+import { Highlighter } from "../../ui-components/Highlighter";
+import {
+  Tooltip,
+  TooltipTarget,
+  TooltipTrigger,
+} from "../../ui-components/Tooltip";
 import { useUpdateFormConfig, useUpdateQuery } from "./actions";
 import { DeleteProjectItemButton } from "./DeleteProjectItemButton";
 import { isFormConfig } from "./helpers";
@@ -50,9 +49,9 @@ const root = tv({
 const topInfos = tv({
   base: [
     "flex items-center justify-between",
-    "leading-5",
     "text-gray-500",
     "text-xs",
+    "leading-5",
   ],
 });
 
@@ -60,17 +59,10 @@ const ownerName = tv({
   base: ["shrink-0", "pl-[5px]", "text-gray-500", "text-xs"],
 });
 
-const tooltipText = tv({
-  base: [
-    "flex flex-col items-start",
-    "px-[14px] py-2",
-    "font-normal",
-    "text-base",
-  ],
-});
+const tooltipText = tv({ base: ["flex flex-col items-start", "font-normal"] });
 
 const labelRow = tv({
-  base: ["flex justify-between", "w-full", "leading-6", "my-[2px]"],
+  base: ["flex justify-between", "w-full", "leading-6"],
 });
 
 const content = tv({
@@ -141,21 +133,24 @@ const ShareButton = ({
 }) => {
   const { t } = useTranslation();
   return (
-    <WithTooltip
-      html={
-        <div className={tooltipText()}>
-          {isShared ? t("common.shared") : t("common.share")}
-        </div>
-      }
-    >
-      <IconButton
-        icon={isShared ? faUser : faUserRegular}
-        bare
-        title="share"
+    <TooltipTrigger>
+      <Button
+        intent="tertiary"
+        size="sm"
+        aria-label={isShared ? t("common.shared") : t("common.share")}
         data-test-id="share"
-        onClick={onClick}
-      />
-    </WithTooltip>
+        onPress={onClick}
+      >
+        <UserIcon data-filled={isShared} />
+      </Button>
+      <Tooltip>
+        {
+          <div className={tooltipText()}>
+            {isShared ? t("common.shared") : t("common.share")}
+          </div>
+        }
+      </Tooltip>
+    </TooltipTrigger>
   );
 };
 
@@ -183,18 +178,16 @@ const ResultsLabel = ({
   const { t } = useTranslation();
   if (!resultUrl) return <span className="whitespace-nowrap">{label}</span>;
   return (
-    <WithTooltip text={t("previousQuery.downloadResults")}>
+    <TooltipTrigger>
       <DownloadButton
         className={downloadButton()}
-        tight
-        small
-        bare
         simpleIcon
         resultUrl={resultUrl}
       >
         {label}
       </DownloadButton>
-    </WithTooltip>
+      <Tooltip>{t("previousQuery.downloadResults")}</Tooltip>
+    </TooltipTrigger>
   );
 };
 
@@ -265,35 +258,49 @@ const ProjectItem = ({
       )}
       <div className={content({ own: !!item.own, system: isSystem })}>
         <div className={topInfos()}>
-          <div className="flex items-center">
-            <WithTooltip html={<FoldersTooltip folders={folders} />}>
-              <IconButton
-                className="mr-[10px]"
-                icon={folders.length === 0 ? faFolderRegular : faFolder}
-                tight
-                small
-                bare
-                onClick={onIndicateEditFolders}
-                disabled={!mayEdit}
-              />
-            </WithTooltip>
+          <div className="flex items-center gap-[10px]">
+            <TooltipTrigger>
+              <Button
+                intent="tertiary"
+                size="sm"
+                aria-label={t("previousQuery.editFolders")}
+                onPress={onIndicateEditFolders}
+                isDisabled={!mayEdit}
+              >
+                <FolderIcon data-filled={folders.length > 0} />
+              </Button>
+              <Tooltip>{<FoldersTooltip folders={folders} />}</Tooltip>
+            </TooltipTrigger>
             <div className="flex items-center gap-2">
               <ResultsLabel label={topLeftLabel} resultUrl={resultUrl} />
               {hasNoDates && (
-                <WithTooltip text={t("previousQuery.hasNoDates")}>
-                  <FaIcon className="opacity-70" red icon={faCalendar} />
-                </WithTooltip>
+                <TooltipTrigger>
+                  <TooltipTarget
+                    role="img"
+                    aria-label={t("previousQuery.hasNoDates")}
+                    excludeFromTabOrder
+                  >
+                    <CalendarIcon className="opacity-70 text-red" />
+                  </TooltipTarget>
+                  <Tooltip>{t("previousQuery.hasNoDates")}</Tooltip>
+                </TooltipTrigger>
               )}
             </div>
           </div>
           <div className="ml-[5px] flex shrink-0 items-center gap-[10px]">
             {executedAt}
             {secondaryId && (
-              <WithTooltip
-                text={`${t("queryEditor.secondaryId")}: ${secondaryId.label}`}
-              >
-                <IconButton icon={faMicroscope} bare onClick={() => {}} />
-              </WithTooltip>
+              <TooltipTrigger>
+                <Button
+                  aria-label={`${t("queryEditor.secondaryId")}: ${secondaryId.label}`}
+                  intent="tertiary"
+                  size="sm"
+                  onPress={() => {}}
+                >
+                  <MicroscopeIcon />
+                </Button>
+                <Tooltip>{`${t("queryEditor.secondaryId")}: ${secondaryId.label}`}</Tooltip>
+              </TooltipTrigger>
             )}
             {item.own && (
               <ShareButton isShared={!!isShared} onClick={onIndicateShare} />

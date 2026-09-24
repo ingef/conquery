@@ -7,14 +7,14 @@ import type { QueryT } from "../api/types";
 import { getWidthAndHeight } from "../app/DndProvider";
 import type { StateT } from "../app/reducers";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
+import AdditionalInfoHoverable from "../info-pane/AdditionalInfoHoverable";
 import {
   canNodeBeDropped,
   nodeIsConceptQueryNode,
   useActiveState,
 } from "../model/node";
 import { isQueryExpandable } from "../model/query";
-import { HoverNavigatable } from "../small-tab-navigation/HoverNavigatable";
-import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
+import { HoverNavigatable } from "../ui-components/HoverNavigatable";
 import { getRootNodeLabel } from "./helper";
 import QueryNodeActions from "./QueryNodeActions";
 import QueryNodeContent from "./QueryNodeContent";

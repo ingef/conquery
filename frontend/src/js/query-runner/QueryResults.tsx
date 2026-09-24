@@ -1,15 +1,14 @@
-import { faCheck } from "@fortawesome/free-solid-svg-icons";
+import { CheckIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
 
 import type { ColumnDescription, ResultUrlWithLabel } from "../api/types";
 import type { StateT } from "../app/reducers";
-import PreviewButton from "../button/PreviewButton";
-import { QueryResultHistoryButton } from "../button/QueryResultHistoryButton";
 import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
-import FaIcon from "../icon/FaIcon";
+import { QueryResultHistoryButton } from "../entity-history/QueryResultHistoryButton";
+import PreviewButton from "../preview/PreviewButton";
 import { canViewEntityPreview, canViewQueryPreview } from "../user/selectors";
 import DownloadResultsDropdownButton from "./DownloadResultsDropdownButton";
 
@@ -18,11 +17,11 @@ const root = tv({
 });
 
 const text = tv({
-  base: ["m-0", "leading-none", "text-sm"],
+  base: ["m-0", "text-sm", "leading-none"],
 });
 
 const lgText = tv({
-  base: ["m-0", "leading-none", "text-xl", "whitespace-nowrap"],
+  base: ["m-0", "text-xl", "leading-none", "whitespace-nowrap"],
 });
 
 const QueryResults = ({
@@ -49,7 +48,7 @@ const QueryResults = ({
     <div className={root()}>
       {isEmpty(resultCount) ? (
         <p className={text()}>
-          <FaIcon icon={faCheck} left />
+          <CheckIcon className="mr-[10px]" />
           {t("queryRunner.endSuccess")}
         </p>
       ) : (

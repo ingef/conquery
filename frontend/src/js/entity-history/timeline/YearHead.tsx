@@ -1,4 +1,4 @@
-import { faCaretDown, faCaretRight } from "@fortawesome/free-solid-svg-icons";
+import { ChevronDownIcon, ChevronRightIcon } from "lucide-react";
 import { Fragment, memo } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
@@ -9,8 +9,11 @@ import type {
 } from "../../api/types";
 import { exists } from "../../common/helpers/exists";
 import { getConceptById } from "../../concept-trees/globalTreeStoreHelper";
-import FaIcon from "../../icon/FaIcon";
-import WithTooltip from "../../tooltip/WithTooltip";
+import {
+  Tooltip,
+  TooltipTarget,
+  TooltipTrigger,
+} from "../../ui-components/Tooltip";
 import { ConceptBubble } from "../ConceptBubble";
 
 import { SmallHeading } from "./SmallHeading";
@@ -104,9 +107,12 @@ const ConceptValues = ({
       </div>
       <div className={conceptRow()}>
         {concepts.map((concept) => (
-          <WithTooltip key={concept.label} text={concept.description}>
-            <ConceptBubble>{concept.label}</ConceptBubble>
-          </WithTooltip>
+          <TooltipTrigger key={concept.label}>
+            <TooltipTarget as={ConceptBubble} excludeFromTabOrder>
+              {concept.label}
+            </TooltipTarget>
+            <Tooltip>{concept.description}</Tooltip>
+          </TooltipTrigger>
         ))}
       </div>
     </>
@@ -204,7 +210,11 @@ const YearHead = ({
       {/* biome-ignore lint/a11y/noStaticElementInteractions: TODO make this a button */}
       {/* biome-ignore lint/a11y/useKeyWithClickEvents: TODO make this a button */}
       <div className={stickyWrap()} onClick={onClick}>
-        <FaIcon large gray icon={isOpen ? faCaretDown : faCaretRight} />
+        {isOpen ? (
+          <ChevronDownIcon className="text-gray-500" />
+        ) : (
+          <ChevronRightIcon className="text-gray-500" />
+        )}
         <div>
           <SmallHeading>{year}</SmallHeading>
           <div>

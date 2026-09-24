@@ -37,8 +37,28 @@
   /* bare `rounded` */
   --radius: 3px;
 
+  /* the absolutely positioned app header; the panes start below it */
+  --spacing-header: 40px;
+
+  /* every icon, see ui-components/Icon. The stroke is in lucide's 24 unit
+     grid like its strokeWidth prop, so it grows with a larger icon */
+  --icon-size: 16px;
+  --icon-stroke-width: 3;
+
   --animate-spin-fast: spin 0.5s linear infinite;
   --animate-blink: blink 1s linear infinite;
+  --animate-fade-in: fade-in 0.1s ease-out;
+  --animate-fade-out: fade-out 0.1s ease-in forwards;
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes fade-out {
+    to {
+      opacity: 0;
+    }
+  }
   @keyframes blink {
     50% {
       color: transparent;
@@ -59,6 +79,26 @@
 
   p {
     line-height: 1.5;
+  }
+
+  /* in the base layer, so a size-* or stroke-* utility on one icon wins */
+  .lucide {
+    display: inline-block;
+    flex-shrink: 0;
+    width: var(--icon-size);
+    height: var(--icon-size);
+    stroke-width: var(--icon-stroke-width);
+    vertical-align: -0.125em;
+  }
+
+  /* the "on" look of an icon that shows a state: a tint, the icon's lines stay readable */
+  .lucide[data-filled="true"] {
+    fill: currentColor;
+    fill-opacity: 0.3;
+  }
+
+  .lucide-loader-circle {
+    animation: var(--animate-spin-fast);
   }
 
   button,
@@ -112,26 +152,6 @@
   }
 }
 
-/* @tippyjs/react sets inline styles, hence the specificity */
-div[data-tippy-root] {
-  max-width: 700px;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.18);
-  border-radius: var(--radius);
-
-  > div {
-    box-shadow: none;
-    /* biome-ignore lint/complexity/noImportantStyles: beats the inline style tippy sets */
-    max-width: inherit !important;
-    width: 100%;
-    padding: 0;
-  }
-
-  .tippy-content {
-    padding: 0px;
-    box-shadow: none;
-  }
-}
-
 /*
   The default border color has changed to `currentcolor` in Tailwind CSS v4,
   so we've added these compatibility styles to make sure everything still
@@ -150,6 +170,35 @@ div[data-tippy-root] {
   }
 }
 
+/* replaces `border-dashed`: Firefox draws longer, rounded dashes than Chrome, and
+   CSS cannot tune them, so the dashes are background strips over a transparent
+   3 px border, colored by --dash-color, identical in every browser */
+@utility dashed-frame {
+  --dash: 6px;
+  --gap: 4px;
+  --dash-strip: repeating-linear-gradient(
+    to right,
+    var(--dash-color) 0 var(--dash),
+    transparent var(--dash) calc(var(--dash) + var(--gap))
+  );
+  --dash-strip-vertical: repeating-linear-gradient(
+    to bottom,
+    var(--dash-color) 0 var(--dash),
+    transparent var(--dash) calc(var(--dash) + var(--gap))
+  );
+  background-image:
+    var(--dash-strip), var(--dash-strip), var(--dash-strip-vertical),
+    var(--dash-strip-vertical);
+  background-size:
+    100% 3px,
+    100% 3px,
+    3px 100%,
+    3px 100%;
+  background-position: top, bottom, left, right;
+  background-origin: border-box;
+  background-repeat: no-repeat;
+}
+
 /* react-datepicker inside InputDate */
 .conquery-datepicker {
   /* The popup anchors to this wrapper, so it must cover the input's box */
@@ -164,8 +213,8 @@ div[data-tippy-root] {
    (e.g. the form) can neither clip nor misplace it */
 #datepicker-portal {
   .react-datepicker-popper {
-    /* above the app header (z-3) and panel contents */
-    z-index: 10;
+    /* above modals, like the popovers and tooltips */
+    z-index: 9999;
   }
   .react-datepicker-popper[data-placement^="bottom"] {
     padding-top: 4px;

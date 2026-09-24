@@ -1,17 +1,20 @@
-import { faPlay, faSpinner, faStop } from "@fortawesome/free-solid-svg-icons";
+import { LoaderCircleIcon, PlayIcon, SquareIcon } from "lucide-react";
 import type { Ref } from "react";
+import { Button as RacButton } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
-import BasicButton from "../button/BasicButton";
-import FaIcon from "../icon/FaIcon";
-
 const left = tv({
-  base: ["px-[15px]", "transition-[color,background-color] duration-100"],
+  base: [
+    "self-stretch",
+    "flex items-center",
+    "px-[15px]",
+    "transition-[color,background-color] duration-100",
+  ],
   variants: {
     running: {
       true: ["bg-white", "border-r border-primary-500"],
-      false: "bg-primary-500",
+      false: "bg-primary-500 text-white",
     },
   },
 });
@@ -20,30 +23,40 @@ const runnerLabel = tv({
   base: [
     "px-[15px]",
     "bg-white group-hover/runner:bg-gray-50",
-    "text-gray-800",
-    "leading-[2.5]",
+    "text-gray-800 font-medium",
+    "self-stretch",
+    "flex items-center",
     "whitespace-nowrap",
     "transition-[background-color] duration-100",
   ],
 });
 
+// two-tone: the icon part is filled, the label part stays white
 const button = tv({
   base: [
     "group/runner",
-    "inline-flex flex-row items-center",
-    "m-0 p-0",
+    "inline-flex items-center",
+    "h-[30px]",
     "overflow-hidden",
-    "outline-none",
     "rounded",
     "border border-primary-500",
     "text-sm",
-    "leading-[2.5]",
+    "cursor-pointer",
+    "disabled:cursor-not-allowed disabled:opacity-40",
   ],
 });
 
-function getIcon(loading: boolean, running: boolean) {
-  return loading ? faSpinner : running ? faStop : faPlay;
-}
+const RunnerIcon = ({
+  loading,
+  running,
+}: {
+  loading: boolean;
+  running: boolean;
+}) => {
+  if (loading) return <LoaderCircleIcon />;
+
+  return running ? <SquareIcon className="fill-current" /> : <PlayIcon />;
+};
 
 interface Props {
   isStartStopLoading: boolean;
@@ -63,22 +76,19 @@ const QueryRunnerButton = ({
   const { t } = useTranslation();
   const label = isQueryRunning ? t("queryRunner.stop") : t("queryRunner.start");
 
-  const icon = getIcon(isStartStopLoading, isQueryRunning);
-
   return (
     <div className="flex" ref={ref}>
-      <BasicButton
-        type="button"
+      <RacButton
         className={button()}
-        onClick={onClick}
-        disabled={disabled}
+        onPress={onClick}
+        isDisabled={disabled}
         data-test-id="query-runner-button"
       >
         <span className={left({ running: isQueryRunning })}>
-          <FaIcon white={!isQueryRunning} icon={icon} />
+          <RunnerIcon loading={isStartStopLoading} running={isQueryRunning} />
         </span>
         <span className={runnerLabel()}>{label}</span>
-      </BasicButton>
+      </RacButton>
     </div>
   );
 };

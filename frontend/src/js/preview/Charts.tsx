@@ -1,9 +1,9 @@
-import { faArrowLeft, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { t } from "i18next";
+import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { tv } from "tailwind-variants";
 import type { PreviewStatistics } from "../api/types";
-import IconButton from "../button/IconButton";
+import { Button } from "../ui-components/Button";
 import Diagram from "./Diagram";
 
 const diagram = tv({
@@ -74,20 +74,26 @@ export default function Charts({
         })}
       </div>
       <div className={directionSelector()}>
-        <IconButton
-          icon={faArrowLeft}
-          onClick={() => updatePage(-1)}
-          disabled={page === 0}
-        />
+        <Button
+          intent="tertiary"
+          aria-label={t("preview.previousPage")}
+          onPress={() => updatePage(-1)}
+          isDisabled={page === 0}
+        >
+          <ArrowLeftIcon />
+        </Button>
         <span>
           {t("preview.page")} {page + 1}/
           {Math.ceil(statistics.length / DIAGRAMS_PER_PAGE)}
         </span>
-        <IconButton
-          icon={faArrowRight}
-          onClick={() => updatePage(1)}
-          disabled={page === maxPage - 1}
-        />
+        <Button
+          intent="tertiary"
+          aria-label={t("preview.nextPage")}
+          onPress={() => updatePage(1)}
+          isDisabled={page === maxPage - 1}
+        >
+          <ArrowRightIcon />
+        </Button>
       </div>
     </div>
   );

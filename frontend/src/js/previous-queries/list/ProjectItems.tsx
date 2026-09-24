@@ -1,15 +1,8 @@
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
 import { List, type RowComponentProps } from "react-window";
 import { tv } from "tailwind-variants";
 
 import type { DatasetT } from "../../api/types";
-import { useResizeObserver } from "../../common/helpers/useResizeObserver";
 
 import EditProjectItemFoldersModal from "./EditProjectItemFoldersModal";
 import type { ProjectItemT } from "./ProjectItem";
@@ -40,11 +33,8 @@ const ProjectItemRow = ({
   </div>
 );
 
-// must match root's py-1
-const ROOT_PADDING_Y = 4;
-
 const root = tv({
-  base: ["grow", "py-1", "text-sm"],
+  base: ["grow", "min-h-0", "py-1", "text-sm"],
 });
 
 export const ProjectItems = ({
@@ -60,9 +50,6 @@ export const ProjectItems = ({
 
   const onCloseShareModal = () => setItemToShare(null);
   const onCloseEditFoldersModal = () => setItemToEditFolders(null);
-
-  const container = useRef<HTMLDivElement | null>(null);
-  const [height, setHeight] = useState<number>(0);
 
   useEffect(
     function updateSelectedItemsOnListUpdate() {
@@ -82,36 +69,8 @@ export const ProjectItems = ({
     [items, itemToEditFolders, itemToShare],
   );
 
-  useResizeObserver(
-    useCallback((entry: ResizeObserverEntry) => {
-      if (entry) {
-        setHeight(entry.contentRect.height - ROOT_PADDING_Y * 2);
-      }
-    }, []),
-    container.current,
-  );
-
-  useLayoutEffect(() => {
-    if (container.current) {
-      const rect = container.current.getBoundingClientRect();
-
-      setHeight(rect.height - ROOT_PADDING_Y * 2);
-    }
-  }, []);
-
   return (
-    <div
-      className={root()}
-      data-test-id="project-items-list"
-      ref={(instance) => {
-        if (!instance) {
-          container.current = null;
-          return;
-        }
-
-        container.current = instance;
-      }}
-    >
+    <div className={root()} data-test-id="project-items-list">
       {!!itemToShare && (
         <ShareProjectItemModal item={itemToShare} onClose={onCloseShareModal} />
       )}
@@ -126,7 +85,7 @@ export const ProjectItems = ({
           key={items.length}
           rowCount={items.length}
           rowHeight={ROW_SIZE}
-          style={{ height, width: "100%" }}
+          style={{ height: "100%", width: "100%" }}
           rowComponent={ProjectItemRow}
           rowProps={{ items, setItemToShare, setItemToEditFolders }}
         />

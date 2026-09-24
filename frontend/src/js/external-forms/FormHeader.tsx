@@ -1,8 +1,7 @@
-import { faBook } from "@fortawesome/free-solid-svg-icons";
+import { BookIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
-
 import { tv } from "tailwind-variants";
-import IconButton from "../button/IconButton";
+import { Button } from "../ui-components/Button";
 
 const root = tv({
   base: ["flex flex-col", "w-full", "gap-[7px]"],
@@ -28,10 +27,11 @@ const FormHeader = ({
     <div className={root({ className })}>
       <p className={description()}>{descriptionText}</p>
       {manualUrl && (
-        <a href={manualUrl} target="_blank" rel="noreferrer">
-          <IconButton className="w-full justify-center" frame icon={faBook}>
+        <a href={manualUrl} target="_blank" rel="noreferrer" className="grid">
+          <Button intent="secondary">
+            <BookIcon />
             {t("externalForms.manualButton")}
-          </IconButton>
+          </Button>
         </a>
       )}
     </div>

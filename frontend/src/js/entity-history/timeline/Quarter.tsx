@@ -1,4 +1,4 @@
-import { faCaretDown, faCaretRight } from "@fortawesome/free-solid-svg-icons";
+import { ChevronDownIcon, ChevronRightIcon } from "lucide-react";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
@@ -8,7 +8,6 @@ import type {
   ConceptIdT,
   CurrencyConfigT,
 } from "../../api/types";
-import FaIcon from "../../icon/FaIcon";
 import type { ContentFilterValue } from "../ContentControl";
 import type { DetailLevel } from "../DetailControl";
 import type { EntityEvent } from "../reducer";
@@ -109,7 +108,11 @@ export const Quarter = memo(
             className={inlineGrid()}
             onClick={() => toggleOpenQuarter(year, quarter)}
           >
-            <FaIcon large gray icon={isOpen ? faCaretDown : faCaretRight} />
+            {isOpen ? (
+              <ChevronDownIcon className="text-gray-500" />
+            ) : (
+              <ChevronRightIcon className="text-gray-500" />
+            )}
             <SmallHeading className="leading-none">Q{quarter} </SmallHeading>
             <span>
               – {totalEventsPerQuarter}{" "}

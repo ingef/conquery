@@ -1,8 +1,4 @@
-import {
-  faEuroSign,
-  faFingerprint,
-  faInfo,
-} from "@fortawesome/free-solid-svg-icons";
+import { EuroIcon, FingerprintPatternIcon, InfoIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { type InputAttributes, NumericFormat } from "react-number-format";
 import { tv } from "tailwind-variants";
@@ -11,10 +7,13 @@ import type {
   ConceptIdT,
   CurrencyConfigT,
 } from "../../api/types";
-import { Highlighter } from "../../common/components/Highlighter";
 import { exists } from "../../common/helpers/exists";
-import FaIcon from "../../icon/FaIcon";
-import WithTooltip from "../../tooltip/WithTooltip";
+import { Highlighter } from "../../ui-components/Highlighter";
+import {
+  Tooltip,
+  TooltipTarget,
+  TooltipTrigger,
+} from "../../ui-components/Tooltip";
 import type { ContentFilterValue } from "../ContentControl";
 import { RowDates } from "../RowDates";
 import type { DateRow, EntityEvent } from "../reducer";
@@ -70,8 +69,7 @@ const rawDataBadge = tv({
 });
 
 const bucketIcon = tv({
-  // w-6! beats FaIcon's own w-[initial]! via merge, like the old !important did
-  base: ["w-6!", "text-center", "mx-[5px] my-2", "text-base"],
+  base: ["w-6", "mx-[5px] my-2", "text-primary-500"],
 });
 
 const bullet = tv({
@@ -140,16 +138,16 @@ const EventCard = ({
       <div className={eventItemContent()}>
         {contentFilter.money && applicableMoney.length > 0 && (
           <div className={flex()}>
-            <WithTooltip text={moneyTooltip}>
-              <span>
-                <FaIcon
-                  className={bucketIcon()}
-                  icon={faEuroSign}
-                  active
-                  large
-                />
-              </span>
-            </WithTooltip>
+            <TooltipTrigger>
+              <TooltipTarget
+                role="img"
+                aria-label={moneyTooltip}
+                excludeFromTabOrder
+              >
+                <EuroIcon className={bucketIcon()} />
+              </TooltipTarget>
+              <Tooltip>{moneyTooltip}</Tooltip>
+            </TooltipTrigger>
             <div className={colBucket()}>
               {applicableMoney.map((column) => (
                 <div key={column.label}>
@@ -183,11 +181,16 @@ const EventCard = ({
         )}
         {contentFilter.rest && applicableRest.length > 0 && (
           <div className={flex()}>
-            <WithTooltip text={restTooltip}>
-              <span>
-                <FaIcon className={bucketIcon()} icon={faInfo} active large />
-              </span>
-            </WithTooltip>
+            <TooltipTrigger>
+              <TooltipTarget
+                role="img"
+                aria-label={restTooltip}
+                excludeFromTabOrder
+              >
+                <InfoIcon className={bucketIcon()} />
+              </TooltipTarget>
+              <Tooltip>{restTooltip}</Tooltip>
+            </TooltipTrigger>
             <div className={colBucket()}>
               {applicableRest.map((column) => (
                 <div key={column.label}>
@@ -209,16 +212,16 @@ const EventCard = ({
         )}
         {contentFilter.groupId && applicableGroupableIds.length > 0 && (
           <div className={flex()}>
-            <WithTooltip text={groupableIdsTooltip}>
-              <span>
-                <FaIcon
-                  className={bucketIcon()}
-                  icon={faFingerprint}
-                  active
-                  large
-                />
-              </span>
-            </WithTooltip>
+            <TooltipTrigger>
+              <TooltipTarget
+                role="img"
+                aria-label={groupableIdsTooltip}
+                excludeFromTabOrder
+              >
+                <FingerprintPatternIcon className={bucketIcon()} />
+              </TooltipTarget>
+              <Tooltip>{groupableIdsTooltip}</Tooltip>
+            </TooltipTrigger>
             <div className={colBucket()}>
               {applicableGroupableIds.map((column) => (
                 <div key={column.label}>

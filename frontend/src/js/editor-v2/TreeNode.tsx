@@ -1,22 +1,25 @@
-import { faCalendarMinus } from "@fortawesome/free-regular-svg-icons";
 import { createId } from "@paralleldrive/cuid2";
+import { CalendarMinusIcon } from "lucide-react";
 import { type DOMAttributes, memo } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
 import { DNDType } from "../common/constants/dndTypes";
-import FaIcon from "../icon/FaIcon";
 import { nodeIsConceptQueryNode, useActiveState } from "../model/node";
 import { getRootNodeLabel } from "../standard-query-editor/helper";
 import type {
   DragItemConceptTreeNode,
   DragItemQuery,
 } from "../standard-query-editor/types";
-import WithTooltip from "../tooltip/WithTooltip";
 import Dropzone, {
   type DropzoneProps,
   type PossibleDroppableObject,
 } from "../ui-components/Dropzone";
+import {
+  Tooltip,
+  TooltipTarget,
+  TooltipTrigger,
+} from "../ui-components/Tooltip";
 import { EDITOR_DROP_TYPES } from "./config";
 import { DateRange } from "./date-restriction/DateRange";
 import { Connector, Grid } from "./EditorLayout";
@@ -103,8 +106,8 @@ const InvisibleDropzone = (
 
 const previousQueryLabel = tv({
   base: [
-    "leading-[1.2]",
     "text-xs",
+    "leading-[1.2]",
     "uppercase",
     "font-bold",
     "text-primary-500",
@@ -113,8 +116,8 @@ const previousQueryLabel = tv({
 
 const rootNode = tv({
   base: [
-    "leading-none",
     "text-xs",
+    "leading-none",
     "uppercase",
     "font-bold",
     "text-primary-500",
@@ -259,10 +262,10 @@ export function TreeNode({
           onDrop={() => {}}
         >
           {({ canDrop }) => (
-            <WithTooltip text={tooltipText}>
-              {/* biome-ignore lint/a11y/noStaticElementInteractions: TODO node selection area, emotion had hidden this */}
-              {/* biome-ignore lint/a11y/useKeyWithClickEvents: see above */}
-              <div
+            <TooltipTrigger>
+              <TooltipTarget
+                as="div"
+                excludeFromTabOrder
                 className={node({
                   isDragging: canDrop,
                   active,
@@ -297,7 +300,7 @@ export function TreeNode({
                 )}
                 {tree.dates?.excluded && (
                   <div className={dates()}>
-                    <FaIcon red icon={faCalendarMinus} left />
+                    <CalendarMinusIcon className="mr-[10px] text-red" />
                     {t("editorV2.datesExcluded")}
                   </div>
                 )}
@@ -399,8 +402,9 @@ export function TreeNode({
                     </InvisibleDropzone>
                   </Grid>
                 )}
-              </div>
-            </WithTooltip>
+              </TooltipTarget>
+              <Tooltip>{tooltipText}</Tooltip>
+            </TooltipTrigger>
           )}
         </Dropzone>
         {droppable.h && (

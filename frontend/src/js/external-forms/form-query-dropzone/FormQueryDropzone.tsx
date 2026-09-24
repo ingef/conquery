@@ -1,11 +1,9 @@
 import { useCallback, useRef } from "react";
 
 import { DNDType } from "../../common/constants/dndTypes";
-import { exists } from "../../common/helpers/exists";
 import type { DragItemQuery } from "../../standard-query-editor/types";
-import InfoTooltip from "../../tooltip/InfoTooltip";
 import Dropzone from "../../ui-components/Dropzone";
-import Label from "../../ui-components/Label";
+import { Label } from "../../ui-components/Label";
 
 import ValidatedFormQueryResult from "./ValidatedFormQueryResult";
 
@@ -49,9 +47,8 @@ const FormQueryDropzone = ({
 
   return (
     <div className={className}>
-      <Label>
+      <Label elementType="span" tooltip={tooltip}>
         {label}
-        {exists(tooltip) && <InfoTooltip text={tooltip} />}
       </Label>
       <Dropzone
         className="justify-start"

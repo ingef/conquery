@@ -1,11 +1,9 @@
-import { faFolder } from "@fortawesome/free-solid-svg-icons";
+import { FolderIcon } from "lucide-react";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-
-import { IndexPrefix } from "../common/components/IndexPrefix";
 import { exists } from "../common/helpers/exists";
-import FaIcon from "../icon/FaIcon";
+import { IndexPrefix } from "../ui-components/IndexPrefix";
 
 const container = tv({
   base: [
@@ -54,11 +52,7 @@ export const DropdownOption = memo(
           {hasDifferentFilterLabel ? (
             <IndexPrefix className={indexPrefix()}># {filterIdx}</IndexPrefix>
           ) : (
-            <FaIcon
-              icon={faFolder}
-              active={!hasDifferentFilterLabel}
-              gray={hasDifferentFilterLabel}
-            />
+            <FolderIcon className="text-primary-500" />
           )}
         </div>
         <span className={text({ bold: !hasDifferentFilterLabel })}>

@@ -244,10 +244,8 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 					});
 
 
-			log.info("Executing query after deletion (EXPECTING AN EXCEPTION IN THE LOGS!)");
-
 			// Issue a query and assert that it is failing.
-			IntegrationUtils.assertQueryResult(conquery, query, null, 0L, ExecutionState.FAILED, conquery.getTestUser(), 404);
+			IntegrationUtils.assertQueryResult(conquery, query, null, 0L, ExecutionState.FAILED, conquery.getTestUser(), 422);
 		}
 
 
@@ -285,10 +283,8 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 																 .anyMatch(cBlock -> cBlock.getConnector().getConcept().equals(conceptId)));
 
 
-				log.info("Executing query after restart (EXPECTING AN EXCEPTION IN THE LOGS!)");
-
 				// Issue a query and assert that it is failing.
-				IntegrationUtils.assertQueryResult(conquery, query, null, 0L, ExecutionState.FAILED, conquery.getTestUser(), 404);
+				IntegrationUtils.assertQueryResult(conquery, query, null, 0L, ExecutionState.FAILED, conquery.getTestUser(), 422);
 			}
 		}
 	}

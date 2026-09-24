@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { Toolbar } from "react-aria-components";
 import { ErrorBoundary } from "react-error-boundary";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
@@ -41,7 +42,12 @@ const controls = tv({
 });
 
 const sidebar = tv({
-  base: ["flex flex-col", "gap-5", "pt-[10px]", "border-r border-gray-100"],
+  base: [
+    "flex flex-col",
+    "gap-5",
+    "px-[10px] pt-[10px]",
+    "border-r border-gray-100",
+  ],
 });
 
 const sidebarBottom = tv({
@@ -188,7 +194,11 @@ export const History = () => {
                   )}
                 </div>
                 <div className={flex()}>
-                  <div className={sidebar()}>
+                  <Toolbar
+                    orientation="vertical"
+                    aria-label={t("history.toolbar")}
+                    className={sidebar()}
+                  >
                     <SearchControl />
                     <VisibilityControl
                       blurred={blurred}
@@ -217,7 +227,7 @@ export const History = () => {
                         />
                       )}
                     </div>
-                  </div>
+                  </Toolbar>
                   <Timeline
                     className="mt-[10px]"
                     blurred={blurred}

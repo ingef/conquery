@@ -1,10 +1,8 @@
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
-import { useMemo } from "react";
+import { TrashIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
-
-import IconButton from "../button/IconButton";
-import { ConfirmableTooltip } from "../tooltip/ConfirmableTooltip";
-import WithTooltip from "../tooltip/WithTooltip";
+import { Button } from "../ui-components/Button";
+import { ConfirmMenu } from "../ui-components/ConfirmMenu";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 const ResetAllSettingsButton = ({
   compact,
@@ -17,22 +15,24 @@ const ResetAllSettingsButton = ({
   const text = t("queryNodeEditor.clearAllSettings");
   const confirmationText = t("queryNodeEditor.clearAllSettingsConfirm");
 
-  const button = useMemo(() => {
-    return compact ? (
-      <WithTooltip className="whitespace-nowrap" text={text}>
-        <IconButton icon={faTrash} active />
-      </WithTooltip>
-    ) : (
-      <IconButton icon={faTrash} active>
-        {text}
-      </IconButton>
-    );
-  }, [compact, text]);
+  const trigger = (
+    <Button intent="tertiary">
+      <TrashIcon />
+      {compact ? null : text}
+    </Button>
+  );
 
-  return (
-    <ConfirmableTooltip onConfirm={onClick} confirmationText={confirmationText}>
-      {button}
-    </ConfirmableTooltip>
+  return compact ? (
+    <TooltipTrigger>
+      <ConfirmMenu onConfirm={onClick} confirmationText={confirmationText}>
+        {trigger}
+      </ConfirmMenu>
+      <Tooltip className="whitespace-nowrap">{text}</Tooltip>
+    </TooltipTrigger>
+  ) : (
+    <ConfirmMenu onConfirm={onClick} confirmationText={confirmationText}>
+      {trigger}
+    </ConfirmMenu>
   );
 };
 

@@ -1,4 +1,4 @@
-import { faBan } from "@fortawesome/free-solid-svg-icons";
+import { BanIcon } from "lucide-react";
 import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
@@ -8,8 +8,11 @@ import type {
   TimeStratifiedInfo,
 } from "../api/types";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
-import FaIcon from "../icon/FaIcon";
-import WithTooltip from "../tooltip/WithTooltip";
+import {
+  Tooltip,
+  TooltipTarget,
+  TooltipTrigger,
+} from "../ui-components/Tooltip";
 
 import { ConceptBubble } from "./ConceptBubble";
 
@@ -86,7 +89,7 @@ export const TimeStratifiedConceptChart = ({
     return (
       <div className={container()}>
         <p className={emptyMsg()}>
-          <FaIcon gray icon={faBan} />
+          <BanIcon className="text-gray-500" />
           {t("history.noData")}
         </p>
       </div>
@@ -101,9 +104,12 @@ export const TimeStratifiedConceptChart = ({
     >
       <div />
       {allValues.map((val) => (
-        <WithTooltip key={val.label} text={val.description}>
-          <ConceptBubble>{val.label}</ConceptBubble>
-        </WithTooltip>
+        <TooltipTrigger key={val.label}>
+          <TooltipTarget as={ConceptBubble} excludeFromTabOrder>
+            {val.label}
+          </TooltipTarget>
+          <Tooltip>{val.description}</Tooltip>
+        </TooltipTrigger>
       ))}
       {years.map((year, i) => (
         <Fragment key={year}>

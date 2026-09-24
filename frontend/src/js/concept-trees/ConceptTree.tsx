@@ -1,13 +1,8 @@
-import {
-  faEllipsisH,
-  faRedo,
-  faSpinner,
-} from "@fortawesome/free-solid-svg-icons";
+import { LoaderCircleIcon, RotateCwIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import type { ConceptIdT, ConceptT } from "../api/types";
-import IconButton from "../button/IconButton";
-import FaIcon from "../icon/FaIcon";
+import { Button } from "../ui-components/Button";
 import ConceptTreeNode from "./ConceptTreeNode";
 import ConceptTreeNodeText from "./ConceptTreeNodeText";
 import type { SearchT } from "./reducer";
@@ -46,7 +41,7 @@ const ConceptTree = ({
     return (
       <p className={message()} style={{ paddingLeft: 24 + depth * 15 }}>
         <span className="mr-[6px]">
-          <FaIcon icon={faSpinner} />
+          <LoaderCircleIcon />
         </span>
         <span>{label}</span>
       </p>
@@ -57,12 +52,15 @@ const ConceptTree = ({
         className={message({ error: true })}
         style={{ paddingLeft: 12 + depth * 15 }}
       >
-        <IconButton
-          className="py-0 pr-[7px] pl-3"
-          red
-          icon={faRedo}
-          onClick={() => onLoadTree(conceptId)}
-        />
+        <Button
+          intent="tertiary"
+          size="sm"
+          danger
+          aria-label={t("common.retry")}
+          onPress={() => onLoadTree(conceptId)}
+        >
+          <RotateCwIcon />
+        </Button>
         {t("conceptTreeList.error", { tree: label })}
       </p>
     );
@@ -80,7 +78,7 @@ const ConceptTree = ({
     return (
       <ConceptTreeNodeText
         disabled
-        icon={faEllipsisH}
+        icon="pending"
         label={label}
         depth={depth}
       />

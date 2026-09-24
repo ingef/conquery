@@ -11,6 +11,7 @@ import {
   addFolder,
   deleteFormConfigSuccess,
   deleteQuerySuccess,
+  loadDefaultFoldersSuccess,
   loadFormConfigsSuccess,
   loadQueriesSuccess,
   loadQuerySuccess,
@@ -19,7 +20,7 @@ import {
   removeFolder,
 } from "./actions";
 
-export interface BaseFormConfigT {
+interface BaseFormConfigT {
   formType: string;
   values: Record<string, unknown>;
   label: string;
@@ -58,12 +59,14 @@ export interface PreviousQueryT {
 
 export interface PreviousQueriesStateT {
   localFolders: string[];
+  defaultFolders: string[];
   queries: PreviousQueryT[];
   formConfigs: FormConfigT[];
 }
 
 const initialState: PreviousQueriesStateT = {
   localFolders: [],
+  defaultFolders: [],
   queries: [],
   formConfigs: [],
 };
@@ -225,6 +228,8 @@ const previousQueriesReducer = (
       };
     case getType(removeFolder):
       return removeLocalFolder(state, action.payload);
+    case getType(loadDefaultFoldersSuccess):
+      return { ...state, defaultFolders: action.payload.folders };
     default:
       return state;
   }

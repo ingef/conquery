@@ -5,6 +5,7 @@
 - vite
 - typescript
 - react / redux
+- tailwind css / react-aria-components
 - simple express.js server for a mock api
 - keycloak server for authentication, local setup using docker-compose
 
@@ -93,6 +94,13 @@ pnpm fix     # same, but writes formatting and safe fixes
 ```
 CI runs `biome ci`, which is the read-only equivalent of `pnpm check`.
 
+**Unused code**
+
+[knip](https://knip.dev) reports unused files, exports and dependencies, with its defaults and no config file. CI runs it too:
+```
+pnpm knip
+```
+
 ## Glossary
 
 Depending on the use-case, we're still calling the same concepts differently sometimes. Here is an explanation.
@@ -109,8 +117,8 @@ Depending on the use-case, we're still calling the same concepts differently som
 - **Query Node / Element** – one node in the query editor, either a concept or a previous query
 - **Previous Query / Stored Query** – a previous query that has been saved in the backend database for future use (as itself or within other queries)
 - **Dataset / Database** – data set that is used to ask queries against
-- **Tooltip** – small area (below), that contains additional information on hovering over certain elements
-- **Additional Infos** – data (key-value pairs) that are part of concept nodes and can be displayed inside the tooltip
+- **Info Pane** – collapsible area on the left, that contains additional information on hovering over certain elements
+- **Additional Infos** – data (key-value pairs) that are part of concept nodes and can be displayed inside the info pane
 
 ## Technical Explanations (mini ADRs – "architectural decision records")
 
@@ -126,10 +134,10 @@ Depending on the use-case, we're still calling the same concepts differently som
 
 ### Styles
 
-- Currently, we're mostly using Emotion for theming and styles.
-- The plan is to slowly migrate to [Tailwind CSS](https://tailwindcss.com/) and [tailwind-styled-components](https://github.com/MathiasGilson/Tailwind-Styled-Component).
-- New styles should be written using tailwind.
-- Reasoning: Theming with Emotion is verbose, Emotion's "styled" is less TypeScript compatible in some edge cases like generic component props (see usage of Dropzone). But the main reason for migrating to tailwind, of course, is that tailwind means a lot less boilerplate code. It also allows for more consistent styling and offers a great dev UX.
+- Styling is [Tailwind CSS](https://tailwindcss.com/) v4. Theme tokens (colors, fonts, spacing) are `@theme` variables in `src/index.css`; downstream apps override them with their own `:root` custom properties.
+- Class lists with variants use [tailwind-variants](https://www.tailwind-variants.org/) (`tv()`); a static list that fits one line stays inline in `className`.
+- Base components (buttons, fields, menus, tooltips, modals, tabs) live in `src/js/ui-components` and are built on [react-aria-components](https://react-spectrum.adobe.com/react-aria/). They take no `className`; layout is the parent's job.
+- Icons are [Lucide](https://lucide.dev/) components, rendered directly (`<TrashIcon />`). Size and stroke width are app-wide (`--icon-size`, `--icon-stroke-width` in `src/index.css`); only a picture-like icon gets a `size-*` class. An icon that shows an "on" state takes `data-filled`.
 
 ### State
 

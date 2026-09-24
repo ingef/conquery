@@ -1,9 +1,4 @@
-import type { DatasetT } from "../api/types";
 import type { DNDType } from "../common/constants/dndTypes";
-
-export interface ExternalFormPropsType {
-  selectedDatasetId: DatasetT["id"];
-}
 
 export interface DragItemFormConfig {
   dragContext: {

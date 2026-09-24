@@ -15,7 +15,6 @@ import type {
   FilterWithValueType,
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
-import type { ModeT } from "../ui-components/InputRange";
 
 import CommonNodeSettings from "./CommonNodeSettings";
 import ContentCell from "./ContentCell";
@@ -44,7 +43,6 @@ const ContentColumn = ({
   onLoadFilterSuggestions,
   onSetDateColumn,
   onSetFilterValue,
-  onSwitchFilterMode,
   onSelectSelects,
   onSelectTableSelects,
   onToggleTimestamps,
@@ -62,11 +60,6 @@ const ContentColumn = ({
     tableIdx: number,
     filterIdx: number,
     value: FilterWithValueType["value"],
-  ) => void;
-  onSwitchFilterMode: (
-    tableIdx: number,
-    filterIdx: number,
-    mode: ModeT,
   ) => void;
   onLoadFilterSuggestions: (
     params: PostPrefixForSuggestionsParams,
@@ -139,7 +132,6 @@ const ContentColumn = ({
               onSelectTableSelects={onSelectTableSelects}
               onSetDateColumn={onSetDateColumn}
               onSetFilterValue={onSetFilterValue}
-              onSwitchFilterMode={onSwitchFilterMode}
               onLoadFilterSuggestions={onLoadFilterSuggestions}
             />
           </ContentCell>

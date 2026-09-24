@@ -1,25 +1,25 @@
-import { faUndo } from "@fortawesome/free-solid-svg-icons";
+import { RotateCcwIcon } from "lucide-react";
 import { Fragment, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-import { tv } from "tailwind-variants";
 import type { StateT } from "../app/reducers";
-import IconButton from "../button/IconButton";
 import type { DateStringMinMax } from "../common/helpers/dateHelper";
-import Modal from "../modal/Modal";
 import { nodeIsConceptQueryNode } from "../model/node";
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import type { QueryGroupType } from "../standard-query-editor/types";
-import InputDateRange from "../ui-components/InputDateRange";
+import { Button } from "../ui-components/Button";
+import { DateRangeField } from "../ui-components/DateRangeField";
+import {
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+} from "../ui-components/Modal";
 
 import {
   queryGroupModalResetAllDates,
   queryGroupModalSetDate,
 } from "./actions";
-
-const resetAll = tv({
-  base: ["text-primary-500", "font-bold", "ml-5"],
-});
 
 function findGroup(query: StandardQueryStateT, andIdx: number) {
   if (!query[andIdx]) return null;
@@ -81,51 +81,54 @@ const QueryGroupModal = ({
 
   const labelSuffix = useMemo(() => {
     return hasActiveDate ? (
-      <IconButton
-        className={resetAll()}
-        bare
-        onClick={onResetAllDates}
-        icon={faUndo}
-      >
-        {t("queryNodeEditor.reset")}
-      </IconButton>
+      <span className="ml-5">
+        <Button intent="link" onPress={onResetAllDates}>
+          <RotateCcwIcon />
+          {t("queryNodeEditor.reset")}
+        </Button>
+      </span>
     ) : null;
   }, [t, hasActiveDate, onResetAllDates]);
 
   return (
     <Modal
-      onClose={onClose}
-      doneButton
-      headline={t("queryGroupModal.explanation")}
+      isOpen
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onClose();
+      }}
     >
-      <div className="block mb-[15px] max-w-[450px]">
-        <span className="pr-[5px]" key={-1}>
-          {t("queryGroupModal.headlineStart")}
-        </span>
-        {group.elements.map((node, i) => (
-          <Fragment key={`${i}-headline`}>
-            <span className="pr-[5px]">
-              {node.label ||
-                (nodeIsConceptQueryNode(node) ? node.ids[0] : node.id)}
-            </span>
-            {i !== group.elements.length - 1 && (
-              <span key={`${i}-comma`}>, </span>
-            )}
-          </Fragment>
-        ))}
-      </div>
-      <InputDateRange
-        large
-        inline
-        autoFocus
-        label={t("queryGroupModal.dateRange")}
-        labelSuffix={labelSuffix}
-        onChange={onSetDate}
-        value={{
-          min: minDate,
-          max: maxDate,
-        }}
-      />
+      <ModalHeader>{t("queryGroupModal.explanation")}</ModalHeader>
+      <ModalBody>
+        <div className="block mb-[15px]">
+          <span className="pr-[5px]" key={-1}>
+            {t("queryGroupModal.headlineStart")}
+          </span>
+          {group.elements.map((node, i) => (
+            <Fragment key={`${i}-headline`}>
+              <span className="pr-[5px]">
+                {node.label ||
+                  (nodeIsConceptQueryNode(node) ? node.ids[0] : node.id)}
+              </span>
+              {i !== group.elements.length - 1 && (
+                <span key={`${i}-comma`}>, </span>
+              )}
+            </Fragment>
+          ))}
+        </div>
+        <DateRangeField
+          autoFocus
+          label={t("queryGroupModal.dateRange")}
+          labelSuffix={labelSuffix}
+          onChange={onSetDate}
+          value={{
+            min: minDate,
+            max: maxDate,
+          }}
+        />
+      </ModalBody>
+      <ModalFooter>
+        <Button slot="close">{t("common.done")}</Button>
+      </ModalFooter>
     </Modal>
   );
 };

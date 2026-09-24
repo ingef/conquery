@@ -1,15 +1,14 @@
-import { faPen } from "@fortawesome/free-solid-svg-icons";
+import { PencilIcon } from "lucide-react";
 import { tv } from "tailwind-variants";
-
-import IconButton from "../button/IconButton";
-import { Highlighter } from "../common/components/Highlighter";
 import HighlightableLabel from "../highlightable-label/HighlightableLabel";
-import WithTooltip from "../tooltip/WithTooltip";
-
+import { Button } from "./Button";
 import EditableTextForm from "./EditableTextForm";
+import { Highlighter } from "./Highlighter";
+import { Tooltip, TooltipTrigger } from "./Tooltip";
 
+// a flex wrapper, so the button does not sit on a text baseline and grow the row
 const editButton = tv({
-  base: ["px-0 py-[2px]"],
+  base: "flex shrink-0",
   variants: {
     large: {
       true: "mr-[10px]",
@@ -65,16 +64,19 @@ const EditableText = ({
     />
   ) : (
     <div className={text({ className })}>
-      <WithTooltip text={tooltip}>
-        <IconButton
-          className={editButton({ large: !!large })}
-          bare
-          icon={faPen}
-          onClick={onToggleEdit}
-          small
-          large={large}
-        />
-      </WithTooltip>
+      <span className={editButton({ large: !!large })}>
+        <TooltipTrigger>
+          <Button
+            aria-label={tooltip}
+            intent="tertiary"
+            size={large ? "md" : "sm"}
+            onPress={onToggleEdit}
+          >
+            <PencilIcon />
+          </Button>
+          <Tooltip>{tooltip}</Tooltip>
+        </TooltipTrigger>
+      </span>
       <HighlightableLabel className={label()} isHighlighted={isHighlighted}>
         {highlightedWords && highlightedWords.length > 0 ? (
           <Highlighter

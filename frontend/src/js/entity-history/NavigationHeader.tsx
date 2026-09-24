@@ -1,15 +1,15 @@
-import { faSliders } from "@fortawesome/free-solid-svg-icons";
-import { type Dispatch, memo, type SetStateAction, useState } from "react";
+import { SlidersHorizontalIcon } from "lucide-react";
+import { type Dispatch, memo, type SetStateAction } from "react";
+import { DialogTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
-
 import type { SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
-import IconButton from "../button/IconButton";
-import ProgressBar from "../common/components/ProgressBar";
 import { Heading3 } from "../headings/Headings";
-import WithTooltip from "../tooltip/WithTooltip";
+import { Button } from "../ui-components/Button";
+import ProgressBar from "../ui-components/ProgressBar";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 import { SettingsModal } from "./SettingsModal";
 
@@ -69,17 +69,8 @@ export const NavigationHeader = memo(
       (state) => state.entityHistory.label,
     );
 
-    const [settingsModalOpen, setSettingsModalOpen] = useState(false);
-
     return (
       <div className={root({ className })}>
-        {settingsModalOpen && (
-          <SettingsModal
-            onClose={() => setSettingsModalOpen(false)}
-            setEntityStatusOptions={setEntityStatusOptions}
-            entityStatusOptions={entityStatusOptions}
-          />
-        )}
         <div className={baseInfo()}>
           <div style={{ overflow: "hidden" }}>
             <Heading3 className={heading()} title={label}>
@@ -87,17 +78,26 @@ export const NavigationHeader = memo(
             </Heading3>
             <p className={specialText()}>{t("history.history")}</p>
           </div>
-          <WithTooltip text={t("history.settings.headline")}>
-            <IconButton
-              icon={faSliders}
-              onClick={() => setSettingsModalOpen(true)}
-            />
-          </WithTooltip>
+          <TooltipTrigger>
+            <DialogTrigger>
+              <Button
+                aria-label={t("history.settings.headline")}
+                intent="tertiary"
+              >
+                <SlidersHorizontalIcon />
+              </Button>
+              <SettingsModal
+                setEntityStatusOptions={setEntityStatusOptions}
+                entityStatusOptions={entityStatusOptions}
+              />
+            </DialogTrigger>
+            <Tooltip>{t("history.settings.headline")}</Tooltip>
+          </TooltipTrigger>
         </div>
         <div className="grid gap-x-2 grid-cols-[auto_1fr] items-center">
           <Heading3 className={heading({ end: true })}>{idsCount}</Heading3>
           <span className={infoText()}>
-            {t("tooltip.entitiesFound", { count: idsCount })}
+            {t("common.entitiesFound", { count: idsCount })}
           </span>
           <Heading3 className={heading({ end: true })}>{markedCount}</Heading3>
           <span className={infoText()}>

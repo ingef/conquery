@@ -1,9 +1,5 @@
-import {
-  faChevronDown,
-  faSpinner,
-  faTimes,
-} from "@fortawesome/free-solid-svg-icons";
 import { useCombobox, useMultipleSelection } from "downshift";
+import { ChevronDownIcon, LoaderCircleIcon, XIcon } from "lucide-react";
 import { Fragment, memo, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { mergeRefs } from "react-merge-refs";
@@ -12,9 +8,9 @@ import type { SelectOptionT } from "../../api/types";
 import { exists } from "../../common/helpers/exists";
 import { getFileRows } from "../../common/helpers/fileHelper";
 import { useDebounce } from "../../common/helpers/useDebounce";
-import FaIcon from "../../icon/FaIcon";
-import InfoTooltip from "../../tooltip/InfoTooltip";
 import DropzoneWithFileInput from "../DropzoneWithFileInput";
+import EmptyPlaceholder from "../SelectEmptyPlaceholder";
+import TooManyValues from "../TooManyValues";
 import {
   Control,
   DropdownToggleButton,
@@ -26,11 +22,9 @@ import {
   ResetButton,
   SelectContainer,
   VerticalSeparator,
-} from "../InputSelect/InputSelectComponents";
-import Labeled from "../Labeled";
-import EmptyPlaceholder from "../SelectEmptyPlaceholder";
-import TooManyValues from "../TooManyValues";
+} from "./InputSelectComponents";
 
+import { Labeled } from "./Labeled";
 import ListItem from "./ListItem";
 import LoadMoreSentinel from "./LoadMoreSentinel";
 import MenuActionBar from "./MenuActionBar";
@@ -318,24 +312,23 @@ const InputMultiSelect = ({
             }}
           />
         </ItemsInputContainer>
-        {loading && <FaIcon className="mx-[6px] my-[3px]" icon={faSpinner} />}
+        {loading && <LoaderCircleIcon className="mx-[6px] my-[3px]" />}
         {!loading && (inputValue.length > 0 || selectedItems.length > 0) && (
           <ResetButton
-            icon={faTimes}
-            disabled={disabled}
-            onClick={() => {
+            isDisabled={disabled}
+            onPress={() => {
               setInputValue("");
               resetMultiSelectState();
               resetComboboxState();
             }}
-          />
+          >
+            <XIcon />
+          </ResetButton>
         )}
         <VerticalSeparator />
-        <DropdownToggleButton
-          disabled={disabled}
-          {...getToggleButtonProps()}
-          icon={faChevronDown}
-        />
+        <DropdownToggleButton isDisabled={disabled} {...getToggleButtonProps()}>
+          <ChevronDownIcon />
+        </DropdownToggleButton>
       </Control>
       {isOpen ? (
         <MenuContainer ref={menuContainerRef}>
@@ -435,13 +428,8 @@ const InputMultiSelect = ({
       ref={(el) => {
         clickOutsideRef.current = el;
       }}
-      htmlFor="" // Important to override getLabelProps with this to avoid click events everywhere
-      label={
-        <>
-          {label}
-          {tooltip && <InfoTooltip text={tooltip} />}
-        </>
-      }
+      label={label}
+      tooltip={tooltip}
       indexPrefix={indexPrefix}
     >
       {children}

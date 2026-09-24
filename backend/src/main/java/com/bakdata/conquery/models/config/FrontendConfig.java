@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.config;
 
 import java.net.URI;
 import java.net.URL;
+import java.util.List;
 
 import javax.annotation.Nullable;
 import jakarta.validation.Valid;
@@ -73,6 +74,12 @@ public class FrontendConfig {
 	 * If true, users are always allowed to add custom values into SelectFilter input fields.
 	 */
 	private boolean alwaysAllowCreateValue = false;
+
+	/**
+	 * Tags that should be available as query folders even if no query uses them yet.
+	 */
+	@NotNull
+	private List<String> defaultTags = List.of();
 
 	@ValidationMethod(message = "Percentiles must be concrete and within 0 - 100")
 	@JsonIgnore

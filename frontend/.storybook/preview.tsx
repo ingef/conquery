@@ -1,4 +1,7 @@
 import type { Decorator, Preview } from "@storybook/react";
+import { I18nProvider } from "react-aria-components";
+
+import "../src/index.css";
 
 import { theme } from "../src/app-theme";
 import DndProvider from "../src/js/app/DndProvider";
@@ -10,11 +13,13 @@ i18next.addResourceBundle("de", "translation", translationsDe, true, true);
 i18next.changeLanguage("de");
 
 const withProviders: Decorator = (Story) => (
-  <AppThemeContext.Provider value={theme}>
-    <DndProvider>
-      <Story />
-    </DndProvider>
-  </AppThemeContext.Provider>
+  <I18nProvider locale="de">
+    <AppThemeContext.Provider value={theme}>
+      <DndProvider>
+        <Story />
+      </DndProvider>
+    </AppThemeContext.Provider>
+  </I18nProvider>
 );
 
 const preview: Preview = {

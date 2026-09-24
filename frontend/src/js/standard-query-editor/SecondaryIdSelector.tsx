@@ -1,16 +1,16 @@
-import { faMicroscope } from "@fortawesome/free-solid-svg-icons";
+import { MicroscopeIcon } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
-
 import type { SecondaryId } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { exists } from "../common/helpers/exists";
-import FaIcon from "../icon/FaIcon";
 import { nodeIsConceptQueryNode } from "../model/node";
-import InfoTooltip from "../tooltip/InfoTooltip";
-import ToggleButton from "../ui-components/ToggleButton";
+import InfoTooltip from "../ui-components/InfoTooltip";
+import { ToggleButton } from "../ui-components/ToggleButton";
+import { ToggleButtonGroup } from "../ui-components/ToggleButtonGroup";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 import { setSelectedSecondaryId } from "./actions";
 import type { StandardQueryStateT } from "./queryReducer";
@@ -27,7 +27,7 @@ const headline = tv({
 });
 
 const headlineIcon = tv({
-  base: "transition-[color] duration-100",
+  base: "mr-[10px] transition-[color] duration-100",
   variants: {
     active: {
       true: "text-primary-500",
@@ -151,7 +151,7 @@ const SecondaryIdSelectorUI = memo(
     value,
     onChange,
   }: {
-    options: { label: string; value: string }[];
+    options: { label: string; value: string; description?: string }[];
     value: string | null;
     onChange: (value: string) => void;
   }) => {
@@ -160,19 +160,28 @@ const SecondaryIdSelectorUI = memo(
     return (
       <div>
         <h3 className={headline({ active: !!value })}>
-          <FaIcon
-            className={headlineIcon({ active: !!value })}
-            left
-            icon={faMicroscope}
-          />
+          <MicroscopeIcon className={headlineIcon({ active: !!value })} />
           {t("queryEditor.secondaryId")}
           <InfoTooltip text={t("queryEditor.secondaryIdTooltip")} />
         </h3>
-        <ToggleButton
-          value={value || "standard"}
-          onChange={onChange}
-          options={options}
-        />
+        <ToggleButtonGroup
+          wrap
+          size="sm"
+          selectionMode="single"
+          disallowEmptySelection
+          selectedKeys={[value || "standard"]}
+          onSelectionChange={(keys) => {
+            const [key] = keys;
+            if (typeof key === "string") onChange(key);
+          }}
+        >
+          {options.map(({ value: id, label, description }) => (
+            <TooltipTrigger key={id}>
+              <ToggleButton id={id}>{label}</ToggleButton>
+              <Tooltip>{description}</Tooltip>
+            </TooltipTrigger>
+          ))}
+        </ToggleButtonGroup>
       </div>
     );
   },

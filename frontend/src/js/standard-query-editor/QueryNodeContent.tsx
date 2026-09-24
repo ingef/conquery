@@ -3,28 +3,32 @@ import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
 import ErrorMessage from "../error-message/ErrorMessage";
-import WithTooltip from "../tooltip/WithTooltip";
+import {
+  Tooltip,
+  TooltipTarget,
+  TooltipTrigger,
+} from "../ui-components/Tooltip";
 
 // tv consts named *Text to not shadow the label/description props
 const labelText = tv({
-  base: ["[word-break:break-word]", "leading-[1.2]", "text-base"],
+  base: ["[word-break:break-word]", "text-base", "leading-[1.2]"],
 });
 
 const descriptionText = tv({
   base: [
     "mt-[3px]",
     "[word-break:break-word]",
-    "leading-[1.2]",
     "uppercase",
     "text-xs",
+    "leading-[1.2]",
   ],
 });
 
 const previousQueryLabel = tv({
   base: [
     "mb-[3px]",
-    "leading-[1.2]",
     "text-xs",
+    "leading-[1.2]",
     "uppercase",
     "font-bold",
     "text-primary-500",
@@ -34,10 +38,10 @@ const previousQueryLabel = tv({
 const rootNode = tv({
   base: [
     "mb-1",
-    "leading-none",
     "uppercase",
     "font-bold",
     "text-xs",
+    "leading-none",
     "text-primary-500",
     "[word-break:break-word]",
   ],
@@ -63,8 +67,8 @@ const QueryNodeContent = ({
   const { t } = useTranslation();
 
   return (
-    <WithTooltip text={tooltipText}>
-      <div className="grow pt-[2px]">
+    <TooltipTrigger>
+      <TooltipTarget as="div" excludeFromTabOrder className="grow pt-[2px]">
         {!isConceptQueryNode && (
           <p className={previousQueryLabel()}>
             {t("queryEditor.previousQuery")}
@@ -79,8 +83,9 @@ const QueryNodeContent = ({
             {description && <p className={descriptionText()}>{description}</p>}
           </>
         )}
-      </div>
-    </WithTooltip>
+      </TooltipTarget>
+      <Tooltip>{tooltipText}</Tooltip>
+    </TooltipTrigger>
   );
 };
 

@@ -1,27 +1,24 @@
-import {
-  faCheckCircle,
-  faDownload,
-  faExclamationCircle,
-  faSpinner,
-  faTrash,
-  faUpload,
-} from "@fortawesome/free-solid-svg-icons";
 import { format } from "date-fns";
 import { saveAs } from "file-saver";
 import type { TFunction } from "i18next";
+import {
+  CircleAlertIcon,
+  CircleCheckIcon,
+  DownloadIcon,
+  LoaderCircleIcon,
+  TrashIcon,
+  UploadIcon,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import type { QueryUploadConfigT, UploadQueryResponseT } from "../../api/types";
-import IconButton from "../../button/IconButton";
-import PrimaryButton from "../../button/PrimaryButton";
-import { TransparentButton } from "../../button/TransparentButton";
 import { parseCSV, toCSV } from "../../file/csv";
-import FaIcon from "../../icon/FaIcon";
 import { useActiveLang } from "../../localization/useActiveLang";
 import ScrollableList from "../../scrollable-list/ScrollableList";
-import WithTooltip from "../../tooltip/WithTooltip";
-import InputSelect from "../../ui-components/InputSelect/InputSelect";
+import { Button } from "../../ui-components/Button";
+import { ComboBoxField } from "../../ui-components/ComboBoxField";
+import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
 
 const td = tv({
   base: "min-w-[150px] overflow-hidden text-ellipsis whitespace-nowrap text-xs",
@@ -147,8 +144,10 @@ const CSVPreviewTable = ({
             <tr key={j}>
               {row.map((cell, i) => (
                 <th key={cell + i} className={th()}>
-                  <InputSelect
-                    smallMenu
+                  <ComboBoxField
+                    aria-label={t("csvColumnPicker.columnType", {
+                      index: i + 1,
+                    })}
                     options={selectOptions}
                     value={
                       selectOptions.find((o) => o.value === csvHeader[i]) ||
@@ -259,23 +258,32 @@ const CSVColumnPicker = ({
             <code className="font-bold">{file.name}</code>
             <code>{csv.length} Zeilen</code>
           </div>
-          <WithTooltip text={t("common.clear")}>
-            <IconButton frame icon={faTrash} onClick={onReset} />
-          </WithTooltip>
+          <TooltipTrigger>
+            <Button
+              aria-label={t("common.clear")}
+              intent="secondary"
+              onPress={onReset}
+            >
+              <TrashIcon />
+            </Button>
+            <Tooltip>{t("common.clear")}</Tooltip>
+          </TooltipTrigger>
         </div>
         {csv.length > 0 && (
-          <InputSelect
-            className="ml-[15px] inline-block w-[150px] text-left"
-            label={t("csvColumnPicker.delimiter")}
-            onChange={(val) => {
-              if (val) setDelimiter(val.value as string);
-            }}
-            value={
-              DELIMITER_OPTIONS.find((option) => option.value === delimiter) ||
-              null
-            }
-            options={DELIMITER_OPTIONS}
-          />
+          <div className="ml-[15px] inline-block w-[150px] text-left">
+            <ComboBoxField
+              label={t("csvColumnPicker.delimiter")}
+              onChange={(val) => {
+                if (val) setDelimiter(val.value as string);
+              }}
+              value={
+                DELIMITER_OPTIONS.find(
+                  (option) => option.value === delimiter,
+                ) || null
+              }
+              options={DELIMITER_OPTIONS}
+            />
+          </div>
         )}
       </div>
       <div className="overflow-hidden rounded-sm py-3 px-2 border w-full">
@@ -293,20 +301,14 @@ const CSVColumnPicker = ({
         <div className={partialUploadResults()}>
           <p className={msg()}>
             {uploadResult.resolved > 0 && (
-              <FaIcon
-                className={bigIcon({ kind: "success" })}
-                icon={faCheckCircle}
-              />
+              <CircleCheckIcon className={bigIcon({ kind: "success" })} />
             )}
             {t("csvColumnPicker.resolved", { count: uploadResult.resolved })}
           </p>
           {uploadResult.unreadableDate.length > 0 && (
             <>
               <p className={msg()}>
-                <FaIcon
-                  className={bigIcon({ kind: "error" })}
-                  icon={faExclamationCircle}
-                />
+                <CircleAlertIcon className={bigIcon({ kind: "error" })} />
                 {t("csvColumnPicker.unreadableDate", {
                   count: uploadResult.unreadableDate.length,
                 })}
@@ -325,10 +327,7 @@ const CSVColumnPicker = ({
           {uploadResult.unresolvedId.length > 0 && (
             <>
               <p className={msg()}>
-                <FaIcon
-                  className={bigIcon({ kind: "error" })}
-                  icon={faExclamationCircle}
-                />
+                <CircleAlertIcon className={bigIcon({ kind: "error" })} />
                 {t("csvColumnPicker.unresolvedId", {
                   count: uploadResult.unresolvedId.length,
                 })}
@@ -345,54 +344,52 @@ const CSVColumnPicker = ({
           )}
         </div>
       )}
-      <div className="mt-3 flex items-end justify-end">
+      <div className="mt-3 flex items-end justify-end gap-[10px]">
         {uploadResult &&
           (uploadResult.unreadableDate.length > 0 ||
             uploadResult.unresolvedId.length > 0) && (
-            <TransparentButton className="mr-auto" onClick={downloadUnresolved}>
-              <FaIcon icon={faDownload} />{" "}
-              {t("uploadQueryResultsModal.downloadUnresolved", {
-                count:
-                  uploadResult.unreadableDate.length +
-                  uploadResult.unresolvedId.length,
-              })}
-            </TransparentButton>
+            <div className="mr-auto">
+              <Button intent="secondary" onPress={downloadUnresolved}>
+                <DownloadIcon />
+                {t("uploadQueryResultsModal.downloadUnresolved", {
+                  count:
+                    uploadResult.unreadableDate.length +
+                    uploadResult.unresolvedId.length,
+                })}
+              </Button>
+            </div>
           )}
         {uploadResult && (
-          <PrimaryButton
-            className="ml-[10px]"
-            disabled={uploadDisabled}
-            onClick={uploadQuery}
+          <Button
+            intent="primary"
+            isDisabled={uploadDisabled}
+            onPress={uploadQuery}
           >
             {loading ? (
-              <FaIcon white icon={faSpinner} />
+              <LoaderCircleIcon className="text-white" />
             ) : (
-              <FaIcon white left icon={faUpload} />
+              <UploadIcon className="mr-[10px] text-white" />
             )}{" "}
             {t("uploadQueryResultsModal.uploadAgain")}
-          </PrimaryButton>
+          </Button>
         )}
         {uploadResult ? (
-          <TransparentButton
-            className="ml-[10px]"
-            disabled={loading}
-            onClick={onCancel}
-          >
+          <Button intent="secondary" isDisabled={loading} onPress={onCancel}>
             {t("common.done")}
-          </TransparentButton>
+          </Button>
         ) : (
-          <PrimaryButton
-            className="ml-[10px]"
-            disabled={uploadDisabled}
-            onClick={uploadQuery}
+          <Button
+            intent="primary"
+            isDisabled={uploadDisabled}
+            onPress={uploadQuery}
           >
             {loading ? (
-              <FaIcon white icon={faSpinner} />
+              <LoaderCircleIcon className="text-white" />
             ) : (
-              <FaIcon left white icon={faUpload} />
+              <UploadIcon className="mr-[10px] text-white" />
             )}{" "}
             {t("uploadQueryResultsModal.upload")}
-          </PrimaryButton>
+          </Button>
         )}
       </div>
     </div>

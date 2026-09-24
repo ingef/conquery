@@ -4,7 +4,7 @@ import { tv } from "tailwind-variants";
 import type { QueryRunnerStateT } from "./reducer";
 
 const status = tv({
-  base: ["mx-[10px] my-0", "text-sm", "font-normal"],
+  base: ["m-0", "text-right", "text-sm", "font-normal"],
   variants: {
     success: { true: "text-green" },
     error: { true: "text-red" },

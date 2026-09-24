@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 
 import type { SelectedDateColumnT } from "../standard-query-editor/types";
-import InputSelect from "../ui-components/InputSelect/InputSelect";
+import { ComboBoxField } from "../ui-components/ComboBoxField";
 
 const DateColumnSelect = ({
   dateColumn,
@@ -14,7 +14,7 @@ const DateColumnSelect = ({
 
   return (
     <div>
-      <InputSelect
+      <ComboBoxField
         label={t("queryNodeEditor.dateColumn")}
         options={dateColumn.options}
         tooltip={dateColumn.tooltip ?? undefined}

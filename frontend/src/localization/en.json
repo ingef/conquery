@@ -10,10 +10,12 @@
     "reloadDescription": "If this happens again, please leave us a message. That way, we can fix this issue sooner."
   },
   "leftPane": {
+    "tabs": "Concepts and queries",
     "conceptTrees": "Concepts",
     "previousQueries": "Queries and Forms"
   },
   "rightPane": {
+    "tabs": "Editors",
     "queryEditor": "Editor",
     "timebasedQueryEditor": "Timebased Editor",
     "externalForms": "Form Editor"
@@ -133,7 +135,10 @@
     "unshare": "Revoke sharing"
   },
   "common": {
+    "add": "Add",
+    "retry": "Try again",
     "version": "Version",
+    "menu": "Menu",
     "manual": "Manual",
     "contact": "Contact",
     "confirm": "Confirm",
@@ -152,7 +157,6 @@
     "title": "Title",
     "description": "Description",
     "clearValue": "Clear value",
-    "closeEsc": "Close (ESC)",
     "close": "Close",
     "create": "Create",
     "addTag": "Add folder",
@@ -172,15 +176,17 @@
     "openFileDialog": "Select file",
     "shortcut": "Key",
     "true": "True",
-    "false": "False"
-  },
-  "tooltip": {
-    "headline": "Info",
-    "placeholder": "More information on a concept ...",
+    "false": "False",
     "entitiesFound_one": "entity",
     "entitiesFound_other": "entities",
     "entriesFound_one": "entry",
-    "entriesFound_other": "entries",
+    "entriesFound_other": "entries"
+  },
+  "infoPane": {
+    "headline": "Info",
+    "expand": "Show info pane",
+    "collapse": "Hide info pane",
+    "placeholder": "More information on a concept ...",
     "date": {
       "daterange": "Date range",
       "from": "From",
@@ -188,9 +194,6 @@
     }
   },
   "inputRange": {
-    "range": "Range",
-    "exact": "Equals",
-    "exactLabel": "Exact",
     "minLabel": "Min",
     "maxLabel": "Max"
   },
@@ -198,6 +201,7 @@
     "from": "From",
     "to": "To",
     "placeholder": "Select date",
+    "openCalendar": "Open calendar",
     "today": "Today",
     "dateFormat": "MM/dd/yyyy",
     "tooltip": {
@@ -238,12 +242,14 @@
     "hasNoDates": "No date values in the results."
   },
   "projectItemsFilter": {
+    "label": "Filter",
     "all": "All",
     "own": "Own",
     "shared": "Shared",
     "system": "SYSTEM"
   },
   "projectItemsTypeFilter": {
+    "label": "Type",
     "queries": "Queries only",
     "configs": "Forms only"
   },
@@ -339,6 +345,7 @@
   "csvColumnPicker": {
     "loading": "Reading data ...",
     "delimiter": "Delimiter",
+    "columnType": "Type of column {{index}}",
     "semicolon": "Semicolon",
     "colon": "Colon",
     "comma": "Comma",
@@ -394,8 +401,14 @@
     "placeholder": "Search ...",
     "resultLabel": "{{totalResults}} results ({{duration}} s)"
   },
+  "inputDate": {
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month"
+  },
   "preview": {
     "preview": "Preview",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
     "page": "Page",
     "headline": "Results preview",
     "previewHeadline": "Result CSV",
@@ -472,6 +485,7 @@
     "queryNodeDetails": "Detail-Einstellungen bearbeiten"
   },
   "history": {
+    "infoTabs": "Info categories",
     "search": "Search",
     "matches_one": "Match",
     "matches_other": "Matches",
@@ -528,7 +542,8 @@
       "importPlaceholder": "{{idkind}};A0123456788;interesting;\n{{idkind}};A0123456789;;not interesting",
       "error": "Couldn't load history for this file."
     },
-    "searchResultLabel": "Found IDs"
+    "searchResultLabel": "Found IDs",
+    "toolbar": "Toolbar"
   },
   "importModal": {
     "headline": "Import codes",
@@ -549,6 +564,11 @@
     "connector": "Connector",
     "timeConnection": "Time connection",
     "editTimeConnection": "Edit time connection",
+    "timestamp": "Timestamp",
+    "interval": "Distance",
+    "intervalMin": "Minimum distance in days",
+    "intervalMax": "Maximum distance in days",
+    "operator": "Temporal relation",
     "delete": "Delete",
     "expand": "Expand",
     "edit": "Details",

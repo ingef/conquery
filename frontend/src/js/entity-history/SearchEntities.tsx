@@ -1,9 +1,8 @@
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { LoaderCircleIcon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
-
 import {
   usePostPrefixForSuggestions,
   usePostResolveEntities,
@@ -11,10 +10,8 @@ import {
 import { transformFilterValueToApi } from "../api/apiHelper";
 import type { TableT } from "../api/types";
 import type { StateT } from "../app/reducers";
-import PrimaryButton from "../button/PrimaryButton";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import { useDatasetId } from "../dataset/selectors";
-import FaIcon from "../icon/FaIcon";
 import { isMultiSelectFilter, resetFilters } from "../model/filter";
 import { nodeIsElement } from "../model/node";
 import { filterSuggestionToSelectOption } from "../query-node-editor/suggestionsHelper";
@@ -23,6 +20,7 @@ import type {
   BigMultiSelectFilterWithValueType,
   MultiSelectFilterWithValueType,
 } from "../standard-query-editor/types";
+import { Button } from "../ui-components/Button";
 
 import type { LoadingPayload } from "./LoadHistoryDropzone";
 import { useDefaultStatusOptions } from "./useDefaultStatusOptions";
@@ -213,13 +211,7 @@ const root = tv({
   ],
 });
 
-const submitButton = tv({
-  base: ["flex items-center justify-center", "w-full", "gap-[14px]"],
-});
-
-const noop = () => {};
-
-export const SearchEntitiesComponent = ({
+const SearchEntitiesComponent = ({
   table,
   onLoad,
 }: {
@@ -243,17 +235,18 @@ export const SearchEntitiesComponent = ({
         filters={searchFilters}
         excludeTable={false}
         onSetFilterValue={setFilterValue}
-        onSwitchFilterMode={noop}
         onLoadFilterSuggestions={loadFilterSuggestions}
       />
-      <PrimaryButton
-        className={submitButton()}
-        onClick={onSubmitSearch}
-        disabled={!hasFiltersSet || loading}
-      >
-        {loading && <FaIcon white icon={faSpinner} />}
-        {t("history.searchEntitiesButton")}
-      </PrimaryButton>
+      <div className="grid">
+        <Button
+          intent="primary"
+          onPress={onSubmitSearch}
+          isDisabled={!hasFiltersSet || loading}
+        >
+          {loading && <LoaderCircleIcon className="text-white" />}
+          {t("history.searchEntitiesButton")}
+        </Button>
+      </div>
     </div>
   );
 };

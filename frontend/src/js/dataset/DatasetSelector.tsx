@@ -6,8 +6,13 @@ import { tv } from "tailwind-variants";
 import type { DatasetT, SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { exists } from "../common/helpers/exists";
-import WithTooltip from "../tooltip/WithTooltip";
-import InputSelect from "../ui-components/InputSelect/InputSelect";
+import { ComboBoxField } from "../ui-components/ComboBoxField";
+import {
+  Tooltip,
+  TooltipTarget,
+  TooltipTrigger,
+  tooltipDelay,
+} from "../ui-components/Tooltip";
 
 import { useSelectDataset } from "./actions";
 
@@ -46,11 +51,9 @@ const DatasetSelector = () => {
   const selectDataset = useSelectDataset();
 
   const onChange = useCallback(
-    (value: SelectOptionT | null) =>
-      exists(value)
-        ? selectDataset(value.value as string)
-        : selectDataset(null),
-
+    (value: SelectOptionT | null) => {
+      if (exists(value)) selectDataset(value.value as string);
+    },
     [selectDataset],
   );
 
@@ -96,26 +99,33 @@ const DatasetSelectorUI = memo(
     const { t } = useTranslation();
 
     return (
-      <WithTooltip
-        text={
-          disabled ? t("datasetSelector.disabled") : t("help.datasetSelector")
-        }
-        lazy
-      >
-        <div className={root()} data-test-id="dataset-selector">
+      <TooltipTrigger delay={tooltipDelay.long}>
+        <TooltipTarget
+          as="div"
+          excludeFromTabOrder
+          className={root()}
+          data-test-id="dataset-selector"
+        >
           <span className={headline()}>{t("datasetSelector.label")}</span>
-          <InputSelect
-            className="min-w-[300px]"
-            value={selected || null}
-            onChange={onChange}
-            placeholder={
-              error ? t("datasetSelector.error") : t("inputSelect.placeholder")
-            }
-            disabled={disabled || exists(error)}
-            options={options}
-          />
-        </div>
-      </WithTooltip>
+          <div className="min-w-[300px]">
+            <ComboBoxField
+              aria-label={t("datasetSelector.label")}
+              value={selected || null}
+              onChange={onChange}
+              placeholder={
+                error
+                  ? t("datasetSelector.error")
+                  : t("inputSelect.placeholder")
+              }
+              isDisabled={disabled || exists(error)}
+              options={options}
+            />
+          </div>
+        </TooltipTarget>
+        <Tooltip>
+          {disabled ? t("datasetSelector.disabled") : t("help.datasetSelector")}
+        </Tooltip>
+      </TooltipTrigger>
     );
   },
 );

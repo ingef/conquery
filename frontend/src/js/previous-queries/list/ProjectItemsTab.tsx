@@ -1,3 +1,4 @@
+import { FolderOpenIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -5,11 +6,10 @@ import { Group, Panel } from "react-resizable-panels";
 import { tv } from "tailwind-variants";
 import type { DatasetT } from "../../api/types";
 import type { StateT } from "../../app/reducers";
-import { usePrevious } from "../../common/helpers/usePrevious";
 import { ResizeHandle } from "../../common/ResizeHandle";
 import { useCollapsiblePanel } from "../../common/useCollapsiblePanel";
 import { selectFormConfigs } from "../../external-forms/form-configs/selectors";
-import EmptyList from "../../list/EmptyList";
+import { EmptyState } from "../../ui-components/EmptyState";
 import { canUploadResult } from "../../user/selectors";
 import ProjectItemsFilter from "../filter/ProjectItemsFilter";
 import type { ProjectItemsFilterStateT } from "../filter/reducer";
@@ -18,13 +18,19 @@ import ProjectItemsSearchBox from "../search/ProjectItemsSearchBox";
 import ProjectItemsTypeFilter from "../type-filter/ProjectItemsTypeFilter";
 import type { ProjectItemsTypeFilterStateT } from "../type-filter/reducer";
 import UploadQueryResults from "../upload/UploadQueryResults";
-import { useLoadFormConfigs, useLoadQueries } from "./actions";
+import {
+  useLoadDefaultFolders,
+  useLoadFormConfigs,
+  useLoadQueries,
+} from "./actions";
 import Folders from "./Folders";
 import FoldersToggleButton from "./FoldersToggleButton";
 import type { ProjectItemT } from "./ProjectItem";
 import { ProjectItems } from "./ProjectItems";
 import type { FormConfigT, PreviousQueryT } from "./reducer";
 import { selectPreviousQueries } from "./selector";
+
+const FOLDERS_SHARE = "25";
 
 const foldersAndQueries = tv({
   base: [
@@ -34,10 +40,6 @@ const foldersAndQueries = tv({
     "overflow-hidden",
     "relative",
   ],
-});
-
-const typeFilter = tv({
-  base: ["flex items-start", "mr-5", "pr-[10px]"],
 });
 
 const expand = tv({
@@ -59,26 +61,25 @@ const ProjectItemsTab = ({ datasetId }: PropsT) => {
     (state) => state.previousQueriesFolderFilter.areFoldersOpen,
   );
 
-  useLeftPaneSize({ areFoldersOpen });
-
   const dispatch = useDispatch();
   const onToggleFoldersOpen = () => dispatch(toggleFoldersOpen());
 
   const { items, loading } = useProjectItems({ datasetId });
 
-  const foldersPanelRef = useCollapsiblePanel(!areFoldersOpen);
+  const foldersPanelRef = useCollapsiblePanel(!areFoldersOpen, FOLDERS_SHARE);
+  // read once, a changing default resets the group's layout
+  const [defaultSize] = useState(() => (areFoldersOpen ? FOLDERS_SHARE : 0));
 
   return (
-    <>
-      <div className="mx-[10px] mt-2 flex items-start">
+    // the list takes the height left over by the search row
+    <div className="flex flex-col">
+      <div className="mx-[10px] mt-2 flex items-start gap-[5px]">
         <FoldersToggleButton
           active={areFoldersOpen}
           onClick={onToggleFoldersOpen}
         />
         <ProjectItemsSearchBox className="grow" />
-        {hasPermissionToUpload && (
-          <UploadQueryResults className="ml-[5px]" datasetId={datasetId} />
-        )}
+        {hasPermissionToUpload && <UploadQueryResults datasetId={datasetId} />}
       </div>
       <div className={foldersAndQueries()}>
         <Group orientation="horizontal">
@@ -88,7 +89,7 @@ const ProjectItemsTab = ({ datasetId }: PropsT) => {
             collapsible
             collapsedSize={0}
             minSize="10"
-            defaultSize={areFoldersOpen ? "25" : 0}
+            defaultSize={defaultSize}
           >
             <Folders className="py-2 pr-2 pl-0" />
           </Panel>
@@ -98,52 +99,26 @@ const ProjectItemsTab = ({ datasetId }: PropsT) => {
           />
           <Panel key="right">
             <div className={expand({ areFoldersOpen })}>
-              <div className="my-2 flex items-start">
-                <ProjectItemsTypeFilter className={typeFilter()} />
-                <ProjectItemsFilter className="flex items-start" />
+              <div className="my-2 flex items-start gap-5">
+                <ProjectItemsTypeFilter />
+                <ProjectItemsFilter />
               </div>
-              <div className="overflow-y-auto text-sm [-webkit-overflow-scrolling:touch]">
-                {items.length === 0 && !loading && (
-                  <EmptyList
-                    emptyMessage={t("previousQueries.noQueriesFound")}
-                  />
-                )}
-              </div>
-              <ProjectItems items={items} datasetId={datasetId} />
+              {items.length === 0 && !loading ? (
+                <EmptyState icon={FolderOpenIcon}>
+                  {t("previousQueries.noQueriesFound")}
+                </EmptyState>
+              ) : (
+                <ProjectItems items={items} datasetId={datasetId} />
+              )}
             </div>
           </Panel>
         </Group>
       </div>
-    </>
+    </div>
   );
 };
 
 export default ProjectItemsTab;
-
-const useLeftPaneSize = ({ areFoldersOpen }: { areFoldersOpen?: boolean }) => {
-  const wereFoldersOpen = usePrevious(areFoldersOpen);
-
-  const [leftPaneSize, setLeftPaneSize] = useState<number | string>(0);
-  const [storedPaneSize, setStoredPaneSize] = useState<number | string>(0);
-
-  useEffect(() => {
-    if (areFoldersOpen === wereFoldersOpen) {
-      return;
-    }
-
-    if (!areFoldersOpen) {
-      setStoredPaneSize(leftPaneSize);
-      setLeftPaneSize(0);
-    } else {
-      setLeftPaneSize(storedPaneSize || "25%");
-    }
-  }, [leftPaneSize, storedPaneSize, areFoldersOpen, wereFoldersOpen]);
-
-  return {
-    leftPaneSize,
-    setLeftPaneSize,
-  };
-};
 
 interface FilterAndFetchConfig {
   datasetId: DatasetT["id"] | null;
@@ -186,6 +161,7 @@ const useProjectItems = ({
 
   const { queries, loading: loadingQueries } = useQueries(config);
   const { formConfigs, loading: loadingFormConfigs } = useFormConfigs(config);
+  useDefaultFolders(datasetId);
 
   const baseItems =
     typeFilter === "queries"
@@ -236,6 +212,16 @@ const useQueries = ({
     queries,
     loading,
   };
+};
+
+const useDefaultFolders = (datasetId: DatasetT["id"] | null) => {
+  const loadDefaultFolders = useLoadDefaultFolders();
+
+  useEffect(() => {
+    if (datasetId) {
+      loadDefaultFolders(datasetId);
+    }
+  }, [datasetId, loadDefaultFolders]);
 };
 
 const useFormConfigs = ({
