@@ -19,6 +19,8 @@ import com.bakdata.conquery.models.query.filter.event.DateDistanceFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.sql.conversion.model.aggregator.DateDistanceSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
+import com.bakdata.conquery.util.validation.ResolvableId;
+import com.bakdata.conquery.util.validation.SupportedColumnTypes;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
