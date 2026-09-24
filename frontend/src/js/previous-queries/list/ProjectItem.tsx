@@ -286,7 +286,7 @@ const ProjectItem = ({
               )}
             </div>
           </div>
-          <div className="ml-[5px] flex shrink-0 items-center gap-[10px]">
+          <div className="ml-1 flex shrink-0 items-center gap-1">
             <C3 as="span">{executedAt}</C3>
             {secondaryId && (
               <TooltipTrigger>
