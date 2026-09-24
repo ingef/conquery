@@ -391,7 +391,7 @@ export const ComboBoxMultiField = ({
         }
       }}
       disableClick
-      tight
+      naked
       showImportButton={!props.isDisabled}
       onImportLines={onResolve}
     >

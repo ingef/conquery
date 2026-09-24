@@ -25,7 +25,7 @@ const dropzone = tv({
   ],
   variants: {
     isInitial: { true: "cursor-[initial]" },
-    tight: { true: "p-[5px]" },
+    naked: { true: "cursor-auto hover:shadow-none" },
   },
 });
 
@@ -52,7 +52,8 @@ interface PropsT<DroppableObject> {
   disableClick?: boolean;
   isInitial?: boolean;
   className?: string;
-  tight?: boolean;
+  /** no frame and no padding: a drop target around a field that is fine on its own */
+  naked?: boolean;
 
   showImportButton?: boolean;
   importButtonOutside?: boolean;
@@ -85,7 +86,7 @@ const DropzoneWithFileInput = <
   isInitial,
   className,
   accept,
-  tight,
+  naked,
   ref,
 }: PropsT<DroppableObject> & { ref?: Ref<HTMLDivElement> }) => {
   const { t } = useTranslation();
@@ -125,7 +126,9 @@ const DropzoneWithFileInput = <
 
         onDrop(item as DroppableObject | DragItemFile, monitor);
       }}
-      className={dropzone({ isInitial, tight, className })}
+      className={dropzone({ isInitial, naked, className })}
+      naked={naked}
+      bare={naked}
       ref={ref}
     >
       {(args) => (
