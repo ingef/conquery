@@ -21,8 +21,8 @@ import org.jooq.TableLike;
  * Joins the {@link ConceptCteStep#AGGREGATION_SELECT} with the interval packing branch for the aggregated validity date and optional validity date selects
  * {@link IntervalPackingSelectsCte} as well as optional additional predecessors.
  * <p>
- * Joining is optional - if a validity date is not present, the node is excluded from time aggregation or if there is no additional predecessor, no join will
- * take place. See {@link SumSqlAggregator} with distinct-by columns for an example of additional predecessors.
+ * Joining is optional. If interval packing is not required and there is no additional predecessor, no join will take place. See {@link SumSqlAggregator} with
+ * distinct-by columns for an example of additional predecessors.
  *
  * <pre>
  *     {@code
@@ -71,11 +71,6 @@ class JoinBranchesCte extends ConnectorCte {
 			QueryStep intervalPackingSelectsStep = IntervalPackingSelectsCte.forConnector(lastIntervalPackingStep, tableContext);
 			if (intervalPackingSelectsStep != lastIntervalPackingStep) {
 				queriesToJoin.add(intervalPackingSelectsStep);
-			}
-
-			// interval packing was required for event date selects, but we won't propagate it
-			if (tableContext.getConnectorTables().isExcludedFromTimeAggregation()) {
-				validityDate = Optional.empty();
 			}
 		}
 
