@@ -69,7 +69,7 @@ export const About = memo(() => {
     navigator.clipboard.writeText(
       `${backendVersions
         .map(({ name, version }) => `${name}: ${version}`)
-        .join("")} Frontend: ${frontendGitDescribe}`,
+        .join(" ")} Frontend: ${frontendGitDescribe}`,
     );
     setOpen(false);
   };

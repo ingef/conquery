@@ -396,7 +396,7 @@ export function EditorV2({
               )}
               {selectedNode && (
                 <KeyboardShortcutTooltip
-                  keyname={HOTKEYS.delete.keyname.join(" |")}
+                  keyname={HOTKEYS.delete.keyname.join(" | ")}
                 >
                   <Button
                     intent="tertiary"

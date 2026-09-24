@@ -37,7 +37,7 @@ const ConceptLabel = ({
     <C2 as="span">
       {searchTerm && searchTerm.length > 0 ? (
         <Highlighter
-          searchWords={searchTerm.split("")}
+          searchWords={searchTerm.split(" ")}
           textToHighlight={label}
         />
       ) : (
@@ -58,7 +58,7 @@ const RootConceptLabel = ({
     <C2 as="span">
       {searchTerm && searchTerm.length > 0 ? (
         <Highlighter
-          searchWords={searchTerm.split("")}
+          searchWords={searchTerm.split(" ")}
           textToHighlight={`${rootConcept.label} `}
         />
       ) : (

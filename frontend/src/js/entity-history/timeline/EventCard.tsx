@@ -188,7 +188,7 @@ const EventCard = ({
                   <C3 as="span">
                     {searchTerm && searchTerm.length > 0 ? (
                       <Highlighter
-                        searchWords={searchTerm.split("")}
+                        searchWords={searchTerm.split(" ")}
                         textToHighlight={row[column.label] as string}
                       />
                     ) : (
@@ -219,7 +219,7 @@ const EventCard = ({
                   <C3 as="span">
                     {searchTerm && searchTerm.length > 0 ? (
                       <Highlighter
-                        searchWords={searchTerm.split("")}
+                        searchWords={searchTerm.split(" ")}
                         textToHighlight={row[column.label] as string}
                       />
                     ) : (
