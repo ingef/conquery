@@ -15,7 +15,6 @@ import {
   tableWithDefaults,
 } from "../../model/table";
 import QueryNodeEditor from "../../query-node-editor/QueryNodeEditor";
-import { filterSuggestionToSelectOption } from "../../query-node-editor/suggestionsHelper";
 import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
 
 export const EditorV2QueryNodeEditor = ({
@@ -121,9 +120,7 @@ export const EditorV2QueryNodeEditor = ({
       const suggestions = await postPrefixForSuggestions(params);
 
       if (!config?.returnOnly) {
-        const newOptions: SelectOptionT[] = suggestions.values.map(
-          filterSuggestionToSelectOption,
-        );
+        const newOptions: SelectOptionT[] = suggestions.values;
 
         const filter = node.tables[tableIdx].filters[filterIdx];
         const options =

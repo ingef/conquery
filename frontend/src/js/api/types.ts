@@ -472,7 +472,7 @@ export interface PostConceptResolveResponseT {
   unknownCodes?: ConceptIdT[]; // TODO: Use "unknownConcepts"
 }
 
-export interface FilterSuggestion {
+interface FilterSuggestion {
   label: string;
   value: string;
   optionValue?: string;

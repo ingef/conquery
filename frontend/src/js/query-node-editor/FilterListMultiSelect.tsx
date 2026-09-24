@@ -10,7 +10,6 @@ import type {
 import { exists } from "../common/helpers/exists";
 import { ComboBoxMultiField } from "../ui-components/ComboBoxMultiField";
 import { withoutDuplicates } from "../ui-components/ComboBoxParts";
-import { filterSuggestionToSelectOption } from "./suggestionsHelper";
 import UploadFilterListModal from "./UploadFilterListModal";
 
 const PAGE_SIZE = 25;
@@ -122,7 +121,7 @@ const FilterListMultiSelect = ({
           { returnOnly: true },
         );
         if (!suggestions) break;
-        all.push(...suggestions.values.map(filterSuggestionToSelectOption));
+        all.push(...suggestions.values);
       }
       onChange(withoutDuplicates(value, all));
     } catch (e) {

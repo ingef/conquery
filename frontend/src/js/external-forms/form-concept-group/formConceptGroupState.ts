@@ -14,7 +14,6 @@ import { mergeFilterOptions } from "../../model/filter";
 import type { NodeResetConfig } from "../../model/node";
 import { resetSelects, type SelectConfig } from "../../model/select";
 import { resetTables, tableWithDefaults } from "../../model/table";
-import { filterSuggestionToSelectOption } from "../../query-node-editor/suggestionsHelper";
 import type {
   DragItemConceptTreeNode,
   FilterWithValueType,
@@ -503,9 +502,7 @@ export const updateFilterOptionsWithSuggestions = (
 
   const filter = concept.tables[tableIdx].filters[filterIdx];
 
-  const newOptions: SelectOptionT[] = data.values.map(
-    filterSuggestionToSelectOption,
-  );
+  const newOptions: SelectOptionT[] = data.values;
 
   const options =
     page === 0 ? newOptions : mergeFilterOptions(filter, newOptions);
