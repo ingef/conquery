@@ -75,7 +75,7 @@ const list = tv({
       primary: [
         "grow",
         "h-pane-header items-end",
-        "px-5",
+        "gap-1 px-5",
         "border-b border-gray-100",
       ],
       secondary: "pt-[3px] pl-[10px]",
@@ -95,13 +95,15 @@ const tab = tv({
   ],
   variants: {
     variant: {
+      // one weight for every tab, so switching moves nothing; the selected
+      // one shows by color and its line
       primary: [
-        "mr-[5px] px-3",
+        "px-3",
         "border-b-[3px] border-transparent",
-        textStyle({ size: 1, strong: true }),
+        textStyle({ size: 1 }),
         "h-[30px]",
         "text-gray-600",
-        "not-data-selected:data-hovered:border-primary-200 not-data-selected:data-hovered:text-black",
+        "not-data-selected:data-hovered:border-primary-200 not-data-selected:data-hovered:text-gray-800",
         "data-selected:border-primary-500 data-selected:text-primary-500",
       ],
       // sits on the box below it like a folder tab
