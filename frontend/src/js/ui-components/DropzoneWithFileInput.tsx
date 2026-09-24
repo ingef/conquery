@@ -35,7 +35,7 @@ const importButton = tv({
   variants: {
     outside: {
       true: "-top-[30px] right-0",
-      false: "top-[3px] right-2",
+      false: "-top-0.5 right-0",
     },
   },
 });
