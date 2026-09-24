@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.config;
 
 import java.net.URI;
 import java.net.URL;
+import java.util.List;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
