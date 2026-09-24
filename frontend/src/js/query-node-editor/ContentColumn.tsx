@@ -34,6 +34,7 @@ const contentCellGroup = tv({
 const ContentColumn = ({
   node,
   registerSection,
+  registerSentinel,
   blocklistedSelects,
   allowlistedSelects,
   onLoadFilterSuggestions,
@@ -47,6 +48,10 @@ const ContentColumn = ({
   node: StandardQueryNodeT;
   /** a ref callback per section key, for the navigation to follow the scroll */
   registerSection: (key: string) => (element: HTMLElement | null) => void;
+  /** ref callbacks for the 1 px marks at the content's start and end */
+  registerSentinel: (
+    edge: "start" | "end",
+  ) => (element: HTMLElement | null) => void;
   blocklistedSelects?: SelectorResultType[];
   allowlistedSelects?: SelectorResultType[];
   onSelectSelects: (value: SelectOptionT[]) => void;
@@ -72,6 +77,7 @@ const ContentColumn = ({
 
   return (
     <div className="flex w-full flex-col">
+      <div className="h-px shrink-0" ref={registerSentinel("start")} />
       <ContentCell
         className={contentCellGroup()}
         ref={registerSection(COMMON_SECTION)}
@@ -125,6 +131,7 @@ const ContentColumn = ({
           </ContentCell>
         );
       })}
+      <div className="h-px shrink-0" ref={registerSentinel("end")} />
     </div>
   );
 };

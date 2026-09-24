@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { tv } from "tailwind-variants";
 
@@ -109,10 +109,8 @@ const COMPACT_WIDTH = 600;
 
 const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-  const { activeSection, registerSection, scrollToSection, update } =
+  const { activeSection, registerSection, registerSentinel, scrollToSection } =
     useSectionSpy(scrollContainerRef);
-  // sections come and go with the included sources
-  useEffect(update, [node, update]);
 
   // no container query: compact mode also swaps in a tooltip
   const parentRef = useRef<HTMLDivElement | null>(null);
@@ -190,6 +188,7 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
             <ContentColumn
               node={node}
               registerSection={registerSection}
+              registerSentinel={registerSentinel}
               allowlistedSelects={props.allowlistedSelects}
               blocklistedSelects={props.blocklistedSelects}
               onToggleTimestamps={props.onToggleTimestamps}
