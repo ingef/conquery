@@ -19,7 +19,6 @@ import {
   TabListStateContext,
 } from "react-aria-components";
 import { tv } from "tailwind-variants";
-
 import { useHoverNavigate } from "./HoverNavigatable";
 import {
   Tooltip,
@@ -27,6 +26,7 @@ import {
   TooltipTrigger,
   tooltipDelay,
 } from "./Tooltip";
+import { textStyle } from "./Typography";
 
 type Variant = "primary" | "secondary";
 
@@ -72,7 +72,12 @@ const list = tv({
   variants: {
     variant: {
       // a line the tabs sit on, across the whole row
-      primary: ["grow", "px-5", "border-b border-gray-100"],
+      primary: [
+        "grow",
+        "h-pane-header items-end",
+        "gap-1 px-5",
+        "border-b border-gray-100",
+      ],
       secondary: "pt-[3px] pl-[10px]",
     },
   },
@@ -91,12 +96,13 @@ const tab = tv({
   variants: {
     variant: {
       primary: [
-        "mt-[6px] mr-[5px] px-3",
+        "px-3",
         "border-b-[3px] border-transparent",
-        "text-sm leading-[30px] font-bold uppercase tracking-wider",
-        "text-gray-500",
-        "not-data-selected:data-hovered:border-primary-200 not-data-selected:data-hovered:text-black",
-        "data-selected:border-primary-500 data-selected:text-primary-500",
+        textStyle({ size: 1 }),
+        "h-[30px]",
+        "text-gray-600",
+        "not-data-selected:data-hovered:border-primary-200 not-data-selected:data-hovered:text-gray-800",
+        "data-selected:border-primary-500 data-selected:text-primary-500 data-selected:font-medium",
       ],
       // sits on the box below it like a folder tab
       secondary: [
@@ -105,8 +111,8 @@ const tab = tv({
         "translate-y-px",
         "rounded-t",
         "border border-b-0 border-transparent",
-        "text-sm",
-        "text-gray-500",
+        textStyle({ size: 2 }),
+        "text-gray-600",
         "not-data-selected:data-hovered:border-gray-400",
         "data-selected:border-gray-500 data-selected:bg-bg-50 data-selected:text-gray-800",
       ],
@@ -118,6 +124,15 @@ const tab = tv({
 });
 
 const tabTarget = tv({ base: "block" });
+
+// the label reserves the width of its medium copy in a hidden line below,
+// so the selected tab turning medium moves no neighbor
+const label = tv({
+  base: [
+    "after:invisible after:block after:h-0 after:overflow-hidden",
+    "after:font-medium after:content-[attr(data-text)]",
+  ],
+});
 
 // one cell the content fills; the content defines its own rows inside.
 // minmax(0,1fr) keeps nowrap content from widening the cell past the panel.
@@ -224,6 +239,15 @@ export const Tab = ({ id, tooltip, children, ...props }: TabProps) => {
     },
   });
 
+  const content =
+    typeof children === "string" ? (
+      <span data-text={children} className={label()}>
+        {children}
+      </span>
+    ) : (
+      children
+    );
+
   return (
     <RacTab
       id={id}
@@ -240,12 +264,12 @@ export const Tab = ({ id, tooltip, children, ...props }: TabProps) => {
       {tooltip ? (
         <TooltipTrigger delay={tooltipDelay.long}>
           <TooltipTarget as="span" excludeFromTabOrder className={tabTarget()}>
-            {children}
+            {content}
           </TooltipTarget>
           <Tooltip>{tooltip}</Tooltip>
         </TooltipTrigger>
       ) : (
-        children
+        content
       )}
     </RacTab>
   );

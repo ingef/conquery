@@ -1,4 +1,4 @@
-import { Children, type ReactNode, type Ref } from "react";
+import type { ReactNode, Ref } from "react";
 import {
   ToggleButton as RacToggleButton,
   type ToggleButtonProps as RacToggleButtonProps,
@@ -9,14 +9,13 @@ import { buttonStyle, isIconOnly } from "./Button";
 import { useToggleButtonGroup } from "./ToggleButtonGroup";
 
 // quiet while off, so the selected state stands out: gray text that darkens
-// on hover; while selected, bold in the highlight color
+// on hover; while selected, the highlight color
 const toggleStyle = tv({
   extend: buttonStyle,
-  base: "data-selected:font-bold",
   variants: {
     intent: {
-      secondary: "text-gray-500 not-data-selected:hover:text-gray-800",
-      tertiary: "text-gray-500 not-data-selected:hover:text-gray-800",
+      secondary: "text-gray-600 not-data-selected:hover:text-gray-800",
+      tertiary: "text-gray-600 not-data-selected:hover:text-gray-800",
     },
     highlight: {
       primary: "data-selected:text-primary-500",
@@ -38,22 +37,6 @@ export interface ToggleButtonProps extends CommonProps {
   /** how it shows while selected: the primary color, or red for a warning state */
   highlight?: "primary" | "danger";
 }
-
-// bold text is wider than regular text: a label repeats itself in bold in a
-// zero-height pseudo-element, so the button keeps its bold width while off
-const reserveBoldWidth = (children: ReactNode) =>
-  Children.map(children, (child) =>
-    typeof child === "string" || typeof child === "number" ? (
-      <span
-        data-text={child}
-        className="after:invisible after:block after:h-0 after:overflow-hidden after:font-bold after:content-[attr(data-text)]"
-      >
-        {child}
-      </span>
-    ) : (
-      child
-    ),
-  );
 
 /**
  * A button whose look reflects a state that is on or off, in Button's look.
@@ -84,7 +67,7 @@ export const ToggleButton = ({
       })}
       {...props}
     >
-      {reserveBoldWidth(children)}
+      {children}
     </RacToggleButton>
   );
 };

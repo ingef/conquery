@@ -2,6 +2,7 @@ import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { type SetStateAction, useMemo, useRef, useState } from "react";
 import { tv } from "tailwind-variants";
 import { useClickOutside } from "../common/helpers/useClickOutside";
+import { textStyle } from "../ui-components/Typography";
 
 export interface SelectItem {
   label: string;
@@ -19,7 +20,7 @@ const input = tv({
   base: [
     "mt-[5px] w-[190px] h-5",
     "border-0 outline-none",
-    "text-sm font-normal",
+    textStyle({ size: 2 }),
     "disabled:cursor-not-allowed disabled:pointer-events-none",
   ],
 });
@@ -49,7 +50,7 @@ const listItem = tv({
 });
 
 const arrow = tv({
-  base: ["mt-[5px]", "size-[17px]", "text-gray-500", "cursor-pointer"],
+  base: ["mt-[5px]", "size-[17px]", "text-gray-600", "cursor-pointer"],
 });
 
 export default function SelectBox<T extends SelectItem>({

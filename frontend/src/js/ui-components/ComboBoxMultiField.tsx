@@ -18,7 +18,6 @@ import {
 } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-
 import type { SelectOptionT } from "../api/types";
 import { exists } from "../common/helpers/exists";
 import { getFileRows } from "../common/helpers/fileHelper";
@@ -43,6 +42,7 @@ import { type FieldLabelProps, Label } from "./Label";
 import { Popover } from "./Popover";
 import SelectEmptyPlaceholder from "./SelectEmptyPlaceholder";
 import TooManyValues from "./TooManyValues";
+import { C3, textStyle } from "./Typography";
 
 const MAX_SELECTED_ITEMS_LIMIT = 200;
 
@@ -57,7 +57,7 @@ const tag = tv({
     "rounded",
     "bg-gray-50",
     "px-[5px]",
-    "text-sm text-gray-800",
+    textStyle({ size: 2, tone: "default" }),
     "shadow-[0.5px_0.5px_1px_0_rgb(0_0_0/20%),inset_0_0_0_1px_#ccc]",
     "outline-none",
     "data-focus-visible:outline-2 data-focus-visible:outline-primary-500",
@@ -69,15 +69,14 @@ const tag = tv({
 const actionBar = tv({
   base: [
     "flex items-center justify-between",
+    "gap-2",
     "px-[10px] py-[5px]",
     "border-b border-gray-100",
   ],
 });
 
-const actionBarText = tv({ base: ["m-0 mr-[10px]", "text-xs text-gray-500"] });
-
 const loadingRow = tv({
-  base: ["flex justify-center", "py-[3px]", "text-gray-500"],
+  base: ["flex justify-center", "py-[3px]", "text-gray-600"],
 });
 
 export type ComboBoxMultiFieldProps = FieldLabelProps & {
@@ -319,12 +318,12 @@ export const ComboBoxMultiField = ({
           <FieldError>{errorMessage}</FieldError>
           <Popover className="w-(--trigger-width)">
             <div className={actionBar()}>
-              <p className={actionBarText()}>
+              <C3 tone="muted">
                 {t("inputMultiSelect.options", { count: listed.length })}
                 {exists(total) &&
                   total !== listed.length &&
                   t("inputMultiSelect.ofTotal", { count: total })}
-              </p>
+              </C3>
               <Button
                 intent="secondary"
                 size="sm"
@@ -392,7 +391,7 @@ export const ComboBoxMultiField = ({
         }
       }}
       disableClick
-      tight
+      naked
       showImportButton={!props.isDisabled}
       onImportLines={onResolve}
     >

@@ -1,51 +1,12 @@
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
-import { tv } from "tailwind-variants";
-
 import ErrorMessage from "../error-message/ErrorMessage";
 import {
   Tooltip,
   TooltipTarget,
   TooltipTrigger,
 } from "../ui-components/Tooltip";
-
-// tv consts named *Text to not shadow the label/description props
-const labelText = tv({
-  base: ["[word-break:break-word]", "text-base", "leading-[1.2]"],
-});
-
-const descriptionText = tv({
-  base: [
-    "mt-[3px]",
-    "[word-break:break-word]",
-    "uppercase",
-    "text-xs",
-    "leading-[1.2]",
-  ],
-});
-
-const previousQueryLabel = tv({
-  base: [
-    "mb-[3px]",
-    "text-xs",
-    "leading-[1.2]",
-    "uppercase",
-    "font-bold",
-    "text-primary-500",
-  ],
-});
-
-const rootNode = tv({
-  base: [
-    "mb-1",
-    "uppercase",
-    "font-bold",
-    "text-xs",
-    "leading-none",
-    "text-primary-500",
-    "[word-break:break-word]",
-  ],
-});
+import { C2, C3 } from "../ui-components/Typography";
 
 interface Props {
   tooltipText?: string;
@@ -68,19 +29,27 @@ const QueryNodeContent = ({
 
   return (
     <TooltipTrigger>
-      <TooltipTarget as="div" excludeFromTabOrder className="grow pt-[2px]">
+      <TooltipTarget
+        as="div"
+        excludeFromTabOrder
+        className="grow pt-[2px] [word-break:break-word]"
+      >
         {!isConceptQueryNode && (
-          <p className={previousQueryLabel()}>
+          <C3 tone="muted" strong>
             {t("queryEditor.previousQuery")}
-          </p>
+          </C3>
         )}
         {error ? (
           <ErrorMessage className="m-0" message={error} />
         ) : (
           <>
-            {rootNodeLabel && <p className={rootNode()}>{rootNodeLabel}</p>}
-            <p className={labelText()}>{label}</p>
-            {description && <p className={descriptionText()}>{description}</p>}
+            {rootNodeLabel && (
+              <C3 tone="muted" strong>
+                {rootNodeLabel}
+              </C3>
+            )}
+            <C2>{label}</C2>
+            {description && <C3>{description}</C3>}
           </>
         )}
       </TooltipTarget>

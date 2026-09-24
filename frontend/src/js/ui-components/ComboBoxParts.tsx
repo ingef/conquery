@@ -11,8 +11,8 @@ import {
 } from "react-aria-components";
 import ReactMarkdown from "react-markdown";
 import { tv } from "tailwind-variants";
-
 import type { SelectOptionT } from "../api/types";
+import { textStyle } from "./Typography";
 
 export const listBox = tv({
   base: [
@@ -30,7 +30,7 @@ export const listBoxItem = tv({
     "px-2 py-[3px]",
     "cursor-pointer",
     // explicit: through the portal an item would inherit body's styles
-    "text-base font-light text-gray-800",
+    textStyle({ size: 2, tone: "default" }),
     "outline-none",
     "transition-[background-color] duration-100",
     // hover like a menu item; a selected option keeps its tint, one step darker under the pointer

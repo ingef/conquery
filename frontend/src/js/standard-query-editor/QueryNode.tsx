@@ -28,7 +28,6 @@ const root = tv({
     "mx-auto",
     "p-[7px]",
     "rounded",
-    "text-sm",
     "text-left",
     "cursor-pointer",
     "transition-[background-color] duration-100",

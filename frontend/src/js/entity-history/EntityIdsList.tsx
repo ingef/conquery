@@ -2,6 +2,7 @@ import { LoaderCircleIcon } from "lucide-react";
 import { useMemo } from "react";
 import { tv } from "tailwind-variants";
 import { IncrementalList } from "../ui-components/IncrementalList";
+import { C3, textStyle } from "../ui-components/Typography";
 import type { useUpdateHistorySession } from "./actions";
 import type { EntityIdsStatus } from "./History";
 import type { EntityId } from "./reducer";
@@ -13,7 +14,6 @@ const row = tv({
     "h-6",
     "px-[3px] py-px",
     "cursor-pointer",
-    "text-xs",
   ],
   variants: {
     active: {
@@ -29,9 +29,7 @@ const entityStatus = tv({
     "border-2 border-primary-500",
     "bg-white",
     "px-1",
-    "text-xs",
-    "text-primary-500",
-    "font-bold",
+    textStyle({ size: 3, tone: "primary", strong: true }),
   ],
 });
 
@@ -78,15 +76,16 @@ export const EntityIdsList = ({
         })}
         onClick={() => updateHistorySession({ entityId, years: [] })}
       >
-        <div
-          className="shrink-0 text-xs text-gray-500"
-          style={{ width: numberWidth }}
-        >
-          #{index + 1}
+        <div className="shrink-0" style={{ width: numberWidth }}>
+          <C3 tone="muted">#{index + 1}</C3>
         </div>
-        <div className="shrink-0 font-bold">
-          <span className={blurrable({ blurred })}>{entityId.id}</span>{" "}
-          <span className="font-light text-gray-500">({entityId.kind})</span>
+        <div className="shrink-0">
+          <span className={blurrable({ blurred })}>
+            <C3 as="span">{entityId.id}</C3>
+          </span>{" "}
+          <C3 as="span" tone="muted">
+            ({entityId.kind})
+          </C3>
         </div>
         {loadingId === entityId.id && (
           <LoaderCircleIcon className="mx-[6px] my-[3px]" />

@@ -5,23 +5,16 @@ import type { ConceptIdT, ConceptT } from "../api/types";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import AdditionalInfoHoverable from "../info-pane/AdditionalInfoHoverable";
 import { Button } from "../ui-components/Button";
+import { C2, C3 } from "../ui-components/Typography";
 
 const concept = tv({
   base: [
     "flex flex-row items-center",
-    "mt-[5px]",
     "rounded",
     "border border-gray-500",
     "bg-white",
-    "px-[15px] py-[5px]",
+    "px-2 py-1",
   ],
-});
-
-const headline = tv({
-  base: ["m-0", "text-sm", "font-normal"],
-  variants: {
-    notFound: { true: "text-red" },
-  },
 });
 
 interface Props {
@@ -44,15 +37,11 @@ const ConceptEntry = ({
     <div className={concept()}>
       <div className="grow">
         {!node ? (
-          <h6 className={headline({ notFound: true })}>
-            {t("queryNodeEditor.nodeNotFound")}
-          </h6>
+          <C2 tone="danger">{t("queryNodeEditor.nodeNotFound")}</C2>
         ) : (
           <>
-            <h6 className={headline()}>{node.label}</h6>
-            {node.description && (
-              <p className="m-0 text-xs">{node.description}</p>
-            )}
+            <C2>{node.label}</C2>
+            {node.description && <C3>{node.description}</C3>}
           </>
         )}
       </div>

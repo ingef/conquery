@@ -82,7 +82,7 @@ const QueryGroupModal = ({
   const labelSuffix = useMemo(() => {
     return hasActiveDate ? (
       <span className="ml-5">
-        <Button intent="link" onPress={onResetAllDates}>
+        <Button intent="tertiary" size="sm" onPress={onResetAllDates}>
           <RotateCcwIcon />
           {t("queryNodeEditor.reset")}
         </Button>

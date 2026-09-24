@@ -15,6 +15,7 @@ import {
   ModalHeader,
   type ModalProps,
 } from "./Modal";
+import { C2 } from "./Typography";
 
 const content = tv({
   base: ["flex flex-col", "gap-5"],
@@ -23,8 +24,6 @@ const content = tv({
 const textarea = tv({
   base: ["font-mono", "w-full"],
 });
-
-const subtitle = tv({ base: "m-0" });
 
 const acceptedDropTypes = [NativeTypes.FILE];
 
@@ -138,8 +137,7 @@ const ImportModalContent = ({
       <ModalBody>
         <div className={content()}>
           {description && (
-            <p
-              className={subtitle()}
+            <C2
               // biome-ignore lint/security/noDangerouslySetInnerHtml: description is our own i18n text
               dangerouslySetInnerHTML={{ __html: description }}
             />

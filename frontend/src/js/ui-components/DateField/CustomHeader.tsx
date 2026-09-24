@@ -7,6 +7,7 @@ import type { SelectOptionT } from "../../api/types";
 import { useMonthName, useMonthNames } from "../../common/helpers/dateHelper";
 import { Button } from "../Button";
 import { ToggleButton } from "../ToggleButton";
+import { textStyle } from "../Typography";
 
 const root = tv({
   base: "flex items-center justify-between",
@@ -37,7 +38,7 @@ const optionList = tv({
 
 const monthYearLabel = tv({
   base: [
-    "font-bold",
+    textStyle({ size: 2, strong: true }),
     "cursor-pointer",
     "transition-opacity duration-100",
     "opacity-75 hover:opacity-100",

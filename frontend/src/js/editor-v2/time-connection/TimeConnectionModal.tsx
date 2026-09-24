@@ -6,6 +6,7 @@ import { exists } from "../../common/helpers/exists";
 import { ComboBoxField } from "../../ui-components/ComboBoxField";
 import { Modal, ModalBody, ModalHeader } from "../../ui-components/Modal";
 import { NumberField } from "../../ui-components/NumberField";
+import { C2 } from "../../ui-components/Typography";
 import type { TimeOperator, TimeTimestamp, TreeChildrenTime } from "../types";
 import { useGetNodeLabel } from "../util";
 
@@ -18,7 +19,7 @@ const row = tv({
 });
 
 const conceptName = tv({
-  base: ["grow", "whitespace-nowrap", "font-bold", "text-primary-500"],
+  base: ["grow", "whitespace-nowrap"],
 });
 
 export const TimeConnectionModal = memo(
@@ -118,9 +119,13 @@ export const TimeConnectionModal = memo(
                 />
               </div>
               <span className="whitespace-nowrap">
-                {t("editorV2.dateRangeFrom")}
+                <C2 as="span">{t("editorV2.dateRangeFrom")}</C2>
               </span>
-              <span className={conceptName()}>{a}</span>
+              <span className={conceptName()}>
+                <C2 as="span" strong tone="primary">
+                  {a}
+                </C2>
+              </span>
             </div>
             <div className={row()}>
               <div className="w-[100px]">
@@ -200,9 +205,13 @@ export const TimeConnectionModal = memo(
                 />
               </div>
               <span className="whitespace-nowrap">
-                {t("editorV2.dateRangeFrom")}
+                <C2 as="span">{t("editorV2.dateRangeFrom")}</C2>
               </span>
-              <span className={conceptName()}>{b}</span>
+              <span className={conceptName()}>
+                <C2 as="span" strong tone="primary">
+                  {b}
+                </C2>
+              </span>
             </div>
           </div>
         </ModalBody>

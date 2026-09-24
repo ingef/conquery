@@ -34,7 +34,7 @@ const ProjectItemRow = ({
 );
 
 const root = tv({
-  base: ["grow", "min-h-0", "py-1", "text-sm"],
+  base: ["grow", "min-h-0", "py-1"],
 });
 
 export const ProjectItems = ({

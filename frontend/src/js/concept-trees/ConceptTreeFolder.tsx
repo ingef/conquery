@@ -97,7 +97,7 @@ const ConceptTreeFolder = ({
   const isOpen = open || search.allOpen;
 
   return (
-    <div className="text-sm">
+    <div>
       <ConceptTreeNodeTextContainer
         node={{
           label: tree.label,

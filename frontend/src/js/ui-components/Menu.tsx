@@ -9,6 +9,7 @@ import {
 import { tv } from "tailwind-variants";
 
 import { Popover } from "./Popover";
+import { textStyle } from "./Typography";
 
 const menu = tv({
   base: [
@@ -26,10 +27,8 @@ const menuItem = tv({
     "flex items-center",
     "gap-[10px]",
     "rounded",
-    "px-[15px] py-2",
-    // explicit: through the portal an item would inherit body's line-height and light weight
-    "text-sm leading-none font-normal",
-    "text-gray-800",
+    "h-[30px] px-3",
+    textStyle({ size: 2, tone: "default" }),
     "whitespace-nowrap",
     "cursor-pointer",
     "outline-none",

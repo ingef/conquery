@@ -19,9 +19,9 @@ const CommonNodeSettings = ({
   const { t } = useTranslation();
 
   return (
-    <div className="mx-[10px] my-[15px]">
+    <div className="flex flex-col gap-2 p-2">
       {onToggleTimestamps && (
-        <div className="mb-[10px] max-w-[300px]">
+        <div className="max-w-[300px]">
           <CheckboxField
             tooltip={t("help.excludeTimestamps")}
             isSelected={excludeTimestamps}
@@ -32,7 +32,7 @@ const CommonNodeSettings = ({
         </div>
       )}
       {onToggleSecondaryIdExclude && (
-        <div className="mb-[10px] max-w-[300px]">
+        <div className="max-w-[300px]">
           <CheckboxField
             tooltip={t("help.excludeFromSecondaryId")}
             isSelected={excludeFromSecondaryId}

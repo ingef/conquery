@@ -44,9 +44,9 @@ const NodeSelects = ({
   );
 
   return (
-    <ContentCell headline={t("queryNodeEditor.commonSelects")}>
+    <ContentCell>
       <ComboBoxMultiField
-        aria-label={t("queryNodeEditor.commonSelects")}
+        label={t("queryNodeEditor.commonSelects")}
         onChange={onSelectSelects}
         value={value}
         options={options}

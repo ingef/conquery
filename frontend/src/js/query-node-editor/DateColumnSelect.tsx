@@ -15,7 +15,7 @@ const DateColumnSelect = ({
   return (
     <div>
       <ComboBoxField
-        label={t("queryNodeEditor.dateColumn")}
+        label={t("queryNodeEditor.selectValidityDate")}
         options={dateColumn.options}
         tooltip={dateColumn.tooltip ?? undefined}
         value={

@@ -11,13 +11,15 @@ import {
 } from "react-aria-components";
 import { tv } from "tailwind-variants";
 
+import { textStyle } from "./Typography";
+
 export const buttonStyle = tv({
   base: [
     "inline-flex items-center justify-center",
     "shrink-0",
     "rounded",
     "border",
-    "font-medium whitespace-nowrap",
+    "whitespace-nowrap",
     "cursor-pointer",
     "transition-[color,background-color,border-color,opacity] duration-100",
     "disabled:cursor-not-allowed disabled:opacity-40",
@@ -39,16 +41,15 @@ export const buttonStyle = tv({
       // reads as a text link, see the compound variant for how it flows with text
       link: [
         "bg-transparent border-transparent",
-        "text-gray-500",
-        "hover:text-gray-800 hover:underline",
+        "text-primary-500",
+        "hover:underline",
       ],
     },
     // every size is a fixed height, so text and icon-only buttons line up;
-    // leading follows the font size, the class merger drops one that precedes it
     size: {
-      sm: "h-6 px-2 gap-2 text-xs leading-none",
-      md: "h-[30px] px-[15px] gap-2 text-sm leading-none",
-      lg: "h-9 px-[18px] gap-3 text-base leading-none",
+      sm: [textStyle({ size: 3, strong: true }), "h-6 px-2 gap-2"],
+      md: [textStyle({ size: 2, strong: true }), "h-[30px] px-3 gap-2"],
+      lg: [textStyle({ size: 1, strong: true }), "h-9 px-4 gap-3"],
     },
     // an icon-only button is a square
     iconOnly: { true: "px-0" },
@@ -56,12 +57,10 @@ export const buttonStyle = tv({
     danger: { true: "" },
   },
   compoundVariants: [
-    // a link sits in flowing text: no box, no padding, no fixed height,
-    // the surrounding text's size and line-height (after the size variant)
+    // a link sits in flowing text: no box, no padding, no fixed height
     {
       intent: "link",
-      class:
-        "h-auto px-0 gap-1 text-[length:inherit] leading-[inherit] align-baseline",
+      class: "h-auto px-0 gap-1 align-baseline",
     },
     {
       danger: true,
@@ -85,15 +84,15 @@ interface CommonProps
 }
 
 /** what the button does in its context; the look follows */
-export type ButtonProps = CommonProps &
-  (
-    | {
-        intent?: "secondary" | "tertiary";
-        /** a destructive or warning action: red, in the look of the intent */
-        danger?: boolean;
-      }
-    | { intent: "primary" | "link"; danger?: never }
-  );
+export type ButtonLook =
+  | {
+      intent?: "secondary" | "tertiary";
+      /** a destructive or warning action: red, in the look of the intent */
+      danger?: boolean;
+    }
+  | { intent: "primary" | "link"; danger?: never };
+
+export type ButtonProps = CommonProps & ButtonLook;
 
 // lucide icons are forwardRef components, an object type; ours are functions
 const isIcon = (child: ReactNode) =>

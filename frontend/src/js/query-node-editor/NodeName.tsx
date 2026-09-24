@@ -2,6 +2,7 @@ import { memo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import EditableText from "../ui-components/EditableText";
+import { C2 } from "../ui-components/Typography";
 
 interface Props {
   allowEditing: boolean;
@@ -14,7 +15,7 @@ const NodeName = ({ allowEditing, label, onUpdateLabel }: Props) => {
   const [editingLabel, setEditingLabel] = useState<boolean>(false);
 
   return (
-    <div className="min-w-0 px-[15px] py-[10px]">
+    <div className="min-w-0">
       {allowEditing ? (
         <EditableText
           large
@@ -30,7 +31,7 @@ const NodeName = ({ allowEditing, label, onUpdateLabel }: Props) => {
           onToggleEdit={() => setEditingLabel(!editingLabel)}
         />
       ) : (
-        <span className="block truncate">{label}</span>
+        <C2 truncate>{label}</C2>
       )}
     </div>
   );

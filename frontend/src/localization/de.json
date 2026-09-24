@@ -1,6 +1,5 @@
 {
   "locale": "de",
-  "headline": "Anfragen und Analyse",
   "error": {
     "sorry": "Da ist etwas schiefgelaufen!",
     "description": "Aber Du hast nichts falsch gemacht. Das Problem liegt auf unserer Seite.",
@@ -94,6 +93,8 @@
     "queryNode": "Abfrageknoten",
     "conceptNodes": "Konzeptknoten",
     "conceptNodeTables": "Quellen",
+    "sections": "Abschnitte",
+    "includeTable": "{{table}} einbeziehen",
     "properties": "Allgemeine Einstellungen",
     "reset": "Zurücksetzen",
     "resetSettings": "Auf Standard zurücksetzen",
@@ -115,7 +116,6 @@
     "commonSelects": "Allgemeine Ausgabewerte",
     "nodeNotFound": "Konzept nicht gefunden",
     "selectValidityDate": "Relevanter Zeitraum",
-    "dateColumn": "Datumsspalte",
     "dropMoreConcepts": "Konzepte im Knoten",
     "emptyMenuColumn": "Keine weiteren Einstellungen"
   },
@@ -150,8 +150,8 @@
     "cancel": "Abbrechen",
     "delete": "Löschen",
     "done": "Fertig",
-    "and": "UND",
-    "or": "ODER",
+    "and": "und",
+    "or": "oder",
     "clear": "Zurücksetzen",
     "timeUnitDays": "Tage",
     "title": "Titel",
@@ -554,9 +554,9 @@
     "pasted": "Importiert"
   },
   "editorV2": {
-    "time": "ZEIT",
-    "and": "UND",
-    "or": "ODER",
+    "time": "Zeit",
+    "and": "und",
+    "or": "oder",
     "clear": "Editor zurücksetzen",
     "clearConfirm": "Jetzt zurücksetzen",
     "flip": "Drehen",

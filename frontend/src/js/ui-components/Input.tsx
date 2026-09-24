@@ -10,6 +10,8 @@ import {
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
+import { textStyle } from "./Typography";
+
 export const inputFrame = tv({
   base: [
     "flex items-center",
@@ -18,7 +20,7 @@ export const inputFrame = tv({
     "rounded",
     "border border-gray-400",
     "bg-white",
-    "text-sm font-normal text-gray-800",
+    textStyle({ size: 2, tone: "default" }),
     "data-focus-visible:outline-2 data-focus-visible:outline-primary-500",
     "data-disabled:opacity-50",
     "data-invalid:border-red",

@@ -11,10 +11,10 @@ import type {
   ConceptIdT,
   CurrencyConfigT,
 } from "../../api/types";
+import { C2 } from "../../ui-components/Typography";
 import type { ContentFilterValue, ContentType } from "../ContentControl";
 import { formatHistoryDayRange } from "../RowDates";
 import type { DateRow, EntityEvent } from "../reducer";
-
 import ConceptName from "./ConceptName";
 import { TinyLabel } from "./TinyLabel";
 import {
@@ -26,7 +26,7 @@ import {
 } from "./util/util";
 
 const grid = tv({
-  base: ["inline-grid", "gap-x-[10px] gap-y-[5px]"],
+  base: ["inline-grid", "gap-x-[10px] gap-y-[5px]", "whitespace-nowrap"],
 });
 
 const extraArea = tv({
@@ -125,11 +125,6 @@ const GroupedContent = ({
   );
 };
 
-// named cellText, not cell: the Cell component's `cell` prop would shadow it
-const cellText = tv({
-  base: ["whitespace-nowrap", "text-sm"],
-});
-
 const Cell = memo(
   ({
     columnDescription,
@@ -144,21 +139,18 @@ const Cell = memo(
   }) => {
     if (isDateColumn(columnDescription)) {
       return (cell as DateRow).from === (cell as DateRow).to ? (
-        <span className={cellText()}>
-          {formatHistoryDayRange((cell as DateRow).from)}
-        </span>
+        <C2 as="span">{formatHistoryDayRange((cell as DateRow).from)}</C2>
       ) : (
-        <span className={cellText()}>
+        <C2 as="span">
           {formatHistoryDayRange((cell as DateRow).from)} -{" "}
           {formatHistoryDayRange((cell as DateRow).to)}
-        </span>
+        </C2>
       );
     }
 
     if (isConceptColumn(columnDescription)) {
       return (
         <ConceptName
-          className={cellText()}
           rootConceptId={rootConceptIdsByColumn[columnDescription.label]}
           conceptId={cell as string}
           title={columnDescription.defaultLabel}
@@ -171,14 +163,17 @@ const Cell = memo(
       // props are otherwise too complex a union for tsc
       const numericFormatProps: NumericFormatProps<InputAttributes> = {
         ...currencyConfig,
-        className: cellText(),
         displayType: "text",
         value: parseFloat(cell as string),
       };
-      return <NumericFormat<InputAttributes> {...numericFormatProps} />;
+      return (
+        <C2 as="span">
+          <NumericFormat<InputAttributes> {...numericFormatProps} />
+        </C2>
+      );
     }
 
-    return <span className={cellText()}>{cell as ReactNode}</span>;
+    return <C2 as="span">{cell as ReactNode}</C2>;
   },
 );
 
