@@ -52,7 +52,7 @@ export const DropdownOption = memo(
           {hasDifferentFilterLabel ? (
             <IndexPrefix className={indexPrefix()}># {filterIdx}</IndexPrefix>
           ) : (
-            <FolderIcon className="text-primary-500" />
+            <FolderIcon data-filled className="text-primary-500" />
           )}
         </div>
         <span className={text({ bold: !hasDifferentFilterLabel })}>
