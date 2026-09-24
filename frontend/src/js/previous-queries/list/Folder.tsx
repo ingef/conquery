@@ -10,10 +10,12 @@ const root = tv({
     "px-[7px] py-[2px]",
     "rounded",
     "cursor-pointer",
-    "bg-transparent hover:bg-primary-50",
+    "hover:bg-gray-50",
   ],
   variants: {
-    active: { true: "bg-gray-100" },
+    selected: {
+      true: "bg-primary-50 text-primary-500 hover:bg-primary-100",
+    },
     special: { true: "italic" },
   },
 });
@@ -34,7 +36,7 @@ const Folder = ({
   resultCount: count,
   resultWords,
   folder,
-  active,
+  selected,
   special,
   empty,
   onClick,
@@ -43,7 +45,7 @@ const Folder = ({
   resultCount: number | null;
   resultWords: string[];
   className?: string;
-  active?: boolean;
+  selected?: boolean;
   special?: boolean;
   empty?: boolean;
   onClick: () => void;
@@ -54,7 +56,7 @@ const Folder = ({
     <div
       key={folder}
       onClick={onClick}
-      className={root({ active, special, className })}
+      className={root({ selected, special, className })}
       title={folder}
     >
       <FolderIcon data-filled={!special} className="mr-2 text-primary-500" />

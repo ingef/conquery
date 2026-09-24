@@ -5,7 +5,7 @@ import { tv } from "tailwind-variants";
 
 import { textStyle } from "../ui-components/Typography";
 
-// a chip that toggles: dotted while off, solid in the primary color while on
+// a chip that toggles: dotted while off, the selected look with a solid frame while on
 const badgeToggleButton = tv({
   base: [
     "inline-flex items-center",
@@ -15,10 +15,11 @@ const badgeToggleButton = tv({
     textStyle({ size: 2, tone: "muted", strong: true }),
     "whitespace-nowrap",
     "cursor-pointer",
-    "hover:bg-bg-50",
+    "hover:bg-gray-50",
+    "outline-none data-focus-visible:outline-2 data-focus-visible:outline-primary-500",
     "data-selected:border-solid data-selected:border-primary-500",
-    "data-selected:bg-white data-selected:hover:bg-gray-50",
-    "data-selected:text-primary-500",
+    "data-selected:bg-primary-50 data-selected:text-primary-500",
+    "data-selected:hover:bg-primary-100",
   ],
 });
 
@@ -33,7 +34,7 @@ const superScript = tv({
 
 interface Props {
   className?: string;
-  active?: boolean;
+  selected?: boolean;
   onClick: () => void;
   children: ReactNode;
   hotkey?: string;
@@ -41,7 +42,7 @@ interface Props {
 
 export const BadgeToggleButton = ({
   className,
-  active,
+  selected,
   onClick,
   children,
   hotkey,
@@ -51,10 +52,10 @@ export const BadgeToggleButton = ({
   return (
     <ToggleButton
       className={badgeToggleButton({ className })}
-      isSelected={!!active}
+      isSelected={!!selected}
       onChange={onClick}
     >
-      {!active && "+ "}
+      {!selected && "+ "}
       {children}
       {hotkey && <span className={superScript()}>{hotkey}</span>}
     </ToggleButton>

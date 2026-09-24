@@ -85,7 +85,7 @@ export const EntityHeader = ({
         {entityStatusOptions.map((option, i) => (
           <span key={option.label + i}>
             <BadgeToggleButton
-              active={!!status.find((opt) => opt.value === option.value)}
+              selected={!!status.find((opt) => opt.value === option.value)}
               onClick={toggleOption(option)}
               hotkey={i < 9 ? String(i + 1) : undefined}
             >

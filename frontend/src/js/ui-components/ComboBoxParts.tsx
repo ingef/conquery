@@ -25,6 +25,7 @@ export const listBox = tv({
 
 export const listBoxItem = tv({
   base: [
+    "flex items-center gap-2",
     "mb-[2px]",
     "rounded",
     "px-2 py-[3px]",
@@ -35,7 +36,8 @@ export const listBoxItem = tv({
     "transition-[background-color] duration-100",
     // hover like a menu item; a selected option keeps its tint, one step darker under the pointer
     "data-focused:bg-gray-50",
-    "data-selected:bg-primary-50 data-selected:data-focused:bg-primary-100",
+    "data-selected:bg-primary-50 data-selected:text-primary-500",
+    "data-selected:data-focused:bg-primary-100",
     "data-disabled:cursor-not-allowed data-disabled:opacity-40",
     // react-markdown wraps the label in a paragraph
     "[&_p]:m-0",

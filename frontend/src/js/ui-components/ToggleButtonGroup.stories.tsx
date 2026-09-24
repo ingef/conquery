@@ -49,7 +49,7 @@ const detailLevels = [
   { id: "full", icon: TargetIcon, label: "Everything" },
 ];
 
-/** one choice: a segmented bar with the chosen option filled, in every size */
+/** one choice: a segmented bar, the chosen option in the selected look, in every size */
 export const SingleSelection: Story = {
   render: () => (
     <div className="flex flex-col items-start gap-3">
