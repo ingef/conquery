@@ -91,7 +91,7 @@ const ConceptName = ({ className, title, rootConceptId, conceptId }: Props) => {
 
   return (
     <div title={title} className={conceptRoot({ className })}>
-      <FolderIcon className="text-primary-500" />
+      <FolderIcon data-filled className="text-primary-500" />
       <span>
         {rootConcept && (
           <RootConceptLabel rootConcept={rootConcept} searchTerm={searchTerm} />
