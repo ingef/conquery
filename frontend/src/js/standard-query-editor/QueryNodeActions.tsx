@@ -94,6 +94,7 @@ const QueryNodeActions = (props: Props) => {
           <Button
             aria-label={t("queryEditor.expand")}
             intent="tertiary"
+            size="sm"
             onPress={() => {
               props.onExpandClick();
             }}
