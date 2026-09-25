@@ -1,4 +1,9 @@
-import { ChevronDownIcon, LoaderCircleIcon, XIcon } from "lucide-react";
+import {
+  CheckIcon,
+  ChevronDownIcon,
+  LoaderCircleIcon,
+  XIcon,
+} from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import {
   ButtonContext,
@@ -347,7 +352,14 @@ export const ComboBoxMultiField = ({
                     isDisabled={option.disabled}
                     className={listBoxItem()}
                   >
-                    <OptionLabel option={option} />
+                    {({ isSelected }) => (
+                      <>
+                        <span className="min-w-0 grow">
+                          <OptionLabel option={option} />
+                        </span>
+                        {isSelected && <CheckIcon className="shrink-0" />}
+                      </>
+                    )}
                   </ListBoxItem>
                 )}
               </Collection>

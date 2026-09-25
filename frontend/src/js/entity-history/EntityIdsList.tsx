@@ -16,8 +16,8 @@ const row = tv({
     "cursor-pointer",
   ],
   variants: {
-    active: {
-      true: "bg-primary-50",
+    selected: {
+      true: "bg-primary-50 text-primary-500 hover:bg-primary-100",
       false: "bg-white hover:bg-gray-50",
     },
   },
@@ -71,7 +71,7 @@ export const EntityIdsList = ({
       <div
         key={entityId.id}
         className={row({
-          active: entityId.id === currentEntityId?.id,
+          selected: entityId.id === currentEntityId?.id,
           className: "scrollable-list-item",
         })}
         onClick={() => updateHistorySession({ entityId, years: [] })}

@@ -37,6 +37,10 @@ const regions = [
   "Coast",
   "Highlands",
   "Islands",
+  "Lakes",
+  "Plains",
+  "Valleys",
+  "Border",
 ];
 
 const detailLevels = [
@@ -45,7 +49,7 @@ const detailLevels = [
   { id: "full", icon: TargetIcon, label: "Everything" },
 ];
 
-/** exactly one button selected, in every size */
+/** one choice: a segmented bar, the chosen option in the selected look, in every size */
 export const SingleSelection: Story = {
   render: () => (
     <div className="flex flex-col items-start gap-3">
@@ -89,7 +93,7 @@ export const WithTooltips: Story = {
   ),
 };
 
-/** options that come from data continue on the next line when the group may wrap */
+/** options that come from data continue on the next line when the group may wrap; the bar keeps its corners at the top left and bottom right */
 export const Wrapping: Story = {
   render: () => (
     <div className="flex w-72 flex-col gap-3 border border-dashed border-gray-400 p-3">
@@ -111,7 +115,7 @@ export const Wrapping: Story = {
   ),
 };
 
-/** separate buttons, any number of them on: a filter */
+/** independent switches, any number of them on: separate buttons with a gap */
 export const MultipleSelection: Story = {
   render: () => (
     <ToggleButtonGroup
@@ -135,7 +139,7 @@ export const MultipleSelection: Story = {
   ),
 };
 
-/** a vertical toolbar of icon toggles, one of them on, tooltips to the side */
+/** a vertical bar of icon toggles, one of them on, tooltips to the side */
 export const VerticalIcons: Story = {
   render: () => (
     <ToggleButtonGroup

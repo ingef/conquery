@@ -23,6 +23,7 @@ export const buttonStyle = tv({
     "cursor-pointer",
     "transition-[color,background-color,border-color,opacity] duration-100",
     "disabled:cursor-not-allowed disabled:opacity-40",
+    "outline-none data-focus-visible:outline-2 data-focus-visible:outline-primary-500",
   ],
   variants: {
     intent: {
