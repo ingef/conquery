@@ -6,10 +6,10 @@ import { useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
 import type { SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
-import { Heading3 } from "../headings/Headings";
 import { Button } from "../ui-components/Button";
 import ProgressBar from "../ui-components/ProgressBar";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
+import { C1, C2, C3, H3 } from "../ui-components/Typography";
 
 import { SettingsModal } from "./SettingsModal";
 
@@ -26,27 +26,6 @@ const root = tv({
 
 const baseInfo = tv({
   base: ["flex justify-between", "gap-[15px]", "overflow-hidden"],
-});
-
-const heading = tv({
-  base: [
-    "shrink-0",
-    "m-0",
-    "whitespace-nowrap",
-    "text-ellipsis",
-    "overflow-hidden",
-  ],
-  variants: {
-    end: { true: "justify-self-end" },
-  },
-});
-
-const infoText = tv({
-  base: ["text-base", "text-gray-500", "font-normal"],
-});
-
-const specialText = tv({
-  base: ["m-0", "text-xs", "uppercase", "font-normal", "text-gray-500"],
 });
 
 interface Props {
@@ -72,11 +51,11 @@ export const NavigationHeader = memo(
     return (
       <div className={root({ className })}>
         <div className={baseInfo()}>
-          <div style={{ overflow: "hidden" }}>
-            <Heading3 className={heading()} title={label}>
+          <div className="min-w-0">
+            <H3 truncate title={label}>
               {label}
-            </Heading3>
-            <p className={specialText()}>{t("history.history")}</p>
+            </H3>
+            <C3 tone="muted">{t("history.history")}</C3>
           </div>
           <TooltipTrigger>
             <DialogTrigger>
@@ -94,15 +73,11 @@ export const NavigationHeader = memo(
             <Tooltip>{t("history.settings.headline")}</Tooltip>
           </TooltipTrigger>
         </div>
-        <div className="grid gap-x-2 grid-cols-[auto_1fr] items-center">
-          <Heading3 className={heading({ end: true })}>{idsCount}</Heading3>
-          <span className={infoText()}>
-            {t("common.entitiesFound", { count: idsCount })}
-          </span>
-          <Heading3 className={heading({ end: true })}>{markedCount}</Heading3>
-          <span className={infoText()}>
-            {t("history.marked", { count: markedCount })}
-          </span>
+        <div className="grid grid-cols-[auto_1fr] items-baseline gap-x-2 text-right">
+          <C1 strong>{idsCount}</C1>
+          <C2 tone="muted">{t("common.entitiesFound", { count: idsCount })}</C2>
+          <C1 strong>{markedCount}</C1>
+          <C2 tone="muted">{t("history.marked", { count: markedCount })}</C2>
         </div>
         <ProgressBar donePercent={100 * (markedCount / idsCount)} />
       </div>

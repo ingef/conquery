@@ -14,7 +14,6 @@ import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import { useDatasetId } from "../dataset/selectors";
 import { isMultiSelectFilter, resetFilters } from "../model/filter";
 import { nodeIsElement } from "../model/node";
-import { filterSuggestionToSelectOption } from "../query-node-editor/suggestionsHelper";
 import TableFilters from "../query-node-editor/TableFilters";
 import type {
   BigMultiSelectFilterWithValueType,
@@ -100,12 +99,12 @@ const useFilterState = (table: TableT) => {
 
       const nextOptions =
         page === 0
-          ? suggestions.values.map(filterSuggestionToSelectOption)
+          ? suggestions.values
           : [
               ...filter.options,
-              ...suggestions.values
-                .filter((v) => !filter.options.find((o) => o.value === v.value))
-                .map(filterSuggestionToSelectOption),
+              ...suggestions.values.filter(
+                (v) => !filter.options.find((o) => o.value === v.value),
+              ),
             ];
 
       const filterParams = {

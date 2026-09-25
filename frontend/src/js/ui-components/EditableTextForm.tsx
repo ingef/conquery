@@ -5,9 +5,16 @@ import { tv } from "tailwind-variants";
 import { useClickOutside } from "../common/helpers/useClickOutside";
 import { Button } from "./Button";
 import { Tooltip, TooltipTrigger } from "./Tooltip";
+import { textStyle } from "./Typography";
 
 const input = tv({
-  base: ["h-[30px]", "px-2", "rounded", "border border-gray-500", "text-sm"],
+  base: [
+    "h-[30px]",
+    "px-2",
+    "rounded",
+    "border border-gray-500",
+    textStyle({ size: 2 }),
+  ],
 });
 
 const form = tv({

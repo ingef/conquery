@@ -8,6 +8,7 @@ import RcTable from "rc-table";
 import { type ComponentProps, memo, useMemo, useRef } from "react";
 import { tv } from "tailwind-variants";
 import type { GetQueryResponseDoneT, GetQueryResponseT } from "../api/types";
+import { C2 } from "../ui-components/Typography";
 import { useCustomTableRenderers } from "./tableUtils";
 
 interface Props {
@@ -70,7 +71,11 @@ export default memo(function Table({
           key: field.name,
           render: (value: string | Vector) => {
             const rendered = renderer(value);
-            return <span title={rendered}>{rendered}</span>;
+            return (
+              <C2 as="span" title={rendered}>
+                {rendered}
+              </C2>
+            );
           },
         };
       }),

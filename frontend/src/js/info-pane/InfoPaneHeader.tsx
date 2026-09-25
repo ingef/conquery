@@ -4,29 +4,26 @@ import { Button as RacButton } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 import { tv } from "tailwind-variants";
+import { H3 } from "../ui-components/Typography";
 import { toggleInfoPane } from "./actions";
 
 const header = tv({
   base: [
     "flex items-center",
-    "h-[40px]",
+    "h-pane-header",
     "shrink-0",
     "border-b border-gray-100",
     "bg-white",
+    // level with the tab labels, which sit above a 3 px underline
     "px-5 pt-1",
-    "text-sm",
-    "font-bold",
-    "uppercase",
-    "tracking-[1px]",
-    "text-primary-500",
   ],
 });
 
-// as tall as the header it sits in
+// as tall as the header it sits in, above the header's line
 const toggleButton = tv({
   base: [
     "absolute top-header right-0",
-    "h-[39px] w-[30px]",
+    "h-[37px] w-[30px]",
     "flex items-center justify-center",
     "text-gray-800",
     "cursor-pointer",
@@ -49,7 +46,9 @@ export const InfoPaneHeader = memo(() => {
       >
         <ChevronLeftIcon />
       </RacButton>
-      <h2 className={header()}>{t("infoPane.headline")}</h2>
+      <div className={header()}>
+        <H3 as="h2">{t("infoPane.headline")}</H3>
+      </div>
     </>
   );
 });

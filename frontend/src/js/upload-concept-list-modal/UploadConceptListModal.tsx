@@ -44,7 +44,7 @@ import { DropdownOption } from "./DropdownOption";
 import type { UploadConceptListModalStateT } from "./reducer";
 
 const bigIcon = tv({
-  base: ["text-xl", "mr-[10px]"],
+  base: "mr-[10px]",
   variants: {
     kind: {
       error: "text-red",

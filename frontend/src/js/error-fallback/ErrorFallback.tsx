@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import { Button } from "../ui-components/Button";
+import { C2, H3 } from "../ui-components/Typography";
 
 const root = tv({
   base: [
@@ -11,11 +12,7 @@ const root = tv({
   ],
 });
 
-const heading = tv({ base: ["m-0", "text-base"] });
-
-const description = tv({
-  base: ["m-0", "max-w-[300px]", "text-sm", "text-justify"],
-});
+const description = tv({ base: ["max-w-[300px]", "text-justify"] });
 
 const reloadButton = tv({ base: "mt-[10px]" });
 
@@ -30,11 +27,15 @@ const ErrorFallback = ({
 
   return (
     <div className={root()}>
-      <h3 className={heading()}>{t("error.sorry")}</h3>
-      <p className={description()}>{t("error.description")}</p>
+      <H3>{t("error.sorry")}</H3>
+      <div className={description()}>
+        <C2>{t("error.description")}</C2>
+      </div>
       {allowFullRefresh && (
         <>
-          <p className={description()}>{t("error.reloadDescription")}</p>
+          <div className={description()}>
+            <C2>{t("error.reloadDescription")}</C2>
+          </div>
           <div className={reloadButton()}>
             <Button intent="secondary" onPress={() => window.location.reload()}>
               {t("error.reload")}
@@ -44,7 +45,9 @@ const ErrorFallback = ({
       )}
       {onReset && (
         <>
-          <p className={description()}>{t("error.resetDescription")}</p>
+          <div className={description()}>
+            <C2>{t("error.resetDescription")}</C2>
+          </div>
           <div className={reloadButton()}>
             <Button intent="secondary" onPress={onReset}>
               {t("error.reset")}

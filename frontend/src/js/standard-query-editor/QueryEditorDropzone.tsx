@@ -9,6 +9,7 @@ import DropzoneWithFileInput, {
   type DragItemFile,
 } from "../ui-components/DropzoneWithFileInput";
 
+import { C2 } from "../ui-components/Typography";
 import { EmptyQueryEditorDropzone } from "./EmptyQueryEditorDropzone";
 import type { StandardQueryNodeT } from "./types";
 
@@ -74,9 +75,7 @@ const QueryEditorDropzone = ({
       {() => (
         <>
           {isInitial && <EmptyQueryEditorDropzone />}
-          {!isInitial && (
-            <p className="text-sm">{t("dropzone.dragElementPlease")}</p>
-          )}
+          {!isInitial && <C2>{t("dropzone.dragElementPlease")}</C2>}
         </>
       )}
     </DropzoneWithFileInput>

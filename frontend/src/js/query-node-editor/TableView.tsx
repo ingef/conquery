@@ -95,9 +95,10 @@ const TableView = ({
   return (
     <div className="flex grow flex-col">
       {displaySelects && (
-        <ContentCell headline={t("queryNodeEditor.selects")}>
+        <ContentCell>
           {table.selects && table.selects.length > 0 && (
             <TableSelects
+              label={t("queryNodeEditor.selects")}
               selects={table.selects}
               allowlistedSelects={allowlistedSelects}
               blocklistedSelects={blocklistedSelects}
@@ -108,7 +109,7 @@ const TableView = ({
         </ContentCell>
       )}
       {displayDateColumnOptions && (
-        <ContentCell headline={t("queryNodeEditor.selectValidityDate")}>
+        <ContentCell>
           <DateColumnSelect
             dateColumn={table.dateColumn!}
             onSelectDateColumn={(value) => onSetDateColumn(tableIdx, value)}

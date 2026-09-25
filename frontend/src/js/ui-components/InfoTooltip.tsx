@@ -11,10 +11,13 @@ import {
 } from "./Tooltip";
 
 const icon = tv({
-  base: ["text-gray-500 hover:text-gray-800", "transition-all duration-100"],
+  base: ["text-gray-600 hover:text-gray-800", "transition-all duration-100"],
 });
 
-const spanContainer = tv({ base: ["inline-block", "px-[7px]"] });
+// centered next to text, in a flex row and inside a line
+const spanContainer = tv({
+  base: ["inline-flex items-center", "align-middle", "px-[7px]"],
+});
 
 const InfoTooltip = ({
   className,

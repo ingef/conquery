@@ -5,15 +5,11 @@ import { tv } from "tailwind-variants";
 import type { SelectOptionT } from "../api/types";
 import { useClickOutside } from "../common/helpers/useClickOutside";
 import { Button } from "./Button";
-import InputMultiSelect from "./InputMultiSelect/InputMultiSelect";
+import { ComboBoxMultiField } from "./ComboBoxMultiField";
 import { Tooltip, TooltipTrigger } from "./Tooltip";
 
 const form = tv({
   base: "flex items-start",
-});
-
-const multiSelect = tv({
-  base: ["z-2", "grow"],
 });
 
 const EditableTagsForm = ({
@@ -22,13 +18,11 @@ const EditableTagsForm = ({
   loading,
   onSubmit,
   onCancel,
-  label,
   availableTags,
 }: {
   className?: string;
   tags?: string[];
   loading?: boolean;
-  label?: string;
   onSubmit: (tags: string[]) => void;
   onCancel?: () => void;
   availableTags: string[];
@@ -52,19 +46,20 @@ const EditableTagsForm = ({
 
   return (
     <form ref={ref} className={form({ className })} onSubmit={submit}>
-      <InputMultiSelect
-        className={multiSelect()}
-        creatable
-        autoFocus
-        label={label}
-        value={values}
-        options={availableTags.map((t) => ({
-          label: t,
-          value: t,
-        }))}
-        onChange={setValues}
-        placeholder={t("inputMultiSelect.tagPlaceholder")}
-      />
+      <div className="grow">
+        <ComboBoxMultiField
+          aria-label={t("inputMultiSelect.folders")}
+          creatable
+          autoFocus
+          value={values}
+          options={availableTags.map((t) => ({
+            label: t,
+            value: t,
+          }))}
+          onChange={setValues}
+          placeholder={t("inputMultiSelect.tagPlaceholder")}
+        />
+      </div>
       <div className="ml-[3px]">
         <TooltipTrigger>
           <Button

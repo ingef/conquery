@@ -18,7 +18,6 @@ import {
   queryGroupModalResetAllDates,
   queryGroupModalSetDate,
 } from "../query-group-modal/actions";
-import { filterSuggestionToSelectOption } from "../query-node-editor/suggestionsHelper";
 import { acceptUploadedConceptsOrFilter } from "../query-upload-concept-list-modal/actions";
 import { isMovedObject } from "../ui-components/Dropzone";
 
@@ -569,9 +568,7 @@ const onLoadFilterSuggestionsSuccess = (
   state: StandardQueryStateT,
   { data, ...rest }: ActionType<typeof loadFilterSuggestionsSuccess>["payload"],
 ) => {
-  const newOptions: SelectOptionT[] = data.values.map(
-    filterSuggestionToSelectOption,
-  );
+  const newOptions: SelectOptionT[] = data.values;
 
   const options =
     rest.page === 0
