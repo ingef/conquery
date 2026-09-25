@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
+import javax.annotation.Nullable;
 
 import c10n.C10N;
 import com.bakdata.conquery.ConqueryConstants;

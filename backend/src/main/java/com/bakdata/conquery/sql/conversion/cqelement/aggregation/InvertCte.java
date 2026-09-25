@@ -20,7 +20,6 @@ import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.TableLike;
 import org.jooq.TableOnConditionStep;
-import org.jooq.impl.DSL;
 
 /**
  * Concept for date range inversion taken from <a href="https://explainextended.com/2009/11/09/inverting-date-ranges/">Inverting date ranges</a>.

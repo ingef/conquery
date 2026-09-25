@@ -2,12 +2,12 @@ package com.bakdata.conquery.integration.common;
 
 import java.util.Collections;
 import java.util.List;
-
-import com.bakdata.conquery.util.support.StandaloneSupport;
-import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+
+import com.bakdata.conquery.util.support.StandaloneSupport;
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Data;
 
 @Data

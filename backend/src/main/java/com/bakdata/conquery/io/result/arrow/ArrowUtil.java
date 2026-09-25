@@ -82,7 +82,7 @@ public class ArrowUtil {
 	private static Field listField(@NonNull String uniqueName, ResultType type) {
 		final ResultType elementType = ((ResultType.ListT<?>) type).getElementType();
 		final Field nestedField = fieldFor(elementType, uniqueName);
-		
+
 		return new Field(uniqueName, FieldType.nullable(ArrowType.List.INSTANCE), List.of(nestedField));
 	}
 

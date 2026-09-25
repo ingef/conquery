@@ -14,7 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 public class ResourceFile {
 	@Getter(onMethod_=@JsonValue)
 	private final String path;
-	
+
 	@JsonCreator
 	public ResourceFile(String path) {
 		this.path = StringUtils.prependIfMissing(path, "/");

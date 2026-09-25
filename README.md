@@ -79,6 +79,23 @@ configurations, such as:
 
 ## Development
 
+### Java source hygiene
+
+We currently use minimal spotless rules, which are checked in the CI.
+
+Apply or check these rules from the repository root:
+
+```bash
+mvn spotless:apply
+mvn spotless:check
+```
+
+Install the repository's pre-push check once per clone:
+
+```bash
+mvn spotless:install-git-pre-push-hook
+```
+
 ### Testing
 
 #### Integration Tests

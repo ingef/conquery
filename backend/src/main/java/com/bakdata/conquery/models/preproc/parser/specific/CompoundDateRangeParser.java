@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.preproc.parser.specific;
 
+import jakarta.validation.constraints.NotEmpty;
+
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
 import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
@@ -8,7 +10,6 @@ import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import io.dropwizard.validation.ValidationMethod;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;

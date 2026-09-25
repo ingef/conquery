@@ -1,5 +1,9 @@
 package com.bakdata.conquery.sql.conversion.query;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
+
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQNegation;
 import com.bakdata.conquery.models.query.DateAggregationMode;
@@ -12,10 +16,6 @@ import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.RequiredArgsConstructor;
 import org.jooq.*;
 import org.jooq.Record;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {

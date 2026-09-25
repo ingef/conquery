@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.query.preview;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;

@@ -16,7 +16,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import org.jooq.Condition;
-import org.jooq.impl.DSL;
 
 /**
  * This condition requires that the selected Column has a value.

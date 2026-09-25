@@ -15,9 +15,9 @@ import lombok.Getter;
 public final class GroupId extends PermissionOwnerId<Group> {
 
 	public static final String TYPE = "group";
-	
+
 	private final String group;
-	
+
 	public GroupId(String group) {
 		super();
 		this.group = group;

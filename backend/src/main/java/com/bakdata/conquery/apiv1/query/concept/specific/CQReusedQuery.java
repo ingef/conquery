@@ -3,7 +3,7 @@ package com.bakdata.conquery.apiv1.query.concept.specific;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
-
+import jakarta.validation.Valid;
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.apiv1.query.CQElement;
@@ -25,7 +25,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonView;
-import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

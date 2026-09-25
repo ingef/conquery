@@ -17,7 +17,7 @@ public final class ConceptTreeChildId extends ConceptElementId<ConceptTreeChild>
 
 	private final ConceptElementId<?> parent;
 	private final String name;
-	
+
 	@Override
 	public DatasetId getDataset() {
 		return parent.getDataset();

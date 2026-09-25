@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.config.auth;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
+import jakarta.ws.rs.client.Client;
 
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
@@ -19,7 +20,6 @@ import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.servlets.tasks.Task;
 import io.dropwizard.validation.ValidationMethod;
-import jakarta.ws.rs.client.Client;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;

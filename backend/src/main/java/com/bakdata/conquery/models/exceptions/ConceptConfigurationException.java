@@ -31,7 +31,7 @@ public class ConceptConfigurationException extends JSONException {
 	public ConceptConfigurationException(File f, String message, Throwable e) {
 		super("In Concept Tree file "+LogUtil.printPath(f)+": "+message,e);
 	}
-	
+
 	public ConceptConfigurationException(File f, String message) {
 		super("In Concept Tree file "+LogUtil.printPath(f)+": "+message);
 	}

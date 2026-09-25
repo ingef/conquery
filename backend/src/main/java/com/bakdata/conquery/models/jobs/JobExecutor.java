@@ -67,7 +67,7 @@ public class JobExecutor extends Thread {
 		jobs.addAll(this.jobs);
 		return jobs;
 	}
-	
+
 	/**
 	 * Checks if the executor is currently working on a job or if there are jobs left in its queue.
 	 * If so, the executor is busy.

@@ -19,7 +19,7 @@ import org.apache.shiro.realm.AuthenticatingRealm;
  * identifying information was found in the request. If the realm was able to
  * parse a {@link UserId} from a request, it submits this id in an
  * {@link AuthenticationToken}.
- * 
+ *
  */
 @Slf4j
 @RequiredArgsConstructor

@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.messages.namespaces.specific;
 
-import static com.bakdata.conquery.models.error.ConqueryError.asConqueryError;
 
 import java.util.Map;
 import java.util.Map.Entry;
@@ -8,7 +7,6 @@ import java.util.Set;
 
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;

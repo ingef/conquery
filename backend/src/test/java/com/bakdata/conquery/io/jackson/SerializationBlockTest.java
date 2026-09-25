@@ -1,8 +1,7 @@
 package com.bakdata.conquery.io.jackson;
 
-import org.junit.jupiter.api.Test;
-
 import lombok.Data;
+import org.junit.jupiter.api.Test;
 
 public class SerializationBlockTest {
 	@Test
@@ -13,10 +12,10 @@ public class SerializationBlockTest {
 		})
 		.isInstanceOf(JsonProcessingException.class);*/
 	}
-	
+
 	@Data
 	private static class Unmarked {
-		
+
 		private String test = "test";
 	}
 }

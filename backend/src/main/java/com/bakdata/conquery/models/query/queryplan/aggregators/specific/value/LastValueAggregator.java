@@ -52,7 +52,7 @@ public class LastValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 		if (!bucket.has(event, getColumn())) {
 			return;
 		}
-		
+
 		if (validityDateColumn == null) {
 			// If there is no validity date, take the first possible value
 			if(selectedBucket == null) {
@@ -61,7 +61,7 @@ public class LastValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 			} else {
 				log.trace("There is more than one value for the {}. Choosing the very first one encountered", this.getClass().getSimpleName());
 			}
-			return;			
+			return;
 		}
 
 		final CDateRange dateRange = validityDateColumn.getValidityDate(event, bucket);
