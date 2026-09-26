@@ -427,6 +427,13 @@
     "chartYLabel": "Count",
     "idLabel": "{{primaryIdLabel}} and {{secondaryIdLabel}}"
   },
+  "news": {
+    "headline": "News",
+    "unread": "Unread",
+    "unreadCount_one": "{{count}} unread",
+    "unreadCount_other": "{{count}} unread",
+    "more": "Learn more"
+  },
   "login": {
     "headline": "Queries and Analyses",
     "username": "User name",

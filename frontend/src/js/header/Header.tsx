@@ -3,6 +3,7 @@ import { tv } from "tailwind-variants";
 import type { StateT } from "../app/reducers";
 import { useAppTheme } from "../app-theme-context";
 import DatasetSelector from "../dataset/DatasetSelector";
+import { NewsButton } from "../news/NewsButton";
 import { HeaderMenu } from "./HeaderMenu";
 
 // position absolute: fix, so content can expand to 100% and scroll
@@ -48,6 +49,7 @@ const Header = () => {
       </div>
       <div className="flex items-center gap-[5px]">
         <DatasetSelector />
+        <NewsButton />
         <HeaderMenu manualUrl={manualUrl} contactEmail={contactEmail} />
       </div>
     </header>
