@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptIdMapping;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
+import com.bakdata.conquery.sql.mapping.ConceptIdMappingTableManager;
 import com.bakdata.conquery.util.TablePrimaryColumnUtil;
 import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -85,30 +86,7 @@ public class SqlMatchingStats {
 	 */
 	public void createConceptIdJoinTable(TreeConcept concept) {
 		ConceptIdMapping mapping = new ConceptIdMapping(concept, functionProvider);
-		Name tableName = mapping.getTableName();
-
-		deleteConceptIdJoinTable(concept.getId());
-		List<Field<?>> fields = createConceptIdsTable(tableName, mapping.tableFields());
-
-		insertConceptIdMappings(tableName, fields, mapping.getRows(), dslContext);
-		createConceptIdIndexes(mapping);
-	}
-
-	private void createConceptIdIndexes(ConceptIdMapping mapping) {
-		if (dslContext.dialect().family() == SQLDialect.CLICKHOUSE) {
-			log.debug("Skipping secondary indexes for ClickHouse concept id table {}", mapping.getTableName());
-			return;
-		}
-
-		String indexToken = Integer.toUnsignedString(mapping.getTableName().hashCode(), 16);
-		if (!mapping.getKeyFields().isEmpty()) {
-			dslContext.createIndex(name("cq_map_%s_keys".formatted(indexToken)))
-					.on(mapping.table(), mapping.getKeyFields().stream().map(Field::sortDefault).toList())
-					.execute();
-		}
-		dslContext.createIndex(name("cq_map_%s_id".formatted(indexToken)))
-				.on(mapping.table(), mapping.resolvedId().sortDefault())
-				.execute();
+		new ConceptIdMappingTableManager(dslContext).recreate(mapping.mappingTable());
 	}
 
 	@NotNull
@@ -172,38 +150,6 @@ public class SqlMatchingStats {
 		log.debug("DONE fetching matching stats for {} within {}", concept.getId(), stopwatch);
 
 		return matchingStats;
-	}
-
-	private void insertConceptIdMappings(Name tableName, List<Field<?>> fieldNames, List<RowN> rows, DSLContext dsl) {
-		log.info("BEGIN inserting {} rows into {}", rows.size(), tableName);
-		Stopwatch stopwatch = Stopwatch.createStarted();
-
-		// We're using batching here because some DBMS don't allow mass inserts.
-		// There's a chance, we rework this to use a prepared statement with lots of bindings under the hood. But that needs to rework the entire stream of rows.
-		List<InsertValuesStepN<?>> inserts = new ArrayList<>(rows.size());
-
-		for (RowN row : rows) {
-			inserts.add(dsl.insertInto(table(tableName)).columns(fieldNames).values(row));
-		}
-
-		dsl.batch(inserts).execute();
-
-		log.debug("DONE inserting into {} within {}", tableName, stopwatch);
-	}
-
-	/**
-	 * Create a table and its fields. Assumes the table has been dropped already.
-	 */
-	private List<Field<?>> createConceptIdsTable(Name tableName, List<Field<?>> fields) {
-		log.debug("Creating table {} with fields {}", tableName, fields);
-
-		CreateTableElementListStep createTable =
-				dslContext.createTable(tableName)
-						.columns(fields);
-
-		createTable.execute();
-
-		return fields;
 	}
 
 	public ListenableFuture<?> collectMatchingStatsForConcept(TreeConcept concept, ListeningExecutorService executorService, int tries) {
@@ -280,13 +226,7 @@ public class SqlMatchingStats {
 	public void deleteConceptIdJoinTable(ConceptId concept) {
 		Name tableName = ConceptIdMapping.tableName(concept);
 		log.debug("Trying to delete id-table {}", tableName);
-
-		try {
-			dslContext.dropTable(tableName).execute();
-		} catch (DataAccessException exception) {
-			// Likely it doesn't exist. Some DBMS just don't support drop-IfExists so this is the next best thing :^)
-			log.trace("Failed to drop table {}", tableName, exception);
-		}
+		new ConceptIdMappingTableManager(dslContext).delete(tableName);
 	}
 
 }

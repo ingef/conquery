@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
+import com.bakdata.conquery.sql.mapping.ConceptIdMappingTable;
 import com.google.common.collect.Sets;
 import lombok.Data;
 import org.jooq.*;
@@ -25,7 +26,7 @@ import static org.jooq.impl.SQLDataType.VARCHAR;
 @Data
 public final class ConceptIdMapping {
 
-	public static final String RESOLVED_ID_COLUMN = "resolved_id";
+	public static final String RESOLVED_ID_COLUMN = ConceptIdMappingTable.RESOLVED_ID_COLUMN;
 
 	private final TreeConcept concept;
 	private final SqlFunctionProvider functionProvider;
@@ -155,24 +156,26 @@ public final class ConceptIdMapping {
 	}
 
 	public Table<Record> table() {
-		return DSL.table(tableName);
+		return mappingTable().table();
 	}
 
 	public Field<Integer> resolvedId() {
-		return field(name(tableName, name(RESOLVED_ID_COLUMN)), Integer.class);
+		return mappingTable().resolvedId();
 	}
 
 	public List<Field<?>> tableFields() {
-		List<Field<?>> fields = new ArrayList<>(keyFields.size() + 1);
-		fields.add(field(name(RESOLVED_ID_COLUMN), Integer.class));
-		fields.addAll(keyFields);
-		return fields;
+		return mappingTable().tableFields();
+	}
+
+	public ConceptIdMappingTable mappingTable() {
+		return new ConceptIdMappingTable(tableName, keyFields, rows);
 	}
 
 	public Condition joinCondition(Connector connector) {
 		CTConditionContext context = CTConditionContext.forConnector(connector, functionProvider);
 		List<CTCondition.ConceptConditions> expressions = collectAllExpressions(concept, null, context);
 		Map<String, Field<?>> extractors = collectExtractors(expressions);
+		ConceptIdMappingTable mappingTable = mappingTable();
 
 		Condition condition = noCondition();
 		for (Field<?> keyField : keyFields) {
@@ -183,7 +186,7 @@ public final class ConceptIdMapping {
 								.formatted(keyField.getName(), connector.getId())
 				);
 			}
-			Field<?> mappingField = field(name(tableName, keyField.getUnqualifiedName()), keyField.getDataType());
+			Field<?> mappingField = mappingTable.mappingField(keyField);
 			condition = condition.and(mappingField.eq((Field) extractor));
 		}
 
