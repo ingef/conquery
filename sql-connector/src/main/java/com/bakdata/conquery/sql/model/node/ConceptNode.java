@@ -7,6 +7,7 @@ import com.bakdata.conquery.sql.model.internal.ModelNormalization;
 import com.bakdata.conquery.sql.model.operation.ResolvedSelect;
 import com.bakdata.conquery.sql.model.schema.ResolvedConnector;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -22,5 +23,13 @@ public record ConceptNode(
 	public ConceptNode {
 		connectors = ModelNormalization.immutableCopy(connectors);
 		selects = ModelNormalization.immutableCopy(selects);
+	}
+
+	@AssertTrue(message = "connector logicalIds must be unique within a concept")
+	public boolean isConnectorLogicalIdsUnique() {
+		return connectors == null || connectors.stream()
+				.map(ResolvedConnector::logicalId)
+				.distinct()
+				.count() == connectors.size();
 	}
 }

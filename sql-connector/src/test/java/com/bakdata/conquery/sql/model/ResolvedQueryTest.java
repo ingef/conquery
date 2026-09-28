@@ -157,13 +157,28 @@ class ResolvedQueryTest {
 		assertInvalid(query);
 	}
 
+	@Test
+	void shouldRejectAmbiguousConnectorIdsWithinAConcept() {
+		ResolvedConnector first = connector("concept.connector", EVENTS);
+		SqlTable otherTable = SqlTable.of("dataset.other", "analytics", "other");
+		ResolvedConnector second = connector("concept.connector", otherTable);
+
+		assertInvalid(new ConceptNode(
+				"concept", List.of(first, second), List.of(), DateAggregationAction.BLOCK
+		));
+	}
+
 	private static ConceptNode conceptNode(SqlTable table) {
-		ResolvedColumn id = new ResolvedColumn("concept.id", table, "entity_id", ColumnType.STRING, false);
-		ResolvedConnector connector = new ResolvedConnector(
-				"concept.connector", table, id, Optional.empty(), new ResolvedValidityDate.None(),
+		ResolvedConnector connector = connector("concept.connector", table);
+		return new ConceptNode("concept", List.of(connector), List.of(), DateAggregationAction.BLOCK);
+	}
+
+	private static ResolvedConnector connector(String logicalId, SqlTable table) {
+		ResolvedColumn id = new ResolvedColumn(logicalId + ".id", table, "entity_id", ColumnType.STRING, false);
+		return new ResolvedConnector(
+				logicalId, table, id, Optional.empty(), new ResolvedValidityDate.None(),
 				List.of(), List.of(), List.of()
 		);
-		return new ConceptNode("concept", List.of(connector), List.of(), DateAggregationAction.BLOCK);
 	}
 
 	private static ResolvedColumn dateColumn(String name) {

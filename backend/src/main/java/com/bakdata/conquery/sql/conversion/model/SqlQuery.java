@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.sql.compiler.CompiledQuery;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,6 +22,10 @@ public class SqlQuery {
 	public SqlQuery(Select<Record> finalQuery, List<ResultInfo> resultInfos) {
 		this.sql = finalQuery.getSQL(ParamType.INLINED);
 		this.resultInfos = resultInfos;
+	}
+
+	public static SqlQuery fromCompiled(CompiledQuery compiledQuery, List<ResultInfo> resultInfos) {
+		return new SqlQuery(compiledQuery.sql(), List.copyOf(resultInfos));
 	}
 
 	/**
