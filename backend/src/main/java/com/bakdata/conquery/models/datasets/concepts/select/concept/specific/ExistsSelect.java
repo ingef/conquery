@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.datasets.concepts.select.concept.specific;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Set;
 import java.util.stream.Collectors;
 

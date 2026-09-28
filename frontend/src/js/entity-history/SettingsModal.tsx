@@ -2,7 +2,7 @@ import type { Dispatch, SetStateAction } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../api/types";
-import InputMultiSelect from "../ui-components/InputMultiSelect/InputMultiSelect";
+import { ComboBoxMultiField } from "../ui-components/ComboBoxMultiField";
 import { Modal, ModalBody, ModalHeader } from "../ui-components/Modal";
 
 interface Props {
@@ -19,7 +19,7 @@ export const SettingsModal = ({
     <Modal>
       <ModalHeader>{t("history.settings.headline")}</ModalHeader>
       <ModalBody>
-        <InputMultiSelect
+        <ComboBoxMultiField
           creatable
           label={t("history.settings.selectStatusHeadline")}
           placeholder={t("history.settings.selectStatusPlaceholder")}

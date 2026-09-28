@@ -1,5 +1,7 @@
 package com.bakdata.conquery.mode.local;
 
+import java.time.Clock;
+
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.mode.NamespaceHandler;
@@ -20,8 +22,6 @@ import io.dropwizard.core.setup.Environment;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
-
-import java.time.Clock;
 
 @RequiredArgsConstructor
 @Slf4j

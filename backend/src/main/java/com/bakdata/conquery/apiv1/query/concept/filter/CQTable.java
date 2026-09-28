@@ -3,9 +3,9 @@ package com.bakdata.conquery.apiv1.query.concept.filter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import javax.annotation.CheckForNull;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import javax.annotation.CheckForNull;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.Column;

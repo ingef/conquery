@@ -3,9 +3,6 @@ package com.bakdata.conquery.models.auth.web;
 import static com.bakdata.conquery.models.auth.web.AuthCookieFilter.PRIORITY;
 
 import java.io.IOException;
-
-import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.google.common.base.Strings;
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Priorities;
@@ -18,6 +15,9 @@ import jakarta.ws.rs.core.Cookie;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.UriBuilder;
+
+import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.google.common.base.Strings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.http.HttpHeader;
@@ -62,7 +62,7 @@ public class AuthCookieFilter implements ContainerRequestFilter, ContainerRespon
 			log.trace("Ignoring cookie");
 			return;
 		}
-		
+
 		// Get the token from the cookie and put it into the header
 		requestContext.getHeaders().add(HttpHeaders.AUTHORIZATION,PREFIX + " " + cookie.getValue());
 		// Remove the cookie for the rest of this processing

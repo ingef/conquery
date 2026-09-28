@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import javax.annotation.CheckForNull;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import javax.annotation.CheckForNull;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.LabelMap;

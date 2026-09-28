@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
 import type { StateT } from "../../app/reducers";
+import { C1, H2 } from "../../ui-components/Typography";
 import type { EntityHistoryStateT } from "../reducer";
 
 const root = tv({
@@ -11,13 +12,8 @@ const root = tv({
     "flex flex-col items-center justify-center",
     "p-5",
     "w-full",
-    "font-normal",
-    "text-gray-500",
+    "text-gray-600",
   ],
-});
-
-const message = tv({
-  base: ["mt-[10px]", "text-xl", "font-normal", "text-gray-800"],
 });
 
 const bigIcon = tv({
@@ -64,15 +60,15 @@ export const TimelineEmptyPlaceholder = ({
           <ListIcon className={bigIcon()} />
         )}
         <div>
-          <h2 className="text-2xl leading-[1.3]">
-            {t("history.emptyTimeline.headline")}
-          </h2>
-          <p className="text-xl">{t("history.emptyTimeline.description")}</p>
-          <p
-            className={message()}
-            // biome-ignore lint/security/noDangerouslySetInnerHtml: messageHtml is our own i18n text
-            dangerouslySetInnerHTML={{ __html: messageHtml }}
-          />
+          <H2>{t("history.emptyTimeline.headline")}</H2>
+          <C1>{t("history.emptyTimeline.description")}</C1>
+          <div className="mt-[10px]">
+            <C1
+              tone="default"
+              // biome-ignore lint/security/noDangerouslySetInnerHtml: messageHtml is our own i18n text
+              dangerouslySetInnerHTML={{ __html: messageHtml }}
+            />
+          </div>
         </div>
       </div>
     </div>

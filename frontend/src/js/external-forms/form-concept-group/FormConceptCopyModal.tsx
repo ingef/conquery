@@ -30,13 +30,17 @@ const options = tv({
   ],
 });
 
-const FormConceptCopyModal = ({
-  targetFieldname,
-  onAccept,
-}: {
+type CopyProps = {
   targetFieldname: string;
   onAccept: (selectedNodes: FormConceptGroupT[]) => void;
-}) => {
+};
+
+// rendered only while the modal is open, so the form values are read on open
+const FormConceptCopyModalContent = ({
+  targetFieldname,
+  onAccept,
+  close,
+}: CopyProps & { close: () => void }) => {
   const { t } = useTranslation();
   const activeLang = useActiveLang();
   const { getValues } = useFormContext();
@@ -122,7 +126,7 @@ const FormConceptCopyModal = ({
     setValuesChecked(nextValues);
   }
 
-  function onSubmit(close: () => void) {
+  function onSubmit() {
     const selectedNodes = Object.keys(valuesChecked)
       .filter((index) => valuesChecked[index])
       .map(
@@ -134,57 +138,57 @@ const FormConceptCopyModal = ({
   }
 
   return (
-    <Modal>
-      {({ close }) => (
-        <>
-          <ModalHeader>{t("externalForms.copyModal.headline")}</ModalHeader>
-          <ModalBody>
-            <ComboBoxField
-              label={t("externalForms.copyModal.selectLabel")}
-              options={conceptListFieldOptions}
-              onChange={(val) => {
-                if (val) setSelectedOption(val);
-              }}
-              value={selectedOption}
-            />
-            <div className={selectAll()}>
+    <>
+      <ModalHeader>{t("externalForms.copyModal.headline")}</ModalHeader>
+      <ModalBody>
+        <ComboBoxField
+          label={t("externalForms.copyModal.selectLabel")}
+          options={conceptListFieldOptions}
+          onChange={(val) => {
+            if (val) setSelectedOption(val);
+          }}
+          value={selectedOption}
+        />
+        <div className={selectAll()}>
+          <CheckboxField
+            isSelected={allConceptsSelected}
+            onChange={onToggleAllConcepts}
+          >
+            {t("externalForms.copyModal.selectAll")}
+          </CheckboxField>
+        </div>
+        <div className={options()}>
+          {Object.keys(valuesChecked).map((idx) =>
+            idxHasConcepts(idx) ? (
               <CheckboxField
-                isSelected={allConceptsSelected}
-                onChange={onToggleAllConcepts}
+                key={idx}
+                isSelected={valuesChecked[idx]}
+                onChange={(checked: boolean) => onToggleConcept(idx, checked)}
               >
-                {t("externalForms.copyModal.selectAll")}
+                {getLabelFromIdx(idx)}
               </CheckboxField>
-            </div>
-            <div className={options()}>
-              {Object.keys(valuesChecked).map((idx) =>
-                idxHasConcepts(idx) ? (
-                  <CheckboxField
-                    key={idx}
-                    isSelected={valuesChecked[idx]}
-                    onChange={(checked: boolean) =>
-                      onToggleConcept(idx, checked)
-                    }
-                  >
-                    {getLabelFromIdx(idx)}
-                  </CheckboxField>
-                ) : null,
-              )}
-            </div>
-          </ModalBody>
-          <ModalFooter>
-            <Button slot="close">{t("common.cancel")}</Button>
-            <Button
-              intent="primary"
-              onPress={() => onSubmit(close)}
-              isDisabled={isAcceptDisabled}
-            >
-              {t("externalForms.copyModal.accept")}
-            </Button>
-          </ModalFooter>
-        </>
-      )}
-    </Modal>
+            ) : null,
+          )}
+        </div>
+      </ModalBody>
+      <ModalFooter>
+        <Button slot="close">{t("common.cancel")}</Button>
+        <Button
+          intent="primary"
+          onPress={onSubmit}
+          isDisabled={isAcceptDisabled}
+        >
+          {t("externalForms.copyModal.accept")}
+        </Button>
+      </ModalFooter>
+    </>
   );
 };
+
+const FormConceptCopyModal = (props: CopyProps) => (
+  <Modal>
+    {({ close }) => <FormConceptCopyModalContent {...props} close={close} />}
+  </Modal>
+);
 
 export default FormConceptCopyModal;

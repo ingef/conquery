@@ -1,14 +1,15 @@
 import type { ComponentProps } from "react";
 import { tv } from "tailwind-variants";
 
+import { textStyle } from "../ui-components/Typography";
+
 const conceptBubble = tv({
   base: [
     "px-[3px]",
     "rounded",
     "border border-gray-500",
     "bg-white",
-    "text-sm",
-    "text-gray-800",
+    textStyle({ size: 2, tone: "default" }),
   ],
 });
 

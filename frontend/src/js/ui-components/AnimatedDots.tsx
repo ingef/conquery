@@ -1,5 +1,7 @@
 import { tv } from "tailwind-variants";
 
+import { C2 } from "./Typography";
+
 const dot = tv({
   base: [
     "animate-blink",
@@ -10,10 +12,10 @@ const dot = tv({
 
 export default function AnimatedDots() {
   return (
-    <span className="font-bold">
+    <C2 as="span" strong>
       <span className={dot()}>.</span>
       <span className={dot()}>.</span>
       <span className={dot()}>.</span>
-    </span>
+    </C2>
   );
 }

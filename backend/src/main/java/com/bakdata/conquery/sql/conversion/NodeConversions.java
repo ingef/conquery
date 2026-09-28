@@ -1,5 +1,8 @@
 package com.bakdata.conquery.sql.conversion;
 
+import java.time.Clock;
+import java.util.Locale;
+
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.IdColumnConfig;
@@ -11,9 +14,6 @@ import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import lombok.NonNull;
 import org.jooq.DSLContext;
-
-import java.time.Clock;
-import java.util.Locale;
 
 /**
  * Entry point for converting {@link QueryDescription} to an SQL query.

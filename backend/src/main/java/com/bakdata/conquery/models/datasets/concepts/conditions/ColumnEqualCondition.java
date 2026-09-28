@@ -7,7 +7,6 @@ import static org.jooq.impl.SQLDataType.VARCHAR;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 

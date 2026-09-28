@@ -17,7 +17,6 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.CheckForNull;
 
 import com.bakdata.conquery.TestTags;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;

@@ -5,8 +5,8 @@ import { DialogTrigger, MenuTrigger } from "react-aria-components";
 import type { SelectOptionT } from "../api/types";
 import { Button } from "./Button";
 import { ComboBoxField } from "./ComboBoxField";
+import { ComboBoxMultiField } from "./ComboBoxMultiField";
 import { DateField } from "./DateField/DateField";
-import InputMultiSelect from "./InputMultiSelect/InputMultiSelect";
 import { Menu, MenuItem } from "./Menu";
 import { Modal, ModalBody, ModalFooter, ModalHeader } from "./Modal";
 import { Tooltip, TooltipTrigger, tooltipDelay } from "./Tooltip";
@@ -201,7 +201,7 @@ const Overlays = () => {
         value={region}
         onChange={setRegion}
       />
-      <InputMultiSelect
+      <ComboBoxMultiField
         label="Regions"
         options={REGIONS}
         value={regions}

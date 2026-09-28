@@ -25,9 +25,9 @@ import DropzoneWithFileInput, {
 } from "../../ui-components/DropzoneWithFileInput";
 import { ToggleButton } from "../../ui-components/ToggleButton";
 import { ToggleButtonGroup } from "../../ui-components/ToggleButtonGroup";
+import { C3 } from "../../ui-components/Typography";
 import UploadConceptListModal from "../../upload-concept-list-modal/UploadConceptListModal";
 import type { ConceptListDefaults as ConceptListDefaultsType } from "../config-types";
-import { Description } from "../form-components/Description";
 import DropzoneList from "../form-components/DropzoneList";
 import DynamicInputGroup from "../form-components/DynamicInputGroup";
 import FormQueryNodeEditor from "../form-query-node-editor/FormQueryNodeEditor";
@@ -92,12 +92,7 @@ interface Props {
 
 // named to avoid shadowing the `row` map param below
 const connectorRow = tv({
-  base: ["flex items-center", "mb-[5px]"],
-});
-
-// Description's own margins are overridden here
-const connectorDescription = tv({
-  base: ["m-0 mr-[5px]", "text-xs"],
+  base: ["flex items-center", "gap-[5px]", "mb-[5px]"],
 });
 
 export interface EditedFormQueryNodePosition {
@@ -358,9 +353,7 @@ const FormConceptGroup = (props: Props) => {
               : null}
             {row.concepts.length > 1 && (
               <div className={connectorRow()}>
-                <Description className={connectorDescription()}>
-                  {t("externalForms.common.connectedWith")}:
-                </Description>
+                <C3>{t("externalForms.common.connectedWith")}:</C3>
                 <ToggleButtonGroup
                   size="sm"
                   selectionMode="single"

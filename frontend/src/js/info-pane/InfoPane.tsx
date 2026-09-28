@@ -11,6 +11,7 @@ import { NodeIcon } from "../concept-trees/NodeIcon";
 import type { NodeIconT } from "../model/node";
 import { Highlighter } from "../ui-components/Highlighter";
 import { ToggleButton } from "../ui-components/ToggleButton";
+import { C2, C3, H5 } from "../ui-components/Typography";
 import { toggleAdditionalInfos as toggleInfos } from "./actions";
 import { InfoPaneHeader } from "./InfoPaneHeader";
 import MatchingStats from "./MatchingStats";
@@ -45,21 +46,14 @@ const head = tv({
   ],
 });
 
-const typeIcon = tv({ base: ["mt-px", "mr-[6px]", "text-primary-500"] });
+// centered on the first 20 px line of the label
+const typeIcon = tv({ base: ["mt-[2px]", "mr-[6px]", "text-primary-500"] });
 
 const pinnedLabel = tv({
-  base: [
-    "flex flex-row items-start",
-    "gap-[5px]",
-    "m-0",
-    "text-sm",
-    "leading-[1.2]",
-  ],
+  base: ["flex flex-row items-start", "gap-[5px]"],
 });
 
-const descriptionText = tv({
-  base: ["mt-[5px] mb-[2px]", "text-xs", "leading-[1.3]", "uppercase"],
-});
+const descriptionText = tv({ base: "mt-[5px] mb-[2px]" });
 
 const indentRoot = tv({ base: ["pl-[15px]", "mt-[5px] mb-3"] });
 
@@ -69,15 +63,11 @@ const pieceOfInfo = tv({
     // Markdown
     "text-xs",
     "[&_a]:underline",
-    "[&_p]:leading-[1.3] [&_p]:my-[5px]",
+    "[&_p]:my-[5px]",
     "[&_table]:border-collapse",
     "[&_td]:border [&_td]:border-gray-500 [&_td]:p-[5px]",
     "[&_th]:border [&_th]:border-gray-500 [&_th]:p-[5px]",
   ],
-});
-
-const infoHeadline = tv({
-  base: ["m-0", "text-xs", "font-bold", "leading-[1.3]"],
 });
 
 const matchingStats = tv({
@@ -113,13 +103,15 @@ const ConceptLabel = ({
     <p className={pinnedLabel()}>
       {conceptIcon && <NodeIcon icon={conceptIcon} className={typeIcon()} />}
       <span className="grow">
-        {label ? (
-          <HighlightedText words={words} text={label} />
-        ) : (
-          t("infoPane.placeholder")
-        )}
+        <C2 as="span">
+          {label ? (
+            <HighlightedText words={words} text={label} />
+          ) : (
+            t("infoPane.placeholder")
+          )}
+        </C2>
       </span>
-      {tackIcon}
+      {tackIcon && <span className="-mt-[2px] shrink-0">{tackIcon}</span>}
     </p>
   );
 };
@@ -199,17 +191,19 @@ const InfoPane = () => {
             </div>
           )}
           {description && (
-            <p className={descriptionText()}>
-              <HighlightedText words={words} text={description} />
-            </p>
+            <div className={descriptionText()}>
+              <C3>
+                <HighlightedText words={words} text={description} />
+              </C3>
+            </div>
           )}
         </div>
         <div className="w-full overflow-x-auto">
           {infos?.map((info, i) => (
             <div className={pieceOfInfo()} key={info.key + i}>
-              <h4 className={infoHeadline()}>
+              <H5 as="h4">
                 <HighlightedText words={words} text={info.key} />
-              </h4>
+              </H5>
               <Markdown remarkPlugins={[remarkGfm, remarkFlexibleMarkers]}>
                 {mark(info.value, highlightRegex)}
               </Markdown>

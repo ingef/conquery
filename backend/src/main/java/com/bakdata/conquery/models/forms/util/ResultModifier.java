@@ -16,7 +16,7 @@ public class ResultModifier {
 
 	/**
 	 * Modifies the given result lines with the given function.
-	 * 
+	 *
 	 * If the result is not contained this method creates a default result row
 	 * anyways.
 	 */

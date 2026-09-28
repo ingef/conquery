@@ -16,17 +16,15 @@ import {
   ModalFooter,
   ModalHeader,
 } from "../ui-components/Modal";
+import { C2 } from "../ui-components/Typography";
 
 const root = tv({
   base: ["flex flex-col", "gap-[15px]"],
 });
 
-const msg = tv({
-  base: ["m-0", "flex items-center", "gap-[10px]"],
-});
+const msg = tv({ base: ["flex items-center", "gap-[10px]"] });
 
 const bigIcon = tv({
-  base: "text-xl",
   variants: {
     kind: {
       error: "text-red",
@@ -88,16 +86,17 @@ const UploadFilterListModal = ({
         <div className={root()}>
           {loading && <LoaderCircleIcon className="text-center" />}
           {error && (
-            <p>
+            <div className={msg()}>
               <CircleAlertIcon className={bigIcon({ kind: "error" })} />
-              {t("uploadConceptListModal.error")}
-            </p>
+              <C2 as="span">{t("uploadConceptListModal.error")}</C2>
+            </div>
           )}
           {hasUnresolvedItems && (
             <div className="flex flex-col gap-[5px]">
-              <p className={msg()}>
+              <div className={msg()}>
                 <CircleAlertIcon className={bigIcon({ kind: "error" })} />
-                <span
+                <C2
+                  as="span"
                   // biome-ignore lint/security/noDangerouslySetInnerHtml: i18n text with markup
                   dangerouslySetInnerHTML={{
                     __html: t("uploadConceptListModal.unknownCodes", {
@@ -105,7 +104,7 @@ const UploadFilterListModal = ({
                     }),
                   }}
                 />
-              </p>
+              </div>
               <ScrollableList
                 maxVisibleItems={3}
                 fullWidth
@@ -115,12 +114,14 @@ const UploadFilterListModal = ({
           )}
           <div className="flex flex-col gap-[5px]">
             {hasResolvedItems && (
-              <p className={msg()}>
+              <div className={msg()}>
                 <CircleCheckIcon className={bigIcon({ kind: "success" })} />
-                {t("uploadConceptListModal.resolvedCodes", {
-                  count: resolvedItemsCount,
-                })}
-              </p>
+                <C2 as="span">
+                  {t("uploadConceptListModal.resolvedCodes", {
+                    count: resolvedItemsCount,
+                  })}
+                </C2>
+              </div>
             )}
             {(resolved.unknownCodes?.length || 0) > 0 && (
               <CheckboxField

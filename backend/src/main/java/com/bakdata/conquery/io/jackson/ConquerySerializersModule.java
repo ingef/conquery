@@ -43,7 +43,7 @@ public class ConquerySerializersModule extends SimpleModule {
 			public boolean canCreateUsingDefault() {
 				return true;
 			}
-			
+
 			@Override
 			public Object createUsingDefault(DeserializationContext ctxt) throws IOException {
 				return HashBiMap.create();

@@ -25,7 +25,7 @@ public class CPSMap implements Iterable<Entry<Class<?>, String>>{
 	public void calculateInverse() {
 		ImmutableMultimap<Class<?>, String> immutable = ImmutableMultimap.copyOf(class2TypeLabels);
 		class2TypeLabels = immutable;
-		
+
 		ImmutableMultimap<String, Class<?>> rev = immutable.inverse();
 		int failed = 0;
 		for(Entry<String, Collection<Class<?>>> e:rev.asMap().entrySet()) {
@@ -39,7 +39,7 @@ public class CPSMap implements Iterable<Entry<Class<?>, String>>{
 		}
 		typeLabel2Class = rev.entries().stream().collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 	}
-	
+
 	public void merge(CPSMap other) {
 		class2TypeLabels.putAll(other.class2TypeLabels);
 	}

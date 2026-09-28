@@ -16,7 +16,7 @@ public class OrNode extends QPParentNode {
 	public OrNode(List<QPNode> children, DateAggregationAction action) {
 		super(children, action);
 	}
-	
+
 	private OrNode(List<QPNode> children, ListMultimap<Table, QPNode> childMap, DateAggregator dateAggregator) {
 		super(children, childMap, dateAggregator);
 	}
@@ -30,7 +30,7 @@ public class OrNode extends QPParentNode {
 		}
 		return currently;
 	}
-	
+
 	public static QPNode of(Collection<QPNode> children, DateAggregationAction dateAggregationAction) {
 		return switch (children.size()) {
 			case 0 -> new Leaf();

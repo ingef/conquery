@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.auth.oidc.keycloak;
 
 import java.util.Map;
 import java.util.Set;
-
 import jakarta.validation.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

@@ -1,7 +1,5 @@
 package com.bakdata.conquery.sql.conversion.model.filter;
 
-import java.util.Optional;
-import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.common.IRange;
 import lombok.experimental.UtilityClass;

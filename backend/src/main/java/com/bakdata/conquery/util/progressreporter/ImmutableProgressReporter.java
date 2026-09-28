@@ -18,7 +18,7 @@ public class ImmutableProgressReporter implements ProgressReporter{
 	private final boolean started;
 	private final long creationTimeMillis; //millis
 	private final long startTimeMillis; //millis
-	
+
 	public ImmutableProgressReporter(ProgressReporter pr) {
 		absoluteProgress = pr.getAbsoluteProgress();
 		startTimeMillis = pr.getStartTimeMillis();
@@ -34,7 +34,7 @@ public class ImmutableProgressReporter implements ProgressReporter{
 		long waitedMillis = System.currentTimeMillis() - creationTimeMillis;
 		return ProgressReporterUtil.buildProgressReportString(done, absoluteProgress, max, elapsedMillis, waitedMillis);
 	}
-	
+
 	@JsonIgnore
 	public long getWaitedSeconds() {
 		if(started) {
@@ -42,7 +42,7 @@ public class ImmutableProgressReporter implements ProgressReporter{
 		}
 		return TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - creationTimeMillis);
 	}
-	
+
 	@Override
 	public void start() {
 		throw new UnsupportedOperationException();

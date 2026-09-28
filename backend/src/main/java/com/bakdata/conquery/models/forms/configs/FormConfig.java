@@ -74,8 +74,8 @@ public class FormConfig extends MetaIdentifiable<FormConfigId> implements Sharea
 	private UserId owner;
 	@VariableDefaultValue
 	private LocalDateTime creationTime = LocalDateTime.now();
-	
-	
+
+
 	public FormConfig(String formType, JsonNode values) {
 		this.formType = formType;
 		this.values = values;

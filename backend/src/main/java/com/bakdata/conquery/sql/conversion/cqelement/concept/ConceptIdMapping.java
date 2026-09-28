@@ -1,5 +1,8 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
+import static org.jooq.impl.DSL.*;
+import static org.jooq.impl.SQLDataType.VARCHAR;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -15,9 +18,6 @@ import lombok.Data;
 import org.jooq.*;
 import org.jooq.Record;
 import org.jooq.impl.DSL;
-
-import static org.jooq.impl.DSL.*;
-import static org.jooq.impl.SQLDataType.VARCHAR;
 
 /**
  * Description of the physical lookup table that maps connector values to their most specific concept element.

@@ -14,6 +14,7 @@ import {
   TooltipTarget,
   TooltipTrigger,
 } from "../../ui-components/Tooltip";
+import { C3 } from "../../ui-components/Typography";
 import type { ContentFilterValue } from "../ContentControl";
 import { RowDates } from "../RowDates";
 import type { DateRow, EntityEvent } from "../reducer";
@@ -25,13 +26,7 @@ import type { ColumnBuckets } from "./util/useColumnInformation";
 import { isDateColumn, isSourceColumn } from "./util/util";
 
 const card = tv({
-  base: [
-    "relative",
-    "grid grid-cols-[auto_45px_1fr]",
-    "gap-[3px]",
-    "py-[5px]",
-    "text-xs",
-  ],
+  base: ["relative", "grid grid-cols-[auto_45px_1fr]", "gap-[3px]", "py-[5px]"],
 });
 
 const eventItemContent = tv({
@@ -56,12 +51,7 @@ const colBucket = tv({
 });
 
 const flex = tv({
-  base: [
-    "flex items-start",
-    "gap-[5px]",
-    "pt-3 pr-[15px] pb-[10px] pl-[6px]",
-    "text-sm",
-  ],
+  base: ["flex items-start", "gap-[5px]", "pt-3 pr-[15px] pb-[10px] pl-[6px]"],
 });
 
 const rawDataBadge = tv({
@@ -152,7 +142,7 @@ const EventCard = ({
               {applicableMoney.map((column) => (
                 <div key={column.label}>
                   <TinyLabel>{column.defaultLabel}</TinyLabel>
-                  <code>
+                  <C3 as="code">
                     <NumericFormat<InputAttributes>
                       thousandSeparator={currencyConfig.thousandSeparator}
                       decimalSeparator={currencyConfig.decimalSeparator}
@@ -161,7 +151,7 @@ const EventCard = ({
                       displayType="text"
                       value={parseFloat(row[column.label] as string)}
                     />
-                  </code>
+                  </C3>
                 </div>
               ))}
             </div>
@@ -195,7 +185,7 @@ const EventCard = ({
               {applicableRest.map((column) => (
                 <div key={column.label}>
                   <TinyLabel>{column.defaultLabel}</TinyLabel>
-                  <span>
+                  <C3 as="span">
                     {searchTerm && searchTerm.length > 0 ? (
                       <Highlighter
                         searchWords={searchTerm.split(" ")}
@@ -204,7 +194,7 @@ const EventCard = ({
                     ) : (
                       (row[column.label] as string)
                     )}
-                  </span>
+                  </C3>
                 </div>
               ))}
             </div>
@@ -226,7 +216,7 @@ const EventCard = ({
               {applicableGroupableIds.map((column) => (
                 <div key={column.label}>
                   <TinyLabel>{column.defaultLabel}</TinyLabel>
-                  <span>
+                  <C3 as="span">
                     {searchTerm && searchTerm.length > 0 ? (
                       <Highlighter
                         searchWords={searchTerm.split(" ")}
@@ -235,7 +225,7 @@ const EventCard = ({
                     ) : (
                       (row[column.label] as string)
                     )}
-                  </span>
+                  </C3>
                 </div>
               ))}
             </div>

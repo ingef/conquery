@@ -47,7 +47,7 @@ const Row = ({
   children: React.ReactNode;
 }) => (
   <div className="flex items-center gap-3">
-    <span className="w-40 text-xs text-gray-500">{label}</span>
+    <span className="w-40 text-xs text-gray-600">{label}</span>
     {children}
   </div>
 );

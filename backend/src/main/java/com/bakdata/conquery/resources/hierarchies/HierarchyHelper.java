@@ -1,7 +1,6 @@
 package com.bakdata.conquery.resources.hierarchies;
 
 import java.lang.reflect.Method;
-
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.HEAD;
@@ -51,7 +50,7 @@ public final class HierarchyHelper {
 			throw new IllegalArgumentException(
 				String.format("Method %s not found or is not annotated as HttpMethod in class %s", methodName, clazz));
 		}
-		
+
 		boolean foundPath = false;
 
 		if (clazz.isAnnotationPresent(Path.class)) {
@@ -63,11 +62,11 @@ public final class HierarchyHelper {
 			uri.path(clazz, methodName);
 			foundPath = true;
 		}
-		
+
 		if (!foundPath) {
 			throw new IllegalArgumentException("The javax.ws.rs.Path annotation was present neither on the class '"+ clazz.getName() + "' nor on the method " + methodName + "'.");
 		}
-		
+
 		return uri;
 	}
 

@@ -21,7 +21,7 @@ public final class UserId extends PermissionOwnerId<User> {
 		super();
 		this.name = name;
 	}
-	
+
 	@Override
 	public void collectComponents(List<Object> components) {
 		components.add(TYPE);

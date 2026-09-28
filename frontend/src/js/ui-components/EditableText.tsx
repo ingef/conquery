@@ -5,6 +5,7 @@ import { Button } from "./Button";
 import EditableTextForm from "./EditableTextForm";
 import { Highlighter } from "./Highlighter";
 import { Tooltip, TooltipTrigger } from "./Tooltip";
+import { C2 } from "./Typography";
 
 // a flex wrapper, so the button does not sit on a text baseline and grow the row
 const editButton = tv({
@@ -78,14 +79,16 @@ const EditableText = ({
         </TooltipTrigger>
       </span>
       <HighlightableLabel className={label()} isHighlighted={isHighlighted}>
-        {highlightedWords && highlightedWords.length > 0 ? (
-          <Highlighter
-            searchWords={highlightedWords}
-            textToHighlight={textValue}
-          />
-        ) : (
-          textValue
-        )}
+        <C2 as="span">
+          {highlightedWords && highlightedWords.length > 0 ? (
+            <Highlighter
+              searchWords={highlightedWords}
+              textToHighlight={textValue}
+            />
+          ) : (
+            textValue
+          )}
+        </C2>
       </HighlightableLabel>
     </div>
   );

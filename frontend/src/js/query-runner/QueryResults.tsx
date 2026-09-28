@@ -9,19 +9,12 @@ import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
 import { QueryResultHistoryButton } from "../entity-history/QueryResultHistoryButton";
 import PreviewButton from "../preview/PreviewButton";
+import { C1, C2 } from "../ui-components/Typography";
 import { canViewEntityPreview, canViewQueryPreview } from "../user/selectors";
 import DownloadResultsDropdownButton from "./DownloadResultsDropdownButton";
 
 const root = tv({
   base: ["flex items-center justify-end", "gap-[7px]"],
-});
-
-const text = tv({
-  base: ["m-0", "text-sm", "leading-none"],
-});
-
-const lgText = tv({
-  base: ["m-0", "text-xl", "leading-none", "whitespace-nowrap"],
 });
 
 const QueryResults = ({
@@ -47,17 +40,21 @@ const QueryResults = ({
   return (
     <div className={root()}>
       {isEmpty(resultCount) ? (
-        <p className={text()}>
-          <CheckIcon className="mr-[10px]" />
-          {t("queryRunner.endSuccess")}
-        </p>
+        <div className="flex items-center gap-[10px]">
+          <CheckIcon />
+          <C2 as="span">{t("queryRunner.endSuccess")}</C2>
+        </div>
       ) : (
-        <p className={lgText()}>
-          <span className="font-bold">{resultCount}</span>{" "}
-          {queryType === "SECONDARY_ID_QUERY"
-            ? t("queryRunner.resultCountSecondaryIdQuery")
-            : t("queryRunner.resultCount")}
-        </p>
+        <div className="whitespace-nowrap">
+          <C1>
+            <C1 as="span" strong>
+              {resultCount}
+            </C1>{" "}
+            {queryType === "SECONDARY_ID_QUERY"
+              ? t("queryRunner.resultCountSecondaryIdQuery")
+              : t("queryRunner.resultCount")}
+          </C1>
+        </div>
       )}
       {canViewPreview && previewAvailable && <PreviewButton />}
       {!!csvUrl && canViewHistory && exists(resultColumns) && (

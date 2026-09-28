@@ -25,17 +25,17 @@ const dropzone = tv({
   ],
   variants: {
     isInitial: { true: "cursor-[initial]" },
-    tight: { true: "p-[5px]" },
+    naked: { true: "cursor-auto hover:shadow-none" },
   },
 });
 
-// a small text link at the dropzone's top right corner, or above it
+// a small button at the dropzone's top right corner, or above it
 const importButton = tv({
-  base: "absolute text-xs",
+  base: "absolute",
   variants: {
     outside: {
       true: "-top-[30px] right-0",
-      false: "top-[3px] right-2",
+      false: "-top-0.5 right-0",
     },
   },
 });
@@ -52,7 +52,8 @@ interface PropsT<DroppableObject> {
   disableClick?: boolean;
   isInitial?: boolean;
   className?: string;
-  tight?: boolean;
+  /** no frame and no padding: a drop target around a field that is fine on its own */
+  naked?: boolean;
 
   showImportButton?: boolean;
   importButtonOutside?: boolean;
@@ -85,7 +86,7 @@ const DropzoneWithFileInput = <
   isInitial,
   className,
   accept,
-  tight,
+  naked,
   ref,
 }: PropsT<DroppableObject> & { ref?: Ref<HTMLDivElement> }) => {
   const { t } = useTranslation();
@@ -125,7 +126,9 @@ const DropzoneWithFileInput = <
 
         onDrop(item as DroppableObject | DragItemFile, monitor);
       }}
-      className={dropzone({ isInitial, tight, className })}
+      className={dropzone({ isInitial, naked, className })}
+      naked={naked}
+      bare={naked}
       ref={ref}
     >
       {(args) => (
@@ -139,7 +142,12 @@ const DropzoneWithFileInput = <
           />
           {showImportButton && onImportLines && (
             <div className={importButton({ outside: !!importButtonOutside })}>
-              <Button intent="link" onPress={() => setImportModalOpen(true)}>
+              <Button
+                intent="tertiary"
+                size="sm"
+                excludeFromTabOrder
+                onPress={() => setImportModalOpen(true)}
+              >
                 {t("common.import")}
               </Button>
             </div>

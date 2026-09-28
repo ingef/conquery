@@ -1,4 +1,3 @@
-import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
 import type { StateT } from "../app/reducers";
@@ -27,21 +26,7 @@ const logo = tv({
   base: ["h-header", "bg-no-repeat", "[background-position-y:50%]"],
 });
 
-// the second font-size of the old styles won, hence text-xs and not text-base
-const headline = tv({
-  base: [
-    "mr-auto",
-    "text-xs",
-    "leading-[2]",
-    "font-bold",
-    "uppercase",
-    "opacity-30",
-    "text-primary-500",
-  ],
-});
-
 const Header = () => {
-  const { t } = useTranslation();
   const { manualUrl, contactEmail } = useSelector<
     StateT,
     StateT["startup"]["config"]
@@ -60,8 +45,6 @@ const Header = () => {
             backgroundSize: img.logoBackgroundSize,
           }}
         />
-        <span className="mx-[5px] h-5" />
-        <h1 className={headline()}>{t("headline")}</h1>
       </div>
       <div className="flex items-center gap-[5px]">
         <DatasetSelector />

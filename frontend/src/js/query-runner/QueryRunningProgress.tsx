@@ -1,7 +1,9 @@
 import { tv } from "tailwind-variants";
 
+import { headingStyle } from "../ui-components/Typography";
+
 const progressText = tv({
-  base: ["text-xl", "font-bold", "text-primary-200"],
+  base: [headingStyle({ level: 2 }), "text-primary-200"],
 });
 
 // progress is between 0 and 1

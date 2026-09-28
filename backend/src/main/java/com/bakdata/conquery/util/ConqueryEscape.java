@@ -87,12 +87,12 @@ public class ConqueryEscape {
 		}
 		return baos.toString(StandardCharsets.US_ASCII);
 	}
-	
+
 	public static String unescape(@NonNull String word) {
 		if(word.isEmpty()) {
 			return word;
 		}
-		
+
 		byte[] bytes = word.getBytes(StandardCharsets.US_ASCII);
 
 		for (int i = 0; i < bytes.length; i++) {
@@ -109,9 +109,9 @@ public class ConqueryEscape {
 		if(!ArrayUtils.contains(bytes, ESCAPER)) {
 			return word;
 		}
-		
+
 		ByteArrayOutputStream out = new ByteArrayOutputStream(bytes.length);
-		
+
 		for(int i=0;i<bytes.length;i++) {
 			if(bytes[i] == ESCAPER) {
 				i += decode(bytes, i, out);

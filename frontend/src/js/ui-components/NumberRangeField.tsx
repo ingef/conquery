@@ -102,7 +102,7 @@ export const NumberRangeField = ({
           value={toDisplay(min)}
           onChange={(shown) => onChangeBound("min", shown)}
         />
-        <span aria-hidden className="text-sm text-gray-500">
+        <span aria-hidden className="text-gray-600">
           –
         </span>
         <NumberField

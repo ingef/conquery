@@ -13,6 +13,7 @@ import { useLoadQuery } from "../previous-queries/list/actions";
 import type { PreviousQueryT } from "../previous-queries/list/reducer";
 import QueryGroupModal from "../query-group-modal/QueryGroupModal";
 import QueryUploadConceptListModal from "../query-upload-concept-list-modal/QueryUploadConceptListModal";
+import { C2 } from "../ui-components/Typography";
 import { initUploadConceptListModal } from "../upload-concept-list-modal/actions";
 import {
   deleteGroup,
@@ -88,7 +89,7 @@ const groups = tv({
 });
 
 const queryGroupConnector = tv({
-  base: ["pt-[110px] px-[6px]", "text-sm", "text-gray-500", "text-center"],
+  base: ["pt-[110px] px-[6px]", "text-center"],
 });
 
 const Query = ({
@@ -243,9 +244,9 @@ const Query = ({
                   onToggleTimestamps={onToggleTimestamps}
                   onToggleSecondaryIdExclude={onToggleSecondaryIdExclude}
                 />
-                <p className={queryGroupConnector()} key={`${andIdx}.and`}>
-                  {t("common.and")}
-                </p>
+                <div className={queryGroupConnector()} key={`${andIdx}.and`}>
+                  <C2 tone="muted">{t("common.and")}</C2>
+                </div>
               </Fragment>
             ))}
             <QueryAndDropzone

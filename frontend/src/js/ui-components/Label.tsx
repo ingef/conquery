@@ -8,15 +8,16 @@ import { tv } from "tailwind-variants";
 import { exists } from "../common/helpers/exists";
 import { IndexPrefix } from "./IndexPrefix";
 import InfoTooltip from "./InfoTooltip";
+import { textStyle } from "./Typography";
 
 const label = tv({
-  base: ["flex items-center", "mt-[6px] mb-[3px]", "font-normal text-gray-800"],
+  base: ["flex items-center", "mb-[3px]"],
   variants: {
     size: {
-      sm: "text-xs",
-      md: "text-sm",
+      sm: textStyle({ size: 3, tone: "default" }),
+      md: textStyle({ size: 2, tone: "default" }),
     },
-    isDisabled: { true: "text-gray-500" },
+    isDisabled: { true: "text-gray-600" },
   },
   defaultVariants: { size: "md" },
 });

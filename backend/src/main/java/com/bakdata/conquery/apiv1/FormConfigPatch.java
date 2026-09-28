@@ -22,12 +22,12 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 public class FormConfigPatch extends MetaDataPatch {
 	private JsonNode values;
-	
+
 	public void applyTo(FormConfig instance, MetaStorage storage, Subject subject){
 		chain(QueryUtils.getNoOpEntryPoint(), storage, subject, instance)
-			.accept(this);		
+			.accept(this);
 	}
-	
+
 	protected Consumer<FormConfigPatch> chain(Consumer<FormConfigPatch> patchConsumerChain, MetaStorage storage, Subject subject, FormConfig instance) {
 		patchConsumerChain = super.buildChain(patchConsumerChain, storage, subject, instance);
 

@@ -19,7 +19,7 @@ public class CPSBaseTest {
 			.map(this::createTest)
 			.sorted(Comparator.comparing(DynamicTest::getDisplayName));
 	}
-	
+
 	public DynamicTest createTest(Pair<Class<?>,Class<?>> baseTypePair) {
 		String name;
 		if(baseTypePair.getRight().getAnnotation(CPSType.class)!=null) {
@@ -28,7 +28,7 @@ public class CPSBaseTest {
 		else {
 			name = "multiple";
 		}
-				
+
 		name += " -> "+baseTypePair.getRight().getSimpleName();
 		return DynamicTest.dynamicTest(name, ()->test(baseTypePair.getLeft(), baseTypePair.getRight()));
 	}
@@ -42,7 +42,7 @@ public class CPSBaseTest {
 			assertThat(anno.base()).isEqualTo(base);
 			assertThat(base).hasAnnotation(CPSBase.class);
 			assertThat(base).isAssignableFrom(base);
-			if(anno.subTyped()) {				
+			if(anno.subTyped()) {
 				assertThat(SubTyped.class).isAssignableFrom(type);
 			}
 		}

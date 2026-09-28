@@ -3,8 +3,8 @@ package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
+import javax.annotation.Nullable;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;

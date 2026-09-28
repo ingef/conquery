@@ -3,6 +3,7 @@ package com.bakdata.conquery.util.support;
 import java.io.File;
 import java.io.IOException;
 import java.time.Clock;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.integration.sql.dialect.MockClock;
@@ -16,7 +17,6 @@ import io.dropwizard.configuration.YamlConfigurationFactory;
 import io.dropwizard.core.setup.Bootstrap;
 import io.dropwizard.logging.common.BootstrapLogging;
 import io.dropwizard.logging.common.DropwizardLayout;
-import jakarta.validation.Validator;
 
 public class TestBootstrappingConquery extends Conquery {
 

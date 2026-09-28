@@ -4,8 +4,6 @@ import java.util.Map;
 
 import com.bakdata.conquery.models.config.DatabaseConnectionConfig;
 import com.bakdata.conquery.models.config.SqlConnectorConfig;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.NoArgsConstructor;
 

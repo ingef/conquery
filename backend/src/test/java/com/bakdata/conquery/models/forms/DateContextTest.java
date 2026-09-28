@@ -45,7 +45,7 @@ public class DateContextTest {
 		);
 		assertThat(contexts).extracting(DateContext::getFeatureGroup).containsOnly(FeatureGroup.SINGLE_GROUP);
 	}
-	
+
 	@Test
 	public void rangeAbsYearTestWithoutCoarse() {
 		CDateRange mask = CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2005, 4, 21));
@@ -86,7 +86,7 @@ public class DateContextTest {
 		);
 		assertThat(contexts).extracting(DateContext::getFeatureGroup).containsOnly(FeatureGroup.SINGLE_GROUP);
 	}
-	
+
 	@Test
 	public void rangeAbsQuarterTestWithoutCoarse() {
 		CDateRange mask = CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2003, 4, 21));

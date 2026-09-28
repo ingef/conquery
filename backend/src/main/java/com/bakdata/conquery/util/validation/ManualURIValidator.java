@@ -3,7 +3,6 @@ package com.bakdata.conquery.util.validation;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.List;
-
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 

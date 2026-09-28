@@ -1,12 +1,12 @@
 package com.bakdata.conquery.util.progressreporter;
 
-import com.fasterxml.jackson.annotation.JsonValue;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
+
+import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ProgressReporterImpl implements ProgressReporter {
@@ -54,24 +54,24 @@ public class ProgressReporterImpl implements ProgressReporter {
 	public double getProgress() {
 		return (double) getAbsoluteProgress() / (double) getAbsoluteMax();
 	}
-	
+
 	public long getAbsoluteProgress() {
 		long absoluteProgress = innerProgress.get();
 
 		for (ProgressReporterImpl child : children) {
 			absoluteProgress += child.getAbsoluteProgress();
 		}
-		
+
 		return absoluteProgress;
 	}
-	
+
 	public long getAbsoluteMax() {
 		long absoluteMax = max.get();
 
 		for (ProgressReporterImpl child : children) {
 			absoluteMax += child.getAbsoluteMax();
 		}
-		
+
 		return absoluteMax;
 	}
 
@@ -138,9 +138,9 @@ public class ProgressReporterImpl implements ProgressReporter {
 
 		innerProgress.set(max.get() - reservedForChildren.get());
 	}
-	
 
-	
+
+
 	@JsonValue
 	public ImmutableProgressReporter toImmutable() {
 		return new ImmutableProgressReporter(this);

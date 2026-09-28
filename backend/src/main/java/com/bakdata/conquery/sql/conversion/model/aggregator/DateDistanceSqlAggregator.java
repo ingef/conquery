@@ -1,5 +1,11 @@
 package com.bakdata.conquery.sql.conversion.model.aggregator;
 
+import static org.jooq.impl.DSL.field;
+
+import java.sql.Date;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
@@ -17,12 +23,6 @@ import com.bakdata.conquery.sql.conversion.model.select.*;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
-
-import java.sql.Date;
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-
-import static org.jooq.impl.DSL.field;
 
 public class DateDistanceSqlAggregator implements SelectConverter<DateDistanceSelect>, FilterConverter<DateDistanceFilter, Range.LongRange> {
 

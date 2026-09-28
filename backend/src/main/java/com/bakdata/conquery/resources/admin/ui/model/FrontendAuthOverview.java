@@ -22,7 +22,7 @@ public class FrontendAuthOverview {
 		private User user;
 		private Collection<Group> groups;
 		private Collection<Role> effectiveRoles;
-		
+
 		@Override
 		public int compareTo(OverviewRow o) {
 			return user.compareTo(o.getUser());

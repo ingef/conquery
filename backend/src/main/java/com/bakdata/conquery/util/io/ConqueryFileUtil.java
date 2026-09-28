@@ -6,9 +6,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class ConqueryFileUtil {
-	
+
 	public static final Path TEMPORARY_DIRECTORY;
-	
+
 	static {
 		try {
 			TEMPORARY_DIRECTORY = Files.createTempDirectory("conquery_");

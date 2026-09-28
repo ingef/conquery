@@ -33,12 +33,12 @@ public class IdMap<ID extends Id, V extends Identifiable<? extends ID, ?>> exten
 			map.put(value.getId(), value);
 		}
 	}
-	
+
 	@Override
 	public Set<Map.Entry <ID, V>> entrySet(){
 		return map.entrySet();
 	}
-	
+
 	@Override
 	public Collection<V> values() {
 		return map.values();
@@ -47,7 +47,7 @@ public class IdMap<ID extends Id, V extends Identifiable<? extends ID, ?>> exten
 	public Stream<V> stream() {
 		return map.values().stream();
 	}
-	
+
 	@Override
 	public int size() {
 		return map.size();
@@ -72,26 +72,26 @@ public class IdMap<ID extends Id, V extends Identifiable<? extends ID, ?>> exten
 	public Optional<V> getOptional(ID id) {
 		return Optional.ofNullable(map.get(id));
 	}
-	
+
 	public boolean add(V entry) {
 		addToMap(entry);
 		return true;
 	}
-	
+
 	public V update(V entry) {
 		return map.put(entry.getId(), entry);
 	}
-	
+
 	public V remove(ID id) {
 		V obj = map.remove(id);
 		return obj;
 	}
-	
+
 	@Override @Deprecated
 	public V remove(Object object) {
 		return super.remove(object);
 	}
-	
+
 	@Override @Deprecated
 	public V put(ID key, V value) {
 		return super.put(key, value);

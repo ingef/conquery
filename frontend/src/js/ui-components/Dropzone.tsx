@@ -21,7 +21,7 @@ const root = tv({
     "border-[3px] border-transparent",
     "dashed-frame [--dash-color:var(--color-gray-400)]",
     "bg-bg-50",
-    "text-gray-500",
+    "text-gray-600",
   ],
   variants: {
     bare: { true: "p-0" },

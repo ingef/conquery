@@ -15,9 +15,9 @@ import lombok.Getter;
 @EqualsAndHashCode(callSuper=false)
 public final class RoleId extends PermissionOwnerId<Role> {
 	public static final String TYPE = "role";
-	
+
 	private final String role;
-	
+
 	public RoleId(String mandator) {
 		super();
 		this.role = mandator;

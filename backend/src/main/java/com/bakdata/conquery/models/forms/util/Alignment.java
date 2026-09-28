@@ -1,14 +1,14 @@
 package com.bakdata.conquery.models.forms.util;
 
-import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalInt;
 import java.util.function.Function;
+
+import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Specifier for the alignment of {@link DateContext}s of a certain resolution.
@@ -67,4 +67,3 @@ public enum Alignment {
 		return OptionalInt.empty();
 	}
 }
-

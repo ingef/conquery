@@ -7,6 +7,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import { exists } from "../../common/helpers/exists";
+import { C2 } from "../../ui-components/Typography";
 import type { Field, Tabs } from "../config-types";
 import { getErrorForField } from "../validators";
 import type { DynamicFormValues } from "./Form";
@@ -41,7 +42,6 @@ type Props<T> = T & {
   formField: Field | Tabs;
   defaultValue?: unknown;
   noContainer?: boolean;
-  noLabel?: boolean;
   /** the field shows the error below its input itself */
   errorInField?: boolean;
 };
@@ -49,15 +49,12 @@ const fieldContainer = tv({
   base: [
     "flex flex-col",
     "gap-[5px]",
+    "px-[10px] py-2",
     "bg-white",
     "rounded",
     "border border-gray-100",
   ],
   variants: {
-    noLabel: {
-      true: "px-[10px] py-[7px]",
-      false: "pt-[2px] px-[10px] pb-[7px]",
-    },
     hasError: { true: "", false: "" },
     red: { true: "", false: "" },
   },
@@ -65,16 +62,6 @@ const fieldContainer = tv({
     { hasError: true, red: false, class: "border-primary-500" },
     { hasError: true, red: true, class: "border-red" },
   ],
-});
-
-const errorContainer = tv({
-  base: ["font-bold", "text-sm"],
-  variants: {
-    red: {
-      true: "text-red",
-      false: "text-primary-500",
-    },
-  },
 });
 
 export const setValueConfig = {
@@ -89,7 +76,6 @@ export const ConnectedField = <T extends object>({
   formField,
   defaultValue,
   noContainer,
-  noLabel,
   errorInField,
   ...props
 }: Props<T>) => {
@@ -116,16 +102,15 @@ export const ConnectedField = <T extends object>({
   ) : (
     <div
       className={fieldContainer({
-        noLabel: !!noLabel,
         hasError: exists(fieldState.error),
         red: isRedError,
       })}
     >
       {children({ ...field, ...props, errorMessage })}
       {!errorInField && (
-        <div className={errorContainer({ red: isRedError })}>
+        <C2 tone={isRedError ? "danger" : "primary"} strong={isRedError}>
           {errorMessage}
-        </div>
+        </C2>
       )}
     </div>
   );

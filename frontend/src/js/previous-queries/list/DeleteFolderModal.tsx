@@ -2,18 +2,16 @@ import { useTranslation } from "react-i18next";
 
 import { DeleteModal } from "../../ui-components/DeleteModal";
 
-import { useDeleteProjectItemFolder } from "./useDeleteProjectItemFolder";
-
 const DeleteFolderModal = ({
   folder,
+  onDeleteFolder,
   onDeleteSuccess,
 }: {
   folder: string;
+  onDeleteFolder: (folder: string) => Promise<unknown>;
   onDeleteSuccess: () => void;
 }) => {
   const { t } = useTranslation();
-
-  const onDeleteFolder = useDeleteProjectItemFolder();
 
   return (
     <DeleteModal

@@ -29,6 +29,7 @@ const Stateful = ({
   );
 };
 
+// the stepper repeats while held; the clear button shows once there is text
 export const Default: Story = {
   render: () => (
     <Stateful
@@ -51,7 +52,7 @@ export const ClampedAndSnapped: Story = {
   ),
 };
 
-// without a step any decimals pass; with one, the value snaps to it on blur
+// without a step any decimals pass; with one, the value snaps to it on blur and the stepper moves by it
 export const Step: Story = {
   render: () => (
     <div className="flex flex-col gap-4">

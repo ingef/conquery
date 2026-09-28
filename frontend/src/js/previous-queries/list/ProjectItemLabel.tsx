@@ -4,7 +4,7 @@ import EditableText from "../../ui-components/EditableText";
 import { Highlighter } from "../../ui-components/Highlighter";
 
 const labelText = tv({
-  base: ["font-normal", "whitespace-nowrap", "overflow-hidden text-ellipsis"],
+  base: ["whitespace-nowrap", "overflow-hidden text-ellipsis"],
 });
 
 const ProjectItemLabel = ({

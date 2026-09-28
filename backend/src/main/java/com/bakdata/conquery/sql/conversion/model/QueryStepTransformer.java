@@ -1,13 +1,13 @@
 package com.bakdata.conquery.sql.conversion.model;
 
+import java.util.List;
+import java.util.stream.Stream;
+
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import lombok.RequiredArgsConstructor;
 import org.jooq.*;
 import org.jooq.Record;
 import org.jooq.impl.DSL;
-
-import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * Transformer for translating the intermediate representation of {@link QueryStep} into the final SQL query.

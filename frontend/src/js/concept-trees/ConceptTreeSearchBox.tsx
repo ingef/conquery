@@ -7,6 +7,7 @@ import ConceptTreesOpenButtons from "../concept-trees-open/ConceptTreesOpenButto
 import AnimatedDots from "../ui-components/AnimatedDots";
 import { Button } from "../ui-components/Button";
 import { SearchField } from "../ui-components/SearchField";
+import { C3 } from "../ui-components/Typography";
 
 import {
   clearSearchQuery,
@@ -17,16 +18,10 @@ import type { SearchT, TreesT } from "./reducer";
 
 const root = tv({ base: "relative" });
 
-const tinyText = tv({
-  base: ["my-[3px]", "text-xs", "text-gray-500"],
-});
+const tinyText = tv({ base: "my-[3px]" });
 
 const row = tv({
   base: "flex flex-row items-center justify-between",
-});
-
-const displaying = tv({
-  base: ["text-xs", "uppercase", "text-gray-500"],
 });
 
 const ConceptTreeSearchBox = ({ className }: { className?: string }) => {
@@ -91,18 +86,20 @@ const ConceptTreeSearchBox = ({ className }: { className?: string }) => {
         search.result &&
         search.resultCount >= 0 && (
           <div className={row()}>
-            <p className={tinyText()}>
-              {t("search.resultLabel", {
-                totalResults: search.resultCount,
-                duration: (search.duration / 1000.0).toFixed(2),
-              })}
-            </p>
+            <div className={tinyText()}>
+              <C3 tone="muted">
+                {t("search.resultLabel", {
+                  totalResults: search.resultCount,
+                  duration: (search.duration / 1000.0).toFixed(2),
+                })}
+              </C3>
+            </div>
             <div className="my-[3px] flex items-center gap-[5px]">
-              <span className={displaying()}>
+              <C3 as="span" tone="muted">
                 {showMismatches
                   ? t("conceptTreeList.showingMismatches")
                   : t("conceptTreeList.showingMatchesOnly")}
-              </span>
+              </C3>
               <Button
                 intent="secondary"
                 size="sm"

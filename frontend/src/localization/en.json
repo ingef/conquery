@@ -1,6 +1,5 @@
 {
   "locale": "en",
-  "headline": "Queries and Analyses",
   "error": {
     "sorry": "Sorry, something went wrong here",
     "description": "But it's not your fault. It's an issue on our side.",
@@ -93,6 +92,8 @@
     "queryNode": "Query Node",
     "conceptNodes": "Concept Nodes",
     "conceptNodeTables": "Input Tables",
+    "sections": "Sections",
+    "includeTable": "Include {{table}}",
     "properties": "Common properties",
     "reset": "Reset",
     "resetSettings": "Reset to default settings",
@@ -114,7 +115,6 @@
     "commonSelects": "Common additional values",
     "nodeNotFound": "Concept not found",
     "selectValidityDate": "Relevant date interval",
-    "dateColumn": "Date column",
     "dropMoreConcepts": "Contained concepts",
     "emptyMenuColumn": "No further settings"
   },
@@ -150,8 +150,8 @@
     "cancel": "Cancel",
     "delete": "Delete",
     "done": "Done",
-    "and": "AND",
-    "or": "OR",
+    "and": "and",
+    "or": "or",
     "clear": "Clear",
     "timeUnitDays": "days",
     "title": "Title",
@@ -210,7 +210,6 @@
   },
   "inputSelect": {
     "placeholder": "Choose ...",
-    "searchPlaceholder": "Search ...",
     "empty": "No values found"
   },
   "inputMultiSelect": {
@@ -220,7 +219,8 @@
     "options_other": "{{count}} Options",
     "ofTotal": " of {{count}}",
     "tagPlaceholder": "Folder ...",
-    "createTag": "Create folder: {{label}}"
+    "folders": "Folders",
+    "selectedValues": "Selected values"
   },
   "previousQueries": {
     "loading": "Loading queries and forms",
@@ -486,6 +486,7 @@
   },
   "history": {
     "infoTabs": "Info categories",
+    "sources": "Sources",
     "search": "Search",
     "matches_one": "Match",
     "matches_other": "Matches",
@@ -553,9 +554,9 @@
     "pasted": "Imported"
   },
   "editorV2": {
-    "time": "TIME",
-    "and": "AND",
-    "or": "OR",
+    "time": "Time",
+    "and": "and",
+    "or": "or",
     "clear": "Reset editor",
     "clearConfirm": "Reset now",
     "flip": "Flip",

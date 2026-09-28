@@ -17,7 +17,12 @@ const container = tv({
 
 // sits in the tab row, before the tabs
 const beforeTabsBox = tv({
-  base: ["flex items-center", "pl-[10px]", "border-b border-gray-100"],
+  base: [
+    "flex items-center",
+    "shrink-0",
+    "pl-[10px]",
+    "border-b border-gray-100",
+  ],
 });
 
 export interface PaneTab {
@@ -52,7 +57,7 @@ const Pane = ({ tabs, left, className, dataTestId, beforeTabs }: Props) => {
         selectedKey={activeTab}
         onSelectionChange={(tab) => dispatch(clickPaneTab({ paneType, tab }))}
       >
-        <div className="grid grid-cols-[auto_minmax(0,1fr)] bg-white">
+        <div className="flex bg-white">
           {beforeTabs && <div className={beforeTabsBox()}>{beforeTabs}</div>}
           <TabList
             aria-label={left ? t("leftPane.tabs") : t("rightPane.tabs")}

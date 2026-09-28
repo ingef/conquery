@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
+
 import java.util.List;
 import javax.annotation.Nullable;
 

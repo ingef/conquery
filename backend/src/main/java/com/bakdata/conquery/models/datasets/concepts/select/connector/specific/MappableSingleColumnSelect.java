@@ -6,8 +6,8 @@ import static org.jooq.impl.DSL.*;
 
 import java.util.Collections;
 import java.util.Set;
-import javax.annotation.Nullable;
 import jakarta.validation.Valid;
+import javax.annotation.Nullable;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.jackson.View;

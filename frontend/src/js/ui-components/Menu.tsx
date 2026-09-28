@@ -9,6 +9,7 @@ import {
 import { tv } from "tailwind-variants";
 
 import { Popover } from "./Popover";
+import { textStyle } from "./Typography";
 
 const menu = tv({
   base: [
@@ -26,17 +27,14 @@ const menuItem = tv({
     "flex items-center",
     "gap-[10px]",
     "rounded",
-    "px-[15px] py-2",
-    // explicit: through the portal an item would inherit body's line-height and light weight
-    "text-sm leading-none font-normal",
-    "text-gray-800",
+    "h-[30px] px-3",
+    textStyle({ size: 2, tone: "default" }),
     "whitespace-nowrap",
     "cursor-pointer",
     "outline-none",
-    "opacity-75",
-    "data-focused:opacity-100 data-focused:bg-gray-50",
+    "data-focused:bg-gray-50",
     "data-disabled:cursor-not-allowed data-disabled:opacity-40",
-    "transition-[opacity,background-color] duration-100",
+    "transition-[background-color] duration-100",
   ],
   variants: {
     danger: { true: "text-red" },

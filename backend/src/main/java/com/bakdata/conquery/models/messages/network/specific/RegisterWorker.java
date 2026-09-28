@@ -17,11 +17,11 @@ import lombok.RequiredArgsConstructor;
 public class RegisterWorker extends MessageToManagerNode {
 
 	private final WorkerInformation info;
-	
+
 	@Override
 	public void react(ManagerNodeNetworkContext context) throws Exception {
 		ShardNodeInformation node = getShardNode(context);
-		
+
 		if(node == null) {
 			throw new IllegalStateException("Received worker %s from unknown shard %s".formatted(info.getId(), context.getRemoteAddress()));
 		}

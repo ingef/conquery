@@ -1,13 +1,13 @@
 package com.bakdata.conquery.models.auth.util;
 
+import java.util.*;
+
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.apache.shiro.subject.PrincipalCollection;
-
-import java.util.*;
 
 /**
  * Principal collection that carries a ready to use {@link Subject} object.
