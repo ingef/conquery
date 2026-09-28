@@ -193,6 +193,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 						final List<Column> dateColumns = Arrays.stream(table.getColumns()).filter(t -> t.getType().isDateCompatible()).toList();
 
 						for (String entity : bucket.entities()) {
+							final int hashedEntity = MatchingStats.Accumulator.hashEntity(entity);
 
 							final int entityEnd = bucket.getEntityEnd(entity);
 
@@ -201,10 +202,10 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 								final int[] localIds = cBlock.getPathToMostSpecificChild(event);
 								final CDateRange span = spannedValidityDates(bucket, event, dateColumns);
 
-
 								if (!(concept instanceof TreeConcept) || localIds == null) {
-									matchingStats.computeIfAbsent(conceptId, (ignored) -> new MatchingStats.Accumulator())
-											 .addEvents(entity, 1, span);
+									final MatchingStats.Accumulator accumulator = matchingStats.computeIfAbsent(conceptId, (ignored) -> new MatchingStats.Accumulator());
+									accumulator
+											 .addEvents(hashedEntity, 1, span);
 									continue;
 								}
 
@@ -215,8 +216,9 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 								ConceptElement<?> element = ((TreeConcept) concept).getElementByLocalIdPath(localIds);
 
 								while (element != null) {
-									matchingStats.computeIfAbsent(element.getId(), (ignored) -> new MatchingStats.Accumulator())
-											 .addEvents(entity, 1, span);
+									final MatchingStats.Accumulator accumulator = matchingStats.computeIfAbsent(element.getId(), (ignored) -> new MatchingStats.Accumulator());
+									accumulator
+											 .addEvents(hashedEntity, 1, span);
 									element = element.getParent();
 								}
 							}
@@ -232,7 +234,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 			log.trace("DONE calculating for `{}`", conceptId);
 
 			Map<ConceptElementId<?>, MatchingStats.Entry> entries = new HashMap<>(matchingStats.size());
-			matchingStats.forEach((element, accumulator) -> entries.put(element, accumulator.finish()));
+			matchingStats.forEach((element, accumulator) -> entries.put(element, accumulator.toEntry()));
 			return entries;
 		}
 

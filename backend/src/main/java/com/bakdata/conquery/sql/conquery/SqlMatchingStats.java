@@ -5,8 +5,8 @@ import static org.jooq.impl.DSL.*;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
-import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
@@ -25,6 +25,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jooq.*;
 import org.jooq.Record;
 import org.jooq.exception.DataAccessException;
+import org.jooq.impl.SQLDataType;
 
 @Slf4j
 @Data
@@ -39,6 +40,7 @@ public class SqlMatchingStats {
 	private static final Field<Date> LB_FIELD = field(name("lower_bound"), Date.class);
 	private static final Field<Date> UB_FIELD = field(name("upper_bound"), Date.class);
 	private static final Field<Integer> CONCEPT_ID_FIELD = field(name(ConceptIdMapping.RESOLVED_ID_COLUMN), Integer.class);
+
 	private final DSLContext dslContext;
 	private final SqlFunctionProvider functionProvider;
 	private final String defaultPrimaryColumn;
@@ -53,14 +55,10 @@ public class SqlMatchingStats {
 			int minDate,
 			int maxDate
 	) {
+		int hashedEntity = MatchingStats.Accumulator.hashEntity(entity);
 		while (element != null) {
 			int localId = element.getLocalId();
-			MatchingStats.Accumulator accumulator = matchingStats[localId];
-			if (accumulator == null) {
-				accumulator = new MatchingStats.Accumulator();
-				matchingStats[localId] = accumulator;
-			}
-			accumulator.addEvents(entity, 1, minDate, maxDate);
+			matchingStats[localId].addEvents(hashedEntity, 1, minDate, maxDate);
 			element = element.getParent();
 		}
 	}
@@ -98,8 +96,9 @@ public class SqlMatchingStats {
 	}
 
 	private void createConceptIdIndexes(ConceptIdMapping mapping) {
-		if (dslContext.dialect().family() == SQLDialect.CLICKHOUSE) {
-			log.debug("Skipping secondary indexes for ClickHouse concept id table {}", mapping.getTableName());
+		if (dslContext.dialect().equals(SQLDialect.CLICKHOUSE)) {
+			//TODO test if skip indices would still do something.
+			log.trace("Skipping secondary indexes for ClickHouse concept id table {}", mapping.getTableName());
 			return;
 		}
 
@@ -133,49 +132,47 @@ public class SqlMatchingStats {
 
 	private void assignStats(TreeConcept concept, MatchingStats.Accumulator[] matchingStats) {
 		for (int localId = 0; localId < matchingStats.length; localId++) {
-			assignStats(concept.getElementByLocalId(localId), matchingStats[localId]);
+			ConceptElement<?> element = concept.getElementByLocalId(localId);
+			element.setMatchingStats(MatchingStats.singleEntry(SQL_SOURCE_MATCHING_STATS_LABEL, matchingStats[localId].toEntry()));
 		}
 	}
 
-	private void assignStats(ConceptElement<?> element, MatchingStats.Accumulator accumulator) {
-		if (accumulator == null) {
-			element.setMatchingStats(null);
-			return;
-		}
-
-		element.setMatchingStats(MatchingStats.singleEntry(SQL_SOURCE_MATCHING_STATS_LABEL, accumulator.finish()));
-	}
-
+	/**
+	 * @implSpec array uses {@link TreeConcept#getLocalId()} as index.
+	 */
 	@NotNull
-	private MatchingStats.Accumulator[] readStats(TreeConcept concept, SelectJoinStep<? extends Record> selectJoinStep) {
+	private MatchingStats.Accumulator[] readStats(TreeConcept concept, SelectJoinStep<Record4<Integer, String, Integer, Integer>> selectJoinStep) {
 		MatchingStats.Accumulator[] matchingStats = new MatchingStats.Accumulator[concept.countElements()];
+
+		for (int index = 0; index < matchingStats.length; index++) {
+			matchingStats[index] = new MatchingStats.Accumulator();
+		}
 
 		Stopwatch stopwatch = Stopwatch.createStarted();
 
 		log.info("BEGIN fetching matching stats for {}", concept.getId());
 		log.trace("{}", selectJoinStep);
 
-		try (Cursor<? extends Record> cursor = selectJoinStep.fetchSize(fetchBatchSize).fetchLazy()) {
+		try (Stream<Record4<Integer, String, Integer, Integer>> stream = selectJoinStep.fetchSize(fetchBatchSize).stream()) {
+			stream.forEach(
+					record -> {
+						Integer rawId = record.value1();
+						ConceptElement<?> resolvedId;
+						if (rawId == null) {
+							resolvedId = concept;
+						} else {
+							resolvedId = concept.getElementByLocalId(rawId);
+						}
 
-			for (Record record : cursor) {
+						String entity = record.value2();
+						Integer min = record.value3();
+						Integer max = record.value4();
 
-				Integer rawId = record.get(CONCEPT_ID_FIELD);
-				ConceptElement<?> resolvedId;
-				if (rawId == null) {
-					resolvedId = concept;
-				} else {
-					resolvedId = concept.getElementByLocalId(rawId);
-				}
+						int minDate = min != null ? min : Integer.MAX_VALUE;
+						int maxDate = max != null ? max : Integer.MIN_VALUE;
 
-				String entity = record.get(PID_FIELD);
-				Date min = record.get(LB_FIELD);
-				Date max = record.get(UB_FIELD);
-
-				int minDate = min != null ? CDate.ofLocalDate(min.toLocalDate()) : Integer.MAX_VALUE;
-				int maxDate = max != null ? CDate.ofLocalDate(max.toLocalDate()) : Integer.MIN_VALUE;
-
-				assignStatsToPath(resolvedId, matchingStats, entity, minDate, maxDate);
-			}
+						assignStatsToPath(resolvedId, matchingStats, entity, minDate, maxDate);
+					});
 		}
 
 		log.debug("DONE fetching matching stats for {} within {}", concept.getId(), stopwatch);
@@ -219,15 +216,13 @@ public class SqlMatchingStats {
 		int remainingTries = tries;
 		while (true) {
 			try {
-				dslContext.connection(connection -> {
-					SelectJoinStep<? extends Record> matchingStatsStatement = createMatchingStatsStatement(concept);
-					MatchingStats.Accumulator[] matchingStats = readStats(concept, matchingStatsStatement);
-					assignStats(concept, matchingStats);
-				});
+				SelectJoinStep<Record4<Integer, String, Integer, Integer>> matchingStatsStatement = createMatchingStatsStatement(concept);
+				MatchingStats.Accumulator[] matchingStats = readStats(concept, matchingStatsStatement);
+				assignStats(concept, matchingStats);
 				return;
 			} catch (DataAccessException e) {
 				if (remainingTries == 0) {
-					log.debug("Failed to collect matching stats for concept {}. No retries remaining.", concept.getId(), e);
+					log.error("Failed to collect matching stats for concept {}. No retries remaining.", concept.getId(), e);
 					throw e;
 				}
 
@@ -238,7 +233,7 @@ public class SqlMatchingStats {
 	}
 
 	@NotNull
-	private SelectJoinStep<? extends Record> createMatchingStatsStatement(TreeConcept concept) {
+	private SelectJoinStep<Record4<Integer, String, Integer, Integer>> createMatchingStatsStatement(TreeConcept concept) {
 
 		List<Select<? extends Record>> connectorTables = new ArrayList<>();
 		ConceptIdMapping mapping = new ConceptIdMapping(concept, functionProvider);
@@ -282,9 +277,10 @@ public class SqlMatchingStats {
 		Name ct_name = name("connector_tables");
 		CommonTableExpression<?> unioned = ct_name.as(unionSelects(connectorTables));
 
-		SelectJoinStep<Record4<Integer, String, Date, Date>> records = dslContext.with(unioned).select(unioned.field(CONCEPT_ID_FIELD), PID_FIELD,
+		SelectJoinStep<Record4<Integer, String, Integer, Integer>> records = dslContext.with(unioned).select(unioned.field(CONCEPT_ID_FIELD), PID_FIELD,
 				// The infinities are intentionally swapped
-				nullif(unioned.field(LB_FIELD), positiveInfinity).as(LB_FIELD), nullif(unioned.field(UB_FIELD), negativeInfinity).as(UB_FIELD)).from(ct_name);
+				functionProvider.cast(nullif(unioned.field(LB_FIELD), positiveInfinity), SQLDataType.INTEGER).as(LB_FIELD), functionProvider.cast(nullif(unioned.field(UB_FIELD), negativeInfinity), SQLDataType.INTEGER).as(UB_FIELD)).from(ct_name);
+
 
 		return records;
 	}

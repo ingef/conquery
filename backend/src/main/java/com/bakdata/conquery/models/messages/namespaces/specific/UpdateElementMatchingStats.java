@@ -58,7 +58,7 @@ public class UpdateElementMatchingStats extends NamespaceMessage {
 					matchingStats = new MatchingStats();
 					target.setMatchingStats(matchingStats);
 				}
-				matchingStats.putEntry(sourceString, value);
+				matchingStats.addEntry(sourceString, value);
 			} catch (Exception e) {
 				log.error("Failed to set matching stats for '{}' (enable TRACE for exception)", entry.getKey(), (Exception) (log.isTraceEnabled() ? e : null));
 			}

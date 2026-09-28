@@ -39,21 +39,9 @@ public final class ConceptIdMapping {
 	public ConceptIdMapping(TreeConcept concept, SqlFunctionProvider functionProvider) {
 		this.concept = concept;
 		this.functionProvider = functionProvider;
-		CTConditionContext context = CTConditionContext.forJoinTables(functionProvider);
-		this.expressions = collectAllExpressions(concept, null, context);
+		this.expressions = collectAllExpressions(concept, null, CTConditionContext.forJoinTables(functionProvider));
 		this.keyFields = collectKeyFields(expressions);
 		this.tableName = tableName(concept.getId());
-	}
-
-	/**
-	 * Materialize mapping rows only while creating the physical mapping table. Query conversion only needs the table metadata.
-	 */
-	public synchronized List<RowN> getRows() {
-		if (rows == null) {
-			rows = expressionsToRows(concept, expressions, keyFields);
-			expressions = null;
-		}
-		return rows;
 	}
 
 	public static Name tableName(ConceptId conceptId) {
@@ -73,16 +61,19 @@ public final class ConceptIdMapping {
 	private static Field<?> mergeFieldType(Field<?> left, Field<?> right) {
 		DataType<?> leftType = left.getDataType();
 		DataType<?> rightType = right.getDataType();
-		if (leftType.isString() && rightType.isString()) {
-			int length = Math.max(leftType.length(), rightType.length());
-			return length > 0 ? field(left.getUnqualifiedName(), VARCHAR(length)) : field(left.getUnqualifiedName(), VARCHAR);
-		}
+
 		if (!leftType.getType().equals(rightType.getType())) {
 			throw new IllegalArgumentException(
 					"Concept mapping field `%s` is used with incompatible types %s and %s"
 							.formatted(left.getName(), leftType, rightType)
 			);
 		}
+
+		if (leftType.isString() && rightType.isString()) {
+			int length = Math.max(leftType.length(), rightType.length());
+			return length > 0 ? field(left.getUnqualifiedName(), VARCHAR(length)) : field(left.getUnqualifiedName(), VARCHAR);
+		}
+
 		return left;
 	}
 
@@ -165,6 +156,17 @@ public final class ConceptIdMapping {
 			expressions.addAll(collectAllExpressions(child, currentExpression, context));
 		}
 		return expressions;
+	}
+
+	/**
+	 * Materialize mapping rows only while creating the physical mapping table. Query conversion only needs the table metadata.
+	 */
+	public synchronized List<RowN> getRows() {
+		if (rows == null) {
+			rows = expressionsToRows(concept, expressions, keyFields);
+			expressions = null;
+		}
+		return rows;
 	}
 
 	public Table<Record> table() {

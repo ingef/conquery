@@ -1,17 +1,16 @@
 package com.bakdata.conquery.models.datasets.concepts;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.google.common.hash.HashFunction;
+import com.google.common.hash.Hashing;
+import it.unimi.dsi.fastutil.ints.IntOpenHashBigSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
+import lombok.*;
+import org.bouncycastle.util.Strings;
 
 @Getter
 @Setter
@@ -57,7 +56,7 @@ public class MatchingStats {
 
 	}
 
-	public synchronized void putEntry(String source, Entry entry) {
+	public synchronized void addEntry(String source, Entry entry) {
 		entries.put(source, entry);
 		span = null;
 		numberOfEntities = -1L;
@@ -95,28 +94,35 @@ public class MatchingStats {
 	 * concept elements and retained for the lifetime of the loaded dataset.</p>
 	 */
 	public static class Accumulator {
-		private Set<String> foundEntities = new HashSet<>();
+		private static final HashFunction hash = Hashing.fingerprint2011();
+
+		private IntSet foundEntities = new IntOpenHashBigSet();
 		private long numberOfEvents;
 		private long numberOfEntities;
 		private int minDate = Integer.MAX_VALUE;
 		private int maxDate = Integer.MIN_VALUE;
 
-		public void addEvents(String entityForEvent, int events, CDateRange time) {
+		public static int hashEntity(String entity){
+			return hash.hashBytes(Strings.toByteArray(entity)).asInt();
+		}
+
+		public void addEvents(int hashedEntity, int nEvents, CDateRange span) {
 			addEvents(
-					entityForEvent,
-					events,
-					time != null && time.hasLowerBound() ? time.getMinValue() : Integer.MAX_VALUE,
-					time != null && time.hasUpperBound() ? time.getMaxValue() : Integer.MIN_VALUE
+					hashedEntity, nEvents,
+					span != null && span.hasLowerBound() ? span.getMinValue() : Integer.MAX_VALUE,
+					span != null && span.hasUpperBound() ? span.getMaxValue() : Integer.MIN_VALUE
 			);
 		}
 
-		public void addEvents(String entityForEvent, int events, int eventMinDate, int eventMaxDate) {
+		public void addEvents(int hashedEntity, int nEvents, int eventMinDate, int eventMaxDate) {
 			if (foundEntities == null) {
 				throw new IllegalStateException("Matching stats accumulator was already finished");
 			}
 
-			numberOfEvents += events;
-			if (foundEntities.add(entityForEvent)) {
+			numberOfEvents += nEvents;
+
+			// This is not perfectly distinct but has low memory and CPU footprint which is overall more important.
+			if (foundEntities.add(hashedEntity)) {
 				numberOfEntities++;
 			}
 
@@ -129,7 +135,7 @@ public class MatchingStats {
 			}
 		}
 
-		public Entry finish() {
+		public Entry toEntry() {
 			Entry entry = new Entry(numberOfEvents, numberOfEntities, minDate, maxDate);
 			foundEntities = null;
 			return entry;

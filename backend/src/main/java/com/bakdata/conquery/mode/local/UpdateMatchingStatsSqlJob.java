@@ -1,16 +1,7 @@
 package com.bakdata.conquery.mode.local;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
@@ -18,6 +9,8 @@ import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.sql.conquery.SqlMatchingStats;
 import com.google.common.base.Stopwatch;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import jetbrains.exodus.core.dataStructures.hash.HashSet;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -35,77 +28,6 @@ public class UpdateMatchingStatsSqlJob extends Job {
 	@ToString.Exclude
 	private final SqlMatchingStats matchingStats;
 
-
-	@Override
-	public void execute() throws Exception {
-
-		log.info("BEGIN collecting SQL matching stats for {}", dataset);
-
-		Stopwatch stopwatch = Stopwatch.createStarted();
-
-		ExecutorService executorService = Executors.newFixedThreadPool(getMatchingStats().getMatchingStatsWorkers());
-		try {
-			ExecutorCompletionService<TreeConcept> completionService = new ExecutorCompletionService<>(executorService);
-			Map<Future<TreeConcept>, TreeConcept> activeJobs = new HashMap<>(getMatchingStats().getMatchingStatsWorkers());
-			Iterator<Concept<?>> remainingConcepts = concepts.iterator();
-
-			for (int worker = 0; worker < getMatchingStats().getMatchingStatsWorkers(); worker++) {
-				if (!submitNext(remainingConcepts, completionService, activeJobs)) {
-					break;
-				}
-			}
-
-			while (!activeJobs.isEmpty()) {
-				if (isCancelled()) {
-					activeJobs.keySet().forEach(job -> job.cancel(true));
-					break;
-				}
-
-				Future<TreeConcept> completedJob = completionService.poll(30, TimeUnit.SECONDS);
-				if (completedJob == null) {
-					log.debug("WAITING for {} matching stats to finish.", activeJobs.size());
-					continue;
-				}
-
-				TreeConcept concept = activeJobs.remove(completedJob);
-				try {
-					completedJob.get();
-				} catch (ExecutionException e) {
-					log.warn("FAILED to collect SQL matching stats for {}", concept, e.getCause());
-				} catch (CancellationException e) {
-					log.debug("Cancelled SQL matching stats for {}", concept);
-				}
-
-				submitNext(remainingConcepts, completionService, activeJobs);
-			}
-		} finally {
-			shutdownExecutor(executorService);
-		}
-
-		log.debug("DONE collecting SQL matching stats for {} within {}", dataset, stopwatch);
-	}
-
-	private boolean submitNext(
-			Iterator<Concept<?>> remainingConcepts,
-			ExecutorCompletionService<TreeConcept> completionService,
-			Map<Future<TreeConcept>, TreeConcept> activeJobs
-	) {
-		while (remainingConcepts.hasNext()) {
-			Concept<?> concept = remainingConcepts.next();
-			if (!(concept instanceof TreeConcept treeConcept)) {
-				continue;
-			}
-
-			Future<TreeConcept> future = completionService.submit(() -> {
-				matchingStats.collectMatchingStatsForConcept(treeConcept, matchingStats.getMatchingStatsRetries());
-				return treeConcept;
-			});
-			activeJobs.put(future, treeConcept);
-			return true;
-		}
-		return false;
-	}
-
 	private static void shutdownExecutor(ExecutorService executorService) throws InterruptedException {
 		executorService.shutdown();
 		try {
@@ -119,6 +41,68 @@ public class UpdateMatchingStatsSqlJob extends Job {
 			executorService.shutdownNow();
 			throw e;
 		}
+	}
+
+	@Override
+	public void execute() throws Exception {
+
+		log.info("BEGIN collecting SQL matching stats for {}", dataset);
+
+		Stopwatch stopwatch = Stopwatch.createStarted();
+
+		final int nThreads = getMatchingStats().getMatchingStatsWorkers();
+
+		ThreadPoolExecutor executorService = new ThreadPoolExecutor(nThreads, nThreads,
+				0L, TimeUnit.MILLISECONDS,
+				new LinkedBlockingQueue<>(concepts.size()),
+				new ThreadFactoryBuilder().setNameFormat("SQL-MatchingStats-" + getDataset().getName() + "-%d").build()
+		);
+
+		try {
+			ExecutorCompletionService<TreeConcept> completionService = new ExecutorCompletionService<>(executorService);
+			Set<Future<TreeConcept>> submitted = new HashSet<>();
+
+			for (Concept<?> concept : concepts) {
+				if(concept instanceof TreeConcept treeConcept) {
+					Future<TreeConcept> future = completionService.submit(() -> {
+						matchingStats.collectMatchingStatsForConcept(treeConcept, matchingStats.getMatchingStatsRetries());
+						return treeConcept;
+					});
+
+					submitted.add(future);
+				}
+			}
+
+			while (!submitted.isEmpty()) {
+				if (isCancelled()) {
+					for (Future<TreeConcept> job : submitted) {
+						job.cancel(true);
+					}
+					break;
+				}
+
+				Future<TreeConcept> completedJob = completionService.poll(30, TimeUnit.SECONDS);
+				if (completedJob == null) {
+					log.debug("WAITING for {} matching stats to finish.", submitted.size());
+					continue;
+				}
+
+				submitted.remove(completedJob);
+				Concept<?> concept = completedJob.get();
+
+				try {
+					completedJob.get();
+				} catch (ExecutionException e) {
+					log.warn("FAILED to collect SQL matching stats for {}", concept, e.getCause());
+				} catch (CancellationException e) {
+					log.debug("Cancelled SQL matching stats for {}", concept);
+				}
+			}
+		} finally {
+			shutdownExecutor(executorService);
+		}
+
+		log.debug("DONE collecting SQL matching stats for {} within {}", dataset, stopwatch);
 	}
 
 	@Override
