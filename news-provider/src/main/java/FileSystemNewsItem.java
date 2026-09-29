@@ -5,20 +5,19 @@ import java.util.Set;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 
 /**
- * Filesystem representation of a news item. It does not hold the date because we infer that from the folder it is in.
- * @param title
- * @param description
- * @param link
- * @param category
+ * Filesystem representation of a news item.
  */
 public record FileSystemNewsItem(
+		@NotBlank String id,
 		@NotBlank String title,
 		@NotBlank String description,
 		@Valid URI link,
-		Set<@NotBlank String> category
+		@NotNull LocalDate date,
+		Set<@NotBlank String> categories
 ) {
 	public FileSystemNewsItem {
 		category = category == null ? new HashSet<>() : category;

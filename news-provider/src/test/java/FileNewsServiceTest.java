@@ -28,12 +28,15 @@ public class FileNewsServiceTest {
 	void addNews() {
 		assertThatCode(() ->
 		newsService.addNewsItem(new NewsItem("id","title", "description", URI.create("/read/more"), LocalDate.of(2026,9,1), Set.of("cat1")))).doesNotThrowAnyException();
+
+		assertThat(newsFolder.resolve("2026-09-01_id.json")).exists();
+
 	}
 
 	@Order(1)
 	@Test
 	void testListNews() {
-
+		newsService.getNews(null);
 	}
 
 }

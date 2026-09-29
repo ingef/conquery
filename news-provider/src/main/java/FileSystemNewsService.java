@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+
+import jakarta.validation.Validation;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -50,18 +53,18 @@ public class FileSystemNewsService implements NewsService {
 	@Override
 	public void addNewsItem(NewsItem news) throws IOException {
 		try(final FileLock ignored = lockFile.tryLock()) {
-			// TODO add attributes?
-			Path dateFolder = Files.createDirectories(newsFolder.resolve(news.date().toString()));
 
 			FileSystemNewsItem fsNews = new FileSystemNewsItem(
+					news.id(),
 					news.title(),
 					news.description(),
 					news.link(),
+					news.date(),
 					news.categories()
 			);
 			String fsSafeId = news.id()
 						.trim().toLowerCase(Locale.ROOT).replace("[^a-zA-Z0-9_-]", "-");
-			File newsFile = dateFolder.resolve(fsSafeId + ".json").toFile();
+			File newsFile = newsFolder.resolve(news.date() + "_" + fsSafeId + ".json").toFile();
 
 			newsItemWriter.writeValue(newsFile, fsNews);
 
@@ -72,10 +75,10 @@ public class FileSystemNewsService implements NewsService {
 		Map<String, NewsItem> newsItems = new HashMap<>();
 		Files.walkFileTree(newsFolder, new SimpleFileVisitor<>() {
 			@Override
-			public FileVisitResult preVisitDirectory(
-					Path dir,
+			public FileVisitResult visitFile(
+					Path file,
 					BasicFileAttributes attrs) throws IOException {
-				register(dir, newsItems);
+				readNewsItem(file);
 				return FileVisitResult.CONTINUE;
 			}
 		});
@@ -84,17 +87,19 @@ public class FileSystemNewsService implements NewsService {
 
 	}
 
-	private void register(Path dateFolder, Map<String, NewsItem> collectedNewsItems) throws IOException {
-		Files.walkFileTree(dateFolder, new SimpleFileVisitor<>() {
+	private NewsItem readNewsItem(Path file) throws IOException {
+		try (BufferedReader reader = Files.newBufferedReader(file)) {
+			FileSystemNewsItem item = newsItemReader.readValue(reader);
 
-			@Override
-			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-				try (BufferedReader reader = Files.newBufferedReader(file)) {
-					FileSystemNewsItem item = newsItemReader.readValue(reader);
-				}
-				return FileVisitResult.CONTINUE;
+			return new NewsItem(
+					item.id(),
+					item.title(),
+					item.description(),
+					item.link(),
+					item.date(),
+					item.categories()
+			);
 
-			}
-		});
+		}
 	}
 }
