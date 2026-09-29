@@ -1,6 +1,8 @@
 package com.bakdata.conquery.mode.local;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
 
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -10,7 +12,6 @@ import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.sql.conquery.SqlMatchingStats;
 import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import jetbrains.exodus.core.dataStructures.hash.HashSet;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -46,7 +47,7 @@ public class UpdateMatchingStatsSqlJob extends Job {
 	@Override
 	public void execute() throws Exception {
 
-		log.info("BEGIN collecting SQL matching stats for {}", dataset);
+		log.info("BEGIN collecting {} SQL matching stats for {}", concepts.size(), dataset);
 
 		Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -59,36 +60,35 @@ public class UpdateMatchingStatsSqlJob extends Job {
 		);
 
 		try {
-			ExecutorCompletionService<TreeConcept> completionService = new ExecutorCompletionService<>(executorService);
-			Set<Future<TreeConcept>> submitted = new HashSet<>();
+			ExecutorCompletionService<Void> completionService = new ExecutorCompletionService<>(executorService);
+			Map<Future<Void>, TreeConcept> submitted = new HashMap<>();
 
 			for (Concept<?> concept : concepts) {
-				if(concept instanceof TreeConcept treeConcept) {
-					Future<TreeConcept> future = completionService.submit(() -> {
+				if (concept instanceof TreeConcept treeConcept) {
+					Future<Void> future = completionService.submit(() -> {
 						matchingStats.collectMatchingStatsForConcept(treeConcept, matchingStats.getMatchingStatsRetries());
-						return treeConcept;
+						return null;
 					});
 
-					submitted.add(future);
+					submitted.put(future, treeConcept);
 				}
 			}
 
 			while (!submitted.isEmpty()) {
 				if (isCancelled()) {
-					for (Future<TreeConcept> job : submitted) {
+					for (Future<Void> job : submitted.keySet()) {
 						job.cancel(true);
 					}
 					break;
 				}
 
-				Future<TreeConcept> completedJob = completionService.poll(30, TimeUnit.SECONDS);
+				Future<Void> completedJob = completionService.poll(30, TimeUnit.SECONDS);
 				if (completedJob == null) {
 					log.debug("WAITING for {} matching stats to finish.", submitted.size());
 					continue;
 				}
 
-				submitted.remove(completedJob);
-				Concept<?> concept = completedJob.get();
+				Concept<?> concept = submitted.remove(completedJob);
 
 				try {
 					completedJob.get();

@@ -154,6 +154,9 @@ public class SqlMatchingStats {
 		log.trace("{}", selectJoinStep);
 
 		try (Stream<Record4<Integer, String, Integer, Integer>> stream = selectJoinStep.fetchSize(fetchBatchSize).stream()) {
+			//TODO if this is still too slow, access the raw results somehow instead of boxing etc.
+			//TODO We can also try and rewrite the logic to scan every table once with all connectors for that table at the same time; though that might create more memory pressure.
+
 			stream.forEach(
 					record -> {
 						Integer rawId = record.value1();
