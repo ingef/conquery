@@ -6,7 +6,7 @@ import type { CurrencyConfigT, GetQueryResponseDoneT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { currencyFromSymbol, NUMBER_TYPES } from "./util";
 
-export type CellValue = string | Vector;
+type CellValue = string | Vector | null;
 
 type RenderFunction = (value: CellValue) => string;
 
@@ -27,7 +27,7 @@ function getListRenderFunction(
           .toArray() // This is somewhat slow, but for-loop produces bogus values
           .map(listTypeRenderFunction)
           .join(", ")
-      : null;
+      : "";
 }
 
 function getNumberRenderFunction(cellType: string): RenderFunction {
@@ -51,7 +51,8 @@ function getDateRenderFunction(): RenderFunction {
     year: "numeric",
   });
 
-  return (value) => dateFormatter.format(value as unknown as Date);
+  return (value) =>
+    value ? dateFormatter.format(value as unknown as Date) : "";
 }
 
 function getDateRangeRenderFunction(): RenderFunction {
@@ -62,10 +63,17 @@ function getDateRangeRenderFunction(): RenderFunction {
   });
 
   return (value) => {
-    const vector = value as unknown as { min: Date; max: Date };
+    if (value === null) {
+      return "";
+    }
 
-    const min = dateFormatter.format(vector.min);
-    const max = dateFormatter.format(vector.max);
+    const vector = value as unknown as {
+      min: Date | null;
+      max: Date | null;
+    };
+
+    const min = vector.min ? dateFormatter.format(vector.min) : "-∞";
+    const max = vector.max ? dateFormatter.format(vector.max) : "+∞";
 
     if (min === max) {
       return min;
@@ -95,7 +103,13 @@ function getBooleanRenderFunction(
   getTrueLabel: () => string,
   getFalseLabel: () => string,
 ): RenderFunction {
-  return (value) => (value ? getTrueLabel() : getFalseLabel());
+  return (value) => {
+    if (value === null) {
+      return "";
+    }
+
+    return value ? getTrueLabel() : getFalseLabel();
+  };
 }
 
 function getDefaultRenderFunction(): RenderFunction {
