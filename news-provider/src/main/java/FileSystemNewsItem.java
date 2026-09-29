@@ -20,6 +20,6 @@ public record FileSystemNewsItem(
 		Set<@NotBlank String> categories
 ) {
 	public FileSystemNewsItem {
-		category = category == null ? new HashSet<>() : category;
+		categories = categories == null ? new HashSet<>() : categories;
 	}
 }
