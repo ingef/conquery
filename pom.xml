@@ -25,6 +25,7 @@
         <spotless-maven-plugin.version>3.9.0</spotless-maven-plugin.version>
         <maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ssXXX</maven.build.timestamp.format>
         <build.time>${maven.build.timestamp}</build.time>
+        <junit5.version>5.14.4</junit5.version>
         <revision>0.0.0-SNAPSHOT</revision>
     </properties>
 
@@ -32,7 +33,7 @@
         <module>backend</module>
         <module>executable</module>
         <module>autodoc</module>
-        <module>news-provider</module>
+        <module>news-service</module>
     </modules>
 
     <dependencyManagement>
@@ -54,11 +55,6 @@
     </dependencyManagement>
 
     <dependencies>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>
