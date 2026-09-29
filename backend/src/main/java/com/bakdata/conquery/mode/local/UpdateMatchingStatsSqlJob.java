@@ -46,6 +46,9 @@ public class UpdateMatchingStatsSqlJob extends Job {
 
 	@Override
 	public void execute() throws Exception {
+		if (concepts.isEmpty()) {
+			return;
+		}
 
 		log.info("BEGIN collecting {} SQL matching stats for {}", concepts.size(), dataset);
 

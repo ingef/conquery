@@ -278,7 +278,7 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
         return function(
                 name("CAST"),
                 type.getType(),
-                field("{0} AS {1}", field, keyword(type.getName()))
+                field("{0} AS Nullable({1})", field, keyword(type.getName()))
         );
     }
 

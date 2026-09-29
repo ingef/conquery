@@ -41,17 +41,17 @@ public class MatchingStatsTests {
 
 
 		MatchingStats.Accumulator entry1 = new MatchingStats.Accumulator();
-		entry1.addEvents(MatchingStats.Accumulator.hashEntity("1"), 1, null);
-		entry1.addEvents(MatchingStats.Accumulator.hashEntity("1"), 1, null);
+		entry1.addEvents(1, 1, null);
+		entry1.addEvents(1, 1, null);
 
-		entry1.addEvents(MatchingStats.Accumulator.hashEntity("2"), 1, null);
-		entry1.addEvents(MatchingStats.Accumulator.hashEntity("2"), 1, null);
+		entry1.addEvents(2, 1, null);
+		entry1.addEvents(2, 1, null);
 
-		entry1.addEvents(MatchingStats.Accumulator.hashEntity("3"), 1, null);
-		entry1.addEvents(MatchingStats.Accumulator.hashEntity("3"), 1, null);
+		entry1.addEvents(3, 1, null);
+		entry1.addEvents(3, 1, null);
 
-		entry1.addEvents(MatchingStats.Accumulator.hashEntity("4"), 1, null);
-		entry1.addEvents(MatchingStats.Accumulator.hashEntity("4"), 1, null);
+		entry1.addEvents(4, 1, null);
+		entry1.addEvents(4, 1, null);
 
 
 		stats.addEntry(workerId1.toString(), entry1.toEntry());
@@ -61,15 +61,15 @@ public class MatchingStatsTests {
 
 		MatchingStats.Accumulator entry2 = new MatchingStats.Accumulator();
 
-		entry2.addEvents(MatchingStats.Accumulator.hashEntity("1"), 1, null);
-		entry2.addEvents(MatchingStats.Accumulator.hashEntity("2"), 1, null);
-		entry2.addEvents(MatchingStats.Accumulator.hashEntity("3"), 1, null);
-		entry2.addEvents(MatchingStats.Accumulator.hashEntity("4"), 1, null);
-		entry2.addEvents(MatchingStats.Accumulator.hashEntity("5"), 1, null);
-		entry2.addEvents(MatchingStats.Accumulator.hashEntity("6"), 1, null);
-		entry2.addEvents(MatchingStats.Accumulator.hashEntity("7"), 1, null);
-		entry2.addEvents(MatchingStats.Accumulator.hashEntity("8"), 1, null);
-		entry2.addEvents(MatchingStats.Accumulator.hashEntity("9"), 1, null);
+		entry2.addEvents(1, 1, null);
+		entry2.addEvents(2, 1, null);
+		entry2.addEvents(3, 1, null);
+		entry2.addEvents(4, 1, null);
+		entry2.addEvents(5, 1, null);
+		entry2.addEvents(6, 1, null);
+		entry2.addEvents(7, 1, null);
+		entry2.addEvents(8, 1, null);
+		entry2.addEvents(9, 1, null);
 		entry2.addEvents(MatchingStats.Accumulator.hashEntity("10"), 1, null);
 
 
