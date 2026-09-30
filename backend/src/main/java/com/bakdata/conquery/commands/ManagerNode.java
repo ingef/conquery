@@ -10,6 +10,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import com.bakdata.conquery.news.ManagedNewsService;
+import com.bakdata.conquery.news.NewsApi;
 import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
@@ -62,6 +65,7 @@ public class ManagerNode implements Managed {
 
 	// For registering form providers
 	private FormScanner formScanner;
+	private ManagedNewsService newsService;
 
 	public ManagerNode() {
 		this(DEFAULT_NAME);
@@ -83,6 +87,9 @@ public class ManagerNode implements Managed {
 
 		// FormScanner needs to be instantiated before plugins are initialized
 		formScanner = new FormScanner(config);
+
+		newsService = new ManagedNewsService(config.getNews(), environment.getValidator());
+		environment.lifecycle().manage(newsService);
 
 		// Init all plugins
 		config.getPlugins().forEach(pluginConfig -> pluginConfig.initialize(this));
@@ -106,6 +113,9 @@ public class ManagerNode implements Managed {
 
 		// Register default components for the admin interface
 		admin.register();
+
+		// Wire up news-service with jersey
+		NewsApi.register(environment.jersey().getResourceConfig(), admin.getJerseyConfig(), newsService);
 
 		log.info("Registering ResourcesProvider");
 		for (Class<? extends ResourcesProvider> resourceProvider : CPSTypeIdResolver.listImplementations(ResourcesProvider.class)) {
