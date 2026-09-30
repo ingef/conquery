@@ -34,7 +34,12 @@ public class BooleanParser extends Parser<Boolean, BooleanStore> {
 
 	@Override
 	protected BooleanStore decideType() {
-		return BitSetStore.create(getLines());
+		return decideType(getLines());
+	}
+
+	@Override
+	protected BooleanStore decideType(int storeLines) {
+		return BitSetStore.create(storeLines);
 	}
 
 	@Override

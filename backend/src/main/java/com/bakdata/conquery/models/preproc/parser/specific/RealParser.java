@@ -45,13 +45,18 @@ public class RealParser extends Parser<Double, RealStore> {
 	 */
 	@Override
 	protected RealStore decideType() {
+		return decideType(getLines());
+	}
+
+	@Override
+	protected RealStore decideType(int storeLines) {
 		log.debug("Max ULP = {}", floatULP);
 
 		if (floatULP < requiredPrecision) {
-			return FloatArrayStore.create(getLines());
+			return FloatArrayStore.create(storeLines);
 		}
 		else {
-			return DoubleArrayStore.create(getLines());
+			return DoubleArrayStore.create(storeLines);
 		}
 	}
 

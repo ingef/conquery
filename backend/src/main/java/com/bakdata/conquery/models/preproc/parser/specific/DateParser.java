@@ -52,7 +52,12 @@ public class DateParser extends Parser<Integer, DateStore> {
 
 	@Override
 	protected DateStore decideType() {
-		IntegerStore subDecision = subType.findBestType();
+		return decideType(getLines());
+	}
+
+	@Override
+	protected DateStore decideType(int storeLines) {
+		IntegerStore subDecision = subType.findBestType(storeLines);
 		return new IntegerDateStore(subDecision);
 	}
 

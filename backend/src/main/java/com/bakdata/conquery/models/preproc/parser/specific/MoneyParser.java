@@ -44,12 +44,17 @@ public class MoneyParser extends Parser<BigDecimal, MoneyStore> {
 
 	@Override
 	protected MoneyStore decideType() {
+		return decideType(getLines());
+	}
+
+	@Override
+	protected MoneyStore decideType(int storeLines) {
 		IntegerParser subParser = new IntegerParser(getConfig());
 		subParser.registerValue(maxValue.movePointRight(defaultFractionDigits).longValue());
 		subParser.registerValue(minValue.movePointRight(defaultFractionDigits).longValue());
 		subParser.setLines(getLines());
 		subParser.setNullLines(getNullLines());
-		IntegerStore subDecision = subParser.findBestType();
+		IntegerStore subDecision = subParser.findBestType(storeLines);
 
 		return new MoneyIntStore(subDecision, defaultFractionDigits);
 	}

@@ -52,11 +52,22 @@ public abstract class Parser<MAJOR_JAVA_TYPE, STORE_TYPE extends ColumnStore> {
 	protected abstract MAJOR_JAVA_TYPE parseValue(@Nonnull String value) throws ParsingException;
 
 	public final STORE_TYPE findBestType() {
+		return findBestType(getLines());
+	}
+
+	/**
+	 * Select the optimal store based on all registered values, but allocate it for the supplied number of lines.
+	 */
+	public final STORE_TYPE findBestType(int storeLines) {
+		if (storeLines < 0) {
+			throw new IllegalArgumentException("Store lines must not be negative");
+		}
+
 		if (isEmpty()) {
 			return (STORE_TYPE) EmptyStore.INSTANCE; // This implements all root ColumnStores.
 		}
 
-		return decideType();
+		return decideType(storeLines);
 	}
 
 	public boolean isEmpty() {
@@ -66,7 +77,14 @@ public abstract class Parser<MAJOR_JAVA_TYPE, STORE_TYPE extends ColumnStore> {
 	/**
 	 * Analyze all values and select an optimal store.
 	 */
-	protected abstract STORE_TYPE decideType();
+	protected STORE_TYPE decideType() {
+		return decideType(getLines());
+	}
+
+	/**
+	 * Select the store representation from the globally collected parser statistics and allocate it with the supplied length.
+	 */
+	protected abstract STORE_TYPE decideType(int storeLines);
 
 	/**
 	 * Process a single parsed line.

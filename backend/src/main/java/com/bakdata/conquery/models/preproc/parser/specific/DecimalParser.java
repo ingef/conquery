@@ -46,10 +46,15 @@ public class DecimalParser extends Parser<BigDecimal, DecimalStore> {
 
 	@Override
 	protected DecimalStore decideType() {
+		return decideType(getLines());
+	}
+
+	@Override
+	protected DecimalStore decideType(int storeLines) {
 
 		BigInteger unscaled = ScaledDecimalStore.unscale(maxScale, maxAbs);
 		if (unscaled.bitLength() > 63) {
-			return DecimalArrayStore.create(getLines());
+			return DecimalArrayStore.create(storeLines);
 		}
 
 		IntegerParser sub = new IntegerParser(getConfig());
@@ -57,7 +62,7 @@ public class DecimalParser extends Parser<BigDecimal, DecimalStore> {
 		sub.setMinValue(-unscaled.longValueExact());
 		sub.setLines(getLines());
 		sub.setNullLines(getNullLines());
-		IntegerStore subDecision = sub.findBestType();
+		IntegerStore subDecision = sub.findBestType(storeLines);
 
 		return new ScaledDecimalStore(maxScale, subDecision);
 	}

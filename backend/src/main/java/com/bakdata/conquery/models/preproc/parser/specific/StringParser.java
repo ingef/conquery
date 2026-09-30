@@ -41,13 +41,18 @@ public class StringParser extends Parser<String, StringStore> {
 
 	@Override
 	protected StringStore decideType() {
+		return decideType(getLines());
+	}
+
+	@Override
+	protected StringStore decideType(int storeLines) {
 
 		//check if a singleton type is enough
 		if (getLines() == 0) {
 			return EmptyStore.INSTANCE;
 		}
 
-		return StringStoreString.create(getLines());
+		return StringStoreString.create(storeLines);
 	}
 
 

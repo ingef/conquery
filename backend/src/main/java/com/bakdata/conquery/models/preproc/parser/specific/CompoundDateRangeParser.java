@@ -52,7 +52,12 @@ public class CompoundDateRangeParser extends Parser<Boolean, DateRangeStore> {
 
 	@Override
 	protected DateRangeStore decideType() {
-		return new CompoundDateRangeStore(this.startColumn, this.endColumn, BitSetStore.create(getLines()));
+		return decideType(getLines());
+	}
+
+	@Override
+	protected DateRangeStore decideType(int storeLines) {
+		return new CompoundDateRangeStore(this.startColumn, this.endColumn, BitSetStore.create(storeLines));
 	}
 
 
