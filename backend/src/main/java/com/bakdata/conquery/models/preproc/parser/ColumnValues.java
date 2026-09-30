@@ -39,4 +39,8 @@ public abstract class ColumnValues<T> {
 
 	protected abstract int size();
 
+	public final int getSize() {
+		return size();
+	}
+
 }

@@ -162,7 +162,7 @@ public class Preprocessor {
 						final String primary = result.addPrimary(primaryId);
 						applyOutputs(outputs, columns, row, lineId, outRow);
 
-						result.addRow(primary, columns, outRow);
+						result.addRow(primary, outRow);
 
 					}
 					catch (OutputDescription.OutputException e) {
