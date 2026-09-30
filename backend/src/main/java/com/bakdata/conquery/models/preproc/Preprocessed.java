@@ -6,12 +6,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.IntSummaryStatistics;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 
@@ -24,7 +23,6 @@ import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.models.preproc.parser.specific.StringParser;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.google.common.collect.Maps;
 import com.google.common.hash.Hashing;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -100,11 +98,10 @@ public class Preprocessed {
 
 		log.debug("Writing Headers");
 
-		//TODO this could actually be done at read-time, avoiding large allocations entirely. But in a different smaller PR.
-		final Map<Integer, Collection<String>> bucket2Entity = entityStart.keySet().stream()
-																		  .collect(Collectors.groupingBy(id -> getEntityBucket(buckets, id)))
-																		  .entrySet().stream()
-																		  .collect(Collectors.toMap(Map.Entry::getKey, entry -> new HashSet<>(entry.getValue())));
+		final Map<Integer, List<String>> bucket2Entity = new TreeMap<>();
+		for (String entity : entityStart.keySet()) {
+			bucket2Entity.computeIfAbsent(getEntityBucket(buckets, entity), ignored -> new ArrayList<>()).add(entity);
+		}
 
 
 		final int hash = descriptor.calculateValidityHash(job.getCsvDirectory(), job.getTag());
@@ -185,7 +182,7 @@ public class Preprocessed {
 		return columnStores;
 	}
 
-	private static void writePreprocessed(File file, PreprocessedHeader header, Map<String, Integer> globalStarts, Map<String, Integer> globalLengths, Map<String, ColumnStore> data, Map<Integer, Collection<String>> bucket2Entities) throws IOException {
+	private static void writePreprocessed(File file, PreprocessedHeader header, Object2IntMap<String> globalStarts, Object2IntMap<String> globalLengths, Map<String, ColumnStore> data, Map<Integer, List<String>> bucket2Entities) throws IOException {
 		final OutputStream out = new GZIPOutputStream(new FileOutputStream(file));
 		try (JsonGenerator generator = Jackson.BINARY_MAPPER.copy().enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET).getFactory().createGenerator(out)) {
 
@@ -195,20 +192,15 @@ public class Preprocessed {
 
 			log.debug("Writing data");
 
-			for (Map.Entry<Integer, Collection<String>> bucketIds : bucket2Entities.entrySet()) {
-				final Collection<String> entities = bucketIds.getValue();
-
-				final Map<String, Integer> starts = Maps.filterKeys(globalStarts, entities::contains);
-				final Map<String, Integer> lengths = Maps.filterKeys(globalLengths, entities::contains);
-
-				final PreprocessedData preprocessedData = selectBucket(bucketIds.getKey(), starts, lengths, data);
+			for (Map.Entry<Integer, List<String>> bucketIds : bucket2Entities.entrySet()) {
+				final PreprocessedData preprocessedData = selectBucket(bucketIds.getKey(), bucketIds.getValue(), globalStarts, globalLengths, data);
 
 				generator.writeObject(preprocessedData);
 			}
 		}
 	}
 
-	private static PreprocessedData selectBucket(int bucket, Map<String, Integer> localStarts, Map<String, Integer> localLengths, Map<String, ColumnStore> stores) {
+	private static PreprocessedData selectBucket(int bucket, List<String> entities, Object2IntMap<String> globalStarts, Object2IntMap<String> globalLengths, Map<String, ColumnStore> stores) {
 
 
 		final IntList selectionStart = new IntArrayList();
@@ -222,11 +214,9 @@ public class Preprocessed {
 
 		int currentStart = 0;
 
-		for (Map.Entry<String, Integer> entity2Start : localStarts.entrySet()) {
-			final String entity = entity2Start.getKey();
-			final int start = entity2Start.getValue();
-
-			final int length = localLengths.get(entity);
+		for (String entity : entities) {
+			final int start = globalStarts.getInt(entity);
+			final int length = globalLengths.getInt(entity);
 
 			selectionStart.add(start);
 
@@ -238,13 +228,16 @@ public class Preprocessed {
 			currentStart += length;
 		}
 
+		final int[] selectionStarts = selectionStart.toIntArray();
+		final int[] selectionLengths = selectionLength.toIntArray();
+
 		final Map<String, ColumnStore> selected = new HashMap<>();
 
 		for (Map.Entry<String, ColumnStore> entry : stores.entrySet()) {
 			final String name = entry.getKey();
 			final ColumnStore store = entry.getValue();
 
-			selected.put(name, store.select(selectionStart.toIntArray(), selectionLength.toIntArray()));
+			selected.put(name, store.select(selectionStarts, selectionLengths));
 		}
 
 		return new PreprocessedData(bucket, entityStarts, entityEnds, selected);
