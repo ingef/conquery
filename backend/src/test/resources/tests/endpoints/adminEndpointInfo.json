@@ -1,6 +1,21 @@
 [
   {
     "method": "GET",
+    "path": "/news",
+    "clazz": "AdminNewsResource"
+  },
+  {
+    "method": "POST",
+    "path": "/news",
+    "clazz": "AdminNewsResource"
+  },
+  {
+    "method": "DELETE",
+    "path": "/news/{id}",
+    "clazz": "AdminNewsResource"
+  },
+  {
+    "method": "GET",
     "path": "/datasets",
     "clazz": "AdminDatasetsResource"
   },
