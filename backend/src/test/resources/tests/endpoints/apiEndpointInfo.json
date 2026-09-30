@@ -156,6 +156,11 @@
   },
   {
     "method": "GET",
+    "path": "/datasets/{dataset}/news",
+    "clazz": "NewsResource"
+  },
+  {
+    "method": "GET",
     "path": "/form-configs/{form-config}",
     "clazz": "FormConfigResource"
   },
