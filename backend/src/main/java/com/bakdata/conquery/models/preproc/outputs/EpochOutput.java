@@ -6,6 +6,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.preproc.OutputRow;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.models.preproc.parser.specific.DateParser;
 import com.bakdata.conquery.util.DateReader;
@@ -47,6 +48,16 @@ public class EpochOutput extends OutputDescription {
 
 
 				return Integer.parseInt(row[columnIndex]);
+			}
+
+			@Override
+			protected void parseLine(String[] row, Parser type, long sourceLine, OutputRow outputRow, int outputIndex) {
+				if (row[columnIndex] == null) {
+					outputRow.setNull(outputIndex);
+					return;
+				}
+
+				outputRow.setLong(outputIndex, Integer.parseInt(row[columnIndex]));
 			}
 		};
 	}

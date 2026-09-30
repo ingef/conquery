@@ -6,6 +6,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.EmptyStore;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.preproc.OutputRow;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -42,8 +43,16 @@ public abstract class Parser<MAJOR_JAVA_TYPE, STORE_TYPE extends ColumnStore> {
 			return parseValue(v);
 		}
 		catch (Exception e) {
-			throw new ParsingException("Failed to parse '" + v + "' with " + this.getClass().getSimpleName(), e);
+			throw parsingException(v, e);
 		}
+	}
+
+	public void parse(String value, OutputRow outputRow, int outputIndex) throws ParsingException {
+		outputRow.setObject(outputIndex, parse(value));
+	}
+
+	protected final ParsingException parsingException(String value, Exception cause) {
+		return new ParsingException("Failed to parse '" + value + "' with " + this.getClass().getSimpleName(), cause);
 	}
 
 	/**
@@ -92,18 +101,55 @@ public abstract class Parser<MAJOR_JAVA_TYPE, STORE_TYPE extends ColumnStore> {
 	 * @param v a parsed value.
 	 */
 	public MAJOR_JAVA_TYPE addLine(MAJOR_JAVA_TYPE v) {
-		lines++;
-		if (log.isTraceEnabled()) {
-			log.trace("Registering `{}` in line {}", v, lines);
-		}
-
 		if (v == null) {
-			nullLines++;
+			recordNullLine();
 		}
 		else {
+			recordObjectLine(v);
 			registerValue(v);
 		}
 		return v;
+	}
+
+	@SuppressWarnings("unchecked")
+	public void addLine(OutputRow outputRow, int outputIndex) {
+		addLine((MAJOR_JAVA_TYPE) outputRow.getObject(outputIndex));
+	}
+
+	protected final void recordNullLine() {
+		lines++;
+		nullLines++;
+		if (log.isTraceEnabled()) {
+			log.trace("Registering `null` in line {}", lines);
+		}
+	}
+
+	protected final void recordObjectLine(Object value) {
+		lines++;
+		if (log.isTraceEnabled()) {
+			log.trace("Registering `{}` in line {}", value, lines);
+		}
+	}
+
+	protected final void recordLongLine(long value) {
+		lines++;
+		if (log.isTraceEnabled()) {
+			log.trace("Registering `{}` in line {}", value, lines);
+		}
+	}
+
+	protected final void recordDoubleLine(double value) {
+		lines++;
+		if (log.isTraceEnabled()) {
+			log.trace("Registering `{}` in line {}", value, lines);
+		}
+	}
+
+	protected final void recordBooleanLine(boolean value) {
+		lines++;
+		if (log.isTraceEnabled()) {
+			log.trace("Registering `{}` in line {}", value, lines);
+		}
 	}
 
 	/**

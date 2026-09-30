@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -137,7 +136,7 @@ public class Preprocessor {
 					outputs.add(op.createForHeaders(headerMap, dateReader, config));
 				}
 
-				final Object[] outRow = new Object[outputs.size()];
+				final OutputRow outRow = new OutputRow(outputs.size());
 				String[] row;
 
 				// Read all CSV lines, apply Output transformations and add the to preprocessed.
@@ -236,7 +235,7 @@ public class Preprocessor {
 	/**
 	 * Apply each output for a single row into the reusable output buffer.
 	 */
-	private static void applyOutputs(List<OutputDescription.Output> outputs, PPColumn[] columns, String[] row, long lineId, Object[] outRow)
+	private static void applyOutputs(List<OutputDescription.Output> outputs, PPColumn[] columns, String[] row, long lineId, OutputRow outRow)
 			throws ParsingException, OutputDescription.OutputException {
 		for (int index = 0; index < outputs.size(); index++) {
 			final OutputDescription.Output out = outputs.get(index);
@@ -244,11 +243,10 @@ public class Preprocessor {
 			try {
 				final Parser parser = columns[index].getParser();
 
-				final Object result = out.createOutput(row, parser, lineId);
-				outRow[index] = result;
+				out.createOutput(row, parser, lineId, outRow, index);
 			}
 			catch (Exception e) {
-				Arrays.fill(outRow, null);
+				outRow.clear();
 				throw new OutputDescription.OutputException(out.getDescription(), e);
 			}
 		}

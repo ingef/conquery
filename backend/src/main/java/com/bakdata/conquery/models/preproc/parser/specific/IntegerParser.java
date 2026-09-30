@@ -8,6 +8,7 @@ import com.bakdata.conquery.models.events.stores.primitive.ShortArrayStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.specific.RebasingIntegerStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.preproc.OutputRow;
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.NumberParsing;
@@ -34,13 +35,51 @@ public class IntegerParser extends Parser<Long, IntegerStore> {
 	}
 
 	@Override
+	public void parse(String value, OutputRow outputRow, int outputIndex) throws ParsingException {
+		if (value == null) {
+			outputRow.setNull(outputIndex);
+			return;
+		}
+
+		try {
+			outputRow.setLong(outputIndex, NumberParsing.parseLong(value));
+		}
+		catch (Exception e) {
+			throw parsingException(value, e);
+		}
+	}
+
+	@Override
 	protected void registerValue(Long v) {
+		registerValue(v.longValue());
+	}
+
+	private void registerValue(long v) {
 		if (v > maxValue) {
 			maxValue = v;
 		}
 		if (v < minValue) {
 			minValue = v;
 		}
+	}
+
+	@Override
+	public void addLine(OutputRow outputRow, int outputIndex) {
+		if (outputRow.isNull(outputIndex)) {
+			recordNullLine();
+			return;
+		}
+
+		addLong(outputRow.getLong(outputIndex));
+	}
+
+	void addLong(long value) {
+		recordLongLine(value);
+		registerValue(value);
+	}
+
+	void addNull() {
+		recordNullLine();
 	}
 
 

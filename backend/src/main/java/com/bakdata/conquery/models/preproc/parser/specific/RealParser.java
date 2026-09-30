@@ -5,6 +5,7 @@ import com.bakdata.conquery.models.events.stores.primitive.DoubleArrayStore;
 import com.bakdata.conquery.models.events.stores.primitive.FloatArrayStore;
 import com.bakdata.conquery.models.events.stores.root.RealStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.preproc.OutputRow;
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.NumberParsing;
@@ -30,6 +31,21 @@ public class RealParser extends Parser<Double, RealStore> {
 		return NumberParsing.parseDouble(value);
 	}
 
+	@Override
+	public void parse(String value, OutputRow outputRow, int outputIndex) throws ParsingException {
+		if (value == null) {
+			outputRow.setNull(outputIndex);
+			return;
+		}
+
+		try {
+			outputRow.setDouble(outputIndex, NumberParsing.parseDouble(value));
+		}
+		catch (Exception e) {
+			throw parsingException(value, e);
+		}
+	}
+
 	/**
 	 * Collect ULP of all values
 	 *
@@ -37,7 +53,23 @@ public class RealParser extends Parser<Double, RealStore> {
 	 */
 	@Override
 	protected void registerValue(Double v) {
-		floatULP = Math.max(floatULP, Math.ulp(v.floatValue()));
+		registerValue(v.doubleValue());
+	}
+
+	private void registerValue(double value) {
+		floatULP = Math.max(floatULP, Math.ulp((float) value));
+	}
+
+	@Override
+	public void addLine(OutputRow outputRow, int outputIndex) {
+		if (outputRow.isNull(outputIndex)) {
+			recordNullLine();
+			return;
+		}
+
+		final double value = outputRow.getDouble(outputIndex);
+		recordDoubleLine(value);
+		registerValue(value);
 	}
 
 	/**
