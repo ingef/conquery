@@ -11,21 +11,13 @@ type CellValue = string | Vector | null;
 type RenderFunction = (value: CellValue) => string;
 
 function getListRenderFunction(
-  cellType: string,
-  getRenderFunction: (cellType: string) => RenderFunction,
-): RenderFunction | null {
-  const listType = cellType.match(/LIST\[(?<listtype>.*)\]/)?.groups?.listtype;
-
-  if (!listType) {
-    return null;
-  }
-
-  const listTypeRenderFunction = getRenderFunction(listType);
+  elementRenderFunction: RenderFunction,
+): RenderFunction {
   return (value) =>
     value
       ? (value as Vector)
           .toArray() // This is somewhat slow, but for-loop produces bogus values
-          .map(listTypeRenderFunction)
+          .map(elementRenderFunction)
           .join(", ")
       : "";
 }
@@ -37,10 +29,17 @@ function getNumberRenderFunction(cellType: string): RenderFunction {
   });
 
   return (value) => {
-    if (value && !Number.isNaN(Number(value))) {
-      return numberFormatter.format(value as unknown as number);
+    if (!value) {
+      return "";
     }
-    return "";
+
+    const number = Number(value);
+
+    if (Number.isNaN(number)) {
+      return "";
+    }
+
+    return numberFormatter.format(number);
   };
 }
 
@@ -92,23 +91,32 @@ function getMoneyRenderFunction(
   });
 
   return (value) => {
-    if (value && !Number.isNaN(Number(value))) {
-      return currencyFormatter.format((value as unknown as number) / 100); // MONEY is sent as cent
+    if (!value) {
+      return "";
     }
-    return "";
+
+    const number = Number(value);
+
+    if (Number.isNaN(number)) {
+      return "";
+    }
+
+    return currencyFormatter.format(
+      number / 100 /* Conquery MONEY is cent based */,
+    );
   };
 }
 
 function getBooleanRenderFunction(
-  getTrueLabel: () => string,
-  getFalseLabel: () => string,
+  trueLabel: string,
+  falseLabel: string,
 ): RenderFunction {
   return (value) => {
     if (value === null) {
       return "";
     }
 
-    return value ? getTrueLabel() : getFalseLabel();
+    return value ? trueLabel : falseLabel;
   };
 }
 
@@ -125,13 +133,13 @@ export function useCustomTableRenderers(queryData: GetQueryResponseDoneT) {
   const getRenderFunction = useCallback(
     (cellType: string): RenderFunction => {
       if (cellType.indexOf("LIST") === 0) {
-        const listRenderFunction = getListRenderFunction(
-          cellType,
-          getRenderFunction,
-        );
-        if (listRenderFunction) {
-          return listRenderFunction;
-        }
+        const innerType = cellType.match(/^LIST\[(?<nestedtype>.*)\]$/)?.groups
+          ?.nestedtype;
+
+        const renderFunction = innerType
+          ? getRenderFunction(innerType)
+          : getDefaultRenderFunction();
+        return getListRenderFunction(renderFunction);
       } else if (NUMBER_TYPES.includes(cellType)) {
         return getNumberRenderFunction(cellType);
       } else if (cellType === "DATE") {
@@ -141,10 +149,7 @@ export function useCustomTableRenderers(queryData: GetQueryResponseDoneT) {
       } else if (cellType === "MONEY") {
         return getMoneyRenderFunction(currencyConfig.unit);
       } else if (cellType === "BOOLEAN") {
-        return getBooleanRenderFunction(
-          () => t("common.true"),
-          () => t("common.false"),
-        );
+        return getBooleanRenderFunction(t("common.true"), t("common.false"));
       }
 
       return getDefaultRenderFunction();
