@@ -1,11 +1,8 @@
 package com.bakdata.conquery.models.config;
 
+import java.nio.file.Path;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -18,13 +15,10 @@ import com.bakdata.conquery.io.jackson.serializer.FormatedDateDeserializer;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.models.auth.develop.DevAuthConfig;
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.config.auth.AuthenticationConfig;
-import com.bakdata.conquery.models.config.auth.AuthenticationRealmFactory;
-import com.bakdata.conquery.models.config.auth.AuthorizationConfig;
-import com.bakdata.conquery.models.config.auth.DevelopmentAuthorizationConfig;
-import com.bakdata.conquery.models.config.auth.MultiInstancePlugin;
+import com.bakdata.conquery.models.config.auth.*;
 import com.bakdata.conquery.models.config.search.InternalSearchConfig;
 import com.bakdata.conquery.models.config.search.SearchConfig;
+import com.bakdata.conquery.news.NewsConfiguration;
 import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -34,11 +28,7 @@ import com.google.common.collect.MultimapBuilder;
 import io.dropwizard.client.JerseyClientConfiguration;
 import io.dropwizard.core.Configuration;
 import io.dropwizard.validation.ValidationMethod;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.With;
+import lombok.*;
 
 @Getter
 @Setter
@@ -124,6 +114,10 @@ public class ConqueryConfig extends Configuration implements Injectable {
 	@Valid
 	@NotNull
 	private SqlConnectorConfig sqlConnectorConfig = new SqlConnectorConfig();
+
+	@Valid
+	@NotNull
+	private NewsConfiguration news = new NewsConfiguration(Path.of("./news"));
 
 	/**
 	 * null means here that we try to deduce from an attached agent
