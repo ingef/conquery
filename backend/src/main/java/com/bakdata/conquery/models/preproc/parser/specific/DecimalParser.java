@@ -33,7 +33,9 @@ public class DecimalParser extends Parser<BigDecimal, DecimalStore> {
 
 	@Override
 	protected void registerValue(BigDecimal v) {
-		log.trace("Registering `{}`", v);
+		if (log.isTraceEnabled()) {
+			log.trace("Registering `{}`", v);
+		}
 
 		BigDecimal abs = v.abs();
 		if (v.scale() > maxScale) {

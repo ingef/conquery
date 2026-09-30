@@ -11,7 +11,9 @@ public abstract class GroovyPredicate extends Script {
 
 	public boolean filterRow(String[] row){
 		setProperty("row", row);
-		log.trace("Row = {}, length = {}", row, row.length);
+		if (log.isTraceEnabled()) {
+			log.trace("Row = {}, length = {}", row, row.length);
+		}
 		return run();
 	}
 

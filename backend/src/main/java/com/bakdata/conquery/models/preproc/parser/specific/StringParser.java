@@ -31,7 +31,7 @@ public class StringParser extends Parser<String, StringStore> {
 
 	@Override
 	protected String parseValue(String value) throws ParsingException {
-		return value.intern();
+		return value;
 	}
 
 	@Override

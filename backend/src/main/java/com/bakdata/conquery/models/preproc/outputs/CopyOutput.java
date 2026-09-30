@@ -56,7 +56,9 @@ public class CopyOutput extends OutputDescription {
 		return new Output() {
 			@Override
 			protected Object parseLine(String[] row, Parser type, long sourceLine) throws ParsingException {
-				log.trace("Registering `{}` in line {} for Output[{}]", row[column], sourceLine, this.getDescription().getName());
+				if (log.isTraceEnabled()) {
+					log.trace("Registering `{}` in line {} for Output[{}]", row[column], sourceLine, this.getDescription().getName());
+				}
 
 				if (row[column] == null) {
 					return null;

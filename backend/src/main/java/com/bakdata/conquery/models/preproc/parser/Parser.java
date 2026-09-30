@@ -93,7 +93,9 @@ public abstract class Parser<MAJOR_JAVA_TYPE, STORE_TYPE extends ColumnStore> {
 	 */
 	public MAJOR_JAVA_TYPE addLine(MAJOR_JAVA_TYPE v) {
 		lines++;
-		log.trace("Registering `{}` in line {}", v, lines);
+		if (log.isTraceEnabled()) {
+			log.trace("Registering `{}` in line {}", v, lines);
+		}
 
 		if (v == null) {
 			nullLines++;
