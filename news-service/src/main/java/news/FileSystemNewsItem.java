@@ -1,12 +1,11 @@
 package news;
 
-import java.net.URI;
-import java.util.HashSet;
-import java.util.Set;
-
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+
+import java.net.URI;
+import java.util.Collections;
+import java.util.Set;
 
 import static news.NewsService.ID_PATTERN;
 
@@ -22,6 +21,6 @@ public record FileSystemNewsItem(
 		Set<@NotBlank String> categories
 ) {
 	public FileSystemNewsItem {
-		categories = categories == null ? new HashSet<>() : Set.copyOf(categories);
+		categories = categories == null ? Collections.emptySet() : Set.copyOf(categories);
 	}
 }

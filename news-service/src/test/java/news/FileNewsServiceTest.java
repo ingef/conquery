@@ -1,19 +1,5 @@
 package news;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.params.provider.Arguments.argumentSet;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.net.URI;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Path;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Stream;
-
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -24,6 +10,18 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Path;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class FileNewsServiceTest {
@@ -44,31 +42,32 @@ public class FileNewsServiceTest {
 		newsService = new FileSystemNewsService(newsFolder, validator);
 	}
 
-	static Stream<Arguments.ArgumentSet> goodNews() {
+	// TODO after JUnit 5.14.4 use Arguments.ArumentSet for better test rendering
+	static Stream<Arguments> goodNews() {
 		return Stream.of(
-				argumentSet("News without category", "2026-08-23_some_news.json", "{\"id\":\"some_news\", \"title\": \"title\", \"description\":\"some description\"}", 1),
-				argumentSet("News with link", "2026-08-23_some_news.json", "{\"id\":\"some_news\", \"title\": \"title\", \"description\":\"some description\", \"link\":\"/read/more\"}", 1),
-				argumentSet("News with category null", "2026-08-23_some_news.json", "{\"id\":\"some_news\", \"title\": \"title\", \"description\":\"some description\", \"categories\": null}", 1),
-				argumentSet("News with single category", "2026-08-23_some_news.json", "{\"id\":\"some_news\", \"title\": \"title\", \"description\":\"some description\", \"categories\":[\"some_category\"]}", 1),
-				argumentSet("News with multiple categories", "2026-08-23_some_news.json", "{\"id\":\"some_news\", \"title\": \"title\", \"description\":\"some description\", \"categories\":[\"first_category\", \"second_category\"]}", 1),
-				argumentSet("News id mismatch with filename", "2026-08-23_some_news.json", "{\"id\":\"other_news\", \"title\": \"title\", \"description\":\"some description\"}", 1) // Should print a warning
+				Arguments.of("News without category", "2026-08-23_some_news.json", "{\"id\":\"some_news\", \"title\": \"title\", \"description\":\"some description\"}", 1),
+				Arguments.of("News with link", "2026-08-23_some_news.json", "{\"id\":\"some_news\", \"title\": \"title\", \"description\":\"some description\", \"link\":\"/read/more\"}", 1),
+				Arguments.of("News with category null", "2026-08-23_some_news.json", "{\"id\":\"some_news\", \"title\": \"title\", \"description\":\"some description\", \"categories\": null}", 1),
+				Arguments.of("News with single category", "2026-08-23_some_news.json", "{\"id\":\"some_news\", \"title\": \"title\", \"description\":\"some description\", \"categories\":[\"some_category\"]}", 1),
+				Arguments.of("News with multiple categories", "2026-08-23_some_news.json", "{\"id\":\"some_news\", \"title\": \"title\", \"description\":\"some description\", \"categories\":[\"first_category\", \"second_category\"]}", 1),
+				Arguments.of("News id mismatch with filename", "2026-08-23_some_news.json", "{\"id\":\"other_news\", \"title\": \"title\", \"description\":\"some description\"}", 1) // Should print a warning
 		);
 
 	}
 
-	static Stream<Arguments.ArgumentSet> badNews() {
+	static Stream<Arguments> badNews() {
 		return Stream.of(
-				argumentSet("News with broken link uri", "2026-08-23_some_news.json", "{\"id\":\"some_news\", \"description\":\"some description\", \"link\":\"http://example .com\"}", 0),
-				argumentSet("News with wrong date", "2026-13-23_some_news.json", "{\"id\":\"some_news\", \"description\":\"some description\"}", 0),
-				argumentSet("News with empty content", "2026-08-23_some_news.json", "", 0),
-				argumentSet("News with broken json", "2026-08-23_some_news.json", "{\"id\":\"some_news}", 0),
-				argumentSet("News missing id", "2026-08-23_some_news.json", "{\"title\": \"title\", \"description\":\"some description\", \"categories\":[\"first_category\", \"second_category\"]}", 0),
+				Arguments.of("News with broken link uri", "2026-08-23_some_news.json", "{\"id\":\"some_news\", \"description\":\"some description\", \"link\":\"http://example .com\"}", 0),
+				Arguments.of("News with wrong date", "2026-13-23_some_news.json", "{\"id\":\"some_news\", \"description\":\"some description\"}", 0),
+				Arguments.of("News with empty content", "2026-08-23_some_news.json", "", 0),
+				Arguments.of("News with broken json", "2026-08-23_some_news.json", "{\"id\":\"some_news}", 0),
+				Arguments.of("News missing id", "2026-08-23_some_news.json", "{\"title\": \"title\", \"description\":\"some description\", \"categories\":[\"first_category\", \"second_category\"]}", 0),
 
-				argumentSet("News missing title", "2026-08-23_some_news.json", "{\"id\":\"some_news\", \"description\":\"some description\", \"categories\":[\"first_category\", \"second_category\"]}", 0),
+				Arguments.of("News missing title", "2026-08-23_some_news.json", "{\"id\":\"some_news\", \"description\":\"some description\", \"categories\":[\"first_category\", \"second_category\"]}", 0),
 
-				argumentSet("News missing description", "2026-08-23_some_news.json", "{\"id\":\"some_news\", \"title\": \"title\", \"categories\":[\"first_category\", \"second_category\"]}", 0),
+				Arguments.of("News missing description", "2026-08-23_some_news.json", "{\"id\":\"some_news\", \"title\": \"title\", \"categories\":[\"first_category\", \"second_category\"]}", 0),
 
-				argumentSet("News with blank category", "2026-08-23_some_news.json", "{\"id\":\"some_news\", \"title\": \"title\", \"description\":\"some description\", \"categories\":[\"first_category\", \"\"]}", 0)
+				Arguments.of("News with blank category", "2026-08-23_some_news.json", "{\"id\":\"some_news\", \"title\": \"title\", \"description\":\"some description\", \"categories\":[\"first_category\", \"\"]}", 0)
 		);
 
 	}
@@ -83,7 +82,7 @@ public class FileNewsServiceTest {
 	@Order(0)
 	@ParameterizedTest
 	@MethodSource("prepopulatedNews")
-	void loadNews(String fileName, String content, int loaded) throws IOException {
+	void loadNews(String _description, String fileName, String content, int loaded) throws IOException {
 		File newsFile = newsFolder.resolve(fileName).toFile();
 
 		try(FileWriter fileWriter = new FileWriter(newsFile)) {
