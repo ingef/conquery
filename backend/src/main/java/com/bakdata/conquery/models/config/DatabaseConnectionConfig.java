@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.config;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
