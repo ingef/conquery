@@ -9,6 +9,7 @@ import com.bakdata.conquery.models.events.stores.root.DecimalStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.specific.ScaledDecimalStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.preproc.OutputRow;
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.NumberParsing;
@@ -27,6 +28,33 @@ public class DecimalParser extends Parser<BigDecimal, DecimalStore> {
 	@Override
 	protected BigDecimal parseValue(String value) throws ParsingException {
 		return NumberParsing.parseBig(value);
+	}
+
+	@Override
+	public void parse(String value, OutputRow outputRow, int outputIndex) throws ParsingException {
+		if (value == null) {
+			outputRow.setNull(outputIndex);
+			return;
+		}
+
+		try {
+			outputRow.setBigDecimal(outputIndex, NumberParsing.parseBig(value));
+		}
+		catch (Exception e) {
+			throw parsingException(value, e);
+		}
+	}
+
+	@Override
+	public void addLine(OutputRow outputRow, int outputIndex) {
+		if (outputRow.isNull(outputIndex)) {
+			recordNullLine();
+			return;
+		}
+
+		final BigDecimal value = outputRow.getBigDecimal(outputIndex);
+		recordObjectLine(value);
+		registerValue(value);
 	}
 
 	@Override
@@ -70,7 +98,7 @@ public class DecimalParser extends Parser<BigDecimal, DecimalStore> {
 
 	@Override
 	public ColumnValues<BigDecimal> createColumnValues() {
-		return new ListColumnValues();
+		return new BigDecimalColumnValues();
 	}
 
 }

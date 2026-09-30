@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.preproc;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 
 /**
@@ -13,6 +14,7 @@ public final class OutputRow {
 	private static final byte LONG = 3;
 	private static final byte DOUBLE = 4;
 	private static final byte BOOLEAN = 5;
+	private static final byte BIG_DECIMAL = 6;
 
 	private final byte[] representations;
 	private final Object[] objects;
@@ -69,43 +71,76 @@ public final class OutputRow {
 		objects[index] = null;
 	}
 
+	public void setBigDecimal(int index, BigDecimal value) {
+		if (value == null) {
+			setNull(index);
+			return;
+		}
+
+		representations[index] = BIG_DECIMAL;
+		objects[index] = value;
+	}
+
 	public Object getObject(int index) {
 		return switch (representations[index]) {
-			case NULL, EMPTY -> null;
+			case NULL -> null;
 			case OBJECT -> objects[index];
-			case LONG -> longs[index];
-			case DOUBLE -> doubles[index];
-			case BOOLEAN -> booleans[index];
-			default -> throw new IllegalStateException("Unknown output representation");
+			default -> throw unexpectedRepresentation(index, OBJECT);
 		};
 	}
 
 	public long getLong(int index) {
-		if (representations[index] == LONG) {
-			return longs[index];
+		if (representations[index] != LONG) {
+			throw unexpectedRepresentation(index, LONG);
 		}
 
-		return ((Number) objects[index]).longValue();
+		return longs[index];
 	}
 
 	public double getDouble(int index) {
-		if (representations[index] == DOUBLE) {
-			return doubles[index];
+		if (representations[index] != DOUBLE) {
+			throw unexpectedRepresentation(index, DOUBLE);
 		}
 
-		return ((Number) objects[index]).doubleValue();
+		return doubles[index];
 	}
 
 	public boolean getBoolean(int index) {
-		if (representations[index] == BOOLEAN) {
-			return booleans[index];
+		if (representations[index] != BOOLEAN) {
+			throw unexpectedRepresentation(index, BOOLEAN);
 		}
 
-		return (Boolean) objects[index];
+		return booleans[index];
+	}
+
+	public BigDecimal getBigDecimal(int index) {
+		if (representations[index] != BIG_DECIMAL) {
+			throw unexpectedRepresentation(index, BIG_DECIMAL);
+		}
+
+		return (BigDecimal) objects[index];
 	}
 
 	public void clear() {
 		Arrays.fill(representations, EMPTY);
 		Arrays.fill(objects, null);
+	}
+
+	private IllegalStateException unexpectedRepresentation(int index, byte expected) {
+		return new IllegalStateException("Expected %s at output index %d, but found %s"
+										 .formatted(representationName(expected), index, representationName(representations[index])));
+	}
+
+	private static String representationName(byte representation) {
+		return switch (representation) {
+			case EMPTY -> "EMPTY";
+			case NULL -> "NULL";
+			case OBJECT -> "OBJECT";
+			case LONG -> "LONG";
+			case DOUBLE -> "DOUBLE";
+			case BOOLEAN -> "BOOLEAN";
+			case BIG_DECIMAL -> "BIG_DECIMAL";
+			default -> "UNKNOWN(" + representation + ")";
+		};
 	}
 }
