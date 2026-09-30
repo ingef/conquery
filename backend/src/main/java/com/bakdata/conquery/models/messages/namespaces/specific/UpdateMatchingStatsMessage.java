@@ -193,7 +193,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 						final List<Column> dateColumns = Arrays.stream(table.getColumns()).filter(t -> t.getType().isDateCompatible()).toList();
 
 						for (String entity : bucket.entities()) {
-							final int hashedEntity = MatchingStats.Accumulator.hashEntity(entity);
+							final long hashedEntity = MatchingStats.Accumulator.hashEntity(entity);
 
 							final int entityEnd = bucket.getEntityEnd(entity);
 

@@ -31,273 +31,273 @@ import org.jooq.impl.SQLDataType;
 @Data
 public class SqlMatchingStats {
 
-	/**
-	 * Legacy backend implementation requires separation by source (in that case different shards). For sql it's a constant.
-	 */
-	private static final String SQL_SOURCE_MATCHING_STATS_LABEL = "sql";
+    /**
+     * Legacy backend implementation requires separation by source (in that case different shards). For sql it's a constant.
+     */
+    private static final String SQL_SOURCE_MATCHING_STATS_LABEL = "sql";
 
-	private static final Field<String> PID_FIELD = field(name("pid"), String.class);
-	private static final Field<Date> LB_FIELD = field(name("lower_bound"), Date.class);
-	private static final Field<Date> UB_FIELD = field(name("upper_bound"), Date.class);
-	private static final Field<Integer> CONCEPT_ID_FIELD = field(name(ConceptIdMapping.RESOLVED_ID_COLUMN), Integer.class);
+    private static final Field<String> PID_FIELD = field(name("pid"), String.class);
+    private static final Field<Date> LB_FIELD = field(name("lower_bound"), Date.class);
+    private static final Field<Date> UB_FIELD = field(name("upper_bound"), Date.class);
+    private static final Field<Integer> CONCEPT_ID_FIELD = field(name(ConceptIdMapping.RESOLVED_ID_COLUMN), Integer.class);
 
-	private final DSLContext dslContext;
-	private final SqlFunctionProvider functionProvider;
-	private final String defaultPrimaryColumn;
-	private final int fetchBatchSize = 100;
-	private final int matchingStatsWorkers;
-	private final int matchingStatsRetries;
+    private final DSLContext dslContext;
+    private final SqlFunctionProvider functionProvider;
+    private final String defaultPrimaryColumn;
+    private final int fetchBatchSize = 100;
+    private final int matchingStatsWorkers;
+    private final int matchingStatsRetries;
 
-	private static void assignStatsToPath(
-			ConceptElement<?> element,
-			MatchingStats.Accumulator[] matchingStats,
-			String entity,
-			int minDate,
-			int maxDate
-	) {
-		int hashedEntity = MatchingStats.Accumulator.hashEntity(entity);
-		while (element != null) {
-			int localId = element.getLocalId();
-			matchingStats[localId].addEvents(hashedEntity, 1, minDate, maxDate);
-			element = element.getParent();
-		}
-	}
+    private static void assignStatsToPath(
+            ConceptElement<?> element,
+            MatchingStats.Accumulator[] matchingStats,
+            String entity,
+            int minDate,
+            int maxDate
+    ) {
+        final long hashedEntity = MatchingStats.Accumulator.hashEntity(entity);
+        while (element != null) {
+            int localId = element.getLocalId();
+            matchingStats[localId].addEvents(hashedEntity, 1, minDate, maxDate);
+            element = element.getParent();
+        }
+    }
 
-	private static <T extends Record> Select<T> unionSelects(List<Select<? extends T>> connectorTableSelects) {
-		Select<T> unioned = null;
+    private static <T extends Record> Select<T> unionSelects(List<Select<? extends T>> connectorTableSelects) {
+        Select<T> unioned = null;
 
-		for (Select<? extends T> connectorTable : connectorTableSelects) {
-			if (unioned == null) {
-				unioned = (Select<T>) connectorTable;
-				continue;
-			}
+        for (Select<? extends T> connectorTable : connectorTableSelects) {
+            if (unioned == null) {
+                unioned = (Select<T>) connectorTable;
+                continue;
+            }
 
-			unioned = unioned.unionAll(connectorTable);
-		}
-
-
-		return unioned;
-	}
-
-	/**
-	 * Assembles the join table and inserts it into the database.
-	 *
-	 * @param concept
-	 */
-	public void createConceptIdJoinTable(TreeConcept concept) {
-		ConceptIdMapping mapping = new ConceptIdMapping(concept, functionProvider);
-		Name tableName = mapping.getTableName();
-
-		deleteConceptIdJoinTable(concept.getId());
-		List<Field<?>> fields = createConceptIdsTable(tableName, mapping.tableFields());
-
-		insertConceptIdMappings(tableName, fields, mapping.getRows(), dslContext);
-		createConceptIdIndexes(mapping);
-	}
-
-	private void createConceptIdIndexes(ConceptIdMapping mapping) {
-		if (dslContext.dialect().equals(SQLDialect.CLICKHOUSE)) {
-			//TODO test if skip indices would still do something.
-			log.trace("Skipping secondary indexes for ClickHouse concept id table {}", mapping.getTableName());
-			return;
-		}
-
-		String indexToken = Integer.toUnsignedString(mapping.getTableName().hashCode(), 16);
-		if (!mapping.getKeyFields().isEmpty()) {
-			dslContext.createIndex(name("cq_map_%s_keys".formatted(indexToken)))
-					.on(mapping.table(), mapping.getKeyFields().stream().map(Field::sortDefault).toList())
-					.execute();
-		}
-		dslContext.createIndex(name("cq_map_%s_id".formatted(indexToken)))
-				.on(mapping.table(), mapping.resolvedId().sortDefault())
-				.execute();
-	}
-
-	@NotNull
-	private Field<Date>[] collectValidityDateFields(Connector connector) {
-		List<Field<Date>> validityDates = new ArrayList<>();
-
-		for (ValidityDate validityDate : connector.getValidityDates()) {
-			if (validityDate.isSingleColumnDaterange()) {
-				Column column = validityDate.getColumn().get();
-				validityDates.add(field(name(column.getName()), Date.class));
-			} else {
-				validityDates.add(field(name(validityDate.getStartColumn().getColumn()), Date.class));
-				validityDates.add(field(name(validityDate.getEndColumn().getColumn()), Date.class));
-			}
-
-		}
-		return (Field<Date>[]) validityDates.toArray(Field[]::new);
-	}
-
-	private void assignStats(TreeConcept concept, MatchingStats.Accumulator[] matchingStats) {
-		for (int localId = 0; localId < matchingStats.length; localId++) {
-			ConceptElement<?> element = concept.getElementByLocalId(localId);
-			element.setMatchingStats(MatchingStats.singleEntry(SQL_SOURCE_MATCHING_STATS_LABEL, matchingStats[localId].toEntry()));
-		}
-	}
-
-	/**
-	 * @implSpec array uses {@link TreeConcept#getLocalId()} as index.
-	 */
-	@NotNull
-	private MatchingStats.Accumulator[] readStats(TreeConcept concept, SelectJoinStep<Record4<Integer, String, Integer, Integer>> selectJoinStep) {
-		MatchingStats.Accumulator[] matchingStats = new MatchingStats.Accumulator[concept.countElements()];
-
-		for (int index = 0; index < matchingStats.length; index++) {
-			matchingStats[index] = new MatchingStats.Accumulator();
-		}
-
-		Stopwatch stopwatch = Stopwatch.createStarted();
-
-		log.info("BEGIN fetching matching stats for {}", concept.getId());
-		log.trace("{}", selectJoinStep);
-
-		try (Stream<Record4<Integer, String, Integer, Integer>> stream = selectJoinStep.fetchSize(fetchBatchSize).stream()) {
-			//TODO if this is still too slow, access the raw results somehow instead of boxing etc.
-			//TODO We can also try and rewrite the logic to scan every table once with all connectors for that table at the same time; though that might create more memory pressure.
-
-			stream.forEach(
-					record -> {
-						Integer rawId = record.value1();
-						ConceptElement<?> resolvedId;
-						if (rawId == null) {
-							resolvedId = concept;
-						} else {
-							resolvedId = concept.getElementByLocalId(rawId);
-						}
-
-						String entity = record.value2();
-						Integer min = record.value3();
-						Integer max = record.value4();
-
-						int minDate = min != null ? min : Integer.MAX_VALUE;
-						int maxDate = max != null ? max : Integer.MIN_VALUE;
-
-						assignStatsToPath(resolvedId, matchingStats, entity, minDate, maxDate);
-					});
-		}
-
-		log.debug("DONE fetching matching stats for {} within {}", concept.getId(), stopwatch);
-
-		return matchingStats;
-	}
-
-	private void insertConceptIdMappings(Name tableName, List<Field<?>> fieldNames, List<RowN> rows, DSLContext dsl) {
-		log.info("BEGIN inserting {} rows into {}", rows.size(), tableName);
-		Stopwatch stopwatch = Stopwatch.createStarted();
-
-		// We're using batching here because some DBMS don't allow mass inserts.
-		// There's a chance, we rework this to use a prepared statement with lots of bindings under the hood. But that needs to rework the entire stream of rows.
-		List<InsertValuesStepN<?>> inserts = new ArrayList<>(rows.size());
-
-		for (RowN row : rows) {
-			inserts.add(dsl.insertInto(table(tableName)).columns(fieldNames).values(row));
-		}
-
-		dsl.batch(inserts).execute();
-
-		log.debug("DONE inserting into {} within {}", tableName, stopwatch);
-	}
-
-	/**
-	 * Create a table and its fields. Assumes the table has been dropped already.
-	 */
-	private List<Field<?>> createConceptIdsTable(Name tableName, List<Field<?>> fields) {
-		log.debug("Creating table {} with fields {}", tableName, fields);
-
-		CreateTableElementListStep createTable =
-				dslContext.createTable(tableName)
-						.columns(fields);
-
-		createTable.execute();
-
-		return fields;
-	}
-
-	public void collectMatchingStatsForConcept(TreeConcept concept, int tries) {
-		int remainingTries = tries;
-		while (true) {
-			try {
-				SelectJoinStep<Record4<Integer, String, Integer, Integer>> matchingStatsStatement = createMatchingStatsStatement(concept);
-				MatchingStats.Accumulator[] matchingStats = readStats(concept, matchingStatsStatement);
-				assignStats(concept, matchingStats);
-				return;
-			} catch (DataAccessException e) {
-				if (remainingTries == 0) {
-					log.error("Failed to collect matching stats for concept {}. No retries remaining.", concept.getId(), e);
-					throw e;
-				}
-
-				log.debug("Failed to collect matching stats for concept {}. Retrying.", concept.getId(), (Exception) (log.isTraceEnabled() ? e : null));
-				remainingTries--;
-			}
-		}
-	}
-
-	@NotNull
-	private SelectJoinStep<Record4<Integer, String, Integer, Integer>> createMatchingStatsStatement(TreeConcept concept) {
-
-		List<Select<? extends Record>> connectorTables = new ArrayList<>();
-		ConceptIdMapping mapping = new ConceptIdMapping(concept, functionProvider);
-
-		Field<Date> positiveInfinity = functionProvider.getMaxDateExpression();
-		Field<Date> negativeInfinity = functionProvider.getMinDateExpression();
-
-		for (Connector connector : concept.getConnectors()) {
-
-			Field<Date>[] validityDates = collectValidityDateFields(connector);
-
-			Name tableName = name(connector.getResolvedTable().getName());
-
-			Condition condition = noCondition();
-
-			if (connector.getColumn() != null) {
-				condition = field(name(tableName, name(connector.getColumn().getColumn()))).isNotNull();
-			}
-
-			if (connector.getCondition() != null) {
-				CTConditionContext context = CTConditionContext.forConnector(connector, functionProvider);
-				condition = condition.and(connector.getCondition().convertToSqlCondition(context).condition());
-			}
-
-			SelectConditionStep<? extends Record> connectorTable =
-					dslContext.select(
-									TablePrimaryColumnUtil.findPrimaryColumn(connector.getResolvedTable(), defaultPrimaryColumn).as(PID_FIELD),
-									// The infinities are intentionally swapped
-									least(positiveInfinity, validityDates).as(LB_FIELD),
-									greatest(negativeInfinity, validityDates).as(UB_FIELD),
-									CONCEPT_ID_FIELD)
-							.from(table(tableName))
-							.leftJoin(mapping.table())
-							// join onto the concept-ids table to assign the most specific id.
-							.on(mapping.joinCondition(connector))
-							.where(condition);
-
-			connectorTables.add(connectorTable);
-		}
-
-		Name ct_name = name("connector_tables");
-		CommonTableExpression<?> unioned = ct_name.as(unionSelects(connectorTables));
-
-		SelectJoinStep<Record4<Integer, String, Integer, Integer>> records = dslContext.with(unioned).select(unioned.field(CONCEPT_ID_FIELD), PID_FIELD,
-				// The infinities are intentionally swapped
-				functionProvider.cast(nullif(unioned.field(LB_FIELD), positiveInfinity), SQLDataType.INTEGER).as(LB_FIELD), functionProvider.cast(nullif(unioned.field(UB_FIELD), negativeInfinity), SQLDataType.INTEGER).as(UB_FIELD)).from(ct_name);
+            unioned = unioned.unionAll(connectorTable);
+        }
 
 
-		return records;
-	}
+        return unioned;
+    }
 
-	public void deleteConceptIdJoinTable(ConceptId concept) {
-		Name tableName = ConceptIdMapping.tableName(concept);
-		log.debug("Trying to delete id-table {}", tableName);
+    /**
+     * Assembles the join table and inserts it into the database.
+     *
+     * @param concept
+     */
+    public void createConceptIdJoinTable(TreeConcept concept) {
+        ConceptIdMapping mapping = new ConceptIdMapping(concept, functionProvider);
+        Name tableName = mapping.getTableName();
 
-		try {
-			dslContext.dropTable(tableName).execute();
-		} catch (DataAccessException exception) {
-			// Likely it doesn't exist. Some DBMS just don't support drop-IfExists so this is the next best thing :^)
-			log.trace("Failed to drop table {}", tableName, exception);
-		}
-	}
+        deleteConceptIdJoinTable(concept.getId());
+        List<Field<?>> fields = createConceptIdsTable(tableName, mapping.tableFields());
+
+        insertConceptIdMappings(tableName, fields, mapping.getRows(), dslContext);
+        createConceptIdIndexes(mapping);
+    }
+
+    private void createConceptIdIndexes(ConceptIdMapping mapping) {
+        if (dslContext.dialect().equals(SQLDialect.CLICKHOUSE)) {
+            //TODO test if skip indices would still do something.
+            log.trace("Skipping secondary indexes for ClickHouse concept id table {}", mapping.getTableName());
+            return;
+        }
+
+        String indexToken = Integer.toUnsignedString(mapping.getTableName().hashCode(), 16);
+        if (!mapping.getKeyFields().isEmpty()) {
+            dslContext.createIndex(name("cq_map_%s_keys".formatted(indexToken)))
+                    .on(mapping.table(), mapping.getKeyFields().stream().map(Field::sortDefault).toList())
+                    .execute();
+        }
+        dslContext.createIndex(name("cq_map_%s_id".formatted(indexToken)))
+                .on(mapping.table(), mapping.resolvedId().sortDefault())
+                .execute();
+    }
+
+    @NotNull
+    private Field<Date>[] collectValidityDateFields(Connector connector) {
+        List<Field<Date>> validityDates = new ArrayList<>();
+
+        for (ValidityDate validityDate : connector.getValidityDates()) {
+            if (validityDate.isSingleColumnDaterange()) {
+                Column column = validityDate.getColumn().get();
+                validityDates.add(field(name(column.getName()), Date.class));
+            } else {
+                validityDates.add(field(name(validityDate.getStartColumn().getColumn()), Date.class));
+                validityDates.add(field(name(validityDate.getEndColumn().getColumn()), Date.class));
+            }
+
+        }
+        return (Field<Date>[]) validityDates.toArray(Field[]::new);
+    }
+
+    private void assignStats(TreeConcept concept, MatchingStats.Accumulator[] matchingStats) {
+        for (int localId = 0; localId < matchingStats.length; localId++) {
+            ConceptElement<?> element = concept.getElementByLocalId(localId);
+            element.setMatchingStats(MatchingStats.singleEntry(SQL_SOURCE_MATCHING_STATS_LABEL, matchingStats[localId].toEntry()));
+        }
+    }
+
+    /**
+     * @implSpec array uses {@link TreeConcept#getLocalId()} as index.
+     */
+    @NotNull
+    private MatchingStats.Accumulator[] readStats(TreeConcept concept, SelectJoinStep<Record4<Integer, String, Integer, Integer>> selectJoinStep) {
+        MatchingStats.Accumulator[] matchingStats = new MatchingStats.Accumulator[concept.countElements()];
+
+        for (int index = 0; index < matchingStats.length; index++) {
+            matchingStats[index] = new MatchingStats.Accumulator();
+        }
+
+        Stopwatch stopwatch = Stopwatch.createStarted();
+
+        log.info("BEGIN fetching matching stats for {}", concept.getId());
+        log.trace("{}", selectJoinStep);
+
+        try (Stream<Record4<Integer, String, Integer, Integer>> stream = selectJoinStep.fetchSize(fetchBatchSize).stream()) {
+            //TODO if this is still too slow, access the raw results somehow instead of boxing etc.
+            //TODO We can also try and rewrite the logic to scan every table once with all connectors for that table at the same time; though that might create more memory pressure.
+
+            stream.forEach(
+                    record -> {
+                        Integer rawId = record.value1();
+                        ConceptElement<?> resolvedId;
+                        if (rawId == null) {
+                            resolvedId = concept;
+                        } else {
+                            resolvedId = concept.getElementByLocalId(rawId);
+                        }
+
+                        String entity = record.value2();
+                        Integer min = record.value3();
+                        Integer max = record.value4();
+
+                        int minDate = min != null ? min : Integer.MAX_VALUE;
+                        int maxDate = max != null ? max : Integer.MIN_VALUE;
+
+                        assignStatsToPath(resolvedId, matchingStats, entity, minDate, maxDate);
+                    });
+        }
+
+        log.debug("DONE fetching matching stats for {} within {}", concept.getId(), stopwatch);
+
+        return matchingStats;
+    }
+
+    private void insertConceptIdMappings(Name tableName, List<Field<?>> fieldNames, List<RowN> rows, DSLContext dsl) {
+        log.info("BEGIN inserting {} rows into {}", rows.size(), tableName);
+        Stopwatch stopwatch = Stopwatch.createStarted();
+
+        // We're using batching here because some DBMS don't allow mass inserts.
+        // There's a chance, we rework this to use a prepared statement with lots of bindings under the hood. But that needs to rework the entire stream of rows.
+        List<InsertValuesStepN<?>> inserts = new ArrayList<>(rows.size());
+
+        for (RowN row : rows) {
+            inserts.add(dsl.insertInto(table(tableName)).columns(fieldNames).values(row));
+        }
+
+        dsl.batch(inserts).execute();
+
+        log.debug("DONE inserting into {} within {}", tableName, stopwatch);
+    }
+
+    /**
+     * Create a table and its fields. Assumes the table has been dropped already.
+     */
+    private List<Field<?>> createConceptIdsTable(Name tableName, List<Field<?>> fields) {
+        log.debug("Creating table {} with fields {}", tableName, fields);
+
+        CreateTableElementListStep createTable =
+                dslContext.createTable(tableName)
+                        .columns(fields);
+
+        createTable.execute();
+
+        return fields;
+    }
+
+    public void collectMatchingStatsForConcept(TreeConcept concept, int tries) {
+        int remainingTries = tries;
+        while (true) {
+            try {
+                SelectJoinStep<Record4<Integer, String, Integer, Integer>> matchingStatsStatement = createMatchingStatsStatement(concept);
+                MatchingStats.Accumulator[] matchingStats = readStats(concept, matchingStatsStatement);
+                assignStats(concept, matchingStats);
+                return;
+            } catch (DataAccessException e) {
+                if (remainingTries == 0) {
+                    log.error("Failed to collect matching stats for concept {}. No retries remaining.", concept.getId(), e);
+                    throw e;
+                }
+
+                log.debug("Failed to collect matching stats for concept {}. Retrying.", concept.getId(), (Exception) (log.isTraceEnabled() ? e : null));
+                remainingTries--;
+            }
+        }
+    }
+
+    @NotNull
+    private SelectJoinStep<Record4<Integer, String, Integer, Integer>> createMatchingStatsStatement(TreeConcept concept) {
+
+        List<Select<? extends Record>> connectorTables = new ArrayList<>();
+        ConceptIdMapping mapping = new ConceptIdMapping(concept, functionProvider);
+
+        Field<Date> positiveInfinity = functionProvider.getMaxDateExpression();
+        Field<Date> negativeInfinity = functionProvider.getMinDateExpression();
+
+        for (Connector connector : concept.getConnectors()) {
+
+            Field<Date>[] validityDates = collectValidityDateFields(connector);
+
+            Name tableName = name(connector.getResolvedTable().getName());
+
+            Condition condition = noCondition();
+
+            if (connector.getColumn() != null) {
+                condition = field(name(tableName, name(connector.getColumn().getColumn()))).isNotNull();
+            }
+
+            if (connector.getCondition() != null) {
+                CTConditionContext context = CTConditionContext.forConnector(connector, functionProvider);
+                condition = condition.and(connector.getCondition().convertToSqlCondition(context).condition());
+            }
+
+            SelectConditionStep<? extends Record> connectorTable =
+                    dslContext.select(
+                                    TablePrimaryColumnUtil.findPrimaryColumn(connector.getResolvedTable(), defaultPrimaryColumn).as(PID_FIELD),
+                                    // The infinities are intentionally swapped
+                                    least(positiveInfinity, validityDates).as(LB_FIELD),
+                                    greatest(negativeInfinity, validityDates).as(UB_FIELD),
+                                    CONCEPT_ID_FIELD)
+                            .from(table(tableName))
+                            .leftJoin(mapping.table())
+                            // join onto the concept-ids table to assign the most specific id.
+                            .on(mapping.joinCondition(connector))
+                            .where(condition);
+
+            connectorTables.add(connectorTable);
+        }
+
+        Name ct_name = name("connector_tables");
+        CommonTableExpression<?> unioned = ct_name.as(unionSelects(connectorTables));
+
+        SelectJoinStep<Record4<Integer, String, Integer, Integer>> records = dslContext.with(unioned).select(unioned.field(CONCEPT_ID_FIELD), PID_FIELD,
+                // The infinities are intentionally swapped
+                functionProvider.cast(nullif(unioned.field(LB_FIELD), positiveInfinity), SQLDataType.INTEGER).as(LB_FIELD), functionProvider.cast(nullif(unioned.field(UB_FIELD), negativeInfinity), SQLDataType.INTEGER).as(UB_FIELD)).from(ct_name);
+
+
+        return records;
+    }
+
+    public void deleteConceptIdJoinTable(ConceptId concept) {
+        Name tableName = ConceptIdMapping.tableName(concept);
+        log.debug("Trying to delete id-table {}", tableName);
+
+        try {
+            dslContext.dropTable(tableName).execute();
+        } catch (DataAccessException exception) {
+            // Likely it doesn't exist. Some DBMS just don't support drop-IfExists so this is the next best thing :^)
+            log.trace("Failed to drop table {}", tableName, exception);
+        }
+    }
 
 }

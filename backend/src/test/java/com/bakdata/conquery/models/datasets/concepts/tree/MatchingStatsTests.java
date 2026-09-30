@@ -70,7 +70,7 @@ public class MatchingStatsTests {
 		entry2.addEvents(7, 1, null);
 		entry2.addEvents(8, 1, null);
 		entry2.addEvents(9, 1, null);
-		entry2.addEvents(MatchingStats.Accumulator.hashEntity("10"), 1, null);
+		entry2.addEvents(10, 1, null);
 
 
 		stats.addEntry(workerId2.toString(), entry2.toEntry());

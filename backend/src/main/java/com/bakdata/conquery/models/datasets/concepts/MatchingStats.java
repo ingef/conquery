@@ -7,8 +7,8 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
-import it.unimi.dsi.fastutil.ints.IntOpenHashBigSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import lombok.*;
 import org.bouncycastle.util.Strings;
 
@@ -96,17 +96,17 @@ public class MatchingStats {
 	public static class Accumulator {
 		private static final HashFunction hash = Hashing.fingerprint2011();
 
-		private IntSet foundEntities = new IntOpenHashBigSet();
+		private LongSet foundEntities = new LongLinkedOpenHashSet();
 		private long numberOfEvents;
 		private long numberOfEntities;
 		private int minDate = Integer.MAX_VALUE;
 		private int maxDate = Integer.MIN_VALUE;
 
-		public static int hashEntity(String entity){
-			return hash.hashBytes(Strings.toByteArray(entity)).asInt();
+		public static long hashEntity(String entity){
+			return hash.hashBytes(Strings.toByteArray(entity)).asLong();
 		}
 
-		public void addEvents(int hashedEntity, int nEvents, CDateRange span) {
+		public void addEvents(long hashedEntity, int nEvents, CDateRange span) {
 			addEvents(
 					hashedEntity, nEvents,
 					span != null && span.hasLowerBound() ? span.getMinValue() : Integer.MAX_VALUE,
@@ -114,7 +114,7 @@ public class MatchingStats {
 			);
 		}
 
-		public void addEvents(int hashedEntity, int nEvents, int eventMinDate, int eventMaxDate) {
+		public void addEvents(long hashedEntity, int nEvents, int eventMinDate, int eventMaxDate) {
 			if (foundEntities == null) {
 				throw new IllegalStateException("Matching stats accumulator was already finished");
 			}
