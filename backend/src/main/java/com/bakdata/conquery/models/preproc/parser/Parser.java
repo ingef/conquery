@@ -11,7 +11,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Base class used for parsing values in Preprocessing.
@@ -25,7 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @RequiredArgsConstructor
 @ToString
-@Slf4j
 public abstract class Parser<MAJOR_JAVA_TYPE, STORE_TYPE extends ColumnStore> {
 
 	@ToString.Exclude
@@ -119,37 +117,22 @@ public abstract class Parser<MAJOR_JAVA_TYPE, STORE_TYPE extends ColumnStore> {
 	protected final void recordNullLine() {
 		lines++;
 		nullLines++;
-		if (log.isTraceEnabled()) {
-			log.trace("Registering `null` in line {}", lines);
-		}
 	}
 
 	protected final void recordObjectLine(Object value) {
 		lines++;
-		if (log.isTraceEnabled()) {
-			log.trace("Registering `{}` in line {}", value, lines);
-		}
 	}
 
 	protected final void recordLongLine(long value) {
 		lines++;
-		if (log.isTraceEnabled()) {
-			log.trace("Registering `{}` in line {}", value, lines);
-		}
 	}
 
 	protected final void recordDoubleLine(double value) {
 		lines++;
-		if (log.isTraceEnabled()) {
-			log.trace("Registering `{}` in line {}", value, lines);
-		}
 	}
 
 	protected final void recordBooleanLine(boolean value) {
 		lines++;
-		if (log.isTraceEnabled()) {
-			log.trace("Registering `{}` in line {}", value, lines);
-		}
 	}
 
 	/**

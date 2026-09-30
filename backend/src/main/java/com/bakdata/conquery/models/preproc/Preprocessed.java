@@ -294,9 +294,6 @@ public class Preprocessed {
 				throw new IllegalStateException("Columns are not aligned");
 			}
 
-			if (log.isTraceEnabled()) {
-				log.trace("Registering `{}` for Column[{}]", outRow.getObject(col), columns[col].getName());
-			}
 			columns[col].getParser().addLine(outRow, col);
 		}
 

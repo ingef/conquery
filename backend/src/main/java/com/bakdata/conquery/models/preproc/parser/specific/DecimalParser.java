@@ -13,10 +13,8 @@ import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.NumberParsing;
 import lombok.ToString;
-import lombok.extern.slf4j.Slf4j;
 
 @ToString(callSuper = true)
-@Slf4j
 public class DecimalParser extends Parser<BigDecimal, DecimalStore> {
 
 	private transient int maxScale = Integer.MIN_VALUE;
@@ -33,10 +31,6 @@ public class DecimalParser extends Parser<BigDecimal, DecimalStore> {
 
 	@Override
 	protected void registerValue(BigDecimal v) {
-		if (log.isTraceEnabled()) {
-			log.trace("Registering `{}`", v);
-		}
-
 		BigDecimal abs = v.abs();
 		if (v.scale() > maxScale) {
 			maxScale = v.scale();

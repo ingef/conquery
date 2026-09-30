@@ -13,7 +13,6 @@ import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
@@ -23,7 +22,6 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 @NoArgsConstructor
 @ToString(of = {"inputColumn", "inputType"})
 @CPSType(id = "COPY", base = OutputDescription.class)
-@Slf4j
 public class CopyOutput extends OutputDescription {
 
 	public CopyOutput(String name, String inputColumn, MajorTypeId typeId) {
@@ -55,16 +53,8 @@ public class CopyOutput extends OutputDescription {
 		final int column = headers.getInt(inputColumn);
 
 		return new Output() {
-			private void trace(String[] row, long sourceLine) {
-				if (log.isTraceEnabled()) {
-					log.trace("Registering `{}` in line {} for Output[{}]", row[column], sourceLine, this.getDescription().getName());
-				}
-			}
-
 			@Override
 			protected Object parseLine(String[] row, Parser type, long sourceLine) throws ParsingException {
-				trace(row, sourceLine);
-
 				if (row[column] == null) {
 					return null;
 				}
@@ -74,7 +64,6 @@ public class CopyOutput extends OutputDescription {
 
 			@Override
 			protected void parseLine(String[] row, Parser type, long sourceLine, OutputRow outputRow, int outputIndex) throws ParsingException {
-				trace(row, sourceLine);
 				type.parse(row[column], outputRow, outputIndex);
 			}
 		};
