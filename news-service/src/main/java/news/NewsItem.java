@@ -1,15 +1,13 @@
 package news;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
+import static news.NewsService.ID_PATTERN;
 
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.Set;
-
-import static news.NewsService.ID_PATTERN;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 
 public record NewsItem(
 		@NotBlank @Pattern(regexp = ID_PATTERN) String id,

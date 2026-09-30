@@ -1,17 +1,5 @@
 package news;
 
-import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.google.common.annotations.VisibleForTesting;
-import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.Validator;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.checker.nullness.qual.NonNull;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -27,6 +15,18 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validator;
+
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.google.common.annotations.VisibleForTesting;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 @Slf4j
 public class FileSystemNewsService implements NewsService {

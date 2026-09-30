@@ -1,13 +1,12 @@
 package news;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
+import static news.NewsService.ID_PATTERN;
 
 import java.net.URI;
 import java.util.Collections;
 import java.util.Set;
-
-import static news.NewsService.ID_PATTERN;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 
 
 /**
