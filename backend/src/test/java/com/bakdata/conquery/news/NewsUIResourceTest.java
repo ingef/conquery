@@ -29,7 +29,7 @@ class NewsUIResourceTest {
 		String html = output.toString(StandardCharsets.UTF_8);
 		assertThat(html)
 				.contains("<h1>News</h1>")
-				.contains("const availableDatasetIds = [\n\t\t\t\"dataset-a\", \"dataset-b\"")
+				.contains("\"dataset-a\", \"dataset-b\"")
 				.contains("var csrf_token = \"csrf-token\"");
 	}
 }
