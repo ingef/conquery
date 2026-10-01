@@ -256,34 +256,33 @@ public class PreprocessorCommand extends ConqueryCommand {
 	}
 
 	private void preprocessJobs(Collection<PreprocessingJob> jobs, int buckets, ConqueryConfig config) throws InterruptedException {
-		final long totalSize = jobs.stream()
-								   .mapToLong(PreprocessingJob::estimateTotalCsvSizeBytes)
-								   .sum();
+		final int maximumFanOut = config.getPreprocessor().getNThreads();
+		final long totalSize = Preprocessor.estimateTotalCsvSizeBytes(jobs, maximumFanOut);
 
 		log.info("Required to preprocess {} in total", FileUtils.byteCountToDisplaySize(totalSize));
 
 		final ProgressBar totalProgress = new ProgressBar(totalSize);
 
-		for (PreprocessingJob job : jobs) {
-			pool.submit(() -> {
-				ConqueryMDC.setLocation(job.toString());
-				try {
-					Preprocessor.preprocess(job, totalProgress, config, buckets);
+		try {
+			for (Preprocessor.Result result : Preprocessor.preprocess(jobs, pool, totalProgress, config, buckets, maximumFanOut)) {
+				final PreprocessingJob job = result.job();
+				if (result.isSuccess()) {
 					success.add(job.toString());
 				}
-				catch (FileNotFoundException e) {
-					log.warn("Did not find file `{}` for preprocessing.", e.getMessage());
+				else if (result.failure() instanceof FileNotFoundException) {
+					log.warn("Did not find file `{}` for preprocessing.", result.failure().getMessage());
 					addMissing(job);
 				}
-				catch (Exception e) {
-					log.error("Failed to preprocess " + LogUtil.printPath(job.getDescriptionFile()), e);
+				else {
+					log.error("Failed to preprocess " + LogUtil.printPath(job.getDescriptionFile()), result.failure());
 					addFailed(job);
 				}
-			});
+			}
 		}
-
-		pool.shutdown();
-		pool.awaitTermination(24, TimeUnit.HOURS);
+		finally {
+			pool.shutdown();
+			pool.awaitTermination(24, TimeUnit.HOURS);
+		}
 
 		ConqueryMDC.clearLocation();
 	}
