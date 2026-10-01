@@ -1,10 +1,6 @@
 {
   "type": "QUERY_TEST",
   "label": "QUARTER_AGGREGATOR",
-  "sqlSpec": {
-    "isEnabled": false,
-    "comment": "Not implemented yet."
-  },
   "expectedCsv": "tests/aggregator/QUARTER_AGGREGATOR/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
@@ -20,7 +16,8 @@
             "concept.connector.select"
           ]
         }
-      ]
+      ],
+      "selects": "concept.earliest-quarter"
     }
   },
   "concepts": [
@@ -40,6 +37,13 @@
             "type": "QUARTER",
             "sample": "LATEST"
           }
+        }
+      ],
+      "selects": [
+        {
+          "name": "earliest-quarter",
+          "type": "QUARTER",
+          "sample": "EARLIEST"
         }
       ]
     }
