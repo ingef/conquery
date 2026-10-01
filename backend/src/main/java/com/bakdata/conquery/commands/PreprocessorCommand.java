@@ -256,15 +256,14 @@ public class PreprocessorCommand extends ConqueryCommand {
 	}
 
 	private void preprocessJobs(Collection<PreprocessingJob> jobs, int buckets, ConqueryConfig config) throws InterruptedException {
-		final int maximumFanOut = config.getPreprocessor().getNThreads();
-		final long totalSize = Preprocessor.estimateTotalCsvSizeBytes(jobs, maximumFanOut);
+		final long totalSize = Preprocessor.estimateTotalCsvSizeBytes(jobs);
 
 		log.info("Required to preprocess {} in total", FileUtils.byteCountToDisplaySize(totalSize));
 
 		final ProgressBar totalProgress = new ProgressBar(totalSize);
 
 		try {
-			for (Preprocessor.Result result : Preprocessor.preprocess(jobs, pool, totalProgress, config, buckets, maximumFanOut)) {
+			for (Preprocessor.Result result : Preprocessor.preprocess(jobs, pool, totalProgress, config, buckets)) {
 				final PreprocessingJob job = result.job();
 				if (result.isSuccess()) {
 					success.add(job.toString());

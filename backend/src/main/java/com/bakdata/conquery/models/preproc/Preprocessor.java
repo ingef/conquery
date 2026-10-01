@@ -8,7 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,9 +58,6 @@ public class Preprocessor {
 	private record InputConsumer(JobContext job, int inputIndex, TableInputDescriptor input, File sourceFile) {
 	}
 
-	private record SourceReference(int inputIndex, Path source) {
-	}
-
 	private static final class PreparedInputConsumer {
 		private final JobContext job;
 		private final GroovyPredicate filter;
@@ -70,8 +66,9 @@ public class Preprocessor {
 		private final OutputRow outputRow;
 		private final String location;
 
-		private PreparedInputConsumer(InputConsumer consumer, String[] headers, ConqueryConfig config) {
+		private PreparedInputConsumer(InputConsumer consumer, String[] headers) {
 			job = consumer.job();
+			final ConqueryConfig config = job.config;
 			final TableInputDescriptor input = consumer.input();
 			final Object2IntArrayMap<String> headerMap = TableInputDescriptor.buildHeaderMap(headers);
 			final DateReader dateReader = config.getLocale().getDateReader();
@@ -86,7 +83,7 @@ public class Preprocessor {
 			location = job.location(consumer.inputIndex(), consumer.sourceFile());
 		}
 
-		private void process(String[] row, ConqueryConfig config) {
+		private void processRow(String[] row) {
 			ConqueryMDC.setLocation(location);
 
 			// Script failures are fatal for this descriptor, as they were in the job-centric implementation.
@@ -105,10 +102,10 @@ public class Preprocessor {
 				job.result.addRow(primary, outputRow);
 			}
 			catch (OutputDescription.OutputException exception) {
-				job.recordRowError(exception.getCause().getClass(), exception, exception.getSource(), row, config);
+				job.recordRowError(exception.getCause().getClass(), exception, exception.getSource(), row);
 			}
 			catch (Exception exception) {
-				job.recordRowError(exception.getClass(), exception, null, row, config);
+				job.recordRowError(exception.getClass(), exception, null, row);
 			}
 			finally {
 				job.lineId++;
@@ -118,6 +115,7 @@ public class Preprocessor {
 
 	private static final class JobContext {
 		private final PreprocessingJob job;
+		private final ConqueryConfig config;
 		private final File preprocessedFile;
 		private final File temporaryFile;
 		private final Preprocessed result;
@@ -128,6 +126,7 @@ public class Preprocessor {
 
 		private JobContext(PreprocessingJob job, ConqueryConfig config) throws IOException {
 			this.job = job;
+			this.config = config;
 			preprocessedFile = job.getPreprocessedFile();
 			temporaryFile = new File(preprocessedFile.getParentFile(), preprocessedFile.getName() + ".tmp");
 			temporaryFile.deleteOnExit();
@@ -169,8 +168,7 @@ public class Preprocessor {
 				Class<? extends Throwable> exceptionClass,
 				Exception exception,
 				OutputDescription source,
-				String[] row,
-				ConqueryConfig config
+				String[] row
 		) {
 			exceptions.put(exceptionClass, exceptions.getInt(exceptionClass) + 1);
 			errors++;
@@ -188,7 +186,7 @@ public class Preprocessor {
 			}
 		}
 
-		private void finish(ConqueryConfig config, int buckets) throws IOException {
+		private void finish(int buckets) throws IOException {
 			ConqueryMDC.setLocation(location());
 			logErrors();
 			result.write(temporaryFile, buckets);
@@ -205,12 +203,12 @@ public class Preprocessor {
 		}
 
 		private void logErrors() {
-			if (errors > 0) {
-				log.warn("File `{}` contained {} faulty lines of ~{} total.", job, errors, lineId);
+			if (errors == 0) {
+				return;
 			}
-			if (log.isWarnEnabled()) {
-				exceptions.forEach((clazz, count) -> log.warn("Got {} `{}`", count, clazz.getSimpleName()));
-			}
+
+			log.warn("File `{}` contained {} faulty lines of ~{} total.", job, errors, lineId);
+			exceptions.forEach((clazz, count) -> log.warn("Got {} `{}`", count, clazz.getSimpleName()));
 		}
 	}
 
@@ -226,12 +224,10 @@ public class Preprocessor {
 	}
 
 	/**
-	 * Estimate the physical source bytes read by {@link #preprocess(Collection, ExecutorService, ProgressBar, ConqueryConfig, int, int)}.
+	 * Estimate the physical source bytes read by {@link #preprocess(Collection, ExecutorService, ProgressBar, ConqueryConfig, int)}.
 	 */
-	public static long estimateTotalCsvSizeBytes(Collection<PreprocessingJob> jobs, int maximumFanOut) {
-		return partition(jobs, maximumFanOut).stream()
-				.mapToLong(Preprocessor::estimateBatchSize)
-				.sum();
+	public static long estimateTotalCsvSizeBytes(Collection<PreprocessingJob> jobs) {
+		return estimateSourceSize(jobs);
 	}
 
 	/**
@@ -240,7 +236,7 @@ public class Preprocessor {
 	public static void preprocess(PreprocessingJob job, ProgressBar totalProgress, ConqueryConfig config, int buckets) throws IOException {
 		final ExecutorService executor = Executors.newSingleThreadExecutor();
 		try {
-			final Result result = preprocess(List.of(job), executor, totalProgress, config, buckets, 1).getFirst();
+			final Result result = preprocess(List.of(job), executor, totalProgress, config, buckets).getFirst();
 			if (result.failure() instanceof IOException ioException) {
 				throw ioException;
 			}
@@ -261,28 +257,13 @@ public class Preprocessor {
 	}
 
 	/**
-	 * Preprocess jobs in source-centric, bounded batches.
+	 * Preprocess jobs in source-centric input rounds.
 	 * <p>
-	 * Inputs with the same ordinal and resolved source are read once per batch. Ordinal rounds preserve the input order of every descriptor, while the batch size
-	 * bounds the number of live result accumulators. A source with more consumers than {@code maximumFanOut} is read once for each bounded batch.
+	 * Inputs with the same ordinal and resolved source are read by one task. Each task parses its source serially and fans every row out serially to all consumers.
+	 * The executor bounds the number of concurrently read sources, while ordinal rounds preserve the input order of every descriptor.
 	 */
 	public static List<Result> preprocess(
 			Collection<PreprocessingJob> jobs,
-			ExecutorService executor,
-			ProgressBar totalProgress,
-			ConqueryConfig config,
-			int buckets,
-			int maximumFanOut
-	) throws InterruptedException {
-		final List<Result> results = new ArrayList<>(jobs.size());
-		for (List<PreprocessingJob> batch : partition(jobs, maximumFanOut)) {
-			results.addAll(preprocessBatch(batch, executor, totalProgress, config, buckets));
-		}
-		return results;
-	}
-
-	private static List<Result> preprocessBatch(
-			List<PreprocessingJob> jobs,
 			ExecutorService executor,
 			ProgressBar totalProgress,
 			ConqueryConfig config,
@@ -307,7 +288,7 @@ public class Preprocessor {
 			final Map<Path, List<InputConsumer>> consumersBySource = groupBySource(contexts, inputIndex);
 			final List<Future<?>> sourceTasks = new ArrayList<>(consumersBySource.size());
 			for (List<InputConsumer> consumers : consumersBySource.values()) {
-				sourceTasks.add(executor.submit(() -> processSource(consumers, totalProgress, config)));
+				sourceTasks.add(executor.submit(() -> processSource(consumers, totalProgress)));
 			}
 			await(sourceTasks);
 		}
@@ -320,7 +301,7 @@ public class Preprocessor {
 			finalizationTasks.add(executor.submit(() -> {
 				context.result.acquireOwnership();
 				try {
-					context.finish(config, buckets);
+					context.finish(buckets);
 				}
 				catch (Exception exception) {
 					context.fail(exception);
@@ -355,8 +336,9 @@ public class Preprocessor {
 		return consumersBySource;
 	}
 
-	private static void processSource(List<InputConsumer> consumers, ProgressBar totalProgress, ConqueryConfig config) {
+	private static void processSource(List<InputConsumer> consumers, ProgressBar totalProgress) {
 		final File sourceFile = consumers.getFirst().sourceFile();
+		final ConqueryConfig config = consumers.getFirst().job().config;
 		final List<JobContext> acquired = new ArrayList<>(consumers.size());
 		for (InputConsumer consumer : consumers) {
 			try {
@@ -380,7 +362,7 @@ public class Preprocessor {
 				parser.beginParsing(FileUtil.isGZipped(sourceFile) ? new GZIPInputStream(countingInput) : countingInput, csvSettings.getEncoding());
 
 				final String[] headers = parser.getContext().parsedHeaders();
-				final List<PreparedInputConsumer> prepared = prepareConsumers(consumers, headers, config);
+				final List<PreparedInputConsumer> prepared = prepareConsumers(consumers, headers);
 				long progress = 0;
 				int rowsSinceProgressUpdate = 0;
 				String[] row;
@@ -396,7 +378,7 @@ public class Preprocessor {
 							continue;
 						}
 						try {
-							consumer.process(row.clone(), config);
+							consumer.processRow(row.clone());
 						}
 						catch (Exception exception) {
 							consumer.job.fail(exception);
@@ -433,14 +415,14 @@ public class Preprocessor {
 		}
 	}
 
-	private static List<PreparedInputConsumer> prepareConsumers(List<InputConsumer> consumers, String[] headers, ConqueryConfig config) {
+	private static List<PreparedInputConsumer> prepareConsumers(List<InputConsumer> consumers, String[] headers) {
 		final List<PreparedInputConsumer> prepared = new ArrayList<>(consumers.size());
 		for (InputConsumer consumer : consumers) {
 			if (!consumer.job().isActive()) {
 				continue;
 			}
 			try {
-				prepared.add(new PreparedInputConsumer(consumer, headers, config));
+				prepared.add(new PreparedInputConsumer(consumer, headers));
 			}
 			catch (Exception exception) {
 				consumer.job().fail(exception);
@@ -460,57 +442,15 @@ public class Preprocessor {
 		}
 	}
 
-	private static List<List<PreprocessingJob>> partition(Collection<PreprocessingJob> jobs, int maximumFanOut) {
-		if (maximumFanOut < 1) {
-			throw new IllegalArgumentException("maximumFanOut must be positive");
-		}
-
-		final List<PreprocessingJob> remaining = new ArrayList<>(jobs);
-		final List<List<PreprocessingJob>> batches = new ArrayList<>((remaining.size() + maximumFanOut - 1) / maximumFanOut);
-		while (!remaining.isEmpty()) {
-			final List<PreprocessingJob> batch = new ArrayList<>(maximumFanOut);
-			batch.add(remaining.removeFirst());
-			final Set<SourceReference> sharedSources = new HashSet<>(sourceReferences(batch.getFirst()));
-
-			while (batch.size() < maximumFanOut && !remaining.isEmpty()) {
-				int bestIndex = 0;
-				long bestSharedSources = -1;
-				for (int index = 0; index < remaining.size(); index++) {
-					final long sharedSourceCount = sourceReferences(remaining.get(index)).stream().filter(sharedSources::contains).count();
-					if (sharedSourceCount > bestSharedSources) {
-						bestIndex = index;
-						bestSharedSources = sharedSourceCount;
-					}
-				}
-
-				final PreprocessingJob selected = remaining.remove(bestIndex);
-				batch.add(selected);
-				sharedSources.addAll(sourceReferences(selected));
-			}
-			batches.add(batch);
-		}
-		return batches;
-	}
-
-	private static Set<SourceReference> sourceReferences(PreprocessingJob job) {
-		final Set<SourceReference> sources = new HashSet<>();
-		for (int inputIndex = 0; inputIndex < job.getDescriptor().getInputs().length; inputIndex++) {
-			final TableInputDescriptor input = job.getDescriptor().getInputs()[inputIndex];
-			final Path source = resolveSourceFile(input.getSourceFile(), job.getCsvDirectory(), job.getTag()).toPath().toAbsolutePath().normalize();
-			sources.add(new SourceReference(inputIndex, source));
-		}
-		return sources;
-	}
-
-	private static long estimateBatchSize(List<PreprocessingJob> batch) {
-		final int maximumInputs = batch.stream()
+	private static long estimateSourceSize(Collection<PreprocessingJob> jobs) {
+		final int maximumInputs = jobs.stream()
 				.mapToInt(job -> job.getDescriptor().getInputs().length)
 				.max()
 				.orElse(0);
 		long totalSize = 0;
 		for (int inputIndex = 0; inputIndex < maximumInputs; inputIndex++) {
 			final int currentInput = inputIndex;
-			final Set<Path> sources = batch.stream()
+			final Set<Path> sources = jobs.stream()
 					.filter(job -> currentInput < job.getDescriptor().getInputs().length)
 					.map(job -> resolveSourceFile(
 							job.getDescriptor().getInputs()[currentInput].getSourceFile(),
