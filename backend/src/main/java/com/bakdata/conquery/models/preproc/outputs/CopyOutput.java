@@ -6,13 +6,13 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.preproc.OutputRow;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.DateReader;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
@@ -22,7 +22,6 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 @NoArgsConstructor
 @ToString(of = {"inputColumn", "inputType"})
 @CPSType(id = "COPY", base = OutputDescription.class)
-@Slf4j
 public class CopyOutput extends OutputDescription {
 
 	public CopyOutput(String name, String inputColumn, MajorTypeId typeId) {
@@ -56,13 +55,16 @@ public class CopyOutput extends OutputDescription {
 		return new Output() {
 			@Override
 			protected Object parseLine(String[] row, Parser type, long sourceLine) throws ParsingException {
-				log.trace("Registering `{}` in line {} for Output[{}]", row[column], sourceLine, this.getDescription().getName());
-
 				if (row[column] == null) {
 					return null;
 				}
 
 				return type.parse(row[column]);
+			}
+
+			@Override
+			protected void parseLine(String[] row, Parser type, long sourceLine, OutputRow outputRow, int outputIndex) throws ParsingException {
+				type.parse(row[column], outputRow, outputIndex);
 			}
 		};
 	}

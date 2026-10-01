@@ -6,6 +6,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
 import com.bakdata.conquery.models.events.stores.root.BooleanStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.preproc.OutputRow;
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import lombok.ToString;
@@ -23,6 +24,31 @@ public class BooleanParser extends Parser<Boolean, BooleanStore> {
 		return parseBoolean(value);
 	}
 
+	@Override
+	public void parse(String value, OutputRow outputRow, int outputIndex) throws ParsingException {
+		if (value == null) {
+			outputRow.setNull(outputIndex);
+			return;
+		}
+
+		try {
+			outputRow.setBoolean(outputIndex, parseBoolean(value));
+		}
+		catch (Exception e) {
+			throw parsingException(value, e);
+		}
+	}
+
+	@Override
+	public void addLine(OutputRow outputRow, int outputIndex) {
+		if (outputRow.isNull(outputIndex)) {
+			recordNullLine();
+			return;
+		}
+
+		recordBooleanLine(outputRow.getBoolean(outputIndex));
+	}
+
 	@NotNull
 	public static Boolean parseBoolean(@NotNull String value) {
 		return switch (value) {
@@ -34,7 +60,12 @@ public class BooleanParser extends Parser<Boolean, BooleanStore> {
 
 	@Override
 	protected BooleanStore decideType() {
-		return BitSetStore.create(getLines());
+		return decideType(getLines());
+	}
+
+	@Override
+	protected BooleanStore decideType(int storeLines) {
+		return BitSetStore.create(storeLines);
 	}
 
 	@Override

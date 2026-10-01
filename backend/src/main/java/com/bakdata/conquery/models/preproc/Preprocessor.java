@@ -36,6 +36,7 @@ import org.apache.commons.io.FileUtils;
 @Slf4j
 @UtilityClass
 public class Preprocessor {
+	private static final int PROGRESS_UPDATE_INTERVAL = 4096;
 
 	/**
 	 * Create version of file-name with tag.
@@ -109,6 +110,7 @@ public class Preprocessor {
 
 			try (CountingInputStream countingIn = new CountingInputStream(new FileInputStream(sourceFile))) {
 				long progress = 0;
+				int rowsSinceProgressUpdate = 0;
 
 				CSVConfig csvSettings = config.getCsv();
 				// Create CSV parser according to config, but overriding some behaviour.
@@ -134,10 +136,16 @@ public class Preprocessor {
 					outputs.add(op.createForHeaders(headerMap, dateReader, config));
 				}
 
+				final OutputRow outRow = new OutputRow(outputs.size());
 				String[] row;
 
 				// Read all CSV lines, apply Output transformations and add the to preprocessed.
 				while ((row = parser.parseNext()) != null) {
+					rowsSinceProgressUpdate++;
+					if (rowsSinceProgressUpdate == PROGRESS_UPDATE_INTERVAL) {
+						progress = reportProgress(totalProgress, countingIn, progress);
+						rowsSinceProgressUpdate = 0;
+					}
 
 					// Check if row shall be evaluated
 					// This is explicitly NOT in a try-catch block as scripts may not fail and we should not recover from faulty scripts.
@@ -151,9 +159,9 @@ public class Preprocessor {
 
 
 						final String primary = result.addPrimary(primaryId);
-						final Object[] outRow = applyOutputs(outputs, columns, row, lineId);
+						applyOutputs(outputs, columns, row, lineId, outRow);
 
-						result.addRow(primary, columns, outRow);
+						result.addRow(primary, outRow);
 
 					}
 					catch (OutputDescription.OutputException e) {
@@ -186,12 +194,11 @@ public class Preprocessor {
 						}
 					}
 					finally {
-						//report progress
-						totalProgress.addCurrentValue(countingIn.getCount() - progress);
-						progress = countingIn.getCount();
 						lineId++;
 					}
 				}
+
+				reportProgress(totalProgress, countingIn, progress);
 
 			}
 			finally {
@@ -226,31 +233,33 @@ public class Preprocessor {
 	}
 
 	/**
-	 * Apply each output for a single row. Returning all resulting values.
+	 * Apply each output for a single row into the reusable output buffer.
 	 */
-	private static Object[] applyOutputs(List<OutputDescription.Output> outputs, PPColumn[] columns, String[] row, long lineId)
+	private static void applyOutputs(List<OutputDescription.Output> outputs, PPColumn[] columns, String[] row, long lineId, OutputRow outRow)
 			throws ParsingException, OutputDescription.OutputException {
-		Object[] outRow = new Object[outputs.size()];
-
 		for (int index = 0; index < outputs.size(); index++) {
 			final OutputDescription.Output out = outputs.get(index);
 
 			try {
 				final Parser parser = columns[index].getParser();
 
-				final Object result = out.createOutput(row, parser, lineId);
-
-				if (result == null) {
-					continue;
-				}
-
-				outRow[index] = result;
+				out.createOutput(row, parser, lineId, outRow, index);
 			}
 			catch (Exception e) {
+				outRow.clear();
 				throw new OutputDescription.OutputException(out.getDescription(), e);
 			}
 		}
-		return outRow;
+	}
+
+	private static long reportProgress(ProgressBar totalProgress, CountingInputStream countingIn, long previousProgress) {
+		final long currentProgress = countingIn.getCount();
+		final long progress = currentProgress - previousProgress;
+		if (progress > 0) {
+			totalProgress.addCurrentValue(progress);
+		}
+
+		return currentProgress;
 	}
 
 	/**
