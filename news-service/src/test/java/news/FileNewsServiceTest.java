@@ -16,6 +16,9 @@ import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 
+import com.bakdata.conquery.news.FileSystemNewsService;
+import com.bakdata.conquery.news.NewsItem;
+import com.bakdata.conquery.news.NewsService;
 import org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;

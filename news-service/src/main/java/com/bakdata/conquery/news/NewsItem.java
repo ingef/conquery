@@ -1,6 +1,6 @@
-package news;
+package com.bakdata.conquery.news;
 
-import static news.NewsService.ID_PATTERN;
+import static com.bakdata.conquery.news.NewsService.ID_PATTERN;
 
 import java.net.URI;
 import java.time.LocalDate;

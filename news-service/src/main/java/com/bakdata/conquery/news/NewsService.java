@@ -1,4 +1,4 @@
-package news;
+package com.bakdata.conquery.news;
 
 import java.io.IOException;
 import java.util.List;
