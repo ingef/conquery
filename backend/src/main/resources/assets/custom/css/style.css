@@ -13,3 +13,26 @@ h3 {
     padding-bottom:10px;
     padding-top:20px;
 }
+
+.category-token-input {
+    min-height: calc(2.25rem + 2px);
+    cursor: text;
+}
+
+.category-token-input input {
+    min-width: 12rem;
+    flex: 1;
+    border: 0;
+    outline: 0;
+}
+
+.category-token-input .close {
+    float: none;
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.news-description {
+    min-width: 18rem;
+    white-space: pre-wrap;
+}
