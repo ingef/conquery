@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.mapping.ConceptIdMappingResolver;
+import com.bakdata.conquery.sql.mapping.ConceptIdMappingSource;
 import com.bakdata.conquery.sql.mapping.ConceptIdMappingTable;
 import lombok.Data;
 import org.jooq.*;
@@ -100,26 +101,15 @@ public final class ConceptIdMapping {
 		return new ConceptIdMappingTable(tableName, keyFields, rows);
 	}
 
-	public Condition joinCondition(Connector connector) {
+	public ConceptIdMappingSource source(Connector connector) {
 		CTConditionContext context = CTConditionContext.forConnector(connector, functionProvider);
 		List<CTCondition.ConceptConditions> expressions = collectAllExpressions(concept, null, context);
 		Map<String, Field<?>> extractors = ConceptIdMappingResolver.collectExtractors(resolveExpressions(expressions));
-		ConceptIdMappingTable mappingTable = mappingTable();
+		return new ConceptIdMappingSource(mappingTable(), extractors);
+	}
 
-		Condition condition = noCondition();
-		for (Field<?> keyField : keyFields) {
-			Field<?> extractor = extractors.get(keyField.getName());
-			if (extractor == null) {
-				throw new IllegalArgumentException(
-						"No connector expression for concept mapping field `%s` in connector %s"
-								.formatted(keyField.getName(), connector.getId())
-				);
-			}
-			Field<?> mappingField = mappingTable.mappingField(keyField);
-			condition = condition.and(mappingField.eq((Field) extractor));
-		}
-
-		return condition.equals(noCondition()) ? functionProvider.unconditionalJoinCondition() : condition;
+	public Condition joinCondition(Connector connector) {
+		return source(connector).joinCondition(functionProvider.unconditionalJoinCondition());
 	}
 
 	/**

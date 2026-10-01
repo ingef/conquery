@@ -7,6 +7,7 @@ import com.bakdata.conquery.sql.model.internal.ModelNormalization;
 import com.bakdata.conquery.sql.model.operation.ResolvedCondition;
 import com.bakdata.conquery.sql.model.operation.ResolvedFilter;
 import com.bakdata.conquery.sql.model.operation.ResolvedSelect;
+import com.bakdata.conquery.sql.mapping.ConceptIdMappingSelection;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
@@ -21,8 +22,22 @@ public record ResolvedConnector(
 		@NotNull @Valid ResolvedValidityDate validityDate,
 		@NotNull List<@NotNull @Valid ResolvedFilter> filters,
 		@NotNull List<@NotNull @Valid ResolvedSelect> selects,
-		@NotNull List<@NotNull @Valid ResolvedCondition> conditions
+		@NotNull List<@NotNull @Valid ResolvedCondition> conditions,
+		@NotNull Optional<ConceptIdMappingSelection> conceptIdMapping
 ) {
+
+	public ResolvedConnector(
+			String logicalId,
+			SqlTable table,
+			ResolvedColumn primaryId,
+			Optional<ResolvedColumn> secondaryId,
+			ResolvedValidityDate validityDate,
+			List<ResolvedFilter> filters,
+			List<ResolvedSelect> selects,
+			List<ResolvedCondition> conditions
+	) {
+		this(logicalId, table, primaryId, secondaryId, validityDate, filters, selects, conditions, Optional.empty());
+	}
 
 	public ResolvedConnector {
 		filters = ModelNormalization.immutableCopy(filters);

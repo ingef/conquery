@@ -17,6 +17,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.model.EntitySchemaAdapter;
 import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
+import com.bakdata.conquery.sql.mapping.ConceptIdMappingSource;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Record;
@@ -90,12 +91,11 @@ public class ConceptColumnSelectConverter implements SelectConverter<ConceptColu
 
 		ConceptIdMapping mapping = new ConceptIdMapping(concept, context.getFunctionProvider());
 		Table<Record> connectorTable = SchemaSql.table(column.table());
-		TableLike<? extends Record> sourceTable = context.getFunctionProvider().leftJoin(
-				connectorTable,
-				mapping.table(),
-				List.of(mapping.joinCondition(connector))
+		ConceptIdMappingSource mappingSource = mapping.source(connector);
+		TableLike<? extends Record> sourceTable = mappingSource.resolvedConceptIds(
+				connectorTable, context.getCompilerDialect()
 		);
-		Field<Integer> resolvedId = DSL.coalesce(mapping.resolvedId(), DSL.inline(concept.getLocalId()));
+		Field<Integer> resolvedId = mappingSource.resolvedIdOrRoot(concept.getLocalId());
 		Condition rawValuePresent = SchemaSql.field(column, Object.class).isNotNull();
 		return new SelectConversionContext.ConceptColumnSource(
 				connectorTable.getName(),

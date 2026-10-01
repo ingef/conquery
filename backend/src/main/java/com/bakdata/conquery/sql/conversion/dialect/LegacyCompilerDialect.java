@@ -56,6 +56,11 @@ import org.jooq.Table;
 public interface LegacyCompilerDialect extends CompilerDialect {
 
 	@Override
+	default Condition unconditionalJoinCondition() {
+		return getCompilerDialect().unconditionalJoinCondition();
+	}
+
+	@Override
 	default ConnectorSqlSelects distinctSelect(BuiltInSelects.Values select, SelectConversionContext context) {
 		return getCompilerDialect().distinctSelect(select, context);
 	}

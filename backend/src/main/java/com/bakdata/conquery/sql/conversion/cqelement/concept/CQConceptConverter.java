@@ -256,7 +256,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 						conceptIdMapping,
 						conceptElements,
 						resolveConceptIds,
-						functionProvider
+						conversionContext.getCompilerDialect()
 				),
 				ids,
 				validityDateCalculation,
@@ -271,22 +271,15 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 			ConceptIdMapping conceptIdMapping,
 			List<ConceptElement<?>> selectedConceptElements,
 			boolean resolveConceptIds,
-			SqlFunctionProvider functionProvider
+			com.bakdata.conquery.sql.compiler.dialect.CompilerDialect dialect
 	) {
 		org.jooq.Table<Record> connectorTable = table(name(connectorTables.getPredecessor(ConceptCteStep.PREPROCESSING)));
-
-		if (conceptIdMapping.includesRoot(selectedConceptElements) && !resolveConceptIds) {
-			return connectorTable;
-		}
-
-		Condition conceptFilterCondition = selectedConceptElements.isEmpty()
-				? noCondition()
-				: conceptIdMapping.resolvedId().in(conceptIdMapping.includedLocalIds(selectedConceptElements));
-
-		return functionProvider.innerJoin(
+		return (org.jooq.Table<Record>) conceptIdMapping.source(connectorTables.getConnector()).selectedConcepts(
 				connectorTable,
-				conceptIdMapping.table(),
-				List.of(conceptIdMapping.joinCondition(connectorTables.getConnector()).and(conceptFilterCondition))
+				conceptIdMapping.includedLocalIds(selectedConceptElements),
+				conceptIdMapping.includesRoot(selectedConceptElements),
+				resolveConceptIds,
+				dialect
 		);
 	}
 

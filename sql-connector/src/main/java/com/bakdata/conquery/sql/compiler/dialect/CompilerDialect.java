@@ -36,6 +36,11 @@ import org.jooq.impl.SQLDataType;
  */
 public interface CompilerDialect {
 
+	/** Any condition accepted by this database when a join has no mapping-key comparison. */
+	default Condition unconditionalJoinCondition() {
+		return DSL.noCondition();
+	}
+
 	default ColumnDateRange toDualColumn(ColumnDateRange range) {
 		return ColumnDateRange.of(range.getStart(), range.getEnd());
 	}

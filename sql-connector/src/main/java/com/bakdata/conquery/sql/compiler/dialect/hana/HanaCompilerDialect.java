@@ -50,6 +50,7 @@ public class HanaCompilerDialect implements CompilerDialect {
     return table(name("DUMMY"));
   }
 
+  @Override
   public Condition unconditionalJoinCondition() {
     return inline(true).eq(inline(true));
   }

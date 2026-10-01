@@ -6,10 +6,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.ColumnType;
 import com.bakdata.conquery.models.query.DateAggregationAction;
 import com.bakdata.conquery.sql.compiler.dialect.hana.HanaCompilerDialect;
+import com.bakdata.conquery.sql.mapping.ConceptIdMappingSelection;
+import com.bakdata.conquery.sql.mapping.ConceptIdMappingSource;
+import com.bakdata.conquery.sql.mapping.ConceptIdMappingTable;
 import com.bakdata.conquery.sql.model.ResolvedQuery;
 import com.bakdata.conquery.sql.model.node.AllEntitiesNode;
 import com.bakdata.conquery.sql.model.node.ConceptNode;
@@ -27,6 +31,7 @@ import com.bakdata.conquery.sql.model.schema.ResolvedValidityDate;
 import com.bakdata.conquery.sql.model.schema.SqlTable;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
+import org.jooq.impl.SQLDataType;
 import org.junit.jupiter.api.Test;
 
 class DefaultSqlCompilerTest {
@@ -85,6 +90,55 @@ class DefaultSqlCompilerTest {
 		assertTrue(compiled.sql().contains("concept_diagnosis_claims-0-preprocessing"));
 		assertEquals("diagnosis_exists-1", compiled.columns().get(1).sqlAlias());
 		assertEquals("diagnosis.exists", compiled.columns().get(1).outputId());
+	}
+
+	@Test
+	void shouldApplyConceptSelectionAndResolveConceptIdsInTheConnector() {
+		SqlTable events = SqlTable.of("events", "catalog", "events");
+		ResolvedColumn conceptColumn = new ResolvedColumn(
+				"events.diagnosis", events, "diagnosis", ColumnType.STRING, true
+		);
+		ConceptIdMappingSource mappingSource = new ConceptIdMappingSource(
+				new ConceptIdMappingTable(
+						DSL.name("diagnosis_ids"),
+						List.of(DSL.field(DSL.name("code"), SQLDataType.VARCHAR)),
+						List.of()
+				),
+				Map.of("code", DSL.field(DSL.name("events", "diagnosis"), String.class))
+		);
+		ResolvedConnector connector = new ResolvedConnector(
+				"claims",
+				events,
+				new ResolvedColumn("events.entity-id", events, "person_id", ColumnType.STRING, false),
+				Optional.empty(),
+				new ResolvedValidityDate.None(),
+				List.of(),
+				List.of(),
+				List.of(),
+				Optional.of(new ConceptIdMappingSelection(mappingSource, Set.of(4, 7), false, true, 0))
+		);
+		ResolvedQuery query = new ResolvedQuery(
+				new EntitySchema(ENTITY_ID),
+				new ConceptNode(
+						"diagnosis",
+						List.of(connector),
+						List.of(new BuiltInSelects.ConceptValues("concept ids", List.of(conceptColumn))),
+						DateAggregationAction.BLOCK
+				),
+				false,
+				List.of(new ResultColumn("concept-ids", new ResultType.ListType(ResultType.Primitive.STRING)))
+		);
+
+		CompiledQuery compiled = new DefaultSqlCompiler(DSL.using(SQLDialect.DEFAULT))
+				.compile(query, new HanaCompilerDialect());
+
+		assertTrue(
+				compiled.sql().contains("\"diagnosis_ids\".\"resolved_id\" in (4, 7)")
+						|| compiled.sql().contains("\"diagnosis_ids\".\"resolved_id\" in (7, 4)"),
+				compiled.sql()
+		);
+		assertTrue(compiled.sql().contains("coalesce(\"diagnosis_ids\".\"resolved_id\", 0)"), compiled.sql());
+		assertEquals("concept-ids", compiled.columns().get(1).outputId());
 	}
 
 	@Test

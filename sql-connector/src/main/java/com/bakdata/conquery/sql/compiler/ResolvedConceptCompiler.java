@@ -42,8 +42,10 @@ import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
 import com.bakdata.conquery.sql.model.operation.ResolvedSelect;
 import com.bakdata.conquery.sql.model.range.DateRange;
 import com.bakdata.conquery.sql.model.schema.EntitySchema;
+import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.model.schema.ResolvedConnector;
 import com.bakdata.conquery.sql.model.schema.ResolvedValidityDate;
+import com.bakdata.conquery.sql.mapping.ConceptIdMappingSelection;
 import lombok.experimental.UtilityClass;
 import org.jooq.Condition;
 import org.jooq.impl.DSL;
@@ -61,7 +63,7 @@ final class ResolvedConceptCompiler {
 				.toList();
 		QueryStep joined = LogicalQueryStepCompiler.compile(
 				connectors.stream().map(ConnectorCompilation::step).toList(), JoinMode.FULL_OUTER,
-				DateAggregationAction.MERGE, false, entitySchema, dialect, names);
+				concept.dateAction(), false, entitySchema, dialect, names);
 		SqlTables tables = ConceptCtePlanner.planConcept(joined, names.conceptName(concept),
 				concept.selects().stream().anyMatch(ResolvedConceptCompiler::isEventDateSelect), dialect, names);
 		Selects joinedSelects = joined.getQualifiedSelects();
@@ -104,24 +106,60 @@ final class ResolvedConceptCompiler {
 				WhereClauses.builder().eventFilter(new DateRestrictionCondition(dialect.dateRangeLiteral(range), validityDate)).build())));
 		List<ConnectorSqlSelects> selects = new ArrayList<>();
 		for (ResolvedSelect select : concept.selects()) {
-			if (select instanceof BuiltInSelects.ConceptValues) {
-				selects.add(selectConverter.convert(select, selectContext(dialect, names, plan, ids, validityDate,
-						connectorName, names.selectName(select))));
+			if (select instanceof BuiltInSelects.ConceptValues values) {
+				values.columns().stream()
+						.filter(column -> column.table().equals(connector.table()))
+						.findFirst()
+						.ifPresent(column -> {
+							BuiltInSelects.ConceptValues connectorValues = new BuiltInSelects.ConceptValues(
+									values.name(), List.of(column));
+							selects.add(selectConverter.convert(connectorValues,
+									selectContext(dialect, names, plan, ids, validityDate, connectorName,
+											names.selectName(select), conceptValueSources(column, connector, plan, dialect))));
+						});
 			}
 		}
 		for (ResolvedSelect select : connector.selects()) {
 			selects.add(selectConverter.convert(select, selectContext(dialect, names, plan, ids, validityDate,
 					connectorName, names.selectName(select))));
 		}
+		org.jooq.Table<org.jooq.Record> sourceTable = connector.conceptIdMapping()
+				.map(mapping -> mapping.selectedConcepts(plan.sourceTable(), dialect))
+				.orElse(plan.sourceTable());
 		return ConnectorCteCompiler.compileConnector(ConnectorCtePipelineAssembler.assemble(
-				plan, plan.sourceTable(), ids, validityDate, selects, filters, Optional.empty()))
+				plan, sourceTable, ids, validityDate, selects, filters, Optional.empty()))
 				.map(step -> new ConnectorCompilation(connector, plan, step));
+	}
+
+	private static List<SelectConversionContext.ConceptColumnSource> conceptValueSources(
+			ResolvedColumn column,
+			ResolvedConnector connector,
+			ConnectorCtePlan plan,
+			CompilerDialect dialect
+	) {
+		if (!connector.conceptIdMapping().map(ConceptIdMappingSelection::resolveConceptIds).orElse(false)) {
+			return List.of();
+		}
+		ConceptIdMappingSelection mapping = connector.conceptIdMapping().orElseThrow();
+		return List.of(new SelectConversionContext.ConceptColumnSource(
+						plan.sourceTable().getName(),
+						mapping.source().resolvedConceptIds(plan.sourceTable(), dialect),
+						mapping.source().resolvedIdOrRoot(mapping.rootLocalId()),
+						List.of(SchemaSql.field(column, Object.class).isNotNull())
+				));
 	}
 
 	private static SelectConversionContext selectContext(CompilerDialect dialect, SqlNameGenerator names,
 			ConnectorCtePlan plan, SqlIdColumns ids, ColumnDateRange validityDate, String connectorName, String alias) {
 		return new SelectConversionContext(dialect, names, plan.tables(), ids,
 				Optional.of(validityDate.asValidityDateRange(connectorName)), alias);
+	}
+
+	private static SelectConversionContext selectContext(CompilerDialect dialect, SqlNameGenerator names,
+			ConnectorCtePlan plan, SqlIdColumns ids, ColumnDateRange validityDate, String connectorName, String alias,
+			List<SelectConversionContext.ConceptColumnSource> conceptColumnSources) {
+		return new SelectConversionContext(dialect, names, plan.tables(), ids,
+				Optional.of(validityDate.asValidityDateRange(connectorName)), alias, Map.of(), conceptColumnSources);
 	}
 
 	private static ColumnDateRange validityDate(ResolvedValidityDate value, Optional<DateRange> restriction,
