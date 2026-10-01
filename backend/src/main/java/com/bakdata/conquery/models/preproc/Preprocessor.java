@@ -7,15 +7,23 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.preproc.parser.Parser;
@@ -39,6 +47,172 @@ public class Preprocessor {
 	private static final int PROGRESS_UPDATE_INTERVAL = 4096;
 
 	/**
+	 * Result of preprocessing one import descriptor.
+	 */
+	public record Result(PreprocessingJob job, Exception failure) {
+		public boolean isSuccess() {
+			return failure == null;
+		}
+	}
+
+	private record InputConsumer(JobContext job, int inputIndex, TableInputDescriptor input, File sourceFile) {
+	}
+
+	private static final class PreparedInputConsumer {
+		private final JobContext job;
+		private final GroovyPredicate filter;
+		private final OutputDescription.Output primaryOutput;
+		private final List<OutputDescription.Output> outputs;
+		private final OutputRow outputRow;
+		private final String location;
+
+		private PreparedInputConsumer(InputConsumer consumer, String[] headers) {
+			job = consumer.job();
+			final ConqueryConfig config = job.config;
+			final TableInputDescriptor input = consumer.input();
+			final Object2IntArrayMap<String> headerMap = TableInputDescriptor.buildHeaderMap(headers);
+			final DateReader dateReader = config.getLocale().getDateReader();
+
+			filter = input.createFilter(headers);
+			primaryOutput = input.getPrimary().createForHeaders(headerMap, dateReader, config);
+			outputs = new ArrayList<>(input.getOutput().length);
+			for (OutputDescription output : input.getOutput()) {
+				outputs.add(output.createForHeaders(headerMap, dateReader, config));
+			}
+			outputRow = new OutputRow(outputs.size());
+			location = job.location(consumer.inputIndex(), consumer.sourceFile());
+		}
+
+		private void processRow(String[] row) {
+			ConqueryMDC.setLocation(location);
+
+			// Script failures are fatal for this descriptor, as they were in the job-centric implementation.
+			if (filter != null && !filter.filterRow(row)) {
+				return;
+			}
+
+			try {
+				final String primaryId = (String) Objects.requireNonNull(
+						primaryOutput.createOutput(row, job.result.getPrimaryColumn(), job.lineId),
+						"primaryId may not be null"
+				);
+
+				final String primary = job.result.addPrimary(primaryId);
+				applyOutputs(outputs, job.result.getColumns(), row, job.lineId, outputRow);
+				job.result.addRow(primary, outputRow);
+			}
+			catch (OutputDescription.OutputException exception) {
+				job.recordRowError(exception.getCause().getClass(), exception, exception.getSource(), row);
+			}
+			catch (Exception exception) {
+				job.recordRowError(exception.getClass(), exception, null, row);
+			}
+			finally {
+				job.lineId++;
+			}
+		}
+	}
+
+	private static final class JobContext {
+		private final PreprocessingJob job;
+		private final ConqueryConfig config;
+		private final File preprocessedFile;
+		private final File temporaryFile;
+		private final Preprocessed result;
+		private final Object2IntMap<Class<? extends Throwable>> exceptions = new Object2IntArrayMap<>();
+		private long lineId;
+		private int errors;
+		private Exception failure;
+
+		private JobContext(PreprocessingJob job, ConqueryConfig config) throws IOException {
+			this.job = job;
+			this.config = config;
+			preprocessedFile = job.getPreprocessedFile();
+			temporaryFile = new File(preprocessedFile.getParentFile(), preprocessedFile.getName() + ".tmp");
+			temporaryFile.deleteOnExit();
+			exceptions.defaultReturnValue(0);
+
+			if (!Files.isWritable(temporaryFile.getParentFile().toPath())) {
+				throw new IllegalArgumentException("No write permission in " + LogUtil.printPath(temporaryFile.getParentFile()));
+			}
+			if (!Files.isWritable(preprocessedFile.toPath().getParent())) {
+				throw new IllegalArgumentException("No write permission in " + LogUtil.printPath(preprocessedFile.toPath().getParent()));
+			}
+			if (preprocessedFile.exists()) {
+				FileUtils.forceDelete(preprocessedFile);
+			}
+
+			log.info("PREPROCESSING START in {}", job);
+			result = new Preprocessed(config, job);
+		}
+
+		private boolean isActive() {
+			return failure == null;
+		}
+
+		private String location() {
+			return job.toString();
+		}
+
+		private String location(int inputIndex, File sourceFile) {
+			return "%s:%s[%d/%s]".formatted(job.getDescriptor(), job.getDescriptor().getTable(), inputIndex, sourceFile.getName());
+		}
+
+		private void fail(Exception exception) {
+			if (failure == null) {
+				failure = exception;
+			}
+		}
+
+		private void recordRowError(
+				Class<? extends Throwable> exceptionClass,
+				Exception exception,
+				OutputDescription source,
+				String[] row
+		) {
+			exceptions.put(exceptionClass, exceptions.getInt(exceptionClass) + 1);
+			errors++;
+
+			if (log.isTraceEnabled() || errors < config.getPreprocessor().getMaximumPrintedErrors()) {
+				if (source == null) {
+					log.warn("Failed to parse line: {} content: {}", lineId, row, exception);
+				}
+				else {
+					log.warn("Failed to parse `{}` from line: {} content: {}", source, lineId, row, exception.getCause());
+				}
+			}
+			else if (errors == config.getPreprocessor().getMaximumPrintedErrors()) {
+				log.warn("More erroneous lines occurred. Only the first {} were printed.", config.getPreprocessor().getMaximumPrintedErrors());
+			}
+		}
+
+		private void finish(int buckets) throws IOException {
+			ConqueryMDC.setLocation(location());
+			logErrors();
+			result.write(temporaryFile, buckets);
+
+			if (errors > 0) {
+				log.warn("Had {}% faulty lines ({} of ~{} lines)", String.format("%.2f", 100d * errors / lineId), errors, lineId);
+			}
+			if ((double) errors / (double) lineId > config.getPreprocessor().getFaultyLineThreshold()) {
+				throw new RuntimeException("Too many faulty lines.");
+			}
+
+			FileUtils.moveFile(temporaryFile, preprocessedFile);
+			log.info("PREPROCESSING DONE in {}", job);
+		}
+
+		private void logErrors() {
+			if (errors == 0) {
+				return;
+			}
+
+			log.warn("File `{}` contained {} faulty lines of ~{} total.", job, errors, lineId);
+			exceptions.forEach((clazz, count) -> log.warn("Got {} `{}`", count, clazz.getSimpleName()));
+		}
+	}
+
+	/**
 	 * Create version of file-name with tag.
 	 */
 	public static File getTaggedVersion(File file, String tag, String extension) {
@@ -49,187 +223,244 @@ public class Preprocessor {
 		return new File(file.getParentFile(), file.getName().replaceAll(Pattern.quote(extension) + "$", String.format(".%s%s", tag, extension)));
 	}
 
+	/**
+	 * Estimate the physical source bytes read by {@link #preprocess(Collection, ExecutorService, ProgressBar, ConqueryConfig, int)}.
+	 */
+	public static long estimateTotalCsvSizeBytes(Collection<PreprocessingJob> jobs) {
+		return estimateSourceSize(jobs);
+	}
 
 	/**
-	 * Apply transformations in descriptor, then write them out to CQPP file for imports.
-	 * <p>
-	 * Reads CSV file, per row extracts the primary key, then applies other transformations on each row, then compresses the data with {@link ColumnStore}.
+	 * Apply one descriptor's transformations and write its CQPP output.
 	 */
-	public static void preprocess(PreprocessingJob preprocessingJob, ProgressBar totalProgress, ConqueryConfig config, int buckets) throws IOException {
+	public static void preprocess(PreprocessingJob job, ProgressBar totalProgress, ConqueryConfig config, int buckets) throws IOException {
+		final ExecutorService executor = Executors.newSingleThreadExecutor();
+		try {
+			final Result result = preprocess(List.of(job), executor, totalProgress, config, buckets).getFirst();
+			if (result.failure() instanceof IOException ioException) {
+				throw ioException;
+			}
+			if (result.failure() instanceof RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			if (result.failure() != null) {
+				throw new IOException("Failed to preprocess " + job, result.failure());
+			}
+		}
+		catch (InterruptedException exception) {
+			Thread.currentThread().interrupt();
+			throw new IOException("Interrupted while preprocessing " + job, exception);
+		}
+		finally {
+			executor.shutdownNow();
+		}
+	}
 
-		final File preprocessedFile = preprocessingJob.getPreprocessedFile();
-		TableImportDescriptor descriptor = preprocessingJob.getDescriptor();
-
-		// Create temp file that will be moved when finished (we ensure the same file system, to avoid unnecessary copying)
-		File tmp = new File(preprocessedFile.getParentFile(), preprocessedFile.getName() + ".tmp");
-
-		// Ensures deletion on failure
-		tmp.deleteOnExit();
-
-		if (!Files.isWritable(tmp.getParentFile().toPath())) {
-			throw new IllegalArgumentException("No write permission in " + LogUtil.printPath(tmp.getParentFile()));
+	/**
+	 * Preprocess jobs in source-centric input rounds.
+	 * <p>
+	 * Inputs with the same ordinal and resolved source are read by one task. Each task parses its source serially and fans every row out serially to all consumers.
+	 * The executor bounds the number of concurrently read sources, while ordinal rounds preserve the input order of every descriptor.
+	 */
+	public static List<Result> preprocess(
+			Collection<PreprocessingJob> jobs,
+			ExecutorService executor,
+			ProgressBar totalProgress,
+			ConqueryConfig config,
+			int buckets
+	) throws InterruptedException {
+		final List<JobContext> contexts = new ArrayList<>(jobs.size());
+		final List<Result> earlyFailures = new ArrayList<>();
+		for (PreprocessingJob job : jobs) {
+			try {
+				contexts.add(new JobContext(job, config));
+			}
+			catch (Exception exception) {
+				earlyFailures.add(new Result(job, exception));
+			}
 		}
 
-		if (!Files.isWritable(preprocessedFile.toPath().getParent())) {
-			throw new IllegalArgumentException("No write permission in " + LogUtil.printPath(preprocessedFile
-																									 .toPath()
-																									 .getParent()));
+		final int maximumInputs = contexts.stream()
+				.mapToInt(context -> context.job.getDescriptor().getInputs().length)
+				.max()
+				.orElse(0);
+		for (int inputIndex = 0; inputIndex < maximumInputs; inputIndex++) {
+			final Map<Path, List<InputConsumer>> consumersBySource = groupBySource(contexts, inputIndex);
+			final List<Future<?>> sourceTasks = new ArrayList<>(consumersBySource.size());
+			for (List<InputConsumer> consumers : consumersBySource.values()) {
+				sourceTasks.add(executor.submit(() -> processSource(consumers, totalProgress)));
+			}
+			await(sourceTasks);
 		}
 
-		//delete target file if it exists
-		if (preprocessedFile.exists()) {
-			FileUtils.forceDelete(preprocessedFile);
+		final List<Future<?>> finalizationTasks = new ArrayList<>();
+		for (JobContext context : contexts) {
+			if (!context.isActive()) {
+				continue;
+			}
+			finalizationTasks.add(executor.submit(() -> {
+				context.result.acquireOwnership();
+				try {
+					context.finish(buckets);
+				}
+				catch (Exception exception) {
+					context.fail(exception);
+				}
+				finally {
+					context.result.releaseOwnership();
+					ConqueryMDC.clearLocation();
+				}
+			}));
+		}
+		await(finalizationTasks);
+
+		final List<Result> results = new ArrayList<>(jobs.size());
+		results.addAll(earlyFailures);
+		contexts.stream().map(context -> new Result(context.job, context.failure)).forEach(results::add);
+		return results;
+	}
+
+	private static Map<Path, List<InputConsumer>> groupBySource(List<JobContext> contexts, int inputIndex) {
+		final Map<Path, List<InputConsumer>> consumersBySource = new LinkedHashMap<>();
+		for (JobContext context : contexts) {
+			if (!context.isActive() || inputIndex >= context.job.getDescriptor().getInputs().length) {
+				continue;
+			}
+
+			final TableInputDescriptor input = context.job.getDescriptor().getInputs()[inputIndex];
+			final File sourceFile = resolveSourceFile(input.getSourceFile(), context.job.getCsvDirectory(), context.job.getTag());
+			final Path source = sourceFile.toPath().toAbsolutePath().normalize();
+			consumersBySource.computeIfAbsent(source, ignored -> new ArrayList<>())
+					.add(new InputConsumer(context, inputIndex, input, sourceFile));
+		}
+		return consumersBySource;
+	}
+
+	private static void processSource(List<InputConsumer> consumers, ProgressBar totalProgress) {
+		final File sourceFile = consumers.getFirst().sourceFile();
+		final ConqueryConfig config = consumers.getFirst().job().config;
+		final List<JobContext> acquired = new ArrayList<>(consumers.size());
+		for (InputConsumer consumer : consumers) {
+			try {
+				consumer.job().result.acquireOwnership();
+				acquired.add(consumer.job());
+			}
+			catch (Exception exception) {
+				consumer.job().fail(exception);
+			}
 		}
 
-		log.info("PREPROCESSING START in {}", preprocessingJob);
-
-		int errors = 0;
-
-		final Preprocessed result = new Preprocessed(config, preprocessingJob);
-
-		long lineId = 0;
-
-		// Gather exception classes to get better overview of what kind of errors are happening.
-		Object2IntMap<Class<? extends Throwable>> exceptions = new Object2IntArrayMap<>();
-		exceptions.defaultReturnValue(0);
-
-
-		for (int inputSource = 0; inputSource < descriptor.getInputs().length; inputSource++) {
-			final TableInputDescriptor input = descriptor.getInputs()[inputSource];
-			final File sourceFile = resolveSourceFile(input.getSourceFile(), preprocessingJob.getCsvDirectory(), preprocessingJob.getTag());
-
-			final String name = String.format("%s:%s[%d/%s]", descriptor.toString(), descriptor.getTable(), inputSource, sourceFile.getName());
-			ConqueryMDC.setLocation(name);
-
+		CsvParser parser = null;
+		try {
 			if (!(sourceFile.exists() && sourceFile.canRead())) {
 				throw new FileNotFoundException(sourceFile.getAbsolutePath());
 			}
 
-			CsvParser parser = null;
-
-
-			try (CountingInputStream countingIn = new CountingInputStream(new FileInputStream(sourceFile))) {
-				long progress = 0;
-				int rowsSinceProgressUpdate = 0;
-
-				CSVConfig csvSettings = config.getCsv();
-				// Create CSV parser according to config, but overriding some behaviour.
+			try (CountingInputStream countingInput = new CountingInputStream(new FileInputStream(sourceFile))) {
+				final CSVConfig csvSettings = config.getCsv();
 				parser = csvSettings.withParseHeaders(true).withSkipHeader(false).createParser();
-
-				parser.beginParsing(FileUtil.isGZipped(sourceFile) ? new GZIPInputStream(countingIn) : countingIn, csvSettings.getEncoding());
+				parser.beginParsing(FileUtil.isGZipped(sourceFile) ? new GZIPInputStream(countingInput) : countingInput, csvSettings.getEncoding());
 
 				final String[] headers = parser.getContext().parsedHeaders();
-
-				final Object2IntArrayMap<String> headerMap = TableInputDescriptor.buildHeaderMap(headers);
-
-				// Compile filter.
-				final GroovyPredicate filter = input.createFilter(headers);
-
-
-				DateReader dateReader = config.getLocale().getDateReader();
-				final OutputDescription.Output primaryOut = input.getPrimary().createForHeaders(headerMap, dateReader, config);
-				final List<OutputDescription.Output> outputs = new ArrayList<>();
-				final PPColumn[] columns = result.getColumns();
-
-				// Instantiate Outputs based on descriptors (apply header positions)
-				for (OutputDescription op : input.getOutput()) {
-					outputs.add(op.createForHeaders(headerMap, dateReader, config));
-				}
-
-				final OutputRow outRow = new OutputRow(outputs.size());
+				final List<PreparedInputConsumer> prepared = prepareConsumers(consumers, headers);
+				long progress = 0;
+				int rowsSinceProgressUpdate = 0;
 				String[] row;
-
-				// Read all CSV lines, apply Output transformations and add the to preprocessed.
 				while ((row = parser.parseNext()) != null) {
 					rowsSinceProgressUpdate++;
 					if (rowsSinceProgressUpdate == PROGRESS_UPDATE_INTERVAL) {
-						progress = reportProgress(totalProgress, countingIn, progress);
+						progress = reportProgress(totalProgress, countingInput, progress);
 						rowsSinceProgressUpdate = 0;
 					}
 
-					// Check if row shall be evaluated
-					// This is explicitly NOT in a try-catch block as scripts may not fail and we should not recover from faulty scripts.
-					if (filter != null && !filter.filterRow(row)) {
-						continue;
-					}
-
-					try {
-						String primaryId =
-								(String) Objects.requireNonNull(primaryOut.createOutput(row, result.getPrimaryColumn(), lineId), "primaryId may not be null");
-
-
-						final String primary = result.addPrimary(primaryId);
-						applyOutputs(outputs, columns, row, lineId, outRow);
-
-						result.addRow(primary, outRow);
-
-					}
-					catch (OutputDescription.OutputException e) {
-						exceptions.put(e.getCause().getClass(), exceptions.getInt(e.getCause().getClass()) + 1);
-
-						errors++;
-
-						if (log.isTraceEnabled() || errors < config.getPreprocessor().getMaximumPrintedErrors()) {
-							log.warn("Failed to parse `{}` from line: {} content: {}", e.getSource(), lineId, row, e.getCause());
+					for (PreparedInputConsumer consumer : prepared) {
+						if (!consumer.job.isActive()) {
+							continue;
 						}
-						else if (errors == config.getPreprocessor().getMaximumPrintedErrors()) {
-							log.warn("More erroneous lines occurred. Only the first "
-									 + config.getPreprocessor().getMaximumPrintedErrors()
-									 + " were printed.");
+						try {
+							consumer.processRow(row.clone());
 						}
-
-					}
-					catch (Exception e) {
-						exceptions.put(e.getClass(), exceptions.getInt(e.getClass()) + 1);
-
-						errors++;
-
-						if (log.isTraceEnabled() || errors < config.getPreprocessor().getMaximumPrintedErrors()) {
-							log.warn("Failed to parse line: {} content: {}", lineId, row, e);
+						catch (Exception exception) {
+							consumer.job.fail(exception);
 						}
-						else if (errors == config.getPreprocessor().getMaximumPrintedErrors()) {
-							log.warn("More erroneous lines occurred. Only the first "
-									 + config.getPreprocessor().getMaximumPrintedErrors()
-									 + " were printed.");
-						}
-					}
-					finally {
-						lineId++;
 					}
 				}
-
-				reportProgress(totalProgress, countingIn, progress);
-
+				reportProgress(totalProgress, countingInput, progress);
+			}
+		}
+		catch (Exception exception) {
+			for (InputConsumer consumer : consumers) {
+				consumer.job().fail(exception);
+			}
+		}
+		finally {
+			try {
+				try {
+					if (parser != null) {
+						parser.stopParsing();
+					}
+				}
+				catch (Exception exception) {
+					for (InputConsumer consumer : consumers) {
+						consumer.job().fail(exception);
+					}
+				}
 			}
 			finally {
-				if (parser != null) {
-					parser.stopParsing();
+				for (JobContext context : acquired) {
+					context.result.releaseOwnership();
 				}
+				ConqueryMDC.clearLocation();
 			}
 		}
+	}
 
-		if (errors > 0) {
-			log.warn("File `{}` contained {} faulty lines of ~{} total.", preprocessingJob, errors, lineId);
+	private static List<PreparedInputConsumer> prepareConsumers(List<InputConsumer> consumers, String[] headers) {
+		final List<PreparedInputConsumer> prepared = new ArrayList<>(consumers.size());
+		for (InputConsumer consumer : consumers) {
+			if (!consumer.job().isActive()) {
+				continue;
+			}
+			try {
+				prepared.add(new PreparedInputConsumer(consumer, headers));
+			}
+			catch (Exception exception) {
+				consumer.job().fail(exception);
+			}
 		}
+		return prepared;
+	}
 
-		if (log.isWarnEnabled()) {
-			exceptions.forEach((clazz, count) -> log.warn("Got {} `{}`", count, clazz.getSimpleName()));
+	private static void await(List<Future<?>> tasks) throws InterruptedException {
+		for (Future<?> task : tasks) {
+			try {
+				task.get();
+			}
+			catch (ExecutionException exception) {
+				throw new IllegalStateException("Preprocessing task failed without recording its error", exception.getCause());
+			}
 		}
+	}
 
-		result.write(tmp, buckets);
-
-		if (errors > 0) {
-			log.warn("Had {}% faulty lines ({} of ~{} lines)", String.format("%.2f", 100d * (double) errors / (double) lineId), errors, lineId);
+	private static long estimateSourceSize(Collection<PreprocessingJob> jobs) {
+		final int maximumInputs = jobs.stream()
+				.mapToInt(job -> job.getDescriptor().getInputs().length)
+				.max()
+				.orElse(0);
+		long totalSize = 0;
+		for (int inputIndex = 0; inputIndex < maximumInputs; inputIndex++) {
+			final int currentInput = inputIndex;
+			final Set<Path> sources = jobs.stream()
+					.filter(job -> currentInput < job.getDescriptor().getInputs().length)
+					.map(job -> resolveSourceFile(
+							job.getDescriptor().getInputs()[currentInput].getSourceFile(),
+							job.getCsvDirectory(),
+							job.getTag()
+					).toPath().toAbsolutePath().normalize())
+					.collect(Collectors.toSet());
+			totalSize += sources.stream().mapToLong(source -> source.toFile().length()).sum();
 		}
-
-		if ((double) errors / (double) lineId > config.getPreprocessor().getFaultyLineThreshold()) {
-			throw new RuntimeException("Too many faulty lines.");
-		}
-
-
-		//if successful move the tmp file to the target location
-		FileUtils.moveFile(tmp, preprocessedFile);
-		log.info("PREPROCESSING DONE in {}", preprocessingJob);
+		return totalSize;
 	}
 
 	/**
@@ -242,23 +473,21 @@ public class Preprocessor {
 
 			try {
 				final Parser parser = columns[index].getParser();
-
 				out.createOutput(row, parser, lineId, outRow, index);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				outRow.clear();
-				throw new OutputDescription.OutputException(out.getDescription(), e);
+				throw new OutputDescription.OutputException(out.getDescription(), exception);
 			}
 		}
 	}
 
-	private static long reportProgress(ProgressBar totalProgress, CountingInputStream countingIn, long previousProgress) {
-		final long currentProgress = countingIn.getCount();
+	private static long reportProgress(ProgressBar totalProgress, CountingInputStream countingInput, long previousProgress) {
+		final long currentProgress = countingInput.getCount();
 		final long progress = currentProgress - previousProgress;
 		if (progress > 0) {
 			totalProgress.addCurrentValue(progress);
 		}
-
 		return currentProgress;
 	}
 

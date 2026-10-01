@@ -35,7 +35,8 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Mutable, thread-confined accumulator for a single preprocessing job.
+ * Mutable accumulator for a single preprocessing job. Access is thread-confined while ownership is acquired, but ownership may be transferred between
+ * preprocessing input rounds.
  */
 @Getter
 @Slf4j
@@ -61,7 +62,7 @@ public class Preprocessed {
 	private long rows;
 	private boolean finalized;
 	@Getter(AccessLevel.NONE)
-	private final Thread ownerThread = Thread.currentThread();
+	private Thread ownerThread;
 
 	private static final class BucketData {
 		private final int bucketId;
@@ -264,6 +265,20 @@ public class Preprocessed {
 	String addPrimary(String primary) {
 		ensureMutable();
 		return primaryColumn.addLine(primary);
+	}
+
+	synchronized void acquireOwnership() {
+		if (ownerThread != null) {
+			throw new IllegalStateException("Preprocessed data is already owned by " + ownerThread.getName());
+		}
+		ownerThread = Thread.currentThread();
+	}
+
+	synchronized void releaseOwnership() {
+		if (Thread.currentThread() != ownerThread) {
+			throw new IllegalStateException("Preprocessed data must only be released by its owning thread");
+		}
+		ownerThread = null;
 	}
 
 	void addRow(String primaryId, OutputRow outRow) {
