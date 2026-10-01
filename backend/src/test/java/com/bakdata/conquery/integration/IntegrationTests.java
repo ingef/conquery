@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -33,6 +34,7 @@ import com.bakdata.conquery.models.config.DatabaseConnectionConfig;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
+import com.bakdata.conquery.news.NewsConfiguration;
 import com.bakdata.conquery.util.support.ConfigOverride;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
@@ -257,12 +259,17 @@ public class IntegrationTests {
 		String confString = CONFIG_WRITER.writeValueAsString(conf);
 		if (!reusedInstances.containsKey(confString)) {
 
-			// For the overriden config we must override the ports and storage path (xodus) so there are no clashes
+			// For the overridden config we must override the ports and storage path (xodus) so there are no clashes
 			// We do it here so the config "hash" is not influenced by the port settings
 			ConfigOverride.configureRandomPorts(conf);
 
+			String testSubDirName = String.valueOf(confString.hashCode());
+			Path testSubDir = workDir.toPath().resolve(testSubDirName);
+
+			conf.setNews(new NewsConfiguration(testSubDir.resolve("news")));
+
 			if (conf.getStorage() instanceof XodusStoreFactory storeFactory) {
-				ConfigOverride.configureWorkdir(storeFactory, workDir.toPath().resolve(String.valueOf(confString.hashCode())));
+				ConfigOverride.configureWorkdir(storeFactory, testSubDir.resolve("storage"));
 			}
 
 			log.trace("Creating a new test conquery instance for test {}", conf);
