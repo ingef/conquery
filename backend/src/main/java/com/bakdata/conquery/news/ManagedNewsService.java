@@ -1,7 +1,8 @@
 package com.bakdata.conquery.news;
 
-import io.dropwizard.lifecycle.Managed;
 import jakarta.validation.Validator;
+
+import io.dropwizard.lifecycle.Managed;
 import lombok.experimental.Delegate;
 
 public class ManagedNewsService implements Managed, NewsService {

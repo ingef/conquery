@@ -3,7 +3,6 @@ package com.bakdata.conquery.news;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
-
 import jakarta.inject.Inject;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -18,6 +17,7 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+
 import lombok.RequiredArgsConstructor;
 
 @Path("news")
