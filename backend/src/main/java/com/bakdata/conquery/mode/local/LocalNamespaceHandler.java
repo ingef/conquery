@@ -56,9 +56,9 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 			ResolvedQueryMapper resolvedQueryMapper = new ResolvedQueryMapper(
 					config.getIdColumns(), dialectBundle, clock, connection.getConnection().getPrimaryColumn());
 			ResolvedQueryAdapter resolvedQueryAdapter = new ResolvedQueryAdapter(
-					environment.getValidator(), new DefaultSqlCompiler(dslContext));
+					environment.getValidator(), new DefaultSqlCompiler(dslContext), resolvedQueryMapper);
 			SqlConverter sqlConverter = new SqlConverter(
-					nodeConversions, config, resolvedQueryMapper, resolvedQueryAdapter, dialectBundle);
+					nodeConversions, config, resolvedQueryAdapter, dialectBundle);
 			ExecutionManager executionManager = new SqlExecutionManager(sqlConverter, sqlExecutionService, metaStorage, datasetRegistry, config);
 			SqlStorageHandler sqlStorageHandler = new SqlStorageHandler(sqlExecutionService);
 			SqlEntityResolver sqlEntityResolver = new SqlEntityResolver(config.getIdColumns(), dslContext, dialectBundle, sqlExecutionService);

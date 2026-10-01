@@ -34,6 +34,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.DateAggregationAction;
 import com.bakdata.conquery.models.query.DateAggregationMode;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptIdMapping;
 import com.bakdata.conquery.sql.conversion.dialect.LegacyCompilerDialect;
 import com.bakdata.conquery.sql.conversion.model.EntitySchemaAdapter;
@@ -78,14 +79,10 @@ public final class ResolvedQueryMapper {
 		this.defaultPrimaryColumn = defaultPrimaryColumn;
 	}
 
-	public ResolvedQuery map(ConceptQuery query, Optional<SecondaryIdDescription> secondaryId) {
-		return map(query, secondaryId, query.getResultInfos());
-	}
-
-	public ResolvedQuery map(
+	ResolvedQuery map(
 			ConceptQuery query,
 			Optional<SecondaryIdDescription> secondaryId,
-			List<com.bakdata.conquery.models.query.resultinfo.ResultInfo> resultInfos
+			List<ResultInfo> resultInfos
 	) {
 		NodeContext context = new NodeContext(secondaryId, Optional.empty());
 		return new ResolvedQuery(

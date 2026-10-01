@@ -1,7 +1,5 @@
 package com.bakdata.conquery.sql.conversion;
 
-import java.util.Optional;
-
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
@@ -14,38 +12,27 @@ public class SqlConverter {
 
 	private final NodeConversions nodeConversions;
 	private final ConqueryConfig config;
-	private final ResolvedQueryMapper resolvedQueryMapper;
 	private final ResolvedQueryAdapter resolvedQueryAdapter;
 	private final LegacyCompilerDialect dialect;
 
 	public SqlConverter(
 			NodeConversions nodeConversions,
 			ConqueryConfig config,
-			ResolvedQueryMapper resolvedQueryMapper,
 			ResolvedQueryAdapter resolvedQueryAdapter,
 			LegacyCompilerDialect dialect
 	) {
 		this.nodeConversions = nodeConversions;
 		this.config = config;
-		this.resolvedQueryMapper = resolvedQueryMapper;
 		this.resolvedQueryAdapter = resolvedQueryAdapter;
 		this.dialect = dialect;
 	}
 
 	public SqlQuery convert(QueryDescription queryDescription) {
 		if (queryDescription instanceof ConceptQuery conceptQuery) {
-			return resolvedQueryAdapter.compile(
-					resolvedQueryMapper.map(conceptQuery, Optional.empty()), dialect, conceptQuery.getResultInfos());
+			return resolvedQueryAdapter.compile(conceptQuery, dialect);
 		}
 		if (queryDescription instanceof SecondaryIdQuery secondaryIdQuery) {
-			return resolvedQueryAdapter.compile(
-					resolvedQueryMapper.map(
-							secondaryIdQuery.getQuery(),
-							Optional.of(secondaryIdQuery.getSecondaryId().resolve()),
-							secondaryIdQuery.getResultInfos()),
-					dialect,
-					secondaryIdQuery.getResultInfos()
-			);
+			return resolvedQueryAdapter.compile(secondaryIdQuery, dialect);
 		}
 		ConversionContext converted = nodeConversions.convert(queryDescription, config);
 		return converted.getFinalQuery();
