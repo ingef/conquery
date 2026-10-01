@@ -11,6 +11,7 @@ public final class NewsApi {
     public static void register(
             ResourceConfig applicationApi,
             ResourceConfig adminApi,
+            ResourceConfig adminUi,
             NewsService newsService) {
 
         applicationApi
@@ -20,6 +21,8 @@ public final class NewsApi {
         adminApi
                 .register(newsBinder(newsService))
                 .register(AdminNewsResource.class);
+
+        adminUi.register(NewsUIResource.class);
     }
 
     private static AbstractBinder newsBinder(NewsService newsService) {

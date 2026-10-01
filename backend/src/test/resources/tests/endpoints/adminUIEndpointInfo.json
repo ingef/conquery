@@ -41,6 +41,11 @@
   },
   {
     "method": "GET",
+    "path": "/news",
+    "clazz": "NewsUIResource"
+  },
+  {
+    "method": "GET",
     "path": "/script",
     "clazz": "AdminUIResource"
   },
