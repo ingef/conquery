@@ -220,6 +220,11 @@ public interface SqlFunctionProvider {
 	 */
 	Field<String> yearQuarter(Field<Date> dateField);
 
+	/**
+	 * @return The calendar year of the given date column.
+	 */
+	Field<Integer> year(Field<Date> dateField);
+
 	default Field<String> stringAggregation(Field<String> stringField, Field<String> delimiter, List<Field<?>> orderByFields) {
 		return field(
 				"{0}({1}, {2} {3})",
