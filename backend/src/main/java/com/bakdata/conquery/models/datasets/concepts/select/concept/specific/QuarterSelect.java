@@ -14,6 +14,7 @@ import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -22,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 @CPSType(id = "QUARTER", base = Select.class)
 @Data
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator)
+@EqualsAndHashCode(callSuper = true)
 public class QuarterSelect extends UniversalSelect {
 
 	@NotNull

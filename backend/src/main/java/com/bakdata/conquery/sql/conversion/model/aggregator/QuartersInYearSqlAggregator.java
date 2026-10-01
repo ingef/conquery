@@ -12,10 +12,6 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.conversion.model.CteStep;
-import com.bakdata.conquery.sql.conversion.model.NameGenerator;
-import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.filter.CountCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
@@ -26,8 +22,6 @@ import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
@@ -49,15 +43,14 @@ public class QuartersInYearSqlAggregator implements
 				alias,
 				selectContext.getIds(),
 				tables,
-				selectContext.getFunctionProvider(),
-				selectContext.getNameGenerator()
+				selectContext.getFunctionProvider()
 		);
 		ExtractingSqlSelect<Integer> finalSelect = aggregationSelect.getGroupBy()
 				.qualify(tables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER));
 
 		return ConnectorSqlSelects.builder()
 				.preprocessingSelects(aggregationSelect.getRootSelects())
-				.additionalPredecessor(aggregationSelect.getAdditionalPredecessor())
+				.aggregationSelect(aggregationSelect.getGroupBy())
 				.finalSelect(finalSelect)
 				.build();
 	}
@@ -74,12 +67,11 @@ public class QuartersInYearSqlAggregator implements
 				alias,
 				filterContext.getIds(),
 				tables,
-				filterContext.getFunctionProvider(),
-				filterContext.getNameGenerator()
+				filterContext.getFunctionProvider()
 		);
 		ConnectorSqlSelects selects = ConnectorSqlSelects.builder()
 				.preprocessingSelects(aggregationSelect.getRootSelects())
-				.additionalPredecessor(aggregationSelect.getAdditionalPredecessor())
+				.aggregationSelect(aggregationSelect.getGroupBy())
 				.build();
 
 		Field<Integer> maximumQuarters = aggregationSelect.getGroupBy()
@@ -106,84 +98,26 @@ public class QuartersInYearSqlAggregator implements
 			String alias,
 			SqlIdColumns ids,
 			ConnectorSqlTables tables,
-			SqlFunctionProvider functionProvider,
-			NameGenerator nameGenerator
+			SqlFunctionProvider functionProvider
 	) {
 		ExtractingSqlSelect<Date> rootSelect = new ExtractingSqlSelect<>(tables.getRootTable(), column.getName(), Date.class);
-		QueryStep quartersPerYear = createQuartersPerYearCte(rootSelect, alias, ids, tables, functionProvider, nameGenerator);
-		FieldWrapper<Integer> maximumQuarters = createMaximumQuartersSelect(quartersPerYear, alias);
-		QueryStep maximumQuartersCte = createMaximumQuartersCte(quartersPerYear, maximumQuarters, alias, nameGenerator);
+		Field<Date> date = rootSelect.select();
+		List<Field<?>> partitionBy = Stream.concat(ids.toFields().stream(), Stream.of(functionProvider.year(date))).toList();
+		FieldWrapper<Integer> quarterRank = new FieldWrapper<>(
+				DSL.when(
+						date.isNotNull(),
+						DSL.denseRank().over(DSL.partitionBy(partitionBy).orderBy(functionProvider.yearQuarter(date)))
+				).as(alias),
+				column.getName()
+		);
+
+		String preprocessingCte = tables.cteName(ConceptCteStep.PREPROCESSING);
+		Field<Integer> qualifiedQuarterRank = quarterRank.qualify(preprocessingCte).select();
+		FieldWrapper<Integer> maximumQuarters = new FieldWrapper<>(DSL.max(qualifiedQuarterRank).as(alias));
 
 		return CommonAggregationSelect.<Integer>builder()
-				.rootSelect(rootSelect)
+				.rootSelect(quarterRank)
 				.groupBy(maximumQuarters)
-				.additionalPredecessor(maximumQuartersCte)
 				.build();
-	}
-
-	private static QueryStep createQuartersPerYearCte(
-			ExtractingSqlSelect<Date> rootSelect,
-			String alias,
-			SqlIdColumns ids,
-			ConnectorSqlTables tables,
-			SqlFunctionProvider functionProvider,
-			NameGenerator nameGenerator
-	) {
-		String preprocessingCte = tables.cteName(ConceptCteStep.PREPROCESSING);
-		SqlIdColumns qualifiedIds = ids.qualify(preprocessingCte);
-		Field<Date> date = rootSelect.qualify(preprocessingCte).select();
-
-		FieldWrapper<Integer> quarterCount = new FieldWrapper<>(
-				DSL.nullif(DSL.countDistinct(functionProvider.yearQuarter(date)), 0).as(alias)
-		);
-		List<Field<?>> groupBy = Stream.concat(qualifiedIds.toFields().stream(), Stream.of(functionProvider.year(date))).toList();
-
-		Selects selects = Selects.builder()
-				.ids(qualifiedIds)
-				.sqlSelect(quarterCount)
-				.build();
-
-		return QueryStep.builder()
-				.cteName(nameGenerator.cteStepName(QuartersInYearCteStep.QUARTERS_PER_YEAR, alias))
-				.selects(selects)
-				.fromTable(QueryStep.toTableLike(preprocessingCte))
-				.groupBy(groupBy)
-				.build();
-	}
-
-	private static FieldWrapper<Integer> createMaximumQuartersSelect(QueryStep quartersPerYear, String alias) {
-		Field<Integer> quarterCount = DSL.field(DSL.name(quartersPerYear.getCteName(), alias), Integer.class);
-		return new FieldWrapper<>(DSL.max(quarterCount).as(alias));
-	}
-
-	private static QueryStep createMaximumQuartersCte(
-			QueryStep quartersPerYear,
-			FieldWrapper<Integer> maximumQuarters,
-			String alias,
-			NameGenerator nameGenerator
-	) {
-		SqlIdColumns ids = quartersPerYear.getQualifiedSelects().getIds();
-		Selects selects = Selects.builder()
-				.ids(ids)
-				.sqlSelect(maximumQuarters)
-				.build();
-
-		return QueryStep.builder()
-				.cteName(nameGenerator.cteStepName(QuartersInYearCteStep.MAXIMUM_QUARTERS, alias))
-				.selects(selects)
-				.fromTable(QueryStep.toTableLike(quartersPerYear.getCteName()))
-				.groupBy(ids.toFields())
-				.predecessor(quartersPerYear)
-				.build();
-	}
-
-	@Getter
-	@RequiredArgsConstructor
-	private enum QuartersInYearCteStep implements CteStep {
-
-		QUARTERS_PER_YEAR("quarters_per_year"),
-		MAXIMUM_QUARTERS("maximum_quarters");
-
-		private final String suffix;
 	}
 }
