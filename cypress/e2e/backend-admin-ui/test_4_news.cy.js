@@ -47,15 +47,18 @@ context("Admin UI News", () => {
     cy.get('[data-test-id="create-news-btn"]').click();
     cy.get(`[data-test-id="news-row-${olderNewsId}"]`).should("exist");
 
+    dismissVisibleToasts();
     cy.get(`[data-test-id="news-row-${customNewsId}"]`).then(($newerRow) => {
       cy.get(`[data-test-id="news-row-${olderNewsId}"]`).then(($olderRow) => {
         expect($newerRow.index()).to.be.lessThan($olderRow.index());
       });
     });
 
+    dismissVisibleToasts();
     cy.on("window:confirm", () => true);
     cy.get(`[data-test-id="delete-news-${olderNewsId}"]`).click();
     cy.get(`[data-test-id="news-row-${olderNewsId}"]`).should("not.exist");
+    dismissVisibleToasts();
     cy.get(`[data-test-id="delete-news-${customNewsId}"]`).click();
     cy.get(`[data-test-id="news-row-${customNewsId}"]`).should("not.exist");
 
@@ -64,6 +67,12 @@ context("Admin UI News", () => {
     cy.get(`[data-test-id="delete-btn-${datasetId}"]`).should("not.exist");
   });
 });
+
+function dismissVisibleToasts() {
+  cy.get('[data-test-id="toast"].show').each(($toast) => {
+    cy.wrap($toast).find('[data-dismiss="toast"]').click();
+  });
+}
 
 function localDateString(date) {
   const year = date.getFullYear();
