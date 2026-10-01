@@ -108,6 +108,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 			assertThat(status.getStatus()).isIn(ExecutionState.RUNNING, ExecutionState.DONE);
 
+			conquery.waitUntilWorkDone();
 		}
 
 		// Reuse in SecondaryId
