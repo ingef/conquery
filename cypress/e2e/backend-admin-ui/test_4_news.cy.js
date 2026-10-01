@@ -31,6 +31,8 @@ context("Admin UI News", () => {
     cy.contains('[data-test-id="news-category-suggestion"]', datasetId).click();
     cy.get('[data-test-id="news-category-input"]').type("custom-category{enter}");
     cy.get('[data-test-id="news-category-token"]').should("have.length", 2);
+    cy.get('[data-test-id="news-title"]').click();
+    cy.get('[data-test-id="news-category-suggestions"]').should("not.be.visible");
     cy.get('[data-test-id="create-news-btn"]').click();
 
     cy.get(`[data-test-id="news-row-${customNewsId}"]`)
