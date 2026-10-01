@@ -359,6 +359,11 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
+	public Field<Integer> year(Field<Date> dateField) {
+		return function("YEAR", Integer.class, dateField);
+	}
+
+	@Override
 	public Field<Boolean> isNull(Field<?> field) {
 		// DSl.isNull does not work in some cases for Hana. This accomplishes the same thing with extra steps (:
 		return DSL.function("IFNULL", Boolean.class, field, inline(true));
