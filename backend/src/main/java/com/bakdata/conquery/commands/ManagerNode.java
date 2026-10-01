@@ -10,9 +10,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import com.bakdata.conquery.news.ManagedNewsService;
-import com.bakdata.conquery.news.NewsApi;
 import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
@@ -27,6 +24,8 @@ import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
+import com.bakdata.conquery.news.ManagedNewsService;
+import com.bakdata.conquery.news.NewsApi;
 import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.bakdata.conquery.resources.admin.ShutdownTask;
