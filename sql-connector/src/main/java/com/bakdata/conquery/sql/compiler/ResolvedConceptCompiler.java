@@ -55,10 +55,11 @@ import org.jooq.impl.DSL;
 final class ResolvedConceptCompiler {
 
 	static QueryStep compile(ConceptNode concept, EntitySchema entitySchema, CompilerDialect dialect,
-			SqlNameGenerator names, boolean negate, Optional<DateRange> restriction) {
+			SqlNameGenerator names, boolean negate, Optional<DateRange> restriction,
+			Optional<QueryStep> stratificationTable) {
 		ResolvedSelectConverter selectConverter = new ResolvedSelectConverter();
 		List<ConnectorCompilation> connectors = concept.connectors().stream()
-				.map(connector -> compileConnector(concept, connector, dialect, names, restriction, selectConverter))
+				.map(connector -> compileConnector(concept, connector, dialect, names, restriction, selectConverter, stratificationTable))
 				.flatMap(Optional::stream)
 				.toList();
 		QueryStep joined = LogicalQueryStepCompiler.compile(
@@ -80,7 +81,8 @@ final class ResolvedConceptCompiler {
 
 	private static Optional<ConnectorCompilation> compileConnector(ConceptNode concept, ResolvedConnector connector,
 			CompilerDialect dialect, SqlNameGenerator names,
-			Optional<DateRange> restriction, ResolvedSelectConverter selectConverter) {
+			Optional<DateRange> restriction, ResolvedSelectConverter selectConverter,
+			Optional<QueryStep> stratificationTable) {
 		String connectorName = names.conceptConnectorName(concept, connector);
 		ConnectorCtePlan plan = ConceptCtePlanner.planConnector(connector.table(), connectorName,
 				concept.dateAction() != DateAggregationAction.BLOCK,
@@ -127,7 +129,7 @@ final class ResolvedConceptCompiler {
 				.map(mapping -> mapping.selectedConcepts(plan.sourceTable(), dialect))
 				.orElse(plan.sourceTable());
 		return ConnectorCteCompiler.compileConnector(ConnectorCtePipelineAssembler.assemble(
-				plan, sourceTable, ids, validityDate, selects, filters, Optional.empty()))
+				plan, sourceTable, ids, validityDate, selects, filters, stratificationTable))
 				.map(step -> new ConnectorCompilation(connector, plan, step));
 	}
 

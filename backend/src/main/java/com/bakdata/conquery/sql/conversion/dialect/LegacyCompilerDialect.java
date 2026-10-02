@@ -39,7 +39,6 @@ import com.bakdata.conquery.sql.conversion.query.EntityDateQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.FormConversionHelper;
 import com.bakdata.conquery.sql.conversion.query.RelativFormQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.SecondaryIdQueryConverter;
-import com.bakdata.conquery.sql.conversion.query.TableExportQueryConverter;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -229,8 +228,7 @@ public interface LegacyCompilerDialect extends CompilerDialect {
 				new SecondaryIdQueryConverter(),
 				new AbsoluteFormQueryConverter(formConversionUtil),
 				new EntityDateQueryConverter(formConversionUtil),
-				new RelativFormQueryConverter(formConversionUtil),
-				new TableExportQueryConverter(queryStepRenderer)
+				new RelativFormQueryConverter(formConversionUtil)
 		);
 	}
 

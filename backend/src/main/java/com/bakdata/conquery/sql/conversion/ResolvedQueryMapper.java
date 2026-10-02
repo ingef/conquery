@@ -180,7 +180,7 @@ public final class ResolvedQueryMapper {
 		);
 	}
 
-	private static ResolvedValidityDate validityDate(ValidityDate validityDate) {
+	static ResolvedValidityDate validityDate(ValidityDate validityDate) {
 		if (validityDate == null) {
 			return new ResolvedValidityDate.None();
 		}
