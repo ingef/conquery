@@ -38,10 +38,9 @@
 							<input id="news-category-input" data-test-id="news-category-input" class="p-1" autocomplete="off"
 								   role="combobox" aria-autocomplete="list" aria-controls="news-category-suggestions" aria-expanded="false"
 								   placeholder="Type or select a category">
-                            <small class="form-text text-muted">The category selects the dataset the news is published for. Leave empty to publish on all datasets.</small>
 						</div>
 						<div id="news-category-suggestions" data-test-id="news-category-suggestions" class="dropdown-menu w-100" role="listbox"></div>
-						<small class="form-text text-muted">Choose a dataset ID or enter a custom category. Press Enter or comma to add it.</small>
+						<small class="form-text text-muted">Choose a dataset ID to publish the item on specific datasets. Press Enter or comma to add it. Leave empty to publish on all datasets.</small>
 					</div>
 					<button id="news-submit" data-test-id="create-news-btn" class="btn btn-primary" type="submit">Create</button>
 				</form>
