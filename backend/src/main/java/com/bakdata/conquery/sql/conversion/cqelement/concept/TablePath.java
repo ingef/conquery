@@ -57,8 +57,7 @@ class TablePath {
 				tableInfo.getRootTable(),
 				cteNameMap,
 				tableInfo.getMappings(),
-				tableInfo.isContainsIntervalPacking(),
-				tableInfo.isExcludedFromTimeAggregation()
+				tableInfo.isContainsIntervalPacking()
 		);
 	}
 
@@ -83,22 +82,18 @@ class TablePath {
 		tableInfo.setRootTable(cqTable.getConnector().resolve().resolveTableId().getTable());
 		tableInfo.addWithDefaultMapping(MANDATORY_STEPS);
 
-		boolean eventDateSelectsPresent = cqTable.getSelects().stream().map(SelectId::resolve).anyMatch(Select::isEventDateSelect);
+		boolean connectorEventDateSelectsPresent = cqTable.getSelects().stream().map(SelectId::resolve).anyMatch(Select::isEventDateSelect);
+		boolean conceptEventDateSelectsPresent = cqConcept.getSelects().stream().map(SelectId::resolve).anyMatch(Select::isEventDateSelect);
 		// no validity date aggregation necessary
-		if (!cqConcept.isAggregateEventDates() && !eventDateSelectsPresent) {
+		if (!cqConcept.isAggregateEventDates() && !connectorEventDateSelectsPresent && !conceptEventDateSelectsPresent) {
 			return tableInfo;
 		}
 
-		// interval packing requiredw
+		// interval packing required
 		tableInfo.setContainsIntervalPacking(true);
 		tableInfo.addMappings(IntervalPackingCteStep.getMappings(PREPROCESSING, context.getDialectBundle()));
 
-		// validity date propagation not necessary
-		if (!cqConcept.isAggregateEventDates()) {
-			tableInfo.setExcludedFromTimeAggregation(true);
-		}
-
-		if (!eventDateSelectsPresent) {
+		if (!connectorEventDateSelectsPresent) {
 			return tableInfo;
 		}
 
@@ -165,11 +160,6 @@ class TablePath {
 		 * True if this path info contains CTEs from {@link IntervalPackingCteStep}.
 		 */
 		private boolean containsIntervalPacking;
-
-		/**
-		 * True if these tables should not propagate a present validity date.
-		 */
-		private boolean excludedFromTimeAggregation;
 
 		public TablePathInfo() {
 			this.mappings = new HashMap<>();

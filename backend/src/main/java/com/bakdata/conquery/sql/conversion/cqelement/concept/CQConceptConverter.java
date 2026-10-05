@@ -92,6 +92,10 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 				.validityDate(validityDate)
 				.sqlSelects(allConceptSelects)
 				.build();
+		// Event-date selects need the validity date internally, even when the completed concept must not contribute to time aggregation.
+		if (!cqConcept.isAggregateEventDates()) {
+			finalSelects = finalSelects.blockValidityDate();
+		}
 
 		TableLike<Record> joinedTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, ConqueryJoinType.INNER_JOIN, context);
 
