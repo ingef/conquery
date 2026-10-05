@@ -13,6 +13,9 @@ import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
 import com.bakdata.conquery.apiv1.query.TableExportQuery;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
+import com.bakdata.conquery.models.forms.managed.EntityDateQuery;
+import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.LegacyCompilerDialect;
@@ -25,8 +28,10 @@ class SqlConverterTest {
 	private final ConqueryConfig config = mock(ConqueryConfig.class);
 	private final ResolvedQueryAdapter adapter = mock(ResolvedQueryAdapter.class);
 	private final ResolvedTableExportAdapter tableExportAdapter = mock(ResolvedTableExportAdapter.class);
+	private final ResolvedFormAdapter formAdapter = mock(ResolvedFormAdapter.class);
 	private final LegacyCompilerDialect dialect = mock(LegacyCompilerDialect.class);
-	private final SqlConverter converter = new SqlConverter(nodeConversions, config, adapter, tableExportAdapter, dialect);
+	private final SqlConverter converter = new SqlConverter(
+			nodeConversions, config, adapter, tableExportAdapter, formAdapter, dialect);
 
 	@Test
 	void shouldRouteConceptQueriesThroughTheResolvedCompiler() {
@@ -69,6 +74,28 @@ class SqlConverterTest {
 	}
 
 	@Test
+	void shouldRouteAllFormTypesThroughTheResolvedCompiler() {
+		AbsoluteFormQuery absolute = mock(AbsoluteFormQuery.class);
+		RelativeFormQuery relative = mock(RelativeFormQuery.class);
+		EntityDateQuery entityDate = mock(EntityDateQuery.class);
+		SqlQuery absoluteSql = mock(SqlQuery.class);
+		SqlQuery relativeSql = mock(SqlQuery.class);
+		SqlQuery entityDateSql = mock(SqlQuery.class);
+		when(formAdapter.compile(same(absolute), same(dialect))).thenReturn(absoluteSql);
+		when(formAdapter.compile(same(relative), same(dialect))).thenReturn(relativeSql);
+		when(formAdapter.compile(same(entityDate), same(dialect))).thenReturn(entityDateSql);
+
+		assertSame(absoluteSql, converter.convert(absolute));
+		assertSame(relativeSql, converter.convert(relative));
+		assertSame(entityDateSql, converter.convert(entityDate));
+
+		verify(formAdapter).compile(same(absolute), same(dialect));
+		verify(formAdapter).compile(same(relative), same(dialect));
+		verify(formAdapter).compile(same(entityDate), same(dialect));
+		verifyNoInteractions(nodeConversions);
+	}
+
+	@Test
 	void shouldKeepOtherQueryDescriptionsOnTheLegacyConversionPath() {
 		QueryDescription query = mock(QueryDescription.class);
 		ConversionContext context = mock(ConversionContext.class);
@@ -79,6 +106,6 @@ class SqlConverterTest {
 		SqlQuery converted = converter.convert(query);
 
 		assertSame(sql, converted);
-		verifyNoInteractions(adapter, tableExportAdapter);
+		verifyNoInteractions(adapter, tableExportAdapter, formAdapter);
 	}
 }

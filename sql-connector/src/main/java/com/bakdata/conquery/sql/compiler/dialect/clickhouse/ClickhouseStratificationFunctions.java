@@ -1,4 +1,4 @@
-package com.bakdata.conquery.sql.conversion.dialect.clickhouse;
+package com.bakdata.conquery.sql.compiler.dialect.clickhouse;
 
 import static com.bakdata.conquery.sql.compiler.dialect.Interval.MONTHS_PER_QUARTER;
 import static com.bakdata.conquery.sql.compiler.ir.form.FormConstants.SERIES_INDEX;
@@ -8,12 +8,11 @@ import static org.jooq.impl.DSL.inline;
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
 
-import com.bakdata.conquery.apiv1.query.TemporalSamplerFactory;
 import com.bakdata.conquery.sql.compiler.dialect.Interval;
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
+import com.bakdata.conquery.sql.compiler.forms.StratificationFunctions;
 import com.bakdata.conquery.sql.compiler.ir.form.Offset;
-import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
+import com.bakdata.conquery.sql.model.form.FormIndexSelector;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Field;
@@ -25,7 +24,7 @@ import org.jooq.impl.SQLDataType;
 @RequiredArgsConstructor
 public class ClickhouseStratificationFunctions extends StratificationFunctions {
 
-	private final SqlFunctionProvider functionProvider;
+	private final ClickhouseCompilerDialect dialect;
 
 	private static Field<Date> addMonths(Field<Date> yearStart, Field<Integer> amount) {
 		return function("addMonths", Date.class, yearStart, amount);
@@ -46,7 +45,7 @@ public class ClickhouseStratificationFunctions extends StratificationFunctions {
 
 	@Override
 	protected Field<Date> inclusiveUpper(ColumnDateRange dateRange) {
-		return functionProvider.addDays(exclusiveUpper(dateRange), inline(-1));
+		return dialect.addDays(exclusiveUpper(dateRange), inline(-1));
 	}
 
 	@Override
@@ -126,19 +125,19 @@ public class ClickhouseStratificationFunctions extends StratificationFunctions {
 	}
 
 	@Override
-	public Field<Date> indexSelectorField(TemporalSamplerFactory indexSelector, ColumnDateRange validityDate) {
+	public Field<Date> indexSelectorField(FormIndexSelector indexSelector, ColumnDateRange validityDate) {
 		return switch (indexSelector) {
 			case EARLIEST -> min(validityDate.getStart());
 			case LATEST -> max(inclusiveUpper(validityDate));
 			case RANDOM -> {
 				// we calculate a random int which is in range of the date distance between upper and lower bound
-				Field<Integer> dateDistanceInDays = functionProvider.dateDistance(ChronoUnit.DAYS, validityDate.getStart(), validityDate.getEnd());
+				Field<Integer> dateDistanceInDays = dialect.dateDistance(ChronoUnit.DAYS, validityDate.getStart(), validityDate.getEnd());
 				Field<Double> randomAmountOfDays = function("RAND", Double.class).times(dateDistanceInDays);
-				Field<Integer> flooredAsInt = functionProvider.cast(floor(randomAmountOfDays), SQLDataType.INTEGER);
+				Field<Integer> flooredAsInt = dialect.cast(floor(randomAmountOfDays), SQLDataType.INTEGER);
 				// then we add this random amount (of days) to the start date
-				Field<Date> randomDateInRange = functionProvider.addDays(lower(validityDate), flooredAsInt);
+				Field<Date> randomDateInRange = dialect.addDays(lower(validityDate), flooredAsInt);
 				// finally, we handle multiple ranges by randomizing which range we use to select a random date from
-				yield functionProvider.random(randomDateInRange);
+				yield dialect.random(randomDateInRange);
 			}
 		};
 	}
@@ -168,9 +167,9 @@ public class ClickhouseStratificationFunctions extends StratificationFunctions {
 	}
 
 	private Field<Integer> getQuartersInMonths(Field<Date> date, Offset offset) {
-		Field<String> quarterExpression = functionProvider.yearQuarter(date);
+		Field<String> quarterExpression = dialect.yearQuarter(date);
 		Field<String> rightMostCharacter = function("RIGHT", String.class, quarterExpression, inline(1));
-		Field<Integer> amountOfQuarters = functionProvider.cast(rightMostCharacter, SQLDataType.INTEGER)
+		Field<Integer> amountOfQuarters = dialect.cast(rightMostCharacter, SQLDataType.INTEGER)
 														  .plus(offset.getOffset());
 		return amountOfQuarters.times(MONTHS_PER_QUARTER);
 	}

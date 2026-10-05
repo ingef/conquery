@@ -1,4 +1,4 @@
-package com.bakdata.conquery.sql.conversion.forms;
+package com.bakdata.conquery.sql.compiler.forms;
 
 import static org.jooq.impl.DSL.*;
 
@@ -7,16 +7,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
-import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.sql.compiler.ir.SharedAliases;
-import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
-import com.google.common.base.Preconditions;
+import com.bakdata.conquery.sql.model.form.FormResolution;
+import com.bakdata.conquery.sql.model.form.ResolutionAndAlignment;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
 import org.jooq.Field;
@@ -32,7 +30,7 @@ class AbsoluteStratification {
 	private final QueryStep baseStep;
 	private final StratificationFunctions stratificationFunctions;
 
-	public QueryStep createStratificationTable(List<ExportForm.ResolutionAndAlignment> resolutionAndAlignments, ConversionContext context) {
+	public QueryStep createStratificationTable(List<ResolutionAndAlignment> resolutionAndAlignments, boolean negate) {
 
 		QueryStep intSeriesStep = createIntSeriesStep();
 		QueryStep indexStartStep = createIndexStartStep();
@@ -42,7 +40,7 @@ class AbsoluteStratification {
 														.toList();
 
 		List<QueryStep> predecessors = List.of(baseStep, intSeriesStep, indexStartStep);
-		return StratificationTableFactory.unionResolutionTables(resolutionTables, predecessors, context);
+		return StratificationTableFactory.unionResolutionTables(resolutionTables, predecessors, negate);
 	}
 
 	private QueryStep createIntSeriesStep() {
@@ -70,7 +68,9 @@ class AbsoluteStratification {
 	private QueryStep createIndexStartStep() {
 
 		Selects baseStepSelects = baseStep.getQualifiedSelects();
-		Preconditions.checkArgument(baseStepSelects.getStratificationDate().isPresent(), "The base step must have a stratification date set");
+		if (baseStepSelects.getStratificationDate().isEmpty()) {
+			throw new IllegalArgumentException("The base step must have a stratification date set");
+		}
 		ColumnDateRange bounds = baseStepSelects.getStratificationDate().get();
 
 		Field<Date> indexStart = stratificationFunctions.absoluteIndexStartDate(bounds).as(SharedAliases.INDEX_START.getAlias());
@@ -104,7 +104,7 @@ class AbsoluteStratification {
 						.build();
 	}
 
-	private QueryStep createResolutionTable(QueryStep indexStartStep, ExportForm.ResolutionAndAlignment resolutionAndAlignment) {
+	private QueryStep createResolutionTable(QueryStep indexStartStep, ResolutionAndAlignment resolutionAndAlignment) {
 		return switch (resolutionAndAlignment.getResolution()) {
 			case COMPLETE -> createCompleteTable();
 			case YEARS, QUARTERS, DAYS -> createIntervalTable(indexStartStep, resolutionAndAlignment);
@@ -118,7 +118,7 @@ class AbsoluteStratification {
 		// complete range shall have a null index because it spans the complete range, but we set it to 1 to ensure we can join tables on index,
 		// because a condition involving null in a join (e.g., null = some_value or null = null) always evaluates to false
 		Field<Integer> index = field(inline(1)).as(SharedAliases.INDEX.getAlias());
-		SqlIdColumns ids = baseStepSelects.getIds().withStratification(Resolution.COMPLETE.name(), index);
+		SqlIdColumns ids = baseStepSelects.getIds().withStratification(FormResolution.COMPLETE.name(), index);
 
 		ColumnDateRange completeRange = baseStepSelects.getStratificationDate().get();
 
@@ -134,10 +134,12 @@ class AbsoluteStratification {
 						.build();
 	}
 
-	private QueryStep createIntervalTable(QueryStep indexStartStep, ExportForm.ResolutionAndAlignment resolutionAndAlignment) {
+	private QueryStep createIntervalTable(QueryStep indexStartStep, ResolutionAndAlignment resolutionAndAlignment) {
 
 		QueryStep countsCte = createCountsCte(indexStartStep, resolutionAndAlignment);
-		Preconditions.checkArgument(countsCte.getSelects().getStratificationDate().isPresent(), "The countsCte must have a stratification date set");
+		if (countsCte.getSelects().getStratificationDate().isEmpty()) {
+			throw new IllegalArgumentException("The countsCte must have a stratification date set");
+		}
 		Selects countsCteSelects = countsCte.getQualifiedSelects();
 
 		ColumnDateRange stratificationRange = stratificationFunctions.createStratificationRange(
@@ -165,10 +167,12 @@ class AbsoluteStratification {
 						.build();
 	}
 
-	private QueryStep createCountsCte(QueryStep indexStartStep, ExportForm.ResolutionAndAlignment resolutionAndAlignment) {
+	private QueryStep createCountsCte(QueryStep indexStartStep, ResolutionAndAlignment resolutionAndAlignment) {
 
 		Selects indexStartSelects = indexStartStep.getQualifiedSelects();
-		Preconditions.checkArgument(indexStartSelects.getStratificationDate().isPresent(), "The indexStartStep must have a stratification date set");
+		if (indexStartSelects.getStratificationDate().isEmpty()) {
+			throw new IllegalArgumentException("The indexStartStep must have a stratification date set");
+		}
 
 		Field<Integer> resolutionWindowCount = stratificationFunctions.calculateResolutionWindowCount(
 				resolutionAndAlignment,

@@ -26,6 +26,11 @@ import org.jooq.impl.SQLDataType;
 /** ClickHouse SQL capabilities used by the framework-neutral compiler. */
 public class ClickhouseCompilerDialect implements CompilerDialect {
 
+	@Override
+	public ClickhouseStratificationFunctions stratificationFunctions() {
+		return new ClickhouseStratificationFunctions(this);
+	}
+
   public static final int MIN_DATE_VALUE = -25567;
   public static final int MAX_DATE_VALUE = 24855;
 
@@ -42,6 +47,13 @@ public class ClickhouseCompilerDialect implements CompilerDialect {
   @Override
   public Field<Date> maximumDate() {
     return field("toDate32({0})", Date.class, MAX_DATE_VALUE);
+  }
+
+  @Override
+  public Condition isNotEmptyDateRange(ColumnDateRange range) {
+    Condition startNotMin = range.getStart().notEqual(minimumDate());
+    Condition endNotMax = range.getEnd().notEqual(maximumDate());
+    return condition(startNotMin.and(endNotMax).neg());
   }
 
   @Override

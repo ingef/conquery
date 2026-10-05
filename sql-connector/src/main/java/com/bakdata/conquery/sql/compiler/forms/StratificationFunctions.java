@@ -1,4 +1,4 @@
-package com.bakdata.conquery.sql.conversion.forms;
+package com.bakdata.conquery.sql.compiler.forms;
 
 import static com.bakdata.conquery.sql.compiler.dialect.Interval.DAYS_PER_QUARTER;
 import static com.bakdata.conquery.sql.compiler.dialect.Interval.DAYS_PER_YEAR;
@@ -21,17 +21,16 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.ConqueryConstants;
-import com.bakdata.conquery.apiv1.forms.IndexPlacement;
-import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
-import com.bakdata.conquery.apiv1.query.TemporalSamplerFactory;
-import com.bakdata.conquery.models.forms.util.CalendarUnit;
+import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
 import com.bakdata.conquery.sql.compiler.ir.SharedAliases;
 import com.bakdata.conquery.sql.compiler.ir.form.Offset;
 import com.bakdata.conquery.sql.compiler.dialect.Interval;
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
+import com.bakdata.conquery.sql.model.form.FormCalendarUnit;
+import com.bakdata.conquery.sql.model.form.FormIndexPlacement;
+import com.bakdata.conquery.sql.model.form.FormIndexSelector;
+import com.bakdata.conquery.sql.model.form.ResolutionAndAlignment;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Record;
@@ -44,7 +43,7 @@ public abstract class StratificationFunctions {
 		return ColumnDateRange.of(start, end); // needs to be overwritten for dialects that support single-column ranges
 	}
 
-	protected abstract SqlFunctionProvider getFunctionProvider();
+	protected abstract CompilerDialect getDialect();
 
 	/**
 	 * Extract the lower bounds from a given daterange.
@@ -118,9 +117,9 @@ public abstract class StratificationFunctions {
 	public abstract Table<Record> generateIntSeries(int start, int end);
 
 	/**
-	 * Generates a date field representing the {@link TemporalSamplerFactory} using the given validity date range.
+	 * Generates a date field representing the selected index strategy using the given validity date range.
 	 */
-	public abstract Field<Date> indexSelectorField(TemporalSamplerFactory indexSelector, ColumnDateRange validityDate);
+	public abstract Field<Date> indexSelectorField(FormIndexSelector indexSelector, ColumnDateRange validityDate);
 
 	/**
 	 * Shift's a start date by an interval times an amount. The offset will we added to the amount before multiplying.
@@ -128,9 +127,9 @@ public abstract class StratificationFunctions {
 	public abstract Field<Date> shiftByInterval(Field<Date> startDate, Interval interval, Field<Integer> amount, Offset offset);
 
 	/**
-	 * Generates the start and end field for the respective {@link IndexPlacement} and {@link CalendarUnit timeUnit}.
+	 * Generates the start and end field for the respective index placement and time unit.
 	 */
-	public List<Field<Date>> indexStartFields(IndexPlacement indexPlacement, CalendarUnit timeUnit) {
+	public List<Field<Date>> indexStartFields(FormIndexPlacement indexPlacement, FormCalendarUnit timeUnit) {
 
 		Field<Date> positiveStart;
 		Field<Date> negativeStart;
@@ -162,7 +161,7 @@ public abstract class StratificationFunctions {
 						negativeStart = INDEX_SELECTOR;
 					}
 					case NEUTRAL -> {
-						positiveStart = getFunctionProvider().addDays(INDEX_SELECTOR, DSL.inline(1));
+						positiveStart = getDialect().addDays(INDEX_SELECTOR, DSL.inline(1));
 						negativeStart = INDEX_SELECTOR;
 					}
 					default -> throw new CombinationNotSupportedException(indexPlacement, timeUnit);
@@ -183,8 +182,8 @@ public abstract class StratificationFunctions {
 	 * @return A {@link Field<Integer>} representing the count of resolution windows.
 	 * @throws CombinationNotSupportedException if the combination of resolution and alignment is not supported.
 	 */
-	public Field<Integer> calculateResolutionWindowCount(ExportForm.ResolutionAndAlignment resolutionAndAlignment, ColumnDateRange bounds) {
-		SqlFunctionProvider functionProvider = getFunctionProvider();
+	public Field<Integer> calculateResolutionWindowCount(ResolutionAndAlignment resolutionAndAlignment, ColumnDateRange bounds) {
+		CompilerDialect functionProvider = getDialect();
 		return switch (resolutionAndAlignment.getResolution()) {
 			case COMPLETE -> DSL.inline(1);
 			case YEARS -> calculateResolutionWindowForYearResolution(resolutionAndAlignment, bounds, functionProvider);
@@ -197,9 +196,9 @@ public abstract class StratificationFunctions {
 	/**
 	 * Determines the stratification range based on resolution and alignment parameters. The created stratification range is bound by the given range.
 	 */
-	public ColumnDateRange createStratificationRange(ExportForm.ResolutionAndAlignment resolutionAndAlignment, ColumnDateRange bounds) {
+	public ColumnDateRange createStratificationRange(ResolutionAndAlignment resolutionAndAlignment, ColumnDateRange bounds) {
 
-		SqlFunctionProvider functionProvider = getFunctionProvider();
+		CompilerDialect functionProvider = getDialect();
 
 		ColumnDateRange stratificationRange = switch (resolutionAndAlignment.getResolution()) {
 			case COMPLETE -> bounds;
@@ -212,7 +211,7 @@ public abstract class StratificationFunctions {
 	}
 
 	/**
-	 * The index field for the corresponding resolution index {@link ConqueryConstants#CONTEXT_INDEX_INFO}.
+	 * The index field for the corresponding resolution index.
 	 */
 	public Field<Integer> index(SqlIdColumns ids, Optional<ColumnDateRange> stratificationBounds) {
 
@@ -232,7 +231,7 @@ public abstract class StratificationFunctions {
 	 * Generates a condition to limit the resolution window count in a query.
 	 * This method applies a check to ensure the series index does not exceed the maximum window count based on the given resolution and alignment.
 	 */
-	public Condition stopOnMaxResolutionWindowCount(ExportForm.ResolutionAndAlignment resolutionAndAlignment) {
+	public Condition stopOnMaxResolutionWindowCount(ResolutionAndAlignment resolutionAndAlignment) {
 		Field<Integer> seriesIndex = intSeriesField();
 		return switch (resolutionAndAlignment.getResolution()) {
 			case COMPLETE -> DSL.noCondition();
@@ -243,9 +242,9 @@ public abstract class StratificationFunctions {
 	}
 
 	private Field<Integer> calculateResolutionWindowForQuarterResolution(
-			ExportForm.ResolutionAndAlignment resolutionAndAlignment,
+			ResolutionAndAlignment resolutionAndAlignment,
 			ColumnDateRange bounds,
-			SqlFunctionProvider functionProvider
+			CompilerDialect functionProvider
 	) {
 		return switch (resolutionAndAlignment.getAlignment()) {
 			case QUARTER -> functionProvider.dateDistance(ChronoUnit.MONTHS, QUARTER_START, QUARTER_END)
@@ -260,9 +259,9 @@ public abstract class StratificationFunctions {
 	}
 
 	private Field<Integer> calculateResolutionWindowForYearResolution(
-			ExportForm.ResolutionAndAlignment resolutionAndAlignment,
+			ResolutionAndAlignment resolutionAndAlignment,
 			ColumnDateRange bounds,
-			SqlFunctionProvider functionProvider
+			CompilerDialect functionProvider
 	) {
 		return switch (resolutionAndAlignment.getAlignment()) {
 			case YEAR -> functionProvider.dateDistance(ChronoUnit.YEARS, YEAR_START, YEAR_END)
@@ -277,7 +276,7 @@ public abstract class StratificationFunctions {
 		};
 	}
 
-	private ColumnDateRange createStratificationRangeForQuarterResolution(ExportForm.ResolutionAndAlignment resolutionAndAlignment) {
+	private ColumnDateRange createStratificationRangeForQuarterResolution(ResolutionAndAlignment resolutionAndAlignment) {
 		return switch (resolutionAndAlignment.getAlignment()) {
 			case QUARTER -> calcRange(QUARTER_START, Interval.QUARTER_INTERVAL);
 			case DAY -> calcRange(INDEX_START, Interval.NINETY_DAYS_INTERVAL);
@@ -285,7 +284,7 @@ public abstract class StratificationFunctions {
 		};
 	}
 
-	private ColumnDateRange createStratificationRangeForYearResolution(ExportForm.ResolutionAndAlignment resolutionAndAlignment) {
+	private ColumnDateRange createStratificationRangeForYearResolution(ResolutionAndAlignment resolutionAndAlignment) {
 		return switch (resolutionAndAlignment.getAlignment()) {
 			case YEAR -> calcRange(YEAR_START, Interval.ONE_YEAR_INTERVAL);
 			case QUARTER -> calcRange(QUARTER_START, Interval.ONE_YEAR_INTERVAL);
@@ -294,7 +293,7 @@ public abstract class StratificationFunctions {
 		};
 	}
 
-	private static Condition windowCountForQuarterResolution(ExportForm.ResolutionAndAlignment resolutionAndAlignment, Field<Integer> seriesIndex) {
+	private static Condition windowCountForQuarterResolution(ResolutionAndAlignment resolutionAndAlignment, Field<Integer> seriesIndex) {
 		return switch (resolutionAndAlignment.getAlignment()) {
 			case QUARTER -> seriesIndex.lessOrEqual(QUARTER_ALIGNED_COUNT);
 			case DAY -> seriesIndex.lessOrEqual(DAY_ALIGNED_COUNT);
@@ -302,7 +301,7 @@ public abstract class StratificationFunctions {
 		};
 	}
 
-	private static Condition windowCountForYearResolution(ExportForm.ResolutionAndAlignment resolutionAndAlignment, Field<Integer> seriesIndex) {
+	private static Condition windowCountForYearResolution(ResolutionAndAlignment resolutionAndAlignment, Field<Integer> seriesIndex) {
 		return switch (resolutionAndAlignment.getAlignment()) {
 			case YEAR -> seriesIndex.lessOrEqual(YEAR_ALIGNED_COUNT);
 			case QUARTER -> seriesIndex.lessOrEqual(QUARTER_ALIGNED_COUNT);

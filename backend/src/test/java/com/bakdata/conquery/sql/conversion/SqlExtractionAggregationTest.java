@@ -135,7 +135,7 @@ class SqlExtractionAggregationTest {
 
 	static SelectContext<ConnectorSqlTables> context(LegacyCompilerDialect dialect) {
 		var conversion = ConversionContext.builder()
-				.compilerDialect(dialect).stratificationFunctions(dialect.getStratificationFunctions())
+				.compilerDialect(dialect)
 				.nameGenerator(new SqlNameGenerator(127)).build();
 		var tables = new SqlTables("events",
 				Map.of(ConceptCteStep.PREPROCESSING, "preprocessing", ConceptCteStep.AGGREGATION_SELECT, "aggregation"),

@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.bakdata.conquery.sql.execution.SqlCDateSetParser;
@@ -57,11 +56,6 @@ public class ClickhouseDialectBundle implements DialectBundle {
 	@Override
 	public List<NodeConverter<? extends Visitable>> getNodeConverters(DSLContext dslContext) {
 		return getDefaultNodeConverters(dslContext);
-	}
-
-	@Override
-	public StratificationFunctions getStratificationFunctions() {
-		return new ClickhouseStratificationFunctions(getFunctionProvider());
 	}
 
 	@Override

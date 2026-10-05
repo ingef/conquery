@@ -13,7 +13,6 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.NodeConversionDispatcher;
 import com.bakdata.conquery.sql.conversion.dialect.LegacyCompilerDialect;
-import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
 import com.bakdata.conquery.sql.compiler.naming.SqlNameGenerator;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
@@ -32,8 +31,6 @@ public class ConversionContext implements Context {
 	IdColumnConfig idColumns;
 
 	Clock clock;
-	@NonNull
-	StratificationFunctions stratificationFunctions;
 	String defaultPrimaryColumn;
 	PrintSettings sqlPrintSettings;
 	NodeConversionDispatcher nodeConversions;

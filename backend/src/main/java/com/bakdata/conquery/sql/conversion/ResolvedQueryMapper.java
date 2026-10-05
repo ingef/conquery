@@ -12,6 +12,8 @@ import java.util.Optional;
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.CQYes;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
+import com.bakdata.conquery.apiv1.query.Query;
+import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
@@ -91,6 +93,16 @@ public final class ResolvedQueryMapper {
 				query.getResolvedDateAggregationMode() != DateAggregationMode.NONE,
 				ResolvedOperationAdapter.resultColumns(resultInfos)
 		);
+	}
+
+	ResolvedQuery map(Query query, List<ResultInfo> resultInfos) {
+		return switch (query) {
+			case ConceptQuery concept -> map(concept, Optional.empty(), resultInfos);
+			case SecondaryIdQuery secondary -> map(
+					secondary.getQuery(), Optional.of(secondary.getSecondaryId().resolve()), resultInfos);
+			default -> throw new UnsupportedOperationException(
+					"Resolved SQL query mapping is not implemented for " + query.getClass());
+		};
 	}
 
 	private QueryNode mapNode(CQElement node, NodeContext context) {

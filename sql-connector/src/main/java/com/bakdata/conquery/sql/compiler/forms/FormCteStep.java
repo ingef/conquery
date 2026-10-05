@@ -1,6 +1,6 @@
-package com.bakdata.conquery.sql.conversion.forms;
+package com.bakdata.conquery.sql.compiler.forms;
 
-import com.bakdata.conquery.models.forms.util.Resolution;
+import com.bakdata.conquery.sql.model.form.FormResolution;
 import com.bakdata.conquery.sql.compiler.ir.CteStep;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +35,7 @@ public enum FormCteStep implements CteStep {
 
 	private final String suffix;
 
-	public static FormCteStep countsCte(Resolution resolution) {
+	public static FormCteStep countsCte(FormResolution resolution) {
 		return switch (resolution) {
 			case COMPLETE -> throw new UnsupportedOperationException("COMPLETE resolution does not require a counts CTE");
 			case YEARS -> YEAR_COUNTS;
@@ -44,7 +44,7 @@ public enum FormCteStep implements CteStep {
 		};
 	}
 
-	public static FormCteStep stratificationCte(Resolution resolution) {
+	public static FormCteStep stratificationCte(FormResolution resolution) {
 		return switch (resolution) {
 			case COMPLETE -> FormCteStep.COMPLETE;
 			case YEARS -> FormCteStep.YEARS;

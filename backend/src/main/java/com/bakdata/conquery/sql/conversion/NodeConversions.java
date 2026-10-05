@@ -55,7 +55,6 @@ public class NodeConversions implements NodeConversionDispatcher {
 				.nodeConversions(this)
 				.clock(clock)
 				.defaultPrimaryColumn(this.defaultPrimaryColumn)
-				.stratificationFunctions(dialect.getStratificationFunctions())
 				.compilerDialect(dialect)
 				.build();
 		return convert(queryDescription, initialCtx);

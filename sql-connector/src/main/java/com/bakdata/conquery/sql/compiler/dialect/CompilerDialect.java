@@ -13,6 +13,7 @@ import java.util.function.Function;
 
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
+import com.bakdata.conquery.sql.compiler.forms.StratificationFunctions;
 import com.bakdata.conquery.sql.model.range.DateRange;
 import org.jooq.Condition;
 import org.jooq.DataType;
@@ -99,6 +100,24 @@ public interface CompilerDialect {
 				DSL.when(condition.isTrue(), minimumDate()),
 				DSL.when(condition.isTrue(), maximumDate())
 		);
+	}
+
+	/** Form stratification expressions for this database. */
+	default StratificationFunctions stratificationFunctions() {
+		throw new UnsupportedOperationException("Form stratification is not implemented by this dialect");
+	}
+
+	/** Intersect two half-open date ranges. */
+	default ColumnDateRange intersection(ColumnDateRange left, ColumnDateRange right) {
+		return ColumnDateRange.of(
+				DSL.greatest(left.getStart(), right.getStart()),
+				DSL.least(left.getEnd(), right.getEnd())
+		);
+	}
+
+	/** Test whether a date range contains a concrete bound. */
+	default Condition isNotEmptyDateRange(ColumnDateRange range) {
+		return range.getStart().notEqual(minimumDate()).or(range.getEnd().notEqual(maximumDate()));
 	}
 
 	/** Regex fragment matching any number of characters in this dialect. */

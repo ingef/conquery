@@ -30,14 +30,9 @@ import com.bakdata.conquery.sql.conversion.cqelement.CQNegationConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQOrConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQYesConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CQConceptConverter;
-import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
-import com.bakdata.conquery.sql.conversion.query.AbsoluteFormQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.CQReusedQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.ConceptQueryConverter;
-import com.bakdata.conquery.sql.conversion.query.EntityDateQueryConverter;
-import com.bakdata.conquery.sql.conversion.query.FormConversionHelper;
-import com.bakdata.conquery.sql.conversion.query.RelativFormQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.SecondaryIdQueryConverter;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -165,7 +160,25 @@ public interface LegacyCompilerDialect extends CompilerDialect {
 		return getCompilerDialect().dateDistance(unit, startDate, endDate);
 	}
 
-	StratificationFunctions getStratificationFunctions();
+	@Override
+	default com.bakdata.conquery.sql.compiler.forms.StratificationFunctions stratificationFunctions() {
+		return getCompilerDialect().stratificationFunctions();
+	}
+
+	@Override
+	default ColumnDateRange intersection(ColumnDateRange left, ColumnDateRange right) {
+		return getCompilerDialect().intersection(left, right);
+	}
+
+	@Override
+	default Condition isNotEmptyDateRange(ColumnDateRange range) {
+		return getCompilerDialect().isNotEmptyDateRange(range);
+	}
+
+	@Override
+	default boolean supportsSingleColumnRanges() {
+		return getCompilerDialect().supportsSingleColumnRanges();
+	}
 
 	@Override
 	default Field<Integer> dateDistance(ChronoUnit unit, Field<Date> startDate, Field<Date> endDate) {
@@ -213,8 +226,6 @@ public interface LegacyCompilerDialect extends CompilerDialect {
 	default List<NodeConverter<? extends Visitable>> getDefaultNodeConverters(DSLContext dslContext) {
 
 		QueryStepRenderer queryStepRenderer = new QueryStepRenderer(dslContext);
-		FormConversionHelper formConversionUtil = new FormConversionHelper(queryStepRenderer);
-
 		return List.of(
 				new CQDateRestrictionConverter(),
 				new CQAndConverter(),
@@ -225,10 +236,7 @@ public interface LegacyCompilerDialect extends CompilerDialect {
 				new CQExternalConverter(),
 				new CQReusedQueryConverter(),
 				new ConceptQueryConverter(queryStepRenderer),
-				new SecondaryIdQueryConverter(),
-				new AbsoluteFormQueryConverter(formConversionUtil),
-				new EntityDateQueryConverter(formConversionUtil),
-				new RelativFormQueryConverter(formConversionUtil)
+				new SecondaryIdQueryConverter()
 		);
 	}
 

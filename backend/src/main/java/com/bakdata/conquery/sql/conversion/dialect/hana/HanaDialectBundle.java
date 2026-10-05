@@ -9,7 +9,6 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
 import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
 import com.bakdata.conquery.sql.compiler.dialect.hana.HanaCompilerDialect;
 import com.bakdata.conquery.sql.execution.DefaultResultSetProcessor;
@@ -60,11 +59,6 @@ public class HanaDialectBundle implements DialectBundle {
 	@Override
 	public List<NodeConverter<? extends Visitable>> getNodeConverters(DSLContext dslContext) {
 		return getDefaultNodeConverters(dslContext);
-	}
-
-	@Override
-	public StratificationFunctions getStratificationFunctions() {
-		return new HanaStratificationFunctions((HanaSqlFunctionProvider) getFunctionProvider());
 	}
 
 	@Override

@@ -25,6 +25,11 @@ import org.jooq.impl.SQLDataType;
 /** HANA SQL capabilities used by the framework-neutral compiler. */
 public class HanaCompilerDialect implements CompilerDialect {
 
+	@Override
+	public HanaStratificationFunctions stratificationFunctions() {
+		return new HanaStratificationFunctions(this);
+	}
+
   public static final String MAX_DATE_VALUE = "9999-12-31";
   public static final String MIN_DATE_VALUE = "0001-01-01";
   public static final String DATERANGE_SEPARATOR = "/";

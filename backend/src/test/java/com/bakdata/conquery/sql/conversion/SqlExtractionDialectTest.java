@@ -11,6 +11,7 @@ import com.bakdata.conquery.sql.conversion.dialect.clickhouse.ClickhouseDialectB
 import com.bakdata.conquery.sql.conversion.dialect.hana.HanaDialectBundle;
 import com.bakdata.conquery.sql.compiler.dialect.clickhouse.ClickhouseCompilerDialect;
 import com.bakdata.conquery.sql.compiler.dialect.hana.HanaCompilerDialect;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Test;
@@ -42,5 +43,19 @@ class SqlExtractionDialectTest {
 		assertEquals(
 				DSL.using(SQLDialect.DEFAULT).renderInlined(hana.getFunctionProvider().getMaxDateExpression()),
 				DSL.using(SQLDialect.DEFAULT).renderInlined(hana.maximumDate()));
+	}
+
+	@Test
+	void shouldPreserveClickhouseFormDateEmptinessCondition() {
+		var dialect = new ClickhouseDialectBundle();
+		ColumnDateRange range = ColumnDateRange.of(
+				DSL.field(DSL.name("events", "start"), Date.class),
+				DSL.field(DSL.name("events", "end"), Date.class));
+
+		assertEquals(
+				DSL.using(SQLDialect.CLICKHOUSE).renderInlined(
+						dialect.getFunctionProvider().isNotEmptyDateRange(range)),
+				DSL.using(SQLDialect.CLICKHOUSE).renderInlined(dialect.isNotEmptyDateRange(range))
+		);
 	}
 }

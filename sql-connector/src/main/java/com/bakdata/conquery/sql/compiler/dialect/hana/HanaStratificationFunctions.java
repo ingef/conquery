@@ -1,15 +1,15 @@
-package com.bakdata.conquery.sql.conversion.dialect.hana;
+package com.bakdata.conquery.sql.compiler.dialect.hana;
 
 import static com.bakdata.conquery.sql.compiler.dialect.Interval.MONTHS_PER_QUARTER;
 
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
 
-import com.bakdata.conquery.apiv1.query.TemporalSamplerFactory;
+import com.bakdata.conquery.sql.compiler.forms.StratificationFunctions;
 import com.bakdata.conquery.sql.compiler.dialect.Interval;
 import com.bakdata.conquery.sql.compiler.ir.form.Offset;
-import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
+import com.bakdata.conquery.sql.model.form.FormIndexSelector;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Field;
@@ -30,7 +30,7 @@ public class HanaStratificationFunctions extends StratificationFunctions {
 	 */
 	private static final String GENERATED_PERIOD_END = "GENERATED_PERIOD_END";
 
-	private final HanaSqlFunctionProvider functionProvider;
+	private final HanaCompilerDialect dialect;
 
 	@Override
 	public Field<Date> lower(ColumnDateRange dateRange) {
@@ -40,7 +40,7 @@ public class HanaStratificationFunctions extends StratificationFunctions {
 
 	@Override
 	protected Field<Date> inclusiveUpper(ColumnDateRange dateRange) {
-		return functionProvider.addDays(exclusiveUpper(dateRange), DSL.inline(-1));
+		return dialect.addDays(exclusiveUpper(dateRange), DSL.inline(-1));
 	}
 
 	@Override
@@ -129,19 +129,19 @@ public class HanaStratificationFunctions extends StratificationFunctions {
 	}
 
 	@Override
-	public Field<Date> indexSelectorField(TemporalSamplerFactory indexSelector, ColumnDateRange validityDate) {
+	public Field<Date> indexSelectorField(FormIndexSelector indexSelector, ColumnDateRange validityDate) {
 		return switch (indexSelector) {
 			case EARLIEST -> DSL.min(validityDate.getStart());
 			case LATEST -> DSL.max(inclusiveUpper(validityDate));
 			case RANDOM -> {
 				// we calculate a random int which is in range of the date distance between upper and lower bound
-				Field<Integer> dateDistanceInDays = functionProvider.dateDistance(ChronoUnit.DAYS, validityDate.getStart(), validityDate.getEnd());
+				Field<Integer> dateDistanceInDays = dialect.dateDistance(ChronoUnit.DAYS, validityDate.getStart(), validityDate.getEnd());
 				Field<Double> randomAmountOfDays = DSL.function("RAND", Double.class).times(dateDistanceInDays);
-				Field<Integer> flooredAsInt = functionProvider.cast(DSL.floor(randomAmountOfDays), SQLDataType.INTEGER);
+				Field<Integer> flooredAsInt = dialect.cast(DSL.floor(randomAmountOfDays), SQLDataType.INTEGER);
 				// then we add this random amount (of days) to the start date
-				Field<Date> randomDateInRange = functionProvider.addDays(lower(validityDate), flooredAsInt);
+				Field<Date> randomDateInRange = dialect.addDays(lower(validityDate), flooredAsInt);
 				// finally, we handle multiple ranges by randomizing which range we use to select a random date from
-				yield functionProvider.random(randomDateInRange);
+				yield dialect.random(randomDateInRange);
 			}
 		};
 	}
@@ -189,9 +189,9 @@ public class HanaStratificationFunctions extends StratificationFunctions {
 	}
 
 	private Field<Integer> getQuartersInMonths(Field<Date> date, Offset offset) {
-		Field<String> quarterExpression = functionProvider.yearQuarter(date);
+		Field<String> quarterExpression = dialect.yearQuarter(date);
 		Field<String> rightMostCharacter = DSL.function("RIGHT", String.class, quarterExpression, DSL.inline(1));
-		Field<Integer> amountOfQuarters = functionProvider.cast(rightMostCharacter, SQLDataType.INTEGER)
+		Field<Integer> amountOfQuarters = dialect.cast(rightMostCharacter, SQLDataType.INTEGER)
 														  .plus(offset.getOffset());
 		return amountOfQuarters.times(MONTHS_PER_QUARTER);
 	}
