@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.net.URI;
-
 import jakarta.ws.rs.BadRequestException;
 
 import org.junit.jupiter.api.Test;
