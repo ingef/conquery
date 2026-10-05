@@ -88,7 +88,7 @@ public class FileNewsServiceTest {
 	void loadNews(String _description, String fileName, String content, int loaded) throws IOException {
 		File newsFile = newsFolder.resolve(fileName).toFile();
 
-		try(FileWriter fileWriter = new FileWriter(newsFile)) {
+		try (FileWriter fileWriter = new FileWriter(newsFile)) {
 			fileWriter.write(content);
 		}
 
@@ -104,11 +104,15 @@ public class FileNewsServiceTest {
 		NewsItem newsItem1 = new NewsItem("id1", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 9, 1), Set.of("cat1"));
 		NewsItem newsItem2 = new NewsItem("ID2", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 8, 1), Set.of("cat1"));
 		NewsItem newsItem3 = new NewsItem("id3", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 8, 1), Set.of("cat3"));
+		NewsItem newsItem4 = new NewsItem("id4", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 8, 1), Set.of());
+		NewsItem newsItem5 = new NewsItem("id5", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 8, 1), null);
 
 
 		assertThatCode(() -> newsService.addNewsItem(newsItem1)).doesNotThrowAnyException();
 		assertThatThrownBy(() -> newsService.addNewsItem(newsItem2)).isInstanceOf(ConstraintViolationException.class).hasMessageContaining(NewsService.ID_PATTERN);
 		assertThatCode(() -> newsService.addNewsItem(newsItem3)).doesNotThrowAnyException();
+		assertThatCode(() -> newsService.addNewsItem(newsItem4)).doesNotThrowAnyException();
+		assertThatCode(() -> newsService.addNewsItem(newsItem5)).doesNotThrowAnyException();
 
 		assertThat(newsFolder.resolve("2026-09-01_id1.json")).exists();
 		assertThat(newsFolder.resolve("2026-08-01_id2.json")).doesNotExist();
@@ -124,22 +128,28 @@ public class FileNewsServiceTest {
 		List<NewsItem> news = newsService.getNews(null);
 
 		assertThat(news).containsExactly(
-				new NewsItem("id3", "title","description", URI.create("/read/more"), LocalDate.of(2026,8,1), Set.of("cat3")),
-				new NewsItem("id1", "title","description", URI.create("/read/more"), LocalDate.of(2026,9,1), Set.of("cat1"))
+				new NewsItem("id3", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 8, 1), Set.of("cat3")),
+				new NewsItem("id4", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 8, 1), Set.of()),
+				new NewsItem("id5", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 8, 1), Set.of()),
+				new NewsItem("id1", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 9, 1), Set.of("cat1"))
 		);
 
 
 		List<NewsItem> newsCat1 = newsService.getNews("cat1");
 
 		assertThat(newsCat1).containsExactly(
-				new NewsItem("id1", "title","description", URI.create("/read/more"), LocalDate.of(2026,9,1), Set.of("cat1"))
+				new NewsItem("id4", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 8, 1), Set.of()),
+				new NewsItem("id5", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 8, 1), Set.of()),
+				new NewsItem("id1", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 9, 1), Set.of("cat1"))
 		);
 
 
 		List<NewsItem> newsCat3 = newsService.getNews("cat3");
 
 		assertThat(newsCat3).containsExactly(
-				new NewsItem("id3", "title","description", URI.create("/read/more"), LocalDate.of(2026,8,1), Set.of("cat3"))
+				new NewsItem("id3", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 8, 1), Set.of("cat3")),
+				new NewsItem("id4", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 8, 1), Set.of()),
+				new NewsItem("id5", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 8, 1), Set.of())
 		);
 	}
 
@@ -157,20 +167,26 @@ public class FileNewsServiceTest {
 		List<NewsItem> news = newsService.getNews(null);
 
 		assertThat(news).containsExactly(
-				new NewsItem("id3", "title","description", URI.create("/read/more"), LocalDate.of(2026,8,1), Set.of("cat3"))
+				new NewsItem("id3", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 8, 1), Set.of("cat3")),
+		new NewsItem("id4", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 8, 1), Set.of()),
+				new NewsItem("id5", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 8, 1), Set.of())
 		);
 
 
 		List<NewsItem> newsCat1 = newsService.getNews("cat1");
 
 		assertThat(newsCat1).containsExactly(
+				new NewsItem("id4", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 8, 1), Set.of()),
+				new NewsItem("id5", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 8, 1), Set.of())
 		);
 
 
 		List<NewsItem> newsCat3 = newsService.getNews("cat3");
 
 		assertThat(newsCat3).containsExactly(
-				new NewsItem("id3", "title","description", URI.create("/read/more"), LocalDate.of(2026,8,1), Set.of("cat3"))
+				new NewsItem("id3", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 8, 1), Set.of("cat3")),
+				new NewsItem("id4", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 8, 1), Set.of()),
+				new NewsItem("id5", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 8, 1), Set.of())
 		);
 	}
 
