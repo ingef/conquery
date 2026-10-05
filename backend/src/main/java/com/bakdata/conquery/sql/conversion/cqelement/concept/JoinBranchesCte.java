@@ -12,7 +12,6 @@ import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.QueryStepJoiner;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
-import com.bakdata.conquery.sql.conversion.model.aggregator.SumSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import org.jooq.Record;
 import org.jooq.TableLike;
@@ -21,24 +20,20 @@ import org.jooq.TableLike;
  * Joins the {@link ConceptCteStep#AGGREGATION_SELECT} with the interval packing branch for the aggregated validity date and optional validity date selects
  * {@link IntervalPackingSelectsCte} as well as optional additional predecessors.
  * <p>
- * Joining is optional. If interval packing is not required and there is no additional predecessor, no join will take place. See {@link SumSqlAggregator} with
- * distinct-by columns for an example of additional predecessors.
+ * Joining is optional. If interval packing is not required and there is no additional predecessor, no join will take place.
  *
  * <pre>
  *     {@code
  *     "join_branches" as (
  *  	  select
- *  	    coalesce("group_select"."pid", "interval_complete"."pid", "interval_packing_selects"."pid", "row_number_filtered"."pid") as "pid",
+ *  	    coalesce("group_select"."pid", "interval_complete"."pid", "interval_packing_selects"."pid") as "pid",
  *  	    "interval_complete"."concept_concept-1_validity_date",
- *  	    "interval_packing_selects"."event_duration_sum",
- *  	    "row_number_filtered"."sum_distinct-1"
+ *  	    "interval_packing_selects"."event_duration_sum"
  *  	  from "group_select"
  *  	    join "interval_complete"
  *  	      on "group_select"."pid" = "interval_complete"."pid"
  *  	    join "interval_packing_selects"
  *    	      on "group_select"."pid" = "interval_packing_selects"."pid"
- *  	    join "row_number_filtered"
- *  	      on "interval_complete"."pid" = "row_number_filtered"."pid"
  *  	)
  *     }
  * </pre>

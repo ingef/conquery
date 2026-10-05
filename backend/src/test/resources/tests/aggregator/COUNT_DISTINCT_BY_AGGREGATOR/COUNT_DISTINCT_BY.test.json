@@ -1,7 +1,7 @@
 {
   "type": "QUERY_TEST",
-  "label": "QUARTER_AGGREGATOR",
-  "expectedCsv": "tests/aggregator/QUARTER_AGGREGATOR/expected.csv",
+  "label": "COUNT_DISTINCT_BY_AGGREGATOR Test",
+  "expectedCsv": "tests/aggregator/COUNT_DISTINCT_BY_AGGREGATOR/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -16,8 +16,7 @@
             "concept.connector.select"
           ]
         }
-      ],
-      "selects": "concept.earliest-quarter"
+      ]
     }
   },
   "concepts": [
@@ -29,21 +28,19 @@
           "name": "connector",
           "table": "table",
           "validityDates": {
-            "name": "datum",
+            "label": "datum",
             "column": "table.datum"
           },
           "selects": {
             "name": "select",
-            "type": "QUARTER",
-            "sample": "LATEST"
+            "type": "COUNT",
+            "distinct": true,
+            "distinctByColumn": [
+              "table.k1",
+              "table.k2"
+            ],
+            "column": "table.value"
           }
-        }
-      ],
-      "selects": [
-        {
-          "name": "earliest-quarter",
-          "type": "QUARTER",
-          "sample": "EARLIEST"
         }
       ]
     }
@@ -51,7 +48,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/aggregator/QUARTER_AGGREGATOR/content.csv",
+        "csv": "tests/aggregator/COUNT_DISTINCT_BY_AGGREGATOR/content.csv",
         "name": "table",
         "primaryColumn": {
           "name": "pid",
@@ -61,6 +58,18 @@
           {
             "name": "datum",
             "type": "DATE"
+          },
+          {
+            "name": "k1",
+            "type": "STRING"
+          },
+          {
+            "name": "k2",
+            "type": "STRING"
+          },
+          {
+            "name": "value",
+            "type": "STRING"
           }
         ]
       }
