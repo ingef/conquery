@@ -1,6 +1,5 @@
 package com.bakdata.conquery.sql.conversion.model;
 
-import java.util.Collections;
 import java.util.List;
 
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -8,36 +7,16 @@ import com.bakdata.conquery.sql.compiler.CompiledQuery;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.jooq.Record;
-import org.jooq.Select;
-import org.jooq.conf.ParamType;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class SqlQuery {
+public final class SqlQuery {
 
 	private final String sql;
 	private final List<ResultInfo> resultInfos;
 
-	public SqlQuery(Select<Record> finalQuery, List<ResultInfo> resultInfos) {
-		this.sql = finalQuery.getSQL(ParamType.INLINED);
-		this.resultInfos = resultInfos;
-	}
-
 	public static SqlQuery fromCompiled(CompiledQuery compiledQuery, List<ResultInfo> resultInfos) {
 		return new SqlQuery(compiledQuery.sql(), List.copyOf(resultInfos));
-	}
-
-	/**
-	 * For testing purposes
-	 */
-	protected SqlQuery(String sql) {
-		this.sql = sql;
-		this.resultInfos = Collections.emptyList();
-	}
-
-	public SqlQuery overwriteResultInfos(List<ResultInfo> resultInfos) {
-		return new SqlQuery(sql, resultInfos);
 	}
 
 }
