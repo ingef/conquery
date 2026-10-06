@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWra
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountAggregator;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
+import com.bakdata.conquery.util.validation.ResolvableId;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;
@@ -26,10 +27,11 @@ public class CountSelect extends Select {
 	private boolean distinct = false;
 
 	@NotNull
-	private List<ColumnId> distinctByColumn = Collections.emptyList();
+	private List<@ResolvableId ColumnId> distinctByColumn = Collections.emptyList();
 
 
 	@NotNull
+	@ResolvableId
 	private ColumnId column;
 
 	@Override

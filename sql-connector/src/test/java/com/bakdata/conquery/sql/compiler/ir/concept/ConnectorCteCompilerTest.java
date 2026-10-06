@@ -53,7 +53,6 @@ class ConnectorCteCompilerTest {
 				preprocessingInput(Optional.empty()),
 				List.of(),
 				List.of(),
-				false,
 				false
 		);
 
@@ -197,7 +196,6 @@ class ConnectorCteCompilerTest {
 				validityDate(),
 				new SqlTables(PREDECESSOR_NAME, Map.of(), Map.of()),
 				false,
-				false,
 				List.of(),
 				List.of(additionalPredecessor)
 		);
@@ -225,7 +223,6 @@ class ConnectorCteCompilerTest {
 				validityDate(),
 				intervalPackingTables(),
 				true,
-				false,
 				List.of(eventDuration),
 				List.of()
 		);
@@ -249,26 +246,6 @@ class ConnectorCteCompilerTest {
 		);
 	}
 
-	@Test
-	void shouldNotPropagateExcludedValidityDate() {
-		JoinBranchesCteInput input = new JoinBranchesCteInput(
-				predecessor(),
-				validityDate(),
-				intervalPackingTables(),
-				true,
-				true,
-				List.of(),
-				List.of()
-		);
-
-		QueryStep result = ConnectorCteCompiler.compileJoinBranches(input, "joined");
-
-		assertEquals(
-				List.of(PREDECESSOR_NAME, "interval_complete"),
-				result.getPredecessors().stream().map(QueryStep::getCteName).toList()
-		);
-		assertTrue(result.getSelects().getValidityDate().isEmpty());
-	}
 
 	private static List<Name> qualifiedNames(ColumnDateRange range) {
 		return range.toFields().stream().map(Field::getQualifiedName).toList();

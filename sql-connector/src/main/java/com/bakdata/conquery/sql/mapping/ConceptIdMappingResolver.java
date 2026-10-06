@@ -28,7 +28,12 @@ public final class ConceptIdMappingResolver {
 			List<MappingExpression> expressions
 	) {
 		List<Field<?>> keyFields = collectKeyFields(expressions);
-		return new ConceptIdMappingTable(tableName, keyFields, expressionsToRows(conceptId, expressions, keyFields));
+		List<MappingExpression> resolvedExpressions = List.copyOf(expressions);
+		return new ConceptIdMappingTable(
+				tableName,
+				keyFields,
+				() -> expressionsToRows(conceptId, resolvedExpressions, keyFields)
+		);
 	}
 
 	public static Map<String, Field<?>> collectExtractors(List<MappingExpression> expressions) {

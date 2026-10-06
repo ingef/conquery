@@ -3,18 +3,19 @@ package com.bakdata.conquery.sql.compiler.dialect.clickhouse;
 import static com.bakdata.conquery.sql.compiler.dialect.Interval.MONTHS_PER_QUARTER;
 import static org.jooq.impl.DSL.*;
 
-import com.bakdata.conquery.sql.compiler.conversion.operation.SelectConversionContext;
-import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
-import com.bakdata.conquery.sql.compiler.ir.QueryStep;
-import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
-import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
-import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
+
+import com.bakdata.conquery.sql.compiler.conversion.operation.SelectConversionContext;
+import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
+import com.bakdata.conquery.sql.compiler.ir.QueryStep;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
+import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;
@@ -122,7 +123,7 @@ public class ClickhouseCompilerDialect implements CompilerDialect {
   public <T> Field<T> cast(Field<?> value, DataType<T> type) {
     if (type == SQLDataType.VARCHAR) return function("toString", type.getType(), value);
     return function(
-        name("CAST"), type.getType(), field("{0} AS {1}", value, keyword(type.getName())));
+        name("CAST"), type.getType(), field("{0} AS Nullable({1})", value, keyword(type.getName())));
   }
 
   public Field<Date> toDateField(String expression) {

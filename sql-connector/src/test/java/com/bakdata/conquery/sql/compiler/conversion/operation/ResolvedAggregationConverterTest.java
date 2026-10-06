@@ -15,15 +15,15 @@ import java.util.Optional;
 
 import com.bakdata.conquery.models.datasets.ColumnType;
 import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
+import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.compiler.ir.SqlTables;
-import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.concept.CommonAggregationSelect;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.compiler.naming.SqlNameGenerator;
 import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
-import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.model.schema.DateColumns;
+import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.model.schema.SqlTable;
 import org.jooq.Field;
 import org.jooq.SQLDialect;

@@ -18,13 +18,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.sql.Date;
 import java.util.Optional;
 
-import com.bakdata.conquery.sql.model.schema.SqlTable;
 import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.sql.compiler.ir.SqlTables;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.naming.SqlNameGenerator;
+import com.bakdata.conquery.sql.model.schema.SqlTable;
 import org.jooq.Field;
 import org.junit.jupiter.api.Test;
 
@@ -37,10 +37,9 @@ class ConceptCtePlannerTest {
 
 	@Test
 	void shouldPlanMandatoryConnectorStepsWithoutIntervalPacking() {
-		ConnectorCtePlan plan = planConnector(false, false, false);
+		ConnectorCtePlan plan = planConnector(false, false, false, false);
 
 		assertFalse(plan.withIntervalPacking());
-		assertFalse(plan.excludedFromTimeAggregation());
 		assertTrue(plan.tables().isRequiredStep(PREPROCESSING));
 		assertTrue(plan.tables().isRequiredStep(AGGREGATION_FILTER));
 		assertFalse(plan.tables().isRequiredStep(INTERVAL_COMPLETE));
@@ -49,10 +48,9 @@ class ConceptCtePlannerTest {
 
 	@Test
 	void shouldPlanConnectorIntervalPackingForAggregatedEventDates() {
-		ConnectorCtePlan plan = planConnector(true, false, false);
+		ConnectorCtePlan plan = planConnector(true, false, false, false);
 
 		assertTrue(plan.withIntervalPacking());
-		assertFalse(plan.excludedFromTimeAggregation());
 		assertTrue(plan.tables().isRequiredStep(PREVIOUS_END));
 		assertTrue(plan.tables().isRequiredStep(RANGE_INDEX));
 		assertTrue(plan.tables().isRequiredStep(INTERVAL_COMPLETE));
@@ -61,13 +59,21 @@ class ConceptCtePlannerTest {
 	}
 
 	@Test
-	void shouldPlanConnectorIntervalSelectsWithoutPropagatingTheirValidityDate() {
-		ConnectorCtePlan plan = planConnector(false, true, false);
+	void shouldPlanConnectorIntervalSelectsForBlockedDateAggregation() {
+		ConnectorCtePlan plan = planConnector(false, true, false, false);
 
 		assertTrue(plan.withIntervalPacking());
-		assertTrue(plan.excludedFromTimeAggregation());
 		assertTrue(plan.tables().isRequiredStep(INTERVAL_PACKING_SELECTS));
 		assertEquals("connector-interval_complete", plan.tables().getPredecessor(INTERVAL_PACKING_SELECTS));
+	}
+
+	@Test
+	void shouldPlanIntervalPackingWithoutConnectorSelectBranchForConceptEventDateSelects() {
+		ConnectorCtePlan plan = planConnector(false, false, true, false);
+
+		assertTrue(plan.withIntervalPacking());
+		assertTrue(plan.tables().isRequiredStep(INTERVAL_COMPLETE));
+		assertFalse(plan.tables().isRequiredStep(INTERVAL_PACKING_SELECTS));
 	}
 
 	@Test
@@ -75,6 +81,7 @@ class ConceptCtePlannerTest {
 		ConnectorCtePlan plan = ConceptCtePlanner.planConnector(
 				SqlTable.of("events", "catalog", "events"),
 				"connector",
+				false,
 				false,
 				false,
 				new TestDialect(false),
@@ -133,12 +140,18 @@ class ConceptCtePlannerTest {
 		);
 	}
 
-	private static ConnectorCtePlan planConnector(boolean aggregateEventDates, boolean eventDateSelectsPresent, boolean singleColumnRanges) {
+	private static ConnectorCtePlan planConnector(
+			boolean aggregateEventDates,
+			boolean connectorEventDateSelectsPresent,
+			boolean conceptEventDateSelectsPresent,
+			boolean singleColumnRanges
+	) {
 		return ConceptCtePlanner.planConnector(
 				"events",
 				"connector",
 				aggregateEventDates,
-				eventDateSelectsPresent,
+				connectorEventDateSelectsPresent,
+				conceptEventDateSelectsPresent,
 				new TestDialect(singleColumnRanges),
 				new SqlNameGenerator(128)
 		);

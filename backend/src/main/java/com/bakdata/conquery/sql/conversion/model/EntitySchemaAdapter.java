@@ -2,8 +2,8 @@ package com.bakdata.conquery.sql.conversion.model;
 
 import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.models.config.IdColumnConfig;
-import com.bakdata.conquery.models.datasets.ColumnType;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.ColumnType;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.sql.model.schema.DateColumns;

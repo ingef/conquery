@@ -1,7 +1,7 @@
 package com.bakdata.conquery.sql.conversion;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
@@ -13,25 +13,25 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validation;
 
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
+import com.bakdata.conquery.models.datasets.ColumnType;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
-import com.bakdata.conquery.models.datasets.ColumnType;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.sql.compiler.dialect.hana.HanaCompilerDialect;
 import com.bakdata.conquery.sql.compiler.ColumnRole;
 import com.bakdata.conquery.sql.compiler.CompiledColumn;
 import com.bakdata.conquery.sql.compiler.CompiledQuery;
-import com.bakdata.conquery.sql.model.result.ResultType;
+import com.bakdata.conquery.sql.compiler.dialect.hana.HanaCompilerDialect;
 import com.bakdata.conquery.sql.model.ResolvedQuery;
 import com.bakdata.conquery.sql.model.node.AllEntitiesNode;
+import com.bakdata.conquery.sql.model.result.ResultType;
 import com.bakdata.conquery.sql.model.schema.EntitySchema;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.model.schema.SqlTable;
-import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.Validation;
 import org.junit.jupiter.api.Test;
 
 class SqlExtractionQueryTest {

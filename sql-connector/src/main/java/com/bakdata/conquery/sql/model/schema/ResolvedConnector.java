@@ -2,16 +2,16 @@ package com.bakdata.conquery.sql.model.schema;
 
 import java.util.List;
 import java.util.Optional;
-
-import com.bakdata.conquery.sql.model.internal.ModelNormalization;
-import com.bakdata.conquery.sql.model.operation.ResolvedCondition;
-import com.bakdata.conquery.sql.model.operation.ResolvedFilter;
-import com.bakdata.conquery.sql.model.operation.ResolvedSelect;
-import com.bakdata.conquery.sql.mapping.ConceptIdMappingSelection;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+
+import com.bakdata.conquery.sql.mapping.ConceptIdMappingSelection;
+import com.bakdata.conquery.sql.model.internal.ModelNormalization;
+import com.bakdata.conquery.sql.model.operation.ResolvedCondition;
+import com.bakdata.conquery.sql.model.operation.ResolvedFilter;
+import com.bakdata.conquery.sql.model.operation.ResolvedSelect;
 
 /** A selected connector with all physical columns and operations resolved. */
 public record ResolvedConnector(

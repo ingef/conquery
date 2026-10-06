@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import { exists } from "../common/helpers/exists";
 import { IndexPrefix } from "../ui-components/IndexPrefix";
+import { C2, textStyle } from "../ui-components/Typography";
 
 const container = tv({
   base: [
@@ -11,19 +12,16 @@ const container = tv({
     "items-start",
     "gap-x-2",
     "py-[3px]",
-    "text-sm",
   ],
 });
 
-const text = tv({
-  base: ["m-0", "text-gray-500"],
-  variants: {
-    bold: { true: "text-gray-800 font-normal" },
-  },
-});
-
 const indexPrefix = tv({
-  base: ["mr-0", "bg-primary-500", "text-white", "font-bold"],
+  base: [
+    "mr-0",
+    "bg-primary-500",
+    "text-white",
+    textStyle({ size: 3, strong: true }),
+  ],
 });
 
 export const DropdownOption = memo(
@@ -43,27 +41,33 @@ export const DropdownOption = memo(
 
     return (
       <div className={container()}>
-        <span className={text()}>
+        <C2 as="span" tone="muted">
           {hasDifferentFilterLabel
             ? t("uploadConceptListModal.filterValuesFrom")
             : t("uploadConceptListModal.conceptValuesFrom")}
-        </span>
+        </C2>
         <div className="flex items-center justify-end">
           {hasDifferentFilterLabel ? (
             <IndexPrefix className={indexPrefix()}># {filterIdx}</IndexPrefix>
           ) : (
-            <FolderIcon className="text-primary-500" />
+            <FolderIcon data-filled className="text-primary-500" />
           )}
         </div>
-        <span className={text({ bold: !hasDifferentFilterLabel })}>
+        <C2 as="span" tone={hasDifferentFilterLabel ? "muted" : "default"}>
           {conceptLabel}
-        </span>
+        </C2>
         {hasDifferentFilterLabel && (
           <>
-            <span className={text()}>&gt;</span>
-            <span className={text()}>{connectorLabel}</span>
-            <span className={text()}>&gt;</span>
-            <span className={text({ bold: true })}>{filterLabel}</span>
+            <C2 as="span" tone="muted">
+              &gt;
+            </C2>
+            <C2 as="span" tone="muted">
+              {connectorLabel}
+            </C2>
+            <C2 as="span" tone="muted">
+              &gt;
+            </C2>
+            <C2 as="span">{filterLabel}</C2>
           </>
         )}
       </div>

@@ -8,11 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
+import com.google.common.primitives.Ints;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import com.google.common.primitives.Ints;
 
 class CQuarterTest {
 
@@ -28,7 +27,7 @@ class CQuarterTest {
 		});
 		return values;
 	}
-	
+
 	@ParameterizedTest(name = "{0}") @MethodSource
 	public void testLastDay(LocalDate first, LocalDate last) {
 		int firstEpoch = Ints.checkedCast(first.toEpochDay());

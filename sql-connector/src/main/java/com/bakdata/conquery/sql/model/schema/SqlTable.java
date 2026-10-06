@@ -2,10 +2,10 @@ package com.bakdata.conquery.sql.model.schema;
 
 import java.util.Arrays;
 import java.util.List;
-
-import com.bakdata.conquery.sql.model.internal.ModelNormalization;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+
+import com.bakdata.conquery.sql.model.internal.ModelNormalization;
 
 /** A logical table together with its unquoted physical SQL name. */
 public record SqlTable(

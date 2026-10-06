@@ -6,14 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Stream;
 import jakarta.validation.Validator;
 
@@ -23,6 +16,7 @@ import com.bakdata.conquery.apiv1.auth.PasswordCredential;
 import com.bakdata.conquery.apiv1.forms.ExternalForm;
 import com.bakdata.conquery.apiv1.forms.export_form.AbsoluteMode;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
+import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
@@ -35,6 +29,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.external.form.FormBackendVersion;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.io.storage.WorkerStorageImpl;
 import com.bakdata.conquery.models.auth.entities.Group;
@@ -45,12 +40,14 @@ import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.FormBackendConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.filters.EventFilter;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.error.ConqueryError;
@@ -73,15 +70,13 @@ import com.bakdata.conquery.models.forms.util.Alignment;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
+import com.bakdata.conquery.models.identifiable.IdResolvingException;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
-import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
+import com.bakdata.conquery.models.identifiable.ids.specific.*;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.entity.Entity;
+import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -325,8 +320,38 @@ public class SerializationTests extends AbstractSerializationTest {
 
 	@Test
 	public void filterValueMoneyRange() throws JSONException, IOException {
+		// Concept filter setup
+		NamespaceStorage namespaceStorage = getNamespaceStorage();
+		final Dataset dataset = createDataset(namespaceStorage, getDatasetRegistry());
+		TreeConcept concept = createConcept(dataset, namespaceStorage);
+		ConceptTreeConnector connector = concept.getConnectors().getFirst();
+		EventFilter<FilterValue.CQMoneyRangeFilter> filter = new EventFilter<>() {
+			{
+				setName("filter");
+				setConnector(connector);
+			}
+
+
+			@Override
+			protected void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) {
+
+			}
+
+			@Override
+			public EventFilterNode<?> createFilterNode(FilterValue.CQMoneyRangeFilter o) {
+				return null;
+			}
+
+			@Override
+			public List<ColumnId> getRequiredColumns() {
+				return List.of();
+			}
+		};
+		connector.setFilters(List.of(filter));
+		namespaceStorage.updateConcept(concept);
+
 		FilterValue.CQMoneyRangeFilter filterValue =
-				new FilterValue.CQMoneyRangeFilter(FilterId.Parser.INSTANCE.parse("dataset.concept.connector.filter"), new Range.LongRange(2000L, 30000L));
+				new FilterValue.CQMoneyRangeFilter(filter.getId(), new Range.LongRange(2000L, 30000L));
 
 		filterValue.setConfig(getConfig());
 
@@ -902,4 +927,13 @@ public class SerializationTests extends AbstractSerializationTest {
 							 .test(version);
 	}
 
+
+	@Test
+	public void idResolveException() throws JSONException, IOException {
+		final IdResolvingException version = new IdResolvingException(new ConceptId(new DatasetId("dataset"),"concept"));
+
+		SerializationTestUtil.forType(ConqueryError.class)
+				.objectMappers(getInternalCommunicationMapper())
+				.test(version);
+	}
 }

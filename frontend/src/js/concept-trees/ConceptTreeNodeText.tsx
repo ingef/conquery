@@ -2,6 +2,7 @@ import type { Ref } from "react";
 import { tv } from "tailwind-variants";
 import type { NodeIconT } from "../model/node";
 import { Highlighter } from "../ui-components/Highlighter";
+import { C2, textStyle } from "../ui-components/Typography";
 import { NodeIcon } from "./NodeIcon";
 
 // Root with transparent background.
@@ -17,15 +18,14 @@ const text = tv({
     "select-none",
     "rounded",
     "border border-transparent",
-    "px-[10px]",
-    "leading-[18px]",
+    "h-5 px-[10px]",
     "text-gray-800",
     "bg-bg-50",
   ],
   variants: {
     // later wins when several are set
     disabled: {
-      true: "text-gray-500",
+      true: "text-gray-600",
       false: "hover:border-primary-200",
     },
     red: { true: "text-red" },
@@ -48,13 +48,10 @@ const resultsNumber = tv({
   base: [
     "inline-flex items-center justify-center",
     "shrink-0",
-    "px-1 py-[2px]",
+    "h-4 px-1",
     "mr-[5px]",
-    "text-xs",
-    "leading-none",
     "rounded",
-    "text-primary-500",
-    "font-bold",
+    textStyle({ size: 3, tone: "primary", strong: true }),
   ],
 });
 
@@ -102,23 +99,25 @@ const ConceptTreeNodeText = ({
       >
         <NodeIcon icon={icon} className={nodeIcon({ disabled: !!disabled })} />
         {resultCount && <span className={resultsNumber()}>{resultCount}</span>}
-        <span>
+        <C2 as="span">
           {searchWords ? (
             <Highlighter searchWords={searchWords} textToHighlight={label} />
           ) : (
             label
           )}
-        </span>
+        </C2>
         {!!description && (
           <span className={descriptionText()}>
-            {searchWords ? (
-              <Highlighter
-                searchWords={searchWords}
-                textToHighlight={description}
-              />
-            ) : (
-              `- ${description}`
-            )}
+            <C2 as="span">
+              {searchWords ? (
+                <Highlighter
+                  searchWords={searchWords}
+                  textToHighlight={description}
+                />
+              ) : (
+                `- ${description}`
+              )}
+            </C2>
           </span>
         )}
       </p>

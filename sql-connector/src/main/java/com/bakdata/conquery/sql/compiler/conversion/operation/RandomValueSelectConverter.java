@@ -1,11 +1,11 @@
 package com.bakdata.conquery.sql.compiler.conversion.operation;
 
-import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
+import com.bakdata.conquery.sql.compiler.ir.SqlTables;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.compiler.ir.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
-import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
-import com.bakdata.conquery.sql.compiler.ir.SqlTables;
+import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
 import org.jooq.Field;
 
 final class RandomValueSelectConverter {

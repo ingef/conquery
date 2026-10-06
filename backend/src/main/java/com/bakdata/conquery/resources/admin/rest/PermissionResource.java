@@ -1,14 +1,15 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
-import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
-import com.bakdata.conquery.util.validation.ValidConqueryPermission;
+import static com.bakdata.conquery.resources.ResourceConstants.OWNER_ID;
+
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
-import lombok.RequiredArgsConstructor;
 
-import static com.bakdata.conquery.resources.ResourceConstants.OWNER_ID;
+import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
+import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
+import com.bakdata.conquery.util.validation.ValidConqueryPermission;
+import lombok.RequiredArgsConstructor;
 
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
@@ -31,7 +32,7 @@ public class PermissionResource {
 	public void createPermission(@ValidConqueryPermission String permission) {
 		processor.createPermission(owner, new WildcardPermission(permission));
 	}
-	
+
 	@DELETE
 	public void deletePermission(@ValidConqueryPermission String permission) {
 		processor.deletePermission(owner, new WildcardPermission(permission));

@@ -1,19 +1,20 @@
 package com.bakdata.conquery.sql.model;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static com.bakdata.conquery.sql.model.ValidationTestSupport.assertInvalid;
 import static com.bakdata.conquery.sql.model.ValidationTestSupport.assertValid;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import jakarta.validation.ConstraintViolationException;
 
 import com.bakdata.conquery.models.datasets.ColumnType;
+import com.bakdata.conquery.models.query.DateAggregationAction;
 import com.bakdata.conquery.sql.model.node.AndNode;
 import com.bakdata.conquery.sql.model.node.ConceptNode;
-import com.bakdata.conquery.models.query.DateAggregationAction;
 import com.bakdata.conquery.sql.model.node.QueryNode;
 import com.bakdata.conquery.sql.model.range.DateRange;
 import com.bakdata.conquery.sql.model.result.ResultColumn;
@@ -24,7 +25,6 @@ import com.bakdata.conquery.sql.model.schema.ResolvedConnector;
 import com.bakdata.conquery.sql.model.schema.ResolvedValidityDate;
 import com.bakdata.conquery.sql.model.schema.SqlTable;
 import com.bakdata.conquery.sql.validation.ResolvedQueryValidation;
-import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.Test;
 
 class ResolvedQueryTest {

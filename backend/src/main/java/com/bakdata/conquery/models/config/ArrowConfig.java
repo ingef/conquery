@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.config;
 
 import jakarta.validation.constraints.Min;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

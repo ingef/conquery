@@ -15,7 +15,10 @@ type Story = StoryObj<typeof CheckboxField>;
 const Stateful = ({
   defaultSelected = false,
   ...props
-}: Omit<CheckboxFieldProps, "isSelected" | "onChange"> & {
+}: Omit<
+  Extract<CheckboxFieldProps, { children: string }>,
+  "isSelected" | "onChange"
+> & {
   defaultSelected?: boolean;
 }) => {
   const [selected, setSelected] = useState(defaultSelected);
@@ -73,4 +76,20 @@ export const MultiLine: Story = {
       </Stateful>
     </div>
   ),
+};
+
+// inside a row that names it, the checkbox has no label text of its own
+const StatefulWithoutLabel = () => {
+  const [selected, setSelected] = useState(true);
+  return (
+    <CheckboxField
+      aria-label="Include the region"
+      isSelected={selected}
+      onChange={setSelected}
+    />
+  );
+};
+
+export const WithoutVisibleLabel: Story = {
+  render: () => <StatefulWithoutLabel />,
 };

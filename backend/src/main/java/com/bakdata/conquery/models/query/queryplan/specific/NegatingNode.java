@@ -29,7 +29,7 @@ public class NegatingNode extends QPChainNode {
 		super(child);
 		this.dateAggregator = dateAggregator;
 	}
-	
+
 	@Override
 	public boolean acceptEvent(Bucket bucket, int event) {
 		return getChild().acceptEvent(bucket, event);

@@ -1,7 +1,6 @@
 package com.bakdata.conquery.resources.hierarchies;
 
 import java.security.Principal;
-
 import jakarta.annotation.PostConstruct;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Context;

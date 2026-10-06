@@ -2,18 +2,20 @@ import { FolderIcon } from "lucide-react";
 import { tv } from "tailwind-variants";
 import { exists } from "../../common/helpers/exists";
 import { Highlighter } from "../../ui-components/Highlighter";
+import { C2, textStyle } from "../../ui-components/Typography";
 
 const root = tv({
   base: [
     "inline-flex items-center",
     "px-[7px] py-[2px]",
     "rounded",
-    "text-sm",
     "cursor-pointer",
-    "bg-transparent hover:bg-primary-50",
+    "hover:bg-gray-50",
   ],
   variants: {
-    active: { true: "bg-gray-100" },
+    selected: {
+      true: "bg-primary-50 text-primary-500 hover:bg-primary-100",
+    },
     special: { true: "italic" },
   },
 });
@@ -22,13 +24,10 @@ const resultCount = tv({
   base: [
     "shrink-0",
     "inline-flex items-center justify-center",
-    "py-[2px]",
+    "h-4",
     "mr-[5px]",
-    "text-xs",
-    "leading-none",
     "rounded",
-    "text-primary-500",
-    "font-bold",
+    textStyle({ size: 3, tone: "primary", strong: true }),
   ],
 });
 
@@ -37,7 +36,7 @@ const Folder = ({
   resultCount: count,
   resultWords,
   folder,
-  active,
+  selected,
   special,
   empty,
   onClick,
@@ -46,7 +45,7 @@ const Folder = ({
   resultCount: number | null;
   resultWords: string[];
   className?: string;
-  active?: boolean;
+  selected?: boolean;
   special?: boolean;
   empty?: boolean;
   onClick: () => void;
@@ -57,18 +56,20 @@ const Folder = ({
     <div
       key={folder}
       onClick={onClick}
-      className={root({ active, special, className })}
+      className={root({ selected, special, className })}
       title={folder}
     >
       <FolderIcon data-filled={!special} className="mr-2 text-primary-500" />
       {exists(count) && <span className={resultCount()}>{count}</span>}
-      <div className="shrink-0 text-gray-800">
-        {!empty && resultWords.length > 0 ? (
-          <Highlighter searchWords={resultWords} textToHighlight={folder} />
-        ) : (
-          folder
-        )}
-      </div>
+      <span className="shrink-0">
+        <C2 as="span">
+          {!empty && resultWords.length > 0 ? (
+            <Highlighter searchWords={resultWords} textToHighlight={folder} />
+          ) : (
+            folder
+          )}
+        </C2>
+      </span>
     </div>
   );
 };

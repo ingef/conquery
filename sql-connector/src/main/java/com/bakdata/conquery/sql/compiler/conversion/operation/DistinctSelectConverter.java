@@ -3,19 +3,17 @@ package com.bakdata.conquery.sql.compiler.conversion.operation;
 import java.util.List;
 import java.util.Optional;
 
-import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
-
-import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
-import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
-import com.bakdata.conquery.sql.compiler.ir.select.SingleColumnSqlSelect;
-import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
-import com.bakdata.conquery.sql.compiler.ir.SqlTables;
 import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
 import com.bakdata.conquery.sql.compiler.ir.CteStep;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
-
+import com.bakdata.conquery.sql.compiler.ir.SqlTables;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
+import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
+import com.bakdata.conquery.sql.compiler.ir.select.SingleColumnSqlSelect;
+import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Field;

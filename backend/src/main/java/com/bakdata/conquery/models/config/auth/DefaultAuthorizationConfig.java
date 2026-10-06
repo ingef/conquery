@@ -3,6 +3,8 @@ package com.bakdata.conquery.models.config.auth;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.apiv1.auth.ProtoRole;
 import com.bakdata.conquery.apiv1.auth.ProtoUser;
@@ -11,8 +13,6 @@ import com.bakdata.conquery.models.auth.permissions.AdminPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.SuperPermission;
 import io.dropwizard.validation.ValidationMethod;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 
 @CPSType(base = AuthorizationConfig.class, id = "DEFAULT")

@@ -4,6 +4,7 @@ import static com.bakdata.conquery.resources.ResourceConstants.API;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.core.UriBuilder;
+
 import lombok.experimental.UtilityClass;
 
 @UtilityClass

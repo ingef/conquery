@@ -3,16 +3,17 @@ package com.bakdata.conquery.sql.compiler.dialect.hana;
 import static com.bakdata.conquery.sql.compiler.dialect.Interval.MONTHS_PER_QUARTER;
 import static org.jooq.impl.DSL.*;
 
-import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
-import com.bakdata.conquery.sql.compiler.ir.QueryStep;
-import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
-import com.bakdata.conquery.sql.model.range.DateRange;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
+
+import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
+import com.bakdata.conquery.sql.compiler.ir.QueryStep;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
+import com.bakdata.conquery.sql.model.range.DateRange;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;

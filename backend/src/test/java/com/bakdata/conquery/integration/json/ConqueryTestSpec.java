@@ -8,7 +8,6 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.config.IdColumnConfig;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -67,24 +66,24 @@ public abstract class ConqueryTestSpec {
 		}
 	}
 
-	public static <T extends ConqueryTestSpec> T readJson(DatasetId dataset, String json) throws IOException {
-		return readJson(dataset, json, TEST_SPEC_READER);
+	public static <T> T readJson(DatasetId dataset, String json, Class<T> clazz) throws IOException {
+		return readJson(dataset, json, Jackson.MAPPER.readerFor(clazz));
 	}
 
-	private static <T extends ConqueryTestSpec> T readJson(DatasetId dataset, String json, ObjectReader jsonReader) throws IOException {
+	public static <T extends ConqueryTestSpec> T readJson(DatasetId dataset, String json) throws IOException {
+		T testSpec = readJson(dataset, json, TEST_SPEC_READER);
+		testSpec.setSource(json);
+		return testSpec;
+	}
+
+	private static <T> T readJson(DatasetId dataset, String json, ObjectReader jsonReader) throws IOException {
 		json = StringUtils.replace(
 				json,
 				"${dataset}",
 				dataset.toString()
 		);
 
-		T spec = jsonReader.readValue(json);
-		spec.setSource(json);
-		return spec;
-	}
-
-	public static <T extends ConqueryTestSpec> T readJson(Dataset dataset, String json) throws IOException {
-		return readJson(dataset.getId(), json, dataset.injectIntoNew(TEST_SPEC_READER));
+		return jsonReader.readValue(json);
 	}
 
 	public ConqueryConfig overrideConfig(ConqueryConfig config) {

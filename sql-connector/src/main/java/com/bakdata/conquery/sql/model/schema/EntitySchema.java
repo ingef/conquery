@@ -1,9 +1,10 @@
 package com.bakdata.conquery.sql.model.schema;
 
-import com.bakdata.conquery.models.datasets.ColumnType;
-import com.bakdata.conquery.sql.validation.AllowedColumnTypes;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+
+import com.bakdata.conquery.models.datasets.ColumnType;
+import com.bakdata.conquery.sql.validation.AllowedColumnTypes;
 
 /** Physical source used to enumerate all entities, for example when compiling a root-level negation. */
 public record EntitySchema(

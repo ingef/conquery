@@ -1,6 +1,8 @@
 package com.bakdata.conquery.sql.mapping;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Arrays;
@@ -46,6 +48,7 @@ class ConceptIdMappingResolverTest {
 				List.of(2, "A", true)
 		), mapping.rows().stream().map(row -> Arrays.stream(row.fields())
 				.map(field -> ((Param<?>) field).getValue()).toList()).collect(java.util.stream.Collectors.toSet()));
+		assertSame(mapping.rows(), mapping.rows());
 	}
 
 	@Test
@@ -56,7 +59,7 @@ class ConceptIdMappingResolverTest {
 				extractor, Set.of(DSL.val("A"))
 		);
 
-		assertThrows(IllegalArgumentException.class, () -> ConceptIdMappingResolver.resolve(
+		ConceptIdMappingTable mapping = assertDoesNotThrow(() -> ConceptIdMappingResolver.resolve(
 				"diagnosis",
 				DSL.name("diagnosis_ids"),
 				List.of(
@@ -64,5 +67,7 @@ class ConceptIdMappingResolverTest {
 						new ConceptIdMappingResolver.MappingExpression("right", 2, 1, Map.of(code, condition))
 				)
 		));
+
+		assertThrows(IllegalArgumentException.class, mapping::rows);
 	}
 }

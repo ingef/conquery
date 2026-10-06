@@ -2,11 +2,11 @@ package com.bakdata.conquery.sql.validation;
 
 import java.util.Objects;
 import java.util.Set;
-
-import com.bakdata.conquery.sql.model.ResolvedQuery;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
+
+import com.bakdata.conquery.sql.model.ResolvedQuery;
 
 /** Validates the complete resolved query graph before SQL compilation starts. */
 public final class ResolvedQueryValidation {

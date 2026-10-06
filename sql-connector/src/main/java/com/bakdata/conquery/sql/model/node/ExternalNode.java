@@ -4,13 +4,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-
-import com.bakdata.conquery.sql.model.internal.ModelNormalization;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+
+import com.bakdata.conquery.sql.model.internal.ModelNormalization;
 
 /** A resolved upload of entity IDs, optional validity dates, and additional result columns. */
 public record ExternalNode(

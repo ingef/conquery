@@ -39,7 +39,8 @@ import org.testcontainers.utility.DockerImageName;
 @Slf4j
 public class ClickhouseSqlIntegrationTests extends IntegrationTests {
 
-	private final static DockerImageName IMAGE_TAG = DockerImageName.parse("clickhouse/clickhouse-server");
+	// 26.9 answers with ZSTD-compressed responses, which clickhouse-jdbc 0.9.8 cannot read
+	private final static DockerImageName IMAGE_TAG = DockerImageName.parse("clickhouse/clickhouse-server:26.8");
 	private static boolean useLocal = true;
 	private static DSLContext dslContext;
 	private static ManagedConnection managedConnection;

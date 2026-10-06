@@ -33,7 +33,6 @@ import org.jooq.Record3;
 import org.jooq.Select;
 import org.jooq.SelectConditionStep;
 import org.jooq.Table;
-import org.jooq.impl.DSL;
 
 @RequiredArgsConstructor
 public class SqlEntityResolver implements EntityResolver {

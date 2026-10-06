@@ -7,6 +7,7 @@ import java.util.Set;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.events.MajorTypeId;
@@ -14,6 +15,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.types.SemanticType;
+import com.bakdata.conquery.util.validation.ResolvableId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
@@ -31,6 +33,7 @@ public abstract class SingleColumnSelect extends Select {
 
 	@NotNull
 	@NonNull
+	@ResolvableId
 	private ColumnId column;
 
 	/**
@@ -67,7 +70,11 @@ public abstract class SingleColumnSelect extends Select {
 	@ValidationMethod(message = "Column does not match required Type.")
 	public boolean isValidColumnType() {
 
-		MajorTypeId type = getColumn().resolve().getType();
+		Column resolved = getColumn().get();
+		if (resolved == null) {
+			return true;
+		}
+		MajorTypeId type = resolved.getType();
 		if (getAcceptedColumnTypes().contains(type)) {
 			return true;
 		}

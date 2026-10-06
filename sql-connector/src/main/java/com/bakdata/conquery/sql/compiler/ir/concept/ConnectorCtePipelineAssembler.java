@@ -51,8 +51,7 @@ public class ConnectorCtePipelineAssembler {
 				preprocessing,
 				eventDateSelects,
 				additionalPredecessors,
-				plan.withIntervalPacking(),
-				plan.excludedFromTimeAggregation()
+				plan.withIntervalPacking()
 		);
 	}
 }

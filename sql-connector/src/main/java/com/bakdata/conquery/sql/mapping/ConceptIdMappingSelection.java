@@ -4,8 +4,8 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
-import org.jooq.Table;
 import org.jooq.Record;
+import org.jooq.Table;
 
 /** Fully resolved concept-element selection applied to one connector source. */
 public record ConceptIdMappingSelection(

@@ -4,10 +4,12 @@ import {
   MenuItem as RacMenuItem,
   type MenuItemProps as RacMenuItemProps,
   type MenuProps as RacMenuProps,
+  Separator,
 } from "react-aria-components";
 import { tv } from "tailwind-variants";
 
 import { Popover } from "./Popover";
+import { textStyle } from "./Typography";
 
 const menu = tv({
   base: [
@@ -25,17 +27,14 @@ const menuItem = tv({
     "flex items-center",
     "gap-[10px]",
     "rounded",
-    "px-[15px] py-2",
-    // explicit: through the portal an item would inherit body's line-height and light weight
-    "text-sm leading-none font-normal",
-    "text-gray-800",
+    "h-[30px] px-3",
+    textStyle({ size: 2, tone: "default" }),
     "whitespace-nowrap",
     "cursor-pointer",
     "outline-none",
-    "opacity-75",
-    "data-focused:opacity-100 data-focused:bg-gray-50",
+    "data-focused:bg-gray-50",
     "data-disabled:cursor-not-allowed data-disabled:opacity-40",
-    "transition-[opacity,background-color] duration-100",
+    "transition-[background-color] duration-100",
   ],
   variants: {
     danger: { true: "text-red" },
@@ -53,6 +52,8 @@ const menuItem = tv({
  *       <MenuItem href="…">…</MenuItem>
  *     </Menu>
  *   </MenuTrigger>
+ *
+ * A `MenuSeparator` divides groups of items.
  *
  * MenuTrigger comes from react-aria-components; a Button or ToggleButton
  * is its trigger without further wiring. Items focus on hover, arrow keys
@@ -80,3 +81,7 @@ export const MenuItem = ({
   className?: string;
   danger?: boolean;
 }) => <RacMenuItem className={menuItem({ danger, className })} {...props} />;
+
+export const MenuSeparator = () => (
+  <Separator className="my-1 h-px shrink-0 border-0 bg-gray-100" />
+);

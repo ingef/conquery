@@ -1,5 +1,6 @@
 package com.bakdata.conquery.sql.compiler;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -11,6 +12,7 @@ import java.util.Set;
 import com.bakdata.conquery.models.datasets.ColumnType;
 import com.bakdata.conquery.models.query.DateAggregationAction;
 import com.bakdata.conquery.sql.compiler.dialect.hana.HanaCompilerDialect;
+import com.bakdata.conquery.sql.compiler.naming.SqlNameGenerator;
 import com.bakdata.conquery.sql.mapping.ConceptIdMappingSelection;
 import com.bakdata.conquery.sql.mapping.ConceptIdMappingSource;
 import com.bakdata.conquery.sql.mapping.ConceptIdMappingTable;
@@ -22,6 +24,7 @@ import com.bakdata.conquery.sql.model.node.ExternalNode;
 import com.bakdata.conquery.sql.model.node.NegationNode;
 import com.bakdata.conquery.sql.model.node.OrNode;
 import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
+import com.bakdata.conquery.sql.model.operation.ResolvedSelect;
 import com.bakdata.conquery.sql.model.result.ResultColumn;
 import com.bakdata.conquery.sql.model.result.ResultType;
 import com.bakdata.conquery.sql.model.schema.EntitySchema;
@@ -259,6 +262,61 @@ class DefaultSqlCompilerTest {
 				compiled.columns().stream().map(CompiledColumn::sqlAlias).toList());
 		assertEquals(List.of("entity-id", "validity", "first-found", "second-found"),
 				compiled.columns().stream().map(CompiledColumn::outputId).toList());
+	}
+
+	@Test
+	void shouldCompileConceptEventDateUnionWithBlockedDateAggregation() {
+		assertConceptEventDateSelectCompiles(
+				new BuiltInSelects.EventDateUnion("event dates"),
+				new ResultType.ListType(ResultType.Primitive.DATE_RANGE)
+		);
+	}
+
+	@Test
+	void shouldCompileConceptEventDurationSumWithBlockedDateAggregation() {
+		assertConceptEventDateSelectCompiles(
+				new BuiltInSelects.EventDurationSum("event duration"),
+				ResultType.Primitive.NUMERIC
+		);
+	}
+
+	private static void assertConceptEventDateSelectCompiles(ResolvedSelect select, ResultType resultType) {
+		SqlTable claims = SqlTable.of("claims", "catalog", "claims");
+		SqlTable prescriptions = SqlTable.of("prescriptions", "catalog", "prescriptions");
+		ResolvedConnector first = connectorWithEventDate("claims", claims);
+		ResolvedConnector second = connectorWithEventDate("prescriptions", prescriptions);
+		ResolvedQuery query = new ResolvedQuery(
+				new EntitySchema(ENTITY_ID),
+				new ConceptNode("events", List.of(first, second), List.of(select), DateAggregationAction.BLOCK),
+				false,
+				List.of(new ResultColumn("event-select", resultType))
+		);
+		HanaCompilerDialect dialect = new HanaCompilerDialect();
+		ResolvedQueryStepCompiler.CompiledQuerySteps compiledSteps = assertDoesNotThrow(
+				() -> new ResolvedQueryStepCompiler().compile(query, dialect, new SqlNameGenerator(128), Optional.empty())
+		);
+
+		assertTrue(compiledSteps.step().getSelects().getValidityDate().isEmpty());
+
+		CompiledQuery compiled = assertDoesNotThrow(() -> new DefaultSqlCompiler(DSL.using(SQLDialect.DEFAULT))
+				.compile(query, dialect));
+
+		assertEquals("event-select", compiled.columns().get(1).outputId());
+	}
+
+	private static ResolvedConnector connectorWithEventDate(String logicalId, SqlTable table) {
+		return new ResolvedConnector(
+				logicalId,
+				table,
+				new ResolvedColumn(logicalId + ".entity-id", table, "person_id", ColumnType.STRING, false),
+				Optional.empty(),
+				new ResolvedValidityDate.Point(new ResolvedColumn(
+						logicalId + ".date", table, "event_date", ColumnType.DATE, true
+				)),
+				List.of(),
+				List.of(),
+				List.of()
+		);
 	}
 
 }

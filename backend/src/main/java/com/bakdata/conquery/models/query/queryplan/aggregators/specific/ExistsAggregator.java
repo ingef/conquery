@@ -31,7 +31,7 @@ public class ExistsAggregator extends Aggregator<Boolean> {
 	public Boolean createAggregationResult() {
 		return reference.isContained();
 	}
-	
+
 	@Override
 	public void collectRequiredTables(Set<Table> requiredTables) {
 		requiredTables.addAll(this.requiredTables);

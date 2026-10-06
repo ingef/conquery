@@ -1,26 +1,26 @@
 package com.bakdata.conquery.sql.compiler.dialect;
 
-import com.bakdata.conquery.sql.compiler.conversion.operation.DistinctSelectConverter;
-import com.bakdata.conquery.sql.compiler.conversion.operation.SelectConversionContext;
-import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
-import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Function;
 
-import com.bakdata.conquery.sql.compiler.ir.QueryStep;
-import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
+import com.bakdata.conquery.sql.compiler.conversion.operation.DistinctSelectConverter;
+import com.bakdata.conquery.sql.compiler.conversion.operation.SelectConversionContext;
 import com.bakdata.conquery.sql.compiler.forms.StratificationFunctions;
+import com.bakdata.conquery.sql.compiler.ir.QueryStep;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
+import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
 import com.bakdata.conquery.sql.model.range.DateRange;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.OrderField;
-import org.jooq.SortField;
 import org.jooq.Record;
+import org.jooq.SortField;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;

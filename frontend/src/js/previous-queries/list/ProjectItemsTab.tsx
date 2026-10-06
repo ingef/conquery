@@ -18,7 +18,11 @@ import ProjectItemsSearchBox from "../search/ProjectItemsSearchBox";
 import ProjectItemsTypeFilter from "../type-filter/ProjectItemsTypeFilter";
 import type { ProjectItemsTypeFilterStateT } from "../type-filter/reducer";
 import UploadQueryResults from "../upload/UploadQueryResults";
-import { useLoadFormConfigs, useLoadQueries } from "./actions";
+import {
+  useLoadDefaultFolders,
+  useLoadFormConfigs,
+  useLoadQueries,
+} from "./actions";
 import Folders from "./Folders";
 import FoldersToggleButton from "./FoldersToggleButton";
 import type { ProjectItemT } from "./ProjectItem";
@@ -157,6 +161,7 @@ const useProjectItems = ({
 
   const { queries, loading: loadingQueries } = useQueries(config);
   const { formConfigs, loading: loadingFormConfigs } = useFormConfigs(config);
+  useDefaultFolders(datasetId);
 
   const baseItems =
     typeFilter === "queries"
@@ -207,6 +212,16 @@ const useQueries = ({
     queries,
     loading,
   };
+};
+
+const useDefaultFolders = (datasetId: DatasetT["id"] | null) => {
+  const loadDefaultFolders = useLoadDefaultFolders();
+
+  useEffect(() => {
+    if (datasetId) {
+      loadDefaultFolders(datasetId);
+    }
+  }, [datasetId, loadDefaultFolders]);
 };
 
 const useFormConfigs = ({

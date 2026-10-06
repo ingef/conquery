@@ -15,9 +15,9 @@ public interface ProgressReporter {
 	public static ProgressReporter createWaiting() {
 		return new ProgressReporterImpl();
 	}
-	
+
 	public void start();
-	
+
 	long getStartTimeMillis();
 	boolean isStarted();
 

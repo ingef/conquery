@@ -2,15 +2,12 @@ package com.bakdata.conquery.sql.compiler.conversion.operation;
 
 import static org.jooq.impl.DSL.field;
 
-import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
-
-import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.compiler.ir.SqlTables;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
-
-
 import com.bakdata.conquery.sql.compiler.ir.select.SingleColumnSqlSelect;
+import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
 
 public class ClickhouseDistinctSelectConverter {
 

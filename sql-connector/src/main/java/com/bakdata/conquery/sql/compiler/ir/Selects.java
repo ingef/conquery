@@ -1,17 +1,17 @@
 package com.bakdata.conquery.sql.compiler.ir;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
 import org.jooq.Field;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Fields selected by a compiler step before dialect-specific rendering.

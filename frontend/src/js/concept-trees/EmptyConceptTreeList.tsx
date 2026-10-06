@@ -1,6 +1,8 @@
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
+import { C1, H2 } from "../ui-components/Typography";
+
 const msgContainer = tv({
   base: ["flex flex-col items-start justify-center", "w-full", "h-full"],
 });
@@ -16,12 +18,10 @@ const EmptyConceptTreeList = () => {
     <div className="relative ml-[10px] flex w-full flex-col">
       <div className={msgContainer()}>
         <div className="w-[400px] whitespace-normal">
-          <p className="mt-[10px] text-xl font-normal">
-            {t("conceptTreeList.noTrees")}
-          </p>
-          <p className="mb-[10px] text-base">
-            {t("conceptTreeList.noTreesExplanation")}
-          </p>
+          <div className="my-[10px] flex flex-col gap-1">
+            <H2>{t("conceptTreeList.noTrees")}</H2>
+            <C1>{t("conceptTreeList.noTreesExplanation")}</C1>
+          </div>
         </div>
       </div>
       <div className={preview()} style={{ width: `${200}px` }} />

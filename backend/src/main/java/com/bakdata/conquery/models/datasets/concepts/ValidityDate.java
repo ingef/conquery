@@ -14,11 +14,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ValidityDateId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
 @Getter
@@ -33,6 +29,7 @@ public class ValidityDate extends LabeledNamespaceIdentifiable<ValidityDateId> i
 	private ColumnId startColumn;
 	@Nullable
 	private ColumnId endColumn;
+
 	@JsonBackReference
 	@ToString.Exclude
 	@EqualsAndHashCode.Exclude

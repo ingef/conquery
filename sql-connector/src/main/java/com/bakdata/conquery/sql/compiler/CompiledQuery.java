@@ -1,13 +1,13 @@
 package com.bakdata.conquery.sql.compiler;
 
 import java.util.List;
-
-import com.bakdata.conquery.sql.model.internal.ModelNormalization;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+
+import com.bakdata.conquery.sql.model.internal.ModelNormalization;
 
 /**
  * Self-contained result of SQL compilation.

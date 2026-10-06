@@ -1,20 +1,18 @@
 package com.bakdata.conquery.sql.conquery;
 
-import java.sql.Date;
-import jakarta.validation.constraints.NotBlank;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import static org.jooq.impl.DSL.*;
 
-import com.bakdata.conquery.models.common.daterange.CDateRange;
+import java.sql.Date;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
+
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.MatchingStats;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptIdMapping;
@@ -22,211 +20,223 @@ import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.mapping.ConceptIdMappingTableManager;
 import com.bakdata.conquery.util.TablePrimaryColumnUtil;
 import com.google.common.base.Stopwatch;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.jooq.*;
 import org.jooq.Record;
 import org.jooq.exception.DataAccessException;
-
-import static org.jooq.impl.DSL.*;
+import org.jooq.impl.SQLDataType;
 
 @Slf4j
 @Data
 public class SqlMatchingStats {
 
-	/**
-	 * Legacy backend implementation requires separation by source (in that case different shards). For sql it's a constant.
-	 */
-	private static final String SQL_SOURCE_MATCHING_STATS_LABEL = "sql";
+    /**
+     * Legacy backend implementation requires separation by source (in that case different shards). For sql it's a constant.
+     */
+    private static final String SQL_SOURCE_MATCHING_STATS_LABEL = "sql";
 
-	private static final Field<String> PID_FIELD = field(name("pid"), String.class);
-	private static final Field<Date> LB_FIELD = field(name("lower_bound"), Date.class);
-	private static final Field<Date> UB_FIELD = field(name("upper_bound"), Date.class);
-	private static final Field<Integer> CONCEPT_ID_FIELD = field(name(ConceptIdMapping.RESOLVED_ID_COLUMN), Integer.class);
-	private final DSLContext dslContext;
-	private final SqlFunctionProvider functionProvider;
-	private final String defaultPrimaryColumn;
-	private final int fetchBatchSize = 100;
-	private final int matchingStatsWorkers;
-	private final int matchingStatsRetries;
+    private static final Field<String> PID_FIELD = field(name("pid"), String.class);
+    private static final Field<Date> LB_FIELD = field(name("lower_bound"), Date.class);
+    private static final Field<Date> UB_FIELD = field(name("upper_bound"), Date.class);
+    private static final Field<Integer> CONCEPT_ID_FIELD = field(name(ConceptIdMapping.RESOLVED_ID_COLUMN), Integer.class);
 
-	private static void assignStatsToPath(ConceptElement<?> element, Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats, String entity, CDateRange span) {
-		while (element != null) {
-			ConceptElementId<?> id = element.getId();
+    private final DSLContext dslContext;
+    private final SqlFunctionProvider functionProvider;
+    private final String defaultPrimaryColumn;
+    private final int fetchBatchSize = 100;
+    private final int matchingStatsWorkers;
+    private final int matchingStatsRetries;
 
-			matchingStats.computeIfAbsent(id, (ignored) -> new MatchingStats.Entry())
-					.addEvents(entity, 1, span);
-			element = element.getParent();
-		}
-	}
+    private static void assignStatsToPath(
+            ConceptElement<?> element,
+            MatchingStats.Accumulator[] matchingStats,
+            String entity,
+            int minDate,
+            int maxDate
+    ) {
+        final long hashedEntity = MatchingStats.Accumulator.hashEntity(entity);
+        while (element != null) {
+            int localId = element.getLocalId();
+            matchingStats[localId].addEvents(hashedEntity, 1, minDate, maxDate);
+            element = element.getParent();
+        }
+    }
 
-	private static <T extends Record> Select<T> unionSelects(List<Select<? extends T>> connectorTableSelects) {
-		Select<T> unioned = null;
+    private static <T extends Record> Select<T> unionSelects(List<Select<? extends T>> connectorTableSelects) {
+        Select<T> unioned = null;
 
-		for (Select<? extends T> connectorTable : connectorTableSelects) {
-			if (unioned == null) {
-				unioned = (Select<T>) connectorTable;
-				continue;
-			}
+        for (Select<? extends T> connectorTable : connectorTableSelects) {
+            if (unioned == null) {
+                unioned = (Select<T>) connectorTable;
+                continue;
+            }
 
-			unioned = unioned.unionAll(connectorTable);
-		}
+            unioned = unioned.unionAll(connectorTable);
+        }
 
 
-		return unioned;
-	}
+        return unioned;
+    }
 
-	/**
-	 * Assembles the join table and inserts it into the database.
-	 *
-	 * @param concept
-	 */
-	public void createConceptIdJoinTable(TreeConcept concept) {
-		ConceptIdMapping mapping = new ConceptIdMapping(concept, functionProvider);
-		new ConceptIdMappingTableManager(dslContext).recreate(mapping.mappingTable());
-	}
+    /**
+     * Assembles the join table and inserts it into the database.
+     *
+     * @param concept
+     */
+    public void createConceptIdJoinTable(TreeConcept concept) {
+        ConceptIdMapping mapping = new ConceptIdMapping(concept, functionProvider);
+        new ConceptIdMappingTableManager(dslContext).recreate(mapping.mappingTable());
+    }
 
-	@NotNull
-	private Field<Date>[] collectValidityDateFields(Connector connector) {
-		List<Field<Date>> validityDates = new ArrayList<>();
+    @NotNull
+    private Field<Date>[] collectValidityDateFields(Connector connector) {
+        List<Field<Date>> validityDates = new ArrayList<>();
 
-		for (ValidityDate validityDate : connector.getValidityDates()) {
-			if (validityDate.isSingleColumnDaterange()) {
-				Column column = validityDate.getColumn().get();
-				validityDates.add(field(name(column.getName()), Date.class));
-			} else {
-				validityDates.add(field(name(validityDate.getStartColumn().getColumn()), Date.class));
-				validityDates.add(field(name(validityDate.getEndColumn().getColumn()), Date.class));
-			}
+        for (ValidityDate validityDate : connector.getValidityDates()) {
+            if (validityDate.isSingleColumnDaterange()) {
+                Column column = validityDate.getColumn().get();
+                validityDates.add(field(name(column.getName()), Date.class));
+            } else {
+                validityDates.add(field(name(validityDate.getStartColumn().getColumn()), Date.class));
+                validityDates.add(field(name(validityDate.getEndColumn().getColumn()), Date.class));
+            }
 
-		}
-		return (Field<Date>[]) validityDates.toArray(Field[]::new);
-	}
+        }
+        return (Field<Date>[]) validityDates.toArray(Field[]::new);
+    }
 
-	private void assignStats(Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats) {
-		for (Map.Entry<ConceptElementId<?>, MatchingStats.Entry> entry : matchingStats.entrySet()) {
-			ConceptElementId<?> conceptElementId = entry.getKey();
+    private void assignStats(TreeConcept concept, MatchingStats.Accumulator[] matchingStats) {
+        for (int localId = 0; localId < matchingStats.length; localId++) {
+            ConceptElement<?> element = concept.getElementByLocalId(localId);
+            element.setMatchingStats(MatchingStats.singleEntry(SQL_SOURCE_MATCHING_STATS_LABEL, matchingStats[localId].toEntry()));
+        }
+    }
 
-			MatchingStats stats = new MatchingStats();
-			stats.putEntry(SQL_SOURCE_MATCHING_STATS_LABEL, entry.getValue());
-			conceptElementId.resolve().setMatchingStats(stats);
-		}
-	}
+    /**
+     * @implSpec array uses {@link TreeConcept#getLocalId()} as index.
+     */
+    @NotNull
+    private MatchingStats.Accumulator[] readStats(TreeConcept concept, SelectJoinStep<Record4<Integer, String, Integer, Integer>> selectJoinStep) {
+        MatchingStats.Accumulator[] matchingStats = new MatchingStats.Accumulator[concept.countElements()];
 
-	@NotNull
-	private Map<ConceptElementId<?>, MatchingStats.Entry> readStats(TreeConcept concept, SelectJoinStep<? extends Record> selectJoinStep) {
-		Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats = new HashMap<>();
+        for (int index = 0; index < matchingStats.length; index++) {
+            matchingStats[index] = new MatchingStats.Accumulator();
+        }
 
-		Stopwatch stopwatch = Stopwatch.createStarted();
+        Stopwatch stopwatch = Stopwatch.createStarted();
 
-		log.info("BEGIN fetching matching stats for {}", concept.getId());
-		log.trace("{}", selectJoinStep);
+        log.info("BEGIN fetching matching stats for {}", concept.getId());
+        log.trace("{}", selectJoinStep);
 
-		try (Cursor<? extends Record> cursor = selectJoinStep.fetchSize(fetchBatchSize).fetchLazy()) {
+        try (Stream<Record4<Integer, String, Integer, Integer>> stream = selectJoinStep.fetchSize(fetchBatchSize).stream()) {
+            //TODO if this is still too slow, access the raw results somehow instead of boxing etc.
+            //TODO We can also try and rewrite the logic to scan every table once with all connectors for that table at the same time; though that might create more memory pressure.
 
-			for (Record record : cursor) {
+            stream.forEach(
+                    record -> {
+                        Integer rawId = record.value1();
+                        ConceptElement<?> resolvedId;
+                        if (rawId == null) {
+                            resolvedId = concept;
+                        } else {
+                            resolvedId = concept.getElementByLocalId(rawId);
+                        }
 
-				Integer rawId = record.get(CONCEPT_ID_FIELD);
-				ConceptElement<?> resolvedId;
-				if (rawId == null) {
-					resolvedId = concept;
-				} else {
-					resolvedId = concept.getElementByLocalId(rawId);
-				}
+                        String entity = record.value2();
+                        Integer min = record.value3();
+                        Integer max = record.value4();
 
-				String entity = record.get(PID_FIELD);
-				Date min = record.get(LB_FIELD);
-				Date max = record.get(UB_FIELD);
+                        int minDate = min != null ? min : Integer.MAX_VALUE;
+                        int maxDate = max != null ? max : Integer.MIN_VALUE;
 
-				CDateRange span = CDateRange.of(min != null ? min.toLocalDate() : null, max != null ? max.toLocalDate() : null);
+                        assignStatsToPath(resolvedId, matchingStats, entity, minDate, maxDate);
+                    });
+        }
 
-				assignStatsToPath(resolvedId, matchingStats, entity, span);
-			}
-		}
+        log.debug("DONE fetching matching stats for {} within {}", concept.getId(), stopwatch);
 
-		log.debug("DONE fetching matching stats for {} within {}", concept.getId(), stopwatch);
+        return matchingStats;
+    }
 
-		return matchingStats;
-	}
+    public void collectMatchingStatsForConcept(TreeConcept concept, int tries) {
+        int remainingTries = tries;
+        while (true) {
+            try {
+                SelectJoinStep<Record4<Integer, String, Integer, Integer>> matchingStatsStatement = createMatchingStatsStatement(concept);
+                MatchingStats.Accumulator[] matchingStats = readStats(concept, matchingStatsStatement);
+                assignStats(concept, matchingStats);
+                return;
+            } catch (DataAccessException e) {
+                if (remainingTries == 0) {
+                    log.error("Failed to collect matching stats for concept {}. No retries remaining.", concept.getId(), e);
+                    throw e;
+                }
 
-	public ListenableFuture<?> collectMatchingStatsForConcept(TreeConcept concept, ListeningExecutorService executorService, int tries) {
-		return executorService.submit(() -> {
-			dslContext.connection(cfg -> {
-				try {
-					SelectJoinStep<? extends Record> matchingStatsStatement = createMatchingStatsStatement(concept);
-					Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats = readStats(concept, matchingStatsStatement);
-					assignStats(matchingStats);
+                log.debug("Failed to collect matching stats for concept {}. Retrying.", concept.getId(), (Exception) (log.isTraceEnabled() ? e : null));
+                remainingTries--;
+            }
+        }
+    }
 
-				} catch (DataAccessException e) {
-					log.debug("Failed to connect to database for concept {}. Retrying.", concept.getId(), (Exception) (log.isTraceEnabled() || tries == 0 ? e : null));
+    @NotNull
+    private SelectJoinStep<Record4<Integer, String, Integer, Integer>> createMatchingStatsStatement(TreeConcept concept) {
 
-					if (tries > 0) {
-						collectMatchingStatsForConcept(concept, executorService, tries - 1);
-					}
-				}
-			});
-		});
-	}
+        List<Select<? extends Record>> connectorTables = new ArrayList<>();
+        ConceptIdMapping mapping = new ConceptIdMapping(concept, functionProvider);
 
-	@NotNull
-	private SelectJoinStep<? extends Record> createMatchingStatsStatement(TreeConcept concept) {
+        Field<Date> positiveInfinity = functionProvider.getMaxDateExpression();
+        Field<Date> negativeInfinity = functionProvider.getMinDateExpression();
 
-		List<Select<? extends Record>> connectorTables = new ArrayList<>();
-		ConceptIdMapping mapping = new ConceptIdMapping(concept, functionProvider);
+        for (Connector connector : concept.getConnectors()) {
 
-		Field<Date> positiveInfinity = functionProvider.getMaxDateExpression();
-		Field<Date> negativeInfinity = functionProvider.getMinDateExpression();
+            Field<Date>[] validityDates = collectValidityDateFields(connector);
 
-		for (Connector connector : concept.getConnectors()) {
+            Name tableName = name(connector.getResolvedTable().getName());
 
-			Field<Date>[] validityDates = collectValidityDateFields(connector);
+            Condition condition = noCondition();
 
-			Name tableName = name(connector.getResolvedTable().getName());
+            if (connector.getColumn() != null) {
+                condition = field(name(tableName, name(connector.getColumn().getColumn()))).isNotNull();
+            }
 
-			Condition condition = noCondition();
+            if (connector.getCondition() != null) {
+                CTConditionContext context = CTConditionContext.forConnector(connector, functionProvider);
+                condition = condition.and(connector.getCondition().convertToSqlCondition(context).condition());
+            }
 
-			if (connector.getColumn() != null) {
-				condition = field(name(tableName, name(connector.getColumn().getColumn()))).isNotNull();
-			}
+            SelectConditionStep<? extends Record> connectorTable =
+                    dslContext.select(
+                                    TablePrimaryColumnUtil.findPrimaryColumn(connector.getResolvedTable(), defaultPrimaryColumn).as(PID_FIELD),
+                                    // The infinities are intentionally swapped
+                                    least(positiveInfinity, validityDates).as(LB_FIELD),
+                                    greatest(negativeInfinity, validityDates).as(UB_FIELD),
+                                    CONCEPT_ID_FIELD)
+                            .from(table(tableName))
+                            .leftJoin(mapping.table())
+                            // join onto the concept-ids table to assign the most specific id.
+                            .on(mapping.joinCondition(connector))
+                            .where(condition);
 
-			if (connector.getCondition() != null) {
-				CTConditionContext context = CTConditionContext.forConnector(connector, functionProvider);
-				condition = condition.and(connector.getCondition().convertToSqlCondition(context).condition());
-			}
+            connectorTables.add(connectorTable);
+        }
 
-			SelectConditionStep<? extends Record> connectorTable =
-					dslContext.select(
-									TablePrimaryColumnUtil.findPrimaryColumn(connector.getResolvedTable(), defaultPrimaryColumn).as(PID_FIELD),
-									// The infinities are intentionally swapped
-									least(positiveInfinity, validityDates).as(LB_FIELD),
-									greatest(negativeInfinity, validityDates).as(UB_FIELD),
-									CONCEPT_ID_FIELD)
-							.from(table(tableName))
-							.leftJoin(mapping.table())
-							// join onto the concept-ids table to assign the most specific id.
-							.on(mapping.joinCondition(connector))
-							.where(condition);
+        Name ct_name = name("connector_tables");
+        CommonTableExpression<?> unioned = ct_name.as(unionSelects(connectorTables));
 
-			connectorTables.add(connectorTable);
-		}
+        SelectJoinStep<Record4<Integer, String, Integer, Integer>> records = dslContext.with(unioned).select(unioned.field(CONCEPT_ID_FIELD), PID_FIELD,
+                // The infinities are intentionally swapped
+                functionProvider.cast(nullif(unioned.field(LB_FIELD), positiveInfinity), SQLDataType.INTEGER).as(LB_FIELD), functionProvider.cast(nullif(unioned.field(UB_FIELD), negativeInfinity), SQLDataType.INTEGER).as(UB_FIELD)).from(ct_name);
 
-		Name ct_name = name("connector_tables");
-		CommonTableExpression<?> unioned = ct_name.as(unionSelects(connectorTables));
 
-		SelectJoinStep<Record4<Integer, String, Date, Date>> records = dslContext.with(unioned).select(unioned.field(CONCEPT_ID_FIELD), PID_FIELD,
-				// The infinities are intentionally swapped
-				nullif(unioned.field(LB_FIELD), positiveInfinity).as(LB_FIELD), nullif(unioned.field(UB_FIELD), negativeInfinity).as(UB_FIELD)).from(ct_name);
+        return records;
+    }
 
-		return records;
-	}
-
-	public void deleteConceptIdJoinTable(ConceptId concept) {
-		Name tableName = ConceptIdMapping.tableName(concept);
-		log.debug("Trying to delete id-table {}", tableName);
-		new ConceptIdMappingTableManager(dslContext).delete(tableName);
-	}
+    public void deleteConceptIdJoinTable(ConceptId concept) {
+        Name tableName = ConceptIdMapping.tableName(concept);
+        log.debug("Trying to delete id-table {}", tableName);
+        new ConceptIdMappingTableManager(dslContext).delete(tableName);
+    }
 
 }

@@ -33,7 +33,7 @@ public class LogUtil {
 	public String printPath(File f) {
 		return printPath(f.toPath());
 	}
-	
+
 	public String printPath(Path p) {
 		try {
 			return p.toRealPath(LinkOption.NOFOLLOW_LINKS).toString();

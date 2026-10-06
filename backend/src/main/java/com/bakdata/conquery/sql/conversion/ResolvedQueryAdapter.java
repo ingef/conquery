@@ -2,6 +2,7 @@ package com.bakdata.conquery.sql.conversion;
 
 import java.util.List;
 import java.util.Optional;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
@@ -14,7 +15,6 @@ import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
 import com.bakdata.conquery.sql.model.ResolvedQuery;
 import com.bakdata.conquery.sql.validation.ResolvedQueryValidation;
-import jakarta.validation.Validator;
 
 /** Maps initialized backend queries, validates the resolved input, and adapts compiler output to the backend contract. */
 public final class ResolvedQueryAdapter {

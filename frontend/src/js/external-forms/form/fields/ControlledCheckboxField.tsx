@@ -18,7 +18,6 @@ export const ControlledCheckboxField = ({
       formField={field}
       control={control}
       defaultValue={defaultValue}
-      noLabel
       errorInField
     >
       {({ value, errorMessage }) => (

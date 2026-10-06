@@ -11,8 +11,7 @@ public record ConnectorCtePlan(
 		String connectorName,
 		Table<Record> sourceTable,
 		SqlTables tables,
-		boolean withIntervalPacking,
-		boolean excludedFromTimeAggregation
+		boolean withIntervalPacking
 ) {
 
 	public ConnectorCtePlan {

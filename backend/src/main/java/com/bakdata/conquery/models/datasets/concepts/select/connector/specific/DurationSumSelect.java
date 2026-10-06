@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -17,10 +15,10 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.Duration
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.TwoColumnDurationSumAggregator;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
+import com.bakdata.conquery.util.validation.ResolvableId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
 @CPSType(id = "DURATION_SUM", base = Select.class)
@@ -33,7 +31,7 @@ public class DurationSumSelect extends Select implements DaterangeSelectOrFilter
     @Nullable
     private ColumnId startColumn, endColumn;
 
-    private List<ColumnId> distinctBy;
+    private List<@ResolvableId ColumnId> distinctBy;
 
     @Override
     public List<ColumnId> getRequiredColumns() {

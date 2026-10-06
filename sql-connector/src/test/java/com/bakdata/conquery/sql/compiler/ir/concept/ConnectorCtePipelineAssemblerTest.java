@@ -62,7 +62,6 @@ class ConnectorCtePipelineAssemblerTest {
 		assertEquals(List.of(filters), input.preprocessing().sqlFilters());
 		assertEquals(Optional.of(stratificationTable), input.preprocessing().stratificationTable());
 		assertTrue(input.withIntervalPacking());
-		assertTrue(input.excludedFromTimeAggregation());
 	}
 
 	@Test
@@ -130,7 +129,7 @@ class ConnectorCtePipelineAssemblerTest {
 				Map.of(ConceptCteStep.PREPROCESSING, "connector-preprocessing"),
 				Map.of()
 		);
-		return new ConnectorCtePlan("connector", table(name("events")), tables, true, true);
+		return new ConnectorCtePlan("connector", table(name("events")), tables, true);
 	}
 
 	private static QueryStep queryStep(String cteName) {

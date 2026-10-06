@@ -1,11 +1,11 @@
 package com.bakdata.conquery.sql.validation;
 
 import java.util.EnumSet;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 import com.bakdata.conquery.models.datasets.ColumnType;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
-import jakarta.validation.ConstraintValidator;
-import jakarta.validation.ConstraintValidatorContext;
 
 public final class AllowedColumnTypesValidator implements ConstraintValidator<AllowedColumnTypes, ResolvedColumn> {
 

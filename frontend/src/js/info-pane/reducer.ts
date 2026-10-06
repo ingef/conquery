@@ -5,7 +5,9 @@ import type { Action } from "../app/actions";
 import type { NodeIconT } from "../model/node";
 
 import {
+  collapseInfoPane,
   displayAdditionalInfos,
+  expandInfoPane,
   toggleAdditionalInfos,
   toggleInfoPane,
 } from "./actions";
@@ -30,6 +32,8 @@ export type AdditionalInfosType = {
 
 export type InfoPaneStateT = {
   isOpen: boolean;
+  // a narrow window closed it, so it opens again once there is room
+  collapsedByLayout: boolean;
   toggleAdditionalInfos: boolean;
   additionalInfos: AdditionalInfosType;
 };
@@ -41,6 +45,7 @@ const additionalInfosInitialState: AdditionalInfosType = {
 
 const initialState: InfoPaneStateT = {
   isOpen: true,
+  collapsedByLayout: false,
   toggleAdditionalInfos: false,
   additionalInfos: additionalInfosInitialState,
 };
@@ -73,10 +78,15 @@ const infoPane = (
         toggleAdditionalInfos: !state.toggleAdditionalInfos,
       };
     case getType(toggleInfoPane):
+      return { ...state, isOpen: !state.isOpen, collapsedByLayout: false };
+    case getType(collapseInfoPane):
       return {
         ...state,
-        isOpen: !state.isOpen,
+        isOpen: false,
+        collapsedByLayout: action.payload.byLayout,
       };
+    case getType(expandInfoPane):
+      return { ...state, isOpen: true, collapsedByLayout: false };
     default:
       return state;
   }

@@ -4,9 +4,9 @@ package com.bakdata.conquery.models.config.search;
 import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import javax.annotation.Nullable;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.LabelMap;

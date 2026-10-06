@@ -6,10 +6,10 @@ import java.util.List;
 import java.util.Optional;
 
 import com.bakdata.conquery.sql.compiler.ir.DateAggregationDates;
-import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.sql.compiler.ir.SqlTables;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import lombok.Getter;
 import org.jooq.Condition;
 import org.jooq.Field;

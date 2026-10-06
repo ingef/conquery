@@ -197,9 +197,6 @@ public class ConnectorCteCompiler {
 				queriesToJoin.add(intervalPackingSelects);
 			}
 
-			if (input.excludedFromTimeAggregation()) {
-				validityDate = Optional.empty();
-			}
 		}
 
 		queriesToJoin.addAll(input.additionalPredecessors());
@@ -240,7 +237,6 @@ public class ConnectorCteCompiler {
 					input.preprocessing().validityDate(),
 					input.tables(),
 					input.withIntervalPacking(),
-					input.excludedFromTimeAggregation(),
 					input.eventDateSelects(),
 					input.additionalPredecessors()
 			), cteName);

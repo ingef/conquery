@@ -22,6 +22,7 @@ const Stateful = ({
   return <TextField value={value} onChange={setValue} {...props} />;
 };
 
+// the clear button shows once there is text
 export const Default: Story = {
   render: () => (
     <div className="w-72">

@@ -6,13 +6,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.bakdata.conquery.sql.compiler.dialect.clickhouse.ClickhouseCompilerDialect;
-import com.bakdata.conquery.sql.compiler.dialect.hana.HanaCompilerDialect;
-import com.bakdata.conquery.sql.model.range.DateRange;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+
+import com.bakdata.conquery.sql.compiler.dialect.clickhouse.ClickhouseCompilerDialect;
+import com.bakdata.conquery.sql.compiler.dialect.hana.HanaCompilerDialect;
+import com.bakdata.conquery.sql.model.range.DateRange;
 import org.jooq.Field;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
@@ -64,6 +65,9 @@ class VendorCompilerDialectTest {
             .contains("array"));
     assertTrue(
         render(dialect.externalId("id"), SQLDialect.CLICKHOUSE).contains("::Nullable(String)"));
+    assertTrue(
+        render(dialect.cast(field(name("value"), Integer.class), org.jooq.impl.SQLDataType.INTEGER), SQLDialect.CLICKHOUSE)
+            .contains("Nullable(integer)"));
   }
 
   @Test

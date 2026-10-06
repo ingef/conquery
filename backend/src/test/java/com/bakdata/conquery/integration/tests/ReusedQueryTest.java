@@ -1,5 +1,6 @@
 package com.bakdata.conquery.integration.tests;
 
+import static com.bakdata.conquery.integration.json.ConqueryTestSpec.readJson;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
@@ -21,7 +22,6 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
-import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.json.TestDataImporter;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -34,12 +34,7 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.*;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.api.QueryResource;
@@ -65,21 +60,18 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 		final StandaloneSupport conquery = testConquery.getSupport(name);
 
 
-		final String testJson = LoadingUtil.readResource("/tests/query/SECONDARY_ID_MIXED/SECONDARY_IDS_MIXED.test.json");
+		final String testJson = LoadingUtil.readResource("/programatic/reused_query/SECONDARY_IDS_MIXED.test.json");
 
 		final DatasetId dataset = conquery.getDataset();
 
 
-		final QueryTest test = ConqueryTestSpec.readJson(dataset, testJson);
+		final QueryTest test = readJson(dataset, testJson);
 
 		// Manually import data, so we can do our own work.
 		ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 		TestDataImporter testImporter = conquery.getTestImporter();
 
-		testImporter.importSecondaryIds(conquery, test.getContent().getSecondaryIds());
-		testImporter.importTables(conquery, test.getContent().getTables(), test.getContent().isAutoConcept());
-		testImporter.importConcepts(conquery, test.getRawConcepts());
-		testImporter.importTableContents(conquery, test.getContent().getTables());
+		testImporter.importQueryTestData(conquery, test);
 
 		final SecondaryIdQuery query = (SecondaryIdQuery) IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 
@@ -257,6 +249,24 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 				// And the ids must be different
 				assertThat(copy.getId()).isNotSameAs(execution.getId());
+			}
+
+
+			// Try reuse non existing query
+			{
+
+				final ConceptQuery reused = new ConceptQuery(new CQReusedQuery(new ManagedExecutionId(conquery.getDataset(), UUID.fromString("4894ed0f-a7b9-42c6-a25d-5683d591a562"))));
+
+				IntegrationUtils.assertQueryResult(conquery, reused, null, 0L, ExecutionState.FAILED, conquery.getTestUser(), 400);
+			}
+
+			{
+				// This query references a concept child, but the concept does not have children.
+				// We simulate that the reused query might be an old query, which used a prio version of that concept
+
+				final ConceptQuery reused = new ConceptQuery(new CQReusedQuery(new ManagedExecutionId(conquery.getDataset(), new UUID(0L, 1))));
+
+				IntegrationUtils.assertQueryResult(conquery, reused, null, 0L, ExecutionState.FAILED, conquery.getTestUser(), 500);
 			}
 		}
 	}

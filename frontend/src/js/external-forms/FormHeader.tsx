@@ -1,14 +1,10 @@
-import { BookIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-import { Button } from "../ui-components/Button";
+import { Link } from "../ui-components/Link";
+import { C2 } from "../ui-components/Typography";
 
 const root = tv({
-  base: ["flex flex-col", "w-full", "gap-[7px]"],
-});
-
-const description = tv({
-  base: ["mx-[10px]", "text-base"],
+  base: ["flex flex-col items-start", "w-full", "gap-2"],
 });
 
 interface Props {
@@ -25,14 +21,11 @@ const FormHeader = ({
   const { t } = useTranslation();
   return (
     <div className={root({ className })}>
-      <p className={description()}>{descriptionText}</p>
+      <C2>{descriptionText}</C2>
       {manualUrl && (
-        <a href={manualUrl} target="_blank" rel="noreferrer" className="grid">
-          <Button intent="secondary">
-            <BookIcon />
-            {t("externalForms.manualButton")}
-          </Button>
-        </a>
+        <Link href={manualUrl} external>
+          {t("externalForms.manualButton")}
+        </Link>
       )}
     </div>
   );

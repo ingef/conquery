@@ -39,7 +39,7 @@ export const DateModal = ({
   const labelSuffix = useMemo(() => {
     return hasActiveDate ? (
       <span className="ml-5">
-        <Button intent="link" onPress={onResetDates}>
+        <Button intent="tertiary" size="sm" onPress={onResetDates}>
           <RotateCcwIcon />
           {t("queryNodeEditor.reset")}
         </Button>

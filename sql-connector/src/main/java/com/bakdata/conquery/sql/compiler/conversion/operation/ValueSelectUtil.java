@@ -6,24 +6,21 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-import com.bakdata.conquery.sql.model.range.SubstringRange;
-import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
-
-import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
-import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
-import com.bakdata.conquery.sql.compiler.ir.select.SingleColumnSqlSelect;
-import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
-import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
-
 import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
-import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.CteStep;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
+import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
+import com.bakdata.conquery.sql.compiler.ir.select.SingleColumnSqlSelect;
+import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
+import com.bakdata.conquery.sql.model.range.SubstringRange;
+import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.SelectConditionStep;

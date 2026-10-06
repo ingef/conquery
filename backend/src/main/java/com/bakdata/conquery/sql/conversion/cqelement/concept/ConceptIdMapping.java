@@ -1,5 +1,7 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
+import static org.jooq.impl.DSL.*;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -17,8 +19,6 @@ import lombok.Data;
 import org.jooq.*;
 import org.jooq.Record;
 
-import static org.jooq.impl.DSL.*;
-
 /**
  * Description of the physical lookup table that maps connector values to their most specific concept element.
  */
@@ -31,7 +31,7 @@ public final class ConceptIdMapping {
 	private final SqlFunctionProvider functionProvider;
 	private final Name tableName;
 	private final List<Field<?>> keyFields;
-	private final List<RowN> rows;
+	private final ConceptIdMappingTable mappingTable;
 
 	public ConceptIdMapping(TreeConcept concept, SqlFunctionProvider functionProvider) {
 		this.concept = concept;
@@ -39,11 +39,10 @@ public final class ConceptIdMapping {
 		CTConditionContext context = CTConditionContext.forJoinTables(functionProvider);
 		List<CTCondition.ConceptConditions> expressions = collectAllExpressions(concept, null, context);
 		this.tableName = tableName(concept.getId());
-		ConceptIdMappingTable mappingTable = ConceptIdMappingResolver.resolve(
+		this.mappingTable = ConceptIdMappingResolver.resolve(
 				concept.getId().toString(), tableName, resolveExpressions(expressions)
 		);
 		this.keyFields = mappingTable.keyFields();
-		this.rows = mappingTable.rows();
 	}
 
 	public static Name tableName(ConceptId conceptId) {
@@ -98,7 +97,11 @@ public final class ConceptIdMapping {
 	}
 
 	public ConceptIdMappingTable mappingTable() {
-		return new ConceptIdMappingTable(tableName, keyFields, rows);
+		return mappingTable;
+	}
+
+	public List<RowN> getRows() {
+		return mappingTable.rows();
 	}
 
 	public ConceptIdMappingSource source(Connector connector) {

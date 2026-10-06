@@ -5,10 +5,10 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import com.bakdata.conquery.models.datasets.ColumnType;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
+
+import com.bakdata.conquery.models.datasets.ColumnType;
 
 @Documented
 @Constraint(validatedBy = AllowedColumnTypesValidator.class)

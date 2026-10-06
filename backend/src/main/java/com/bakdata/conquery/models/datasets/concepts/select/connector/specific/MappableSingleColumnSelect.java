@@ -3,16 +3,16 @@ package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 import static com.bakdata.conquery.models.types.ResultType.Primitive.STRING;
 import static com.bakdata.conquery.models.types.ResultType.resolveResultType;
 
-
 import java.util.Collections;
 import java.util.Set;
-import javax.annotation.Nullable;
 import jakarta.validation.Valid;
+import javax.annotation.Nullable;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.SingleColumnSelect;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
@@ -101,7 +101,11 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 			return true;
 		}
 
-		return getColumn().resolve().getType().equals(MajorTypeId.STRING);
+		Column column = getColumn().get();
+		if (column == null) {
+			return true;
+		}
+		return column.getType().equals(MajorTypeId.STRING);
 	}
 
 	@JsonIgnore
@@ -111,7 +115,11 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 			return true;
 		}
 
-		return getColumn().resolve().getType().equals(MajorTypeId.STRING);
+		Column column = getColumn().get();
+		if (column == null) {
+			return true;
+		}
+		return column.getType().equals(MajorTypeId.STRING);
 	}
 
 	@JsonIgnore

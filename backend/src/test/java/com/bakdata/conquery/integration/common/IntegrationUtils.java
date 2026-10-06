@@ -8,13 +8,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.Invocation;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import javax.annotation.Nullable;
 
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
@@ -86,10 +86,11 @@ public class IntegrationUtils {
 			}
 
 			// TODO implement this properly: ExecutionStatus status = response.readEntity(ExecutionStatus.Full.class);
-			final JsonNode jsonNode = response.readEntity(JsonNode.class);
-			final String id = jsonNode.get(ExecutionStatus.Fields.id).asText();
+			final FullExecutionStatus executionStatus = response.readEntity(FullExecutionStatus.class);
 
-			final JsonNode execStatusRaw = getRawExecutionStatus(id, conquery, user);
+			final ManagedExecutionId id = executionStatus.getId();
+
+			final JsonNode execStatusRaw = getRawExecutionStatus(id.toString(), conquery, user);
 
 			final String status = execStatusRaw.get(ExecutionStatus.Fields.status).asText();
 			final long numberOfResults = execStatusRaw.get(ExecutionStatus.Fields.numberOfResults).asLong(0);
@@ -102,7 +103,7 @@ public class IntegrationUtils {
 						.isEqualTo(expectedSize);
 			}
 
-			return ManagedExecutionId.Parser.INSTANCE.parse(id);
+			return id;
 		}
 	}
 

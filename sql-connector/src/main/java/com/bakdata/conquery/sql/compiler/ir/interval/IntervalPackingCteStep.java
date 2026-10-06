@@ -5,10 +5,10 @@ import java.util.Map;
 import java.util.Set;
 
 import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
-import com.bakdata.conquery.sql.compiler.naming.SqlNameGenerator;
 import com.bakdata.conquery.sql.compiler.ir.CteStep;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.SqlTables;
+import com.bakdata.conquery.sql.compiler.naming.SqlNameGenerator;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

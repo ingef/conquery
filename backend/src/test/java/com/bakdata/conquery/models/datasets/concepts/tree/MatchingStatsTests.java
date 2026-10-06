@@ -19,13 +19,13 @@ public class MatchingStatsTests {
 
 		assertThat(stats.countEntities()).isEqualTo(0);
 
-		stats.putEntry(workerId1.toString(), new MatchingStats.Entry(5, 5, 10, 20));
+		stats.addEntry(workerId1.toString(), new MatchingStats.Entry(5, 5, 10, 20));
 		assertThat(stats.countEntities()).isEqualTo(5);
 
-		stats.putEntry(workerId1.toString(), new MatchingStats.Entry(5, 8, 10, 20));
+		stats.addEntry(workerId1.toString(), new MatchingStats.Entry(5, 8, 10, 20));
 		assertThat(stats.countEntities()).isEqualTo(8);
 
-		stats.putEntry(workerId2.toString(), new MatchingStats.Entry(5, 2, 10, 20));
+		stats.addEntry(workerId2.toString(), new MatchingStats.Entry(5, 2, 10, 20));
 		assertThat(stats.countEntities()).isEqualTo(10);
 
 
@@ -40,40 +40,40 @@ public class MatchingStatsTests {
 		assertThat(stats.countEntities()).isEqualTo(0);
 
 
-		MatchingStats.Entry entry1 = new MatchingStats.Entry();
-		entry1.addEvents("1", 1, null);
-		entry1.addEvents("1", 1, null);
+		MatchingStats.Accumulator entry1 = new MatchingStats.Accumulator();
+		entry1.addEvents(1, 1, null);
+		entry1.addEvents(1, 1, null);
 
-		entry1.addEvents("2", 1, null);
-		entry1.addEvents("2", 1, null);
+		entry1.addEvents(2, 1, null);
+		entry1.addEvents(2, 1, null);
 
-		entry1.addEvents("3", 1, null);
-		entry1.addEvents("3", 1, null);
+		entry1.addEvents(3, 1, null);
+		entry1.addEvents(3, 1, null);
 
-		entry1.addEvents("4", 1, null);
-		entry1.addEvents("4", 1, null);
+		entry1.addEvents(4, 1, null);
+		entry1.addEvents(4, 1, null);
 
 
-		stats.putEntry(workerId1.toString(), entry1);
+		stats.addEntry(workerId1.toString(), entry1.toEntry());
 		assertThat(stats.countEvents()).isEqualTo(8);
 		assertThat(stats.countEntities()).isEqualTo(4);
 
 
-		MatchingStats.Entry entry2 = new MatchingStats.Entry();
+		MatchingStats.Accumulator entry2 = new MatchingStats.Accumulator();
 
-		entry2.addEvents("1", 1, null);
-		entry2.addEvents("2", 1, null);
-		entry2.addEvents("3", 1, null);
-		entry2.addEvents("4", 1, null);
-		entry2.addEvents("5", 1, null);
-		entry2.addEvents("6", 1, null);
-		entry2.addEvents("7", 1, null);
-		entry2.addEvents("8", 1, null);
-		entry2.addEvents("9", 1, null);
-		entry2.addEvents("10", 1, null);
+		entry2.addEvents(1, 1, null);
+		entry2.addEvents(2, 1, null);
+		entry2.addEvents(3, 1, null);
+		entry2.addEvents(4, 1, null);
+		entry2.addEvents(5, 1, null);
+		entry2.addEvents(6, 1, null);
+		entry2.addEvents(7, 1, null);
+		entry2.addEvents(8, 1, null);
+		entry2.addEvents(9, 1, null);
+		entry2.addEvents(10, 1, null);
 
 
-		stats.putEntry(workerId2.toString(), entry2);
+		stats.addEntry(workerId2.toString(), entry2.toEntry());
 		assertThat(stats.countEvents()).isEqualTo(18);
 		assertThat(stats.countEntities()).isEqualTo(14);
 

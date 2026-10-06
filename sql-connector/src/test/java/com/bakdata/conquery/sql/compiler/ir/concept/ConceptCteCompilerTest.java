@@ -47,6 +47,7 @@ class ConceptCteCompilerTest {
 				predecessor,
 				List.of(conceptSelects),
 				tables,
+				false,
 				false
 		));
 
@@ -79,7 +80,8 @@ class ConceptCteCompilerTest {
 				List.of(conceptSelects),
 				Optional.of(intervalPacking),
 				tables,
-				true
+				true,
+				false
 		);
 
 		assertEquals("concept", result.getCteName());

@@ -1,12 +1,12 @@
 package com.bakdata.conquery.sql.model.node;
 
 import java.util.List;
-
-import com.bakdata.conquery.models.query.DateAggregationAction;
-import com.bakdata.conquery.sql.model.internal.ModelNormalization;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+
+import com.bakdata.conquery.models.query.DateAggregationAction;
+import com.bakdata.conquery.sql.model.internal.ModelNormalization;
 
 /** Logical disjunction with its already-derived validity-date behavior. */
 public record OrNode(

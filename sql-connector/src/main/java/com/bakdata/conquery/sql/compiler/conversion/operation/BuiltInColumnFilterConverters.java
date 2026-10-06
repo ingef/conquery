@@ -7,13 +7,13 @@ import java.util.function.BiFunction;
 
 import com.bakdata.conquery.sql.compiler.conversion.Converter;
 import com.bakdata.conquery.sql.compiler.ir.SchemaSql;
-import com.bakdata.conquery.sql.compiler.ir.condition.InclusiveRangeCondition;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
+import com.bakdata.conquery.sql.compiler.ir.concept.SqlFilters;
 import com.bakdata.conquery.sql.compiler.ir.condition.FlagCondition;
+import com.bakdata.conquery.sql.compiler.ir.condition.InclusiveRangeCondition;
 import com.bakdata.conquery.sql.compiler.ir.condition.StringValuesCondition;
 import com.bakdata.conquery.sql.compiler.ir.condition.WhereClauses;
 import com.bakdata.conquery.sql.compiler.ir.condition.WhereCondition;
-import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
-import com.bakdata.conquery.sql.compiler.ir.concept.SqlFilters;
 import com.bakdata.conquery.sql.model.operation.BuiltInFilters;
 import com.bakdata.conquery.sql.model.operation.ResolvedFilter;
 import com.bakdata.conquery.sql.model.range.SubstringRange;

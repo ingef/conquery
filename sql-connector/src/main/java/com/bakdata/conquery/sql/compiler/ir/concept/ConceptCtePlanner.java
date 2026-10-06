@@ -31,7 +31,8 @@ public class ConceptCtePlanner {
 			String rootTable,
 			String connectorName,
 			boolean aggregateEventDates,
-			boolean eventDateSelectsPresent,
+			boolean connectorEventDateSelectsPresent,
+			boolean conceptEventDateSelectsPresent,
 			CompilerDialect dialect,
 			SqlNameGenerator nameGenerator
 	) {
@@ -40,7 +41,8 @@ public class ConceptCtePlanner {
 				rootTable,
 				connectorName,
 				aggregateEventDates,
-				eventDateSelectsPresent,
+				connectorEventDateSelectsPresent,
+				conceptEventDateSelectsPresent,
 				dialect,
 				nameGenerator
 		);
@@ -51,7 +53,8 @@ public class ConceptCtePlanner {
 			SqlTable sourceTable,
 			String connectorName,
 			boolean aggregateEventDates,
-			boolean eventDateSelectsPresent,
+			boolean connectorEventDateSelectsPresent,
+			boolean conceptEventDateSelectsPresent,
 			CompilerDialect dialect,
 			SqlNameGenerator nameGenerator
 	) {
@@ -61,7 +64,8 @@ public class ConceptCtePlanner {
 				rootQualifier,
 				connectorName,
 				aggregateEventDates,
-				eventDateSelectsPresent,
+				connectorEventDateSelectsPresent,
+				conceptEventDateSelectsPresent,
 				dialect,
 				nameGenerator
 		);
@@ -72,29 +76,31 @@ public class ConceptCtePlanner {
 			String rootQualifier,
 			String connectorName,
 			boolean aggregateEventDates,
-			boolean eventDateSelectsPresent,
+			boolean connectorEventDateSelectsPresent,
+			boolean conceptEventDateSelectsPresent,
 			CompilerDialect dialect,
 			SqlNameGenerator nameGenerator
 	) {
 		Map<CteStep, CteStep> mappings = CteStep.getDefaultPredecessorMap(ConceptCteStep.MANDATORY_STEPS);
-		boolean withIntervalPacking = aggregateEventDates || eventDateSelectsPresent;
+		boolean withIntervalPacking = aggregateEventDates
+				|| connectorEventDateSelectsPresent
+				|| conceptEventDateSelectsPresent;
 		if (!withIntervalPacking) {
 			return new ConnectorCtePlan(
 					connectorName,
 					sourceTable,
 					createTables(rootQualifier, connectorName, mappings, nameGenerator),
-					false,
 					false
 			);
 		}
 
 		mappings.putAll(IntervalPackingCteStep.getMappings(PREPROCESSING, dialect));
-		if (eventDateSelectsPresent) {
+		if (connectorEventDateSelectsPresent) {
 			addIntervalSelectMappings(mappings, INTERVAL_COMPLETE, dialect);
 		}
 
 		SqlTables tables = createTables(rootQualifier, connectorName, mappings, nameGenerator);
-		return new ConnectorCtePlan(connectorName, sourceTable, tables, true, !aggregateEventDates);
+		return new ConnectorCtePlan(connectorName, sourceTable, tables, true);
 	}
 
 	/** Plan the final concept CTE graph over the converted connector branches. */

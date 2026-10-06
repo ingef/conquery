@@ -1,12 +1,12 @@
 package com.bakdata.conquery.sql.model.schema;
 
 import java.util.Objects;
-
-import com.bakdata.conquery.models.datasets.ColumnType;
-import com.bakdata.conquery.sql.validation.AllowedColumnTypes;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
+
+import com.bakdata.conquery.models.datasets.ColumnType;
+import com.bakdata.conquery.sql.validation.AllowedColumnTypes;
 
 /** Physical representation of event validity for a connector. */
 public sealed interface ResolvedValidityDate permits ResolvedValidityDate.None, ResolvedValidityDate.Point, ResolvedValidityDate.Range {

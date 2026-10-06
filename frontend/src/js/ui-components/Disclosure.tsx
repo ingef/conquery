@@ -12,6 +12,7 @@ import {
 import { tv } from "tailwind-variants";
 
 import InfoTooltip from "./InfoTooltip";
+import { headingStyle } from "./Typography";
 
 const root = tv({
   base: ["group", "overflow-hidden", "rounded-sm", "border border-gray-400"],
@@ -19,15 +20,7 @@ const root = tv({
 
 const title = tv({ base: ["flex items-center", "bg-white", "pr-2"] });
 
-// resets the base h3 style: no margin, body color and line height, the trigger sets the height
-const heading = tv({
-  base: [
-    "grow",
-    "min-w-0",
-    "m-0",
-    "text-sm leading-normal font-normal text-gray-800",
-  ],
-});
+const heading = tv({ base: ["grow", "min-w-0", headingStyle({ level: 4 })] });
 
 const trigger = tv({
   base: [

@@ -46,7 +46,7 @@ const ConceptTreeNode = ({
   ) as ConceptElementT;
 
   return (
-    <div className="text-sm">
+    <div>
       <ConceptTreeNodeTextContainer
         node={{
           label: data.label,

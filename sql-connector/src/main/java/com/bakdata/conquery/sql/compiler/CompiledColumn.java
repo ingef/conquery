@@ -1,9 +1,10 @@
 package com.bakdata.conquery.sql.compiler;
 
-import com.bakdata.conquery.sql.model.result.ResultType;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+
+import com.bakdata.conquery.sql.model.result.ResultType;
 
 /**
  * Ordered description of one column produced by a {@link CompiledQuery}.

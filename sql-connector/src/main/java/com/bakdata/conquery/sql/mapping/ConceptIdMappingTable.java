@@ -3,6 +3,7 @@ package com.bakdata.conquery.sql.mapping;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 import org.jooq.Field;
 import org.jooq.Name;
@@ -11,19 +12,42 @@ import org.jooq.RowN;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 
-/** Resolved physical contents of a concept ID lookup table. */
-public record ConceptIdMappingTable(
-		Name tableName,
-		List<Field<?>> keyFields,
-		List<RowN> rows
-) {
+/** Resolved metadata and lazily materialized contents of a concept ID lookup table. */
+public final class ConceptIdMappingTable {
 
 	public static final String RESOLVED_ID_COLUMN = "resolved_id";
 
-	public ConceptIdMappingTable {
-		Objects.requireNonNull(tableName, "tableName");
-		keyFields = List.copyOf(keyFields);
-		rows = List.copyOf(rows);
+	private final Name tableName;
+	private final List<Field<?>> keyFields;
+	private Supplier<List<RowN>> rowsSupplier;
+	private List<RowN> rows;
+
+	public ConceptIdMappingTable(Name tableName, List<Field<?>> keyFields, List<RowN> rows) {
+		this.tableName = Objects.requireNonNull(tableName, "tableName");
+		this.keyFields = List.copyOf(keyFields);
+		this.rows = List.copyOf(rows);
+	}
+
+	ConceptIdMappingTable(Name tableName, List<Field<?>> keyFields, Supplier<List<RowN>> rowsSupplier) {
+		this.tableName = Objects.requireNonNull(tableName, "tableName");
+		this.keyFields = List.copyOf(keyFields);
+		this.rowsSupplier = Objects.requireNonNull(rowsSupplier, "rowsSupplier");
+	}
+
+	public Name tableName() {
+		return tableName;
+	}
+
+	public List<Field<?>> keyFields() {
+		return keyFields;
+	}
+
+	public synchronized List<RowN> rows() {
+		if (rows == null) {
+			rows = List.copyOf(rowsSupplier.get());
+			rowsSupplier = null;
+		}
+		return rows;
 	}
 
 	public Table<Record> table() {

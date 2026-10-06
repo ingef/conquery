@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDebounce } from "../../common/helpers/useDebounce";
 import { TextField } from "../../ui-components/TextField";
+import { C3 } from "../../ui-components/Typography";
 import { useTimelineSearch } from "./timelineSearchState";
 
 export const TimelineSearch = ({ matches }: { matches: number }) => {
@@ -21,9 +22,9 @@ export const TimelineSearch = ({ matches }: { matches: number }) => {
         onChange={setTerm}
       />
       {searchTerm && (
-        <span className="text-xs text-gray-500">
+        <C3 as="span" tone="muted">
           {matches} {t("history.matches", { count: matches })}
-        </span>
+        </C3>
       )}
     </div>
   );

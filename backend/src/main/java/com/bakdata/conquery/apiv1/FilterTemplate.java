@@ -25,9 +25,9 @@ import lombok.extern.slf4j.Slf4j;
 @Data
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 @JsonIgnoreProperties({"columns"})
-@ToString
+@ToString(callSuper = true)
 @Slf4j
 @CPSType(id = "CSV_TEMPLATE", base = SearchIndex.class)
 public class FilterTemplate extends SearchIndex implements Searchable {
@@ -36,27 +36,33 @@ public class FilterTemplate extends SearchIndex implements Searchable {
 	 * Path to CSV File.
 	 */
 	@NotNull
+	@EqualsAndHashCode.Include
 	private final URI filePath;
 
 	/**
 	 * Value to be sent for filtering.
 	 */
 	@NotEmpty
+	@EqualsAndHashCode.Include
 	private final String columnValue;
 
 	/**
 	 * Value displayed in Select list. Usually concise display.
 	 */
 	@NotEmpty
+	@EqualsAndHashCode.Include
 	private final String value;
 
 	/**
 	 * More detailed value. Displayed when value is selected.
 	 */
 	@NotEmpty
+	@EqualsAndHashCode.Include
 	private final String optionValue;
 
+	@EqualsAndHashCode.Include
 	private int minSuffixLength = 3;
+	@EqualsAndHashCode.Include
 	private boolean generateSuffixes = true;
 
 	// We inject the service as a non-final property so, jackson will never try to create a serializer for it (in contrast to constructor injection)

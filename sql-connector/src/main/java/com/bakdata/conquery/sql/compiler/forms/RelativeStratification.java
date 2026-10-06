@@ -12,14 +12,14 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
-import com.bakdata.conquery.sql.compiler.ir.SharedAliases;
-import com.bakdata.conquery.sql.compiler.ir.form.FormConstants;
-import com.bakdata.conquery.sql.compiler.ir.form.Offset;
 import com.bakdata.conquery.sql.compiler.dialect.Interval;
-import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
+import com.bakdata.conquery.sql.compiler.ir.SharedAliases;
 import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
+import com.bakdata.conquery.sql.compiler.ir.form.FormConstants;
+import com.bakdata.conquery.sql.compiler.ir.form.Offset;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.model.form.FormCalendarUnit;
 import com.bakdata.conquery.sql.model.form.FormResolution;

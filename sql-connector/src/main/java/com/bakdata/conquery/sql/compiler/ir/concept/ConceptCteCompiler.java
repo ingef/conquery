@@ -41,7 +41,8 @@ public class ConceptCteCompiler {
 				input.sqlSelects(),
 				intervalPackingSelects,
 				input.tables(),
-				input.negate()
+				input.negate(),
+				input.blockValidityDate()
 		);
 	}
 
@@ -50,7 +51,8 @@ public class ConceptCteCompiler {
 			List<ConceptSqlSelects> conceptSelects,
 			Optional<QueryStep> intervalPackingSelects,
 			SqlTables tables,
-			boolean negate
+			boolean negate,
+			boolean blockValidityDate
 	) {
 		List<QueryStep> queriesToJoin = new ArrayList<>();
 		queriesToJoin.add(predecessor);
@@ -74,6 +76,9 @@ public class ConceptCteCompiler {
 				.validityDate(validityDate)
 				.sqlSelects(allConceptSelects)
 				.build();
+		if (blockValidityDate) {
+			finalSelects = finalSelects.blockValidityDate();
+		}
 		TableLike<Record> joinedTable = QueryStepJoiner.join(queriesToJoin, JoinMode.INNER);
 
 		List<Field<?>> groupByFields = Stream.concat(

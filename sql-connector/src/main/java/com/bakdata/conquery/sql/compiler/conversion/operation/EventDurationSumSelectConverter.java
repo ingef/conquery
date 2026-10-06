@@ -4,17 +4,14 @@ import java.math.BigDecimal;
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
 
-import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
+import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConceptSqlSelects;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
-import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
-
-
-import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
-import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
-
+import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;

@@ -4,6 +4,11 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.Set;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.datasets.ColumnType;
 import com.bakdata.conquery.sql.model.internal.ModelNormalization;
@@ -11,11 +16,6 @@ import com.bakdata.conquery.sql.model.range.NumberRange;
 import com.bakdata.conquery.sql.model.range.SubstringRange;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.validation.AllowedColumnTypes;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.AssertTrue;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.experimental.UtilityClass;
 
 /** Framework-neutral filter operations supported by the SQL connector. */

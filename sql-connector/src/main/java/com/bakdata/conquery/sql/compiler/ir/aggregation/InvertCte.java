@@ -9,18 +9,17 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
-import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.QualifyingUtil;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import lombok.Getter;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.TableLike;
 import org.jooq.TableOnConditionStep;
-import org.jooq.impl.DSL;
 
 /**
  * Concept for date range inversion taken from <a href="https://explainextended.com/2009/11/09/inverting-date-ranges/">Inverting date ranges</a>.

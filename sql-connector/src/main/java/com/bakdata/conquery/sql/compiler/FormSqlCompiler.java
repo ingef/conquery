@@ -26,7 +26,6 @@ import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.compiler.naming.SqlNameGenerator;
 import com.bakdata.conquery.sql.compiler.rendering.QueryStepRenderer;
-import com.bakdata.conquery.sql.model.ResolvedQuery;
 import com.bakdata.conquery.sql.model.form.FormResolution;
 import com.bakdata.conquery.sql.model.form.ResolvedFormMode;
 import com.bakdata.conquery.sql.model.form.ResolvedFormQuery;

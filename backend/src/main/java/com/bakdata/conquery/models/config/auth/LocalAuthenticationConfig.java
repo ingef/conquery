@@ -54,14 +54,14 @@ public class LocalAuthenticationConfig implements AuthenticationRealmFactory {
 
 	@MinDuration(value = 1, unit = TimeUnit.MINUTES)
 	private Duration jwtDuration = Duration.hours(12);
-	
+
 	/**
 	 * The name of the folder the store lives in.
 	 */
 	@NotEmpty
 	private String storeName = "authenticationStore";
 
-	
+
 	@NotNull
 	private File directory = new File("storage");
 
@@ -81,7 +81,7 @@ public class LocalAuthenticationConfig implements AuthenticationRealmFactory {
 		// and system property
 		return System.getProperty("exodus.cipherId") != null;
 	}
-	
+
 	@Override
 	public ConqueryAuthenticationRealm createRealm(Environment environment, ConqueryConfig config, AuthorizationController authorizationController) {
 		// Token extractor is not needed because this realm depends on the ConqueryTokenRealm

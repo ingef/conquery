@@ -1,10 +1,10 @@
 package com.bakdata.conquery.sql.model;
 
+import static com.bakdata.conquery.sql.model.ValidationTestSupport.assertInvalid;
+import static com.bakdata.conquery.sql.model.ValidationTestSupport.assertValid;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static com.bakdata.conquery.sql.model.ValidationTestSupport.assertInvalid;
-import static com.bakdata.conquery.sql.model.ValidationTestSupport.assertValid;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

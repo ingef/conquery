@@ -4,12 +4,12 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.bakdata.conquery.sql.model.internal.ModelNormalization;
-import com.bakdata.conquery.sql.model.range.DateRange;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+
+import com.bakdata.conquery.sql.model.internal.ModelNormalization;
+import com.bakdata.conquery.sql.model.range.DateRange;
 
 /** One resolved external entity together with its validity ranges and ordered result values. */
 public record ExternalEntity(

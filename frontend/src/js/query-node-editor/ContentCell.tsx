@@ -1,19 +1,17 @@
 import type { ReactNode, Ref } from "react";
 import { tv } from "tailwind-variants";
 
-import { Heading4 } from "../headings/Headings";
+import { H4 } from "../ui-components/Typography";
 
 const root = tv({
   base: ["shrink-0", "flex flex-col", "min-w-[220px]"],
 });
 
 const content = tv({
-  base: ["grow", "px-[10px] py-[3px]"],
+  base: ["grow", "px-2 py-1"],
 });
 
-const headlineHeading = tv({
-  base: ["mx-[10px] mt-[14px]"],
-});
+const headlineHeading = tv({ base: "mx-2 mt-3" });
 
 interface PropsT {
   className?: string;
@@ -28,7 +26,11 @@ const ContentCell = ({
   children,
 }: PropsT & { ref?: Ref<HTMLDivElement> }) => (
   <div ref={ref} className={root({ className })}>
-    {headline && <Heading4 className={headlineHeading()}>{headline}</Heading4>}
+    {headline && (
+      <div className={headlineHeading()}>
+        <H4>{headline}</H4>
+      </div>
+    )}
     <div className={content()}>{children}</div>
   </div>
 );

@@ -270,7 +270,7 @@ public class IntrospectionDelegatingRealmTest {
 				.ignoringFields(ConqueryAuthenticationInfo.Fields.credentials)
 				.isEqualTo(new ConqueryAuthenticationInfo(USER_3_EXTENSION.getUser(), USER_3_TOKEN_WRAPPED, REALM, true, FRONT_CHANNEL_LOGOUT));
 		assertThat(STORAGE.getAllUsers()).containsOnly(USER_3_EXTENSION.getUser());
-		assertThat(STORAGE.getAllGroups()).hasSize(1); // Pre-existing group 
+		assertThat(STORAGE.getAllGroups()).hasSize(1); // Pre-existing group
 		assertThat(STORAGE.getGroup(new GroupId(GROUPNAME_1)).getMembers()).doesNotContain(new UserId(USER_3_NAME));
 	}
 

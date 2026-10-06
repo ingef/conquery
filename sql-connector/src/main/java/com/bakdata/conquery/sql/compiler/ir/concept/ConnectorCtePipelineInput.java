@@ -13,8 +13,7 @@ public record ConnectorCtePipelineInput(
 		PreprocessingCteInput preprocessing,
 		List<SqlSelect> eventDateSelects,
 		List<QueryStep> additionalPredecessors,
-		boolean withIntervalPacking,
-		boolean excludedFromTimeAggregation
+		boolean withIntervalPacking
 ) {
 
 	public ConnectorCtePipelineInput {

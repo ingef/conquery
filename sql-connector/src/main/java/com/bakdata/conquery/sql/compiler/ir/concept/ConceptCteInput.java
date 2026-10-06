@@ -11,7 +11,8 @@ public record ConceptCteInput(
 		QueryStep predecessor,
 		List<ConceptSqlSelects> sqlSelects,
 		SqlTables tables,
-		boolean negate
+		boolean negate,
+		boolean blockValidityDate
 ) {
 
 	public ConceptCteInput {

@@ -2,8 +2,8 @@ package com.bakdata.conquery.apiv1.query.concept.filter;
 
 import java.math.BigDecimal;
 import java.util.Set;
-import javax.annotation.Nonnull;
 import jakarta.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSBase;
@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.common.Range.MoneyRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.util.validation.ResolvableId;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -38,6 +39,7 @@ public abstract class FilterValue<VALUE> {
 	@NotNull
 	@Nonnull
 	@ToString.Exclude
+	@ResolvableId
 	private FilterId filter;
 
 	@NotNull

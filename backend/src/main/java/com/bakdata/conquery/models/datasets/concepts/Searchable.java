@@ -1,8 +1,9 @@
 package com.bakdata.conquery.models.datasets.concepts;
 
+import jakarta.validation.constraints.Min;
+
 import com.bakdata.conquery.util.search.internal.InternalFilterSearch;
 import com.bakdata.conquery.util.search.internal.TrieSearch;
-import jakarta.validation.constraints.Min;
 
 /**
  * @implNote This class is tightly coupled with {@link InternalFilterSearch} and {@link com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter}.

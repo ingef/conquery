@@ -14,7 +14,6 @@ public record JoinBranchesCteInput(
 		ColumnDateRange validityDate,
 		SqlTables tables,
 		boolean withIntervalPacking,
-		boolean excludedFromTimeAggregation,
 		List<SqlSelect> eventDateSelects,
 		List<QueryStep> additionalPredecessors
 ) {

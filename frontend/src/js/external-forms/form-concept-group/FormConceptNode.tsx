@@ -14,6 +14,7 @@ import {
   TooltipTarget,
   TooltipTrigger,
 } from "../../ui-components/Tooltip";
+import { C2, C3 } from "../../ui-components/Typography";
 
 const node = tv({
   base: [
@@ -24,7 +25,7 @@ const node = tv({
     "rounded",
     "hover:bg-bg-100",
     "transition-[background-color] duration-100",
-    "text-sm",
+    "[word-break:break-word]",
   ],
   variants: {
     active: {
@@ -32,32 +33,6 @@ const node = tv({
       false: "border border-gray-400",
     },
   },
-});
-
-const labelText = tv({
-  base: ["m-0", "[word-break:break-word]", "text-base", "leading-[1.2]"],
-});
-
-const descriptionText = tv({
-  base: [
-    "mt-[3px]",
-    "[word-break:break-word]",
-    "uppercase",
-    "text-xs",
-    "leading-[1.2]",
-  ],
-});
-
-const rootNode = tv({
-  base: [
-    "mb-1",
-    "uppercase",
-    "font-bold",
-    "text-xs",
-    "leading-none",
-    "text-primary-500",
-    "[word-break:break-word]",
-  ],
 });
 
 // generalized node to handle concepts queried in forms
@@ -142,12 +117,14 @@ const FormConceptNode = ({
         <div>
           <TooltipTrigger>
             <TooltipTarget as="div" excludeFromTabOrder>
-              {rootNodeLabel && <p className={rootNode()}>{rootNodeLabel}</p>}
-              <p className={labelText()}>{conceptNode?.label}</p>
+              {rootNodeLabel && (
+                <C3 tone="muted" strong>
+                  {rootNodeLabel}
+                </C3>
+              )}
+              <C2>{conceptNode?.label}</C2>
               {conceptNode && !!conceptNode.description && (
-                <div className={descriptionText()}>
-                  {conceptNode.description}
-                </div>
+                <C3>{conceptNode.description}</C3>
               )}
             </TooltipTarget>
             <Tooltip>{tooltipText}</Tooltip>

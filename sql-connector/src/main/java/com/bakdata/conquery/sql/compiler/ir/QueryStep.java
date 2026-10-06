@@ -1,5 +1,8 @@
 package com.bakdata.conquery.sql.compiler.ir;
 
+import java.util.Collections;
+import java.util.List;
+
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import lombok.Builder;
 import lombok.Singular;
@@ -9,9 +12,6 @@ import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.TableLike;
 import org.jooq.impl.DSL;
-
-import java.util.Collections;
-import java.util.List;
 
 /** Intermediate representation of one SQL query step. */
 @Value

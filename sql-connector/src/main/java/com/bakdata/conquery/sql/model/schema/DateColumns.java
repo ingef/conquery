@@ -2,12 +2,12 @@ package com.bakdata.conquery.sql.model.schema;
 
 import java.util.List;
 import java.util.Objects;
-
-import com.bakdata.conquery.models.datasets.ColumnType;
-import com.bakdata.conquery.sql.validation.AllowedColumnTypes;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
+
+import com.bakdata.conquery.models.datasets.ColumnType;
+import com.bakdata.conquery.sql.validation.AllowedColumnTypes;
 
 /** Resolved physical representation of a date or date range used by an operation. */
 public sealed interface DateColumns permits DateColumns.Single, DateColumns.Pair {

@@ -7,5 +7,5 @@ import lombok.RequiredArgsConstructor;
 public enum IndexPlacement {
 	BEFORE,
 	NEUTRAL,
-	AFTER;	
+	AFTER;
 }

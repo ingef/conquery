@@ -1,0 +1,30 @@
+name: Check Java source hygiene
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+      - release
+  pull_request:
+    paths:
+      - "**/*.java"
+      - ".gitattributes"
+      - ".github/workflows/check_java_formatting.yml"
+      - "pom.xml"
+
+jobs:
+  source-hygiene:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: true
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+      - name: Check Java source hygiene
+        run: mvn -B -ntp spotless:check

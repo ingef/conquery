@@ -193,9 +193,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 				}
 			}
 
-			log.info("Executing query after deletion. Expecting a failure here.");
-
-			IntegrationUtils.assertQueryResult(conquery, query, null, 0L, ExecutionState.FAILED, conquery.getTestUser(), 404);
+			IntegrationUtils.assertQueryResult(conquery, query, null, 0L, ExecutionState.FAILED, conquery.getTestUser(), 422);
 		}
 
 		conquery.waitUntilWorkDone();

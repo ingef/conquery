@@ -22,11 +22,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
-import com.bakdata.conquery.sql.compiler.ir.SharedAliases;
-import com.bakdata.conquery.sql.compiler.ir.form.Offset;
 import com.bakdata.conquery.sql.compiler.dialect.Interval;
-import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
+import com.bakdata.conquery.sql.compiler.ir.SharedAliases;
 import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
+import com.bakdata.conquery.sql.compiler.ir.form.Offset;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.model.form.FormCalendarUnit;
 import com.bakdata.conquery.sql.model.form.FormIndexPlacement;
 import com.bakdata.conquery.sql.model.form.FormIndexSelector;

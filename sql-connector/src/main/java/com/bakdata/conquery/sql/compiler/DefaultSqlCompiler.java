@@ -9,7 +9,6 @@ import com.bakdata.conquery.sql.compiler.naming.SqlNameGenerator;
 import com.bakdata.conquery.sql.compiler.rendering.QueryStepRenderer;
 import com.bakdata.conquery.sql.model.ResolvedQuery;
 import org.jooq.DSLContext;
-import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Select;
 import org.jooq.conf.ParamType;

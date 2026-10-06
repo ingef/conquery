@@ -8,11 +8,11 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.sql.compiler.ir.DateAggregationDates;
 import com.bakdata.conquery.sql.compiler.ir.FieldExpressions;
-import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
-import com.bakdata.conquery.sql.compiler.naming.SqlNameGenerator;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.SqlTables;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
+import com.bakdata.conquery.sql.compiler.naming.SqlNameGenerator;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Field;
 

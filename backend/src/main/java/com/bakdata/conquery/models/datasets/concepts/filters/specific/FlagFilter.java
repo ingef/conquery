@@ -6,7 +6,6 @@ import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.common.ColumnUtils;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.EventFilter;
@@ -17,6 +16,8 @@ import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.filter.event.FlagColumnsFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
+import com.bakdata.conquery.util.validation.ResolvableId;
+import com.bakdata.conquery.util.validation.SupportedColumnTypes;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
@@ -36,7 +37,7 @@ import lombok.ToString;
 @ToString
 public class FlagFilter extends EventFilter<Set<String>> {
 
-	private final Map<String, ColumnId> flags;
+	private final Map<String, @ResolvableId @SupportedColumnTypes(MajorTypeId.BOOLEAN) ColumnId> flags;
 
 	@Override
 	protected void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
@@ -79,18 +80,6 @@ public class FlagFilter extends EventFilter<Set<String>> {
 	@ValidationMethod(message = "Columns must be unique.")
 	public boolean isAllColumnsOfSameTable() {
 		return flags.values().stream().distinct().count() == flags.size();
-	}
-
-	@JsonIgnore
-	@ValidationMethod(message = "Columns must be BOOLEAN.")
-	public boolean isAllColumnsBoolean() {
-		boolean valid = true;
-		for (ColumnId column : flags.values()) {
-			valid &= ColumnUtils.assertValidColumnTypes(column, EnumSet.of(MajorTypeId.BOOLEAN));
-
-		}
-
-		return valid;
 	}
 
 }

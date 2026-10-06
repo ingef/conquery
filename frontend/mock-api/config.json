@@ -1,6 +1,9 @@
 {
   "version": "",
   "production": true,
+  "versions": [{ "name": "Backend", "version": "mock", "buildTime": null }],
+  "manualUrl": "https://example.org",
+  "contactEmail": "test@example.org",
   "currency": {
     "factor": 1,
     "unit": "€",

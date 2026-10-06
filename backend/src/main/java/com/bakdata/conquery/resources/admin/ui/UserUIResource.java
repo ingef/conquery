@@ -37,7 +37,7 @@ public class UserUIResource {
 
 	/**
 	 * End point for retrieving information about a specific user.
-	 * 
+	 *
 	 * @param user Unique id of the user.
 	 * @return A view holding the information about the user.
 	 */

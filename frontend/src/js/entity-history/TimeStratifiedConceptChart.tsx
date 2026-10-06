@@ -13,6 +13,7 @@ import {
   TooltipTarget,
   TooltipTrigger,
 } from "../ui-components/Tooltip";
+import { C2 } from "../ui-components/Typography";
 
 import { ConceptBubble } from "./ConceptBubble";
 
@@ -27,13 +28,7 @@ const container = tv({
 });
 
 const emptyMsg = tv({
-  base: [
-    "flex items-center",
-    "gap-[10px]",
-    "my-10",
-    "text-base",
-    "text-gray-500",
-  ],
+  base: ["flex items-center", "gap-[10px]", "my-10", "text-gray-600"],
 });
 
 const bubble = tv({
@@ -88,10 +83,10 @@ export const TimeStratifiedConceptChart = ({
   if (allValues.length === 0)
     return (
       <div className={container()}>
-        <p className={emptyMsg()}>
-          <BanIcon className="text-gray-500" />
-          {t("history.noData")}
-        </p>
+        <div className={emptyMsg()}>
+          <BanIcon />
+          <C2 as="span">{t("history.noData")}</C2>
+        </div>
       </div>
     );
 
@@ -113,7 +108,7 @@ export const TimeStratifiedConceptChart = ({
       ))}
       {years.map((year, i) => (
         <Fragment key={year}>
-          <div className="text-sm">{year}</div>
+          <C2>{year}</C2>
           {allValues.map((val) => (
             <div
               key={val.label}

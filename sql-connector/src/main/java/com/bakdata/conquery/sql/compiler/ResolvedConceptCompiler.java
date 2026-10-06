@@ -37,6 +37,7 @@ import com.bakdata.conquery.sql.compiler.ir.condition.WhereClauses;
 import com.bakdata.conquery.sql.compiler.ir.condition.WhereCondition;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.naming.SqlNameGenerator;
+import com.bakdata.conquery.sql.mapping.ConceptIdMappingSelection;
 import com.bakdata.conquery.sql.model.node.ConceptNode;
 import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
 import com.bakdata.conquery.sql.model.operation.ResolvedSelect;
@@ -45,7 +46,6 @@ import com.bakdata.conquery.sql.model.schema.EntitySchema;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.model.schema.ResolvedConnector;
 import com.bakdata.conquery.sql.model.schema.ResolvedValidityDate;
-import com.bakdata.conquery.sql.mapping.ConceptIdMappingSelection;
 import lombok.experimental.UtilityClass;
 import org.jooq.Condition;
 import org.jooq.impl.DSL;
@@ -64,7 +64,7 @@ final class ResolvedConceptCompiler {
 				.toList();
 		QueryStep joined = LogicalQueryStepCompiler.compile(
 				connectors.stream().map(ConnectorCompilation::step).toList(), JoinMode.FULL_OUTER,
-				concept.dateAction(), false, entitySchema, dialect, names);
+				DateAggregationAction.MERGE, false, entitySchema, dialect, names);
 		SqlTables tables = ConceptCtePlanner.planConcept(joined, names.conceptName(concept),
 				concept.selects().stream().anyMatch(ResolvedConceptCompiler::isEventDateSelect), dialect, names);
 		Selects joinedSelects = joined.getQualifiedSelects();
@@ -76,7 +76,9 @@ final class ResolvedConceptCompiler {
 						dialect, names, tables, joinedSelects.getIds(), joinedSelects.getValidityDate(),
 						names.selectName(select), connectorTables)))
 				.toList();
-		return ConceptCteCompiler.compileConcept(new ConceptCteInput(joined, selects, tables, negate));
+		return ConceptCteCompiler.compileConcept(new ConceptCteInput(
+				joined, selects, tables, negate, concept.dateAction() == DateAggregationAction.BLOCK
+		));
 	}
 
 	private static Optional<ConnectorCompilation> compileConnector(ConceptNode concept, ResolvedConnector connector,
@@ -84,9 +86,11 @@ final class ResolvedConceptCompiler {
 			Optional<DateRange> restriction, ResolvedSelectConverter selectConverter,
 			Optional<QueryStep> stratificationTable) {
 		String connectorName = names.conceptConnectorName(concept, connector);
+		boolean connectorEventDateSelectsPresent = connector.selects().stream().anyMatch(ResolvedConceptCompiler::isEventDateSelect);
+		boolean conceptEventDateSelectsPresent = concept.selects().stream().anyMatch(ResolvedConceptCompiler::isEventDateSelect);
 		ConnectorCtePlan plan = ConceptCtePlanner.planConnector(connector.table(), connectorName,
 				concept.dateAction() != DateAggregationAction.BLOCK,
-				connector.selects().stream().anyMatch(ResolvedConceptCompiler::isEventDateSelect), dialect, names);
+				connectorEventDateSelectsPresent, conceptEventDateSelectsPresent, dialect, names);
 		SqlIdColumns ids = connector.secondaryId()
 				.map(secondary -> new SqlIdColumns(SchemaSql.field(connector.primaryId(), String.class),
 						SchemaSql.field(secondary, String.class)))

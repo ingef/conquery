@@ -16,6 +16,7 @@ import type {
   GetConceptResponseT,
   GetConceptsResponseT,
   GetDatasetsResponseT,
+  GetDefaultFoldersResponseT,
   GetEntityHistoryDefaultParamsResponse,
   GetEntityHistoryResponse,
   GetFormConfigResponseT,
@@ -201,6 +202,18 @@ export const useGetQueries = () => {
     (datasetId: DatasetT["id"]) =>
       api({
         url: getProtectedUrl(`/datasets/${datasetId}/queries`),
+      }),
+    [api],
+  );
+};
+
+export const useGetDefaultFolders = () => {
+  const api = useApi<GetDefaultFoldersResponseT>();
+
+  return useCallback(
+    (datasetId: DatasetT["id"]) =>
+      api({
+        url: getProtectedUrl(`/datasets/${datasetId}/queries/default-tags`),
       }),
     [api],
   );

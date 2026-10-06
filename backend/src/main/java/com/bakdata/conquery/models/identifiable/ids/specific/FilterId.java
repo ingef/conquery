@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.Collection;
 import java.util.List;
 
+import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
@@ -27,9 +28,11 @@ public class FilterId extends NamespacedId<Filter<?>> {
 
 	@Override
 	public Filter<?> get() {
-		return getDomain().getStorage(getDataset())
-						  .getConcept(connector.getConcept()).getConnectorByName(connector.getConnector())
-						  .getFilterByName(getFilter());
+		Connector resolvedConnector = connector.get();
+		if (resolvedConnector == null) {
+			return null;
+		}
+		return resolvedConnector.getFilterByName(getFilter());
 	}
 
 	@Override
