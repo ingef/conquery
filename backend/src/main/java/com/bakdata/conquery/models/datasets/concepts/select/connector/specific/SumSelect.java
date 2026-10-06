@@ -25,8 +25,6 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.Inte
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.MoneySumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.RealSumAggregator;
 import com.bakdata.conquery.models.types.ResultType;
-import com.bakdata.conquery.sql.conversion.model.aggregator.SumSqlAggregator;
-import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -116,11 +114,6 @@ public class SumSelect extends Select {
 	@Override
 	public ResultSetProcessor.Reader<Integer> createResultSetReader(ResultSetProcessor processor) {
 		return processor::getInteger;
-	}
-
-	@Override
-	public SelectConverter<SumSelect> createConverter() {
-		return new SumSqlAggregator<>();
 	}
 
 	@Override

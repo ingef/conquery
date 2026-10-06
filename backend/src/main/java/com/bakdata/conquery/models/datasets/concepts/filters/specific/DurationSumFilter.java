@@ -26,8 +26,6 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWra
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.DurationSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.TwoColumnDurationSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.AggregationFilterNode;
-import com.bakdata.conquery.sql.conversion.model.aggregator.DurationSumSqlAggregator;
-import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Data;
@@ -91,11 +89,5 @@ public class DurationSumFilter extends AggregationFilter<Range.LongRange> implem
 
 		return new RangeFilterNode(value, aggregator);
 	}
-
-	@Override
-	public FilterConverter<DurationSumFilter, Range.LongRange> createConverter() {
-		return new DurationSumSqlAggregator();
-	}
-
 
 }

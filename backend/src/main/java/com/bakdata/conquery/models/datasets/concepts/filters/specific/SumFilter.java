@@ -25,8 +25,6 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.Inte
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.MoneySumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.RealSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.AggregationFilterNode;
-import com.bakdata.conquery.sql.conversion.model.aggregator.SumSqlAggregator;
-import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
 import jakarta.validation.constraints.NotNull;
@@ -105,11 +103,6 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Aggreg
 		}
 
 		return new RangeFilterNode(range, getAggregator());
-	}
-
-	@Override
-	public FilterConverter<? extends SumFilter<RANGE>, RANGE> createConverter() {
-		return new SumSqlAggregator<>();
 	}
 
 	@JsonIgnore

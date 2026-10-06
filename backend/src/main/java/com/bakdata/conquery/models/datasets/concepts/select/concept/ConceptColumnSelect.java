@@ -19,8 +19,6 @@ import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.ConceptIdPrinter;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
-import com.bakdata.conquery.sql.conversion.model.select.ConceptColumnSelectConverter;
-import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
@@ -75,12 +73,6 @@ public class ConceptColumnSelect extends UniversalSelect {
 	@Override
 	public ResultType getResultType() {
 		return new ResultType.ListT<>(ResultType.Primitive.STRING);
-	}
-
-	@Override
-	public SelectConverter<ConceptColumnSelect> createConverter() {
-		//TODO bind Select to converter here
-		return new ConceptColumnSelectConverter();
 	}
 
 	@Override

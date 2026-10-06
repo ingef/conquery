@@ -17,8 +17,6 @@ import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.filter.event.FlagColumnsFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
-import com.bakdata.conquery.sql.conversion.model.aggregator.FlagSqlAggregator;
-import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
@@ -95,8 +93,4 @@ public class FlagFilter extends EventFilter<Set<String>> {
 		return valid;
 	}
 
-	@Override
-	public FilterConverter<FlagFilter, Set<String>> createConverter() {
-		return new FlagSqlAggregator();
-	}
 }

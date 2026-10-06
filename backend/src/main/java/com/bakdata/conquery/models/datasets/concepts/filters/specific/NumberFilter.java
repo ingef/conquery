@@ -24,8 +24,6 @@ import com.bakdata.conquery.models.query.filter.event.number.IntegerFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.MoneyFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.RealFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
-import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
-import com.bakdata.conquery.sql.conversion.model.filter.NumberFilterConverter;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
@@ -86,12 +84,6 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Eve
 			default -> throw new IllegalStateException(String.format("Column type %s may not be used (Assignment should not have been possible)", column));
 		};
 	}
-
-	@Override
-	public FilterConverter<? extends NumberFilter<RANGE>, RANGE> createConverter() {
-		return new NumberFilterConverter<>();
-	}
-
 
 	@JsonIgnore
 	@ValidationMethod(message = "Columns do not match required Type.")

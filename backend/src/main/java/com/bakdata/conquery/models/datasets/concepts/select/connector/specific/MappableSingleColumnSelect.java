@@ -1,8 +1,5 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
-import com.bakdata.conquery.sql.conversion.model.select.ResolvedSelectAdapter;
-import com.bakdata.conquery.sql.conversion.model.EntitySchemaAdapter;
-import com.bakdata.conquery.sql.compiler.conversion.operation.SubstringSelect;
 import static com.bakdata.conquery.models.types.ResultType.Primitive.STRING;
 import static com.bakdata.conquery.models.types.ResultType.resolveResultType;
 
@@ -16,7 +13,6 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.SingleColumnSelect;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
@@ -28,10 +24,6 @@ import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
-
-import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
-import com.bakdata.conquery.sql.compiler.ir.select.SingleColumnSqlSelect;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
@@ -58,16 +50,6 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 		super(column);
 		this.mapping = mapping;
 		this.substringRange = substringRange;
-	}
-
-	public static SingleColumnSqlSelect getSubstringSelect(
-			Column column, Range.IntegerRange substringRange, SelectContext<ConnectorSqlTables> selectContext,
-			String alias) {
-
-		return SubstringSelect.getSubstringSelect(
-				EntitySchemaAdapter.from(column),
-				ResolvedSelectAdapter.substring(substringRange),
-				selectContext.getTables().getRootTable(), alias);
 	}
 
 	@Override

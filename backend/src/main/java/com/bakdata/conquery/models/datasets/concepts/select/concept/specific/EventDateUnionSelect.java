@@ -13,8 +13,6 @@ import com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSel
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.EventDateUnionAggregator;
 import com.bakdata.conquery.models.types.ResultType;
-import com.bakdata.conquery.sql.conversion.model.select.EventDateUnionSelectConverter;
-import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 
 /**
@@ -41,11 +39,6 @@ public class EventDateUnionSelect extends UniversalSelect {
 	@Override
 	public boolean isEventDateSelect() {
 		return true;
-	}
-
-	@Override
-	public SelectConverter<EventDateUnionSelect> createConverter() {
-		return new EventDateUnionSelectConverter();
 	}
 
 	@Override

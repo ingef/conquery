@@ -13,8 +13,6 @@ import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.filter.event.DateDistanceFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
-import com.bakdata.conquery.sql.conversion.model.aggregator.DateDistanceSqlAggregator;
-import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
 import jakarta.validation.Valid;
@@ -69,8 +67,4 @@ public class DateDistanceFilter extends EventFilter<Range.LongRange> {
 		return new DateDistanceFilterNode(getColumn().resolve(), timeUnit, value);
 	}
 
-	@Override
-	public FilterConverter<DateDistanceFilter, Range.LongRange> createConverter() {
-		return new DateDistanceSqlAggregator();
-	}
 }

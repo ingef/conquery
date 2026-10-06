@@ -19,8 +19,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQuartersOfDatesAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.AggregationFilterNode;
-import com.bakdata.conquery.sql.conversion.model.aggregator.CountQuartersSqlAggregator;
-import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
@@ -61,8 +59,4 @@ public class CountQuartersFilter extends AggregationFilter<Range.LongRange> impl
 		return new RangeFilterNode(value, new CountQuartersOfDatesAggregator(column));
 	}
 
-	@Override
-	public FilterConverter<CountQuartersFilter, Range.LongRange> createConverter() {
-		return new CountQuartersSqlAggregator();
-	}
 }

@@ -38,7 +38,7 @@ import com.bakdata.conquery.models.query.DateAggregationAction;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptIdMapping;
-import com.bakdata.conquery.sql.conversion.dialect.LegacyCompilerDialect;
+import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.EntitySchemaAdapter;
 import com.bakdata.conquery.sql.mapping.ConceptIdMappingSelection;
 import com.bakdata.conquery.sql.model.ResolvedQuery;
@@ -65,18 +65,18 @@ import com.bakdata.conquery.util.TablePrimaryColumnUtil;
 public final class ResolvedQueryMapper {
 
 	private final IdColumnConfig idColumns;
-	private final LegacyCompilerDialect dialect;
+	private final SqlFunctionProvider functionProvider;
 	private final Clock clock;
 	private final String defaultPrimaryColumn;
 
 	public ResolvedQueryMapper(
 			IdColumnConfig idColumns,
-			LegacyCompilerDialect dialect,
+			SqlFunctionProvider functionProvider,
 			Clock clock,
 			String defaultPrimaryColumn
 	) {
 		this.idColumns = idColumns;
-		this.dialect = dialect;
+		this.functionProvider = functionProvider;
 		this.clock = clock;
 		this.defaultPrimaryColumn = defaultPrimaryColumn;
 	}
@@ -181,7 +181,7 @@ public final class ResolvedQueryMapper {
 		connectorColumn.ifPresent(column -> conditions.add(new BuiltInConditions.Presence(column, true)));
 		List<ResolvedSelect> selects = table.getSelects().stream().map(SelectId::resolve)
 				.map(select -> ResolvedOperationAdapter.select(select, conceptColumns, endDate)).toList();
-		ConceptIdMapping mapping = new ConceptIdMapping(concept, dialect.getFunctionProvider());
+		ConceptIdMapping mapping = new ConceptIdMapping(concept, functionProvider);
 		ConceptIdMappingSelection mappingSelection = new ConceptIdMappingSelection(
 				mapping.source(connector), mapping.includedLocalIds(selected), mapping.includesRoot(selected),
 				resolveConceptIds, concept.getLocalId());

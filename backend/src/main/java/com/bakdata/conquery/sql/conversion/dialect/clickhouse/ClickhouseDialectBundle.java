@@ -2,23 +2,14 @@ package com.bakdata.conquery.sql.conversion.dialect.clickhouse;
 
 import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
 import com.bakdata.conquery.sql.compiler.dialect.clickhouse.ClickhouseCompilerDialect;
-import java.util.List;
-import java.util.Map;
-
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.Dialect;
-import com.bakdata.conquery.models.datasets.concepts.select.Select;
-import com.bakdata.conquery.models.datasets.concepts.select.connector.DistinctSelect;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.bakdata.conquery.sql.execution.SqlCDateSetParser;
 import lombok.extern.slf4j.Slf4j;
-import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.SQLDialect;
 
@@ -39,11 +30,6 @@ public class ClickhouseDialectBundle implements DialectBundle {
 	}
 
 	@Override
-	public int getNameMaxLength() {
-		return 64;
-	}
-
-	@Override
 	public String getConnectionTestString() {
 		return "SELECT 1;";
 	}
@@ -51,11 +37,6 @@ public class ClickhouseDialectBundle implements DialectBundle {
 	@Override
 	public SQLDialect getJooqDialect() {
 		return SQLDialect.CLICKHOUSE;
-	}
-
-	@Override
-	public List<NodeConverter<? extends Visitable>> getNodeConverters(DSLContext dslContext) {
-		return getDefaultNodeConverters(dslContext);
 	}
 
 	@Override
@@ -78,8 +59,4 @@ public class ClickhouseDialectBundle implements DialectBundle {
 		return new ClickhouseResultSetProcessor(config);
 	}
 
-	@Override
-	public Map<Class<? extends Select>, ? extends SelectConverter<? extends Select>> getSelectConverterOverrides() {
-		return Map.of(DistinctSelect.class, new ClickhouseDistinctSelectConverter());
-	}
 }

@@ -10,6 +10,7 @@ import java.util.Set;
 
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.common.IRange;
+import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.concepts.conditions.AndCondition;
 import com.bakdata.conquery.models.datasets.concepts.conditions.ColumnEqualCondition;
 import com.bakdata.conquery.models.datasets.concepts.conditions.CTCondition;
@@ -48,7 +49,6 @@ import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.S
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.conversion.model.EntitySchemaAdapter;
-import com.bakdata.conquery.sql.conversion.model.select.ResolvedSelectAdapter;
 import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
 import com.bakdata.conquery.sql.model.operation.BuiltInConditions;
 import com.bakdata.conquery.sql.model.operation.BuiltInFilters;
@@ -58,6 +58,7 @@ import com.bakdata.conquery.sql.model.operation.ResolvedCondition;
 import com.bakdata.conquery.sql.model.operation.ResolvedFilter;
 import com.bakdata.conquery.sql.model.operation.ResolvedSelect;
 import com.bakdata.conquery.sql.model.range.NumberRange;
+import com.bakdata.conquery.sql.model.range.SubstringRange;
 import com.bakdata.conquery.sql.model.result.ResultColumn;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.model.schema.SqlTable;
@@ -97,7 +98,7 @@ public class ResolvedOperationAdapter {
 		return switch (filter) {
 			case SelectFilter<?> selectFilter -> new BuiltInFilters.StringValues(
 					filter.getName(), EntitySchemaAdapter.from(selectFilter.getColumn().resolve()), stringValues(value),
-					ResolvedSelectAdapter.substring(selectFilter.getSubstringRange()));
+					substring(selectFilter.getSubstringRange()));
 			case NumberFilter<?> numberFilter -> new BuiltInFilters.NumericColumnRange(
 					filter.getName(), EntitySchemaAdapter.from(numberFilter.getColumn().resolve()), numberRange((IRange<?, ?>) value));
 			case CountFilter countFilter -> aggregationFilter(filter.getName(),
@@ -148,7 +149,14 @@ public class ResolvedOperationAdapter {
 
 	private static BuiltInSelects.Values values(MappableSingleColumnSelect select, BuiltInSelects.ValueOperation operation) {
 		return new BuiltInSelects.Values(select.getName(), EntitySchemaAdapter.from(select.getColumn().resolve()), operation,
-				ResolvedSelectAdapter.substring(select.getSubstringRange()));
+				substring(select.getSubstringRange()));
+	}
+
+	private static Optional<SubstringRange> substring(Range.IntegerRange range) {
+		if (range == null || range.isAll()) {
+			return Optional.empty();
+		}
+		return Optional.of(new SubstringRange(range.getMin() == null ? 0 : range.getMin(), Optional.ofNullable(range.getMax())));
 	}
 
 	private static BuiltInAggregations.Count count(com.bakdata.conquery.models.datasets.Column column, boolean distinct) {

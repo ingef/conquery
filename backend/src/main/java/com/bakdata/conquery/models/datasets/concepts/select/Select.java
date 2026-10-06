@@ -20,7 +20,6 @@ import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.types.ResultType;
-import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -107,11 +106,6 @@ public abstract class Select extends LabeledNamespaceIdentifiable<SelectId> {
 
 	@JsonIgnore
 	public abstract List<ColumnId> getRequiredColumns();
-
-	@JsonIgnore
-	public <S extends Select> SelectConverter<S> createConverter() {
-		throw new UnsupportedOperationException("No converter implemented for Select %s".formatted(getClass()));
-	}
 
 	@JsonIgnore
 	public boolean isEventDateSelect() {

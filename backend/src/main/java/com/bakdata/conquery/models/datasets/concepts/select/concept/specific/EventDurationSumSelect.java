@@ -9,8 +9,6 @@ import com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSel
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.EventDurationSumAggregator;
 import com.bakdata.conquery.models.types.ResultType;
-import com.bakdata.conquery.sql.conversion.model.select.EventDurationSumSelectConverter;
-import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.google.common.base.Preconditions;
 import lombok.AccessLevel;
@@ -42,11 +40,6 @@ public class EventDurationSumSelect extends UniversalSelect {
 	@Override
 	public ResultSetProcessor.Reader<Integer> createResultSetReader(ResultSetProcessor processor) {
 		return processor::getInteger;
-	}
-
-	@Override
-	public SelectConverter<EventDurationSumSelect> createConverter() {
-		return new EventDurationSumSelectConverter();
 	}
 
 	@Override
