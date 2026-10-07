@@ -160,7 +160,7 @@ public class FileSystemNewsService implements NewsService {
 				Path fileName = path.getFileName();
 				Matcher matcher = FILENAME_PATTERN.matcher(fileName.toString());
 				if (!matcher.matches()) {
-					log.debug("Ignoring file {}", fileName);
+					log.trace("Ignoring unmatched file {}", fileName);
 					continue;
 				}
 
