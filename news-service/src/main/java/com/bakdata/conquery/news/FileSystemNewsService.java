@@ -68,7 +68,6 @@ public class FileSystemNewsService implements NewsService {
 			reloadNews();
 		} catch (Throwable setupExeption) {
 			try {
-
 				close();
 			} catch (Throwable cleanupFailure) {
 				setupExeption.addSuppressed(cleanupFailure);
