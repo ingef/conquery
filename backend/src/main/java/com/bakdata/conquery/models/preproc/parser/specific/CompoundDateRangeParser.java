@@ -7,6 +7,7 @@ import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
 import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
 import com.bakdata.conquery.models.events.stores.specific.CompoundDateRangeStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.preproc.OutputRow;
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import io.dropwizard.validation.ValidationMethod;
@@ -51,8 +52,23 @@ public class CompoundDateRangeParser extends Parser<Boolean, DateRangeStore> {
 	}
 
 	@Override
+	public void addLine(OutputRow outputRow, int outputIndex) {
+		if (outputRow.isNull(outputIndex)) {
+			recordNullLine();
+			return;
+		}
+
+		recordBooleanLine(outputRow.getBoolean(outputIndex));
+	}
+
+	@Override
 	protected DateRangeStore decideType() {
-		return new CompoundDateRangeStore(this.startColumn, this.endColumn, BitSetStore.create(getLines()));
+		return decideType(getLines());
+	}
+
+	@Override
+	protected DateRangeStore decideType(int storeLines) {
+		return new CompoundDateRangeStore(this.startColumn, this.endColumn, BitSetStore.create(storeLines));
 	}
 
 

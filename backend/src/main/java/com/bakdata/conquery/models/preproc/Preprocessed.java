@@ -4,15 +4,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.Deque;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.IntSummaryStatistics;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Objects;
+import java.util.TreeMap;
 import java.util.zip.GZIPOutputStream;
 
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -24,18 +24,20 @@ import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.models.preproc.parser.specific.StringParser;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.google.common.collect.Maps;
 import com.google.common.hash.Hashing;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
-import it.unimi.dsi.fastutil.ints.IntLists;
 import it.unimi.dsi.fastutil.objects.Object2IntAVLTreeMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import lombok.Data;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-@Data
+/**
+ * Mutable, thread-confined accumulator for a single preprocessing job.
+ */
+@Getter
 @Slf4j
 public class Preprocessed {
 
@@ -54,10 +56,36 @@ public class Preprocessed {
 	/**
 	 * Per row store, entity.
 	 */
-	private final List<String> rowEntities = new ArrayList<>();
-
+	private final ArrayList<String> rowEntities = new ArrayList<>();
 
 	private long rows;
+	private boolean finalized;
+	@Getter(AccessLevel.NONE)
+	private final Thread ownerThread = Thread.currentThread();
+
+	private static final class BucketData {
+		private final int bucketId;
+		private final Object2IntMap<String> entityStarts;
+		private final Object2IntMap<String> entityEnds;
+		private int[] sourceEvents;
+		private final Map<String, ColumnStore> stores;
+
+		private BucketData(int bucketId, Object2IntMap<String> entityStarts, Object2IntMap<String> entityEnds, int[] sourceEvents, Map<String, ColumnStore> stores) {
+			this.bucketId = bucketId;
+			this.entityStarts = entityStarts;
+			this.entityEnds = entityEnds;
+			this.sourceEvents = sourceEvents;
+			this.stores = stores;
+		}
+
+		private PreprocessedData toPreprocessedData() {
+			return new PreprocessedData(bucketId, entityStarts, entityEnds, stores);
+		}
+
+		private void releaseSourceEvents() {
+			sourceEvents = null;
+		}
+	}
 
 	public Preprocessed(ConqueryConfig config, PreprocessingJob preprocessingJob) throws IOException {
 		job = preprocessingJob;
@@ -79,40 +107,43 @@ public class Preprocessed {
 			final Parser parser = input.getOutput()[index].createParser(config);
 			columns[index].setParser(parser);
 
-			values[index] = parser.createColumnValues();
+			values[index] = Objects.requireNonNull(parser.createColumnValues(), () -> "Parser did not create ColumnValues: " + parser.getClass().getName());
 		}
 	}
 
 
 	public void write(File file, int buckets) throws IOException {
+		ensureMutable();
+		finalized = true;
 
-		final Object2IntMap<String> entityStart = new Object2IntAVLTreeMap<>();
 		final Object2IntMap<String> entityLength = new Object2IntAVLTreeMap<>();
 
-		calculateEntitySpans(entityStart, entityLength);
+		calculateEntityLengths(entityLength);
 
 		final IntSummaryStatistics statistics = entityLength.values().intStream().summaryStatistics();
 		log.info("Statistics = {}", statistics);
 
 
-		final Map<String, ColumnStore> columnStores = combineStores(entityStart);
-
-
 		log.debug("Writing Headers");
 
-		//TODO this could actually be done at read-time, avoiding large allocations entirely. But in a different smaller PR.
-		final Map<Integer, Collection<String>> bucket2Entity = entityStart.keySet().stream()
-																		  .collect(Collectors.groupingBy(id -> getEntityBucket(buckets, id)))
-																		  .entrySet().stream()
-																		  .collect(Collectors.toMap(Map.Entry::getKey, entry -> new HashSet<>(entry.getValue())));
+		final Map<Integer, List<String>> bucket2Entity = new TreeMap<>();
+		for (String entity : entityLength.keySet()) {
+			bucket2Entity.computeIfAbsent(getEntityBucket(buckets, entity), ignored -> new ArrayList<>()).add(entity);
+		}
 
 
 		final int hash = descriptor.calculateValidityHash(job.getCsvDirectory(), job.getTag());
 
 		final PreprocessedHeader header =
-				new PreprocessedHeader(descriptor.getName(), descriptor.getTable(), rows, entityStart.size(), bucket2Entity.size(), columns, hash);
+				new PreprocessedHeader(descriptor.getName(), descriptor.getTable(), rows, entityLength.size(), bucket2Entity.size(), columns, hash);
 
-		writePreprocessed(file, header, entityStart, entityLength, columnStores, bucket2Entity);
+		final Deque<BucketData> bucketData = createBucketData(bucket2Entity, entityLength);
+
+		entityLength.clear();
+		bucket2Entity.clear();
+
+		populateBucketStores(bucketData);
+		writePreprocessed(file, header, bucketData);
 	}
 
 	public static int getEntityBucket(int buckets, String id) {
@@ -120,72 +151,100 @@ public class Preprocessed {
 	}
 
 	/**
-	 * Calculate beginning and length of entities in output data.
+	 * Calculate the number of events per entity.
 	 */
-	private void calculateEntitySpans(Object2IntMap<String> entityStart, Object2IntMap<String> entityLength) {
+	private void calculateEntityLengths(Object2IntMap<String> entityLength) {
 
-		// Count the number of events for the entity
 		for (String entity : rowEntities) {
 			final int curr = entityLength.getOrDefault(entity, 0);
 			entityLength.put(entity, curr + 1);
 		}
-
-		// Lay out the entities in order, adding their length.
-		int outIndex = 0;
-
-		for (Object2IntMap.Entry<String> entry : entityLength.object2IntEntrySet()) {
-			entityStart.put(entry.getKey(), outIndex);
-			outIndex += entry.getIntValue();
-		}
 	}
 
-	/**
-	 * Combine raw by-Entity data into column stores, appropriately formatted.
-	 */
-	@SuppressWarnings("rawtypes")
-	private Map<String, ColumnStore> combineStores(Object2IntMap<String> entityStart) {
-		final Map<String, ColumnStore> columnStores = Arrays.stream(columns).parallel().collect(Collectors.toMap(PPColumn::getName, PPColumn::findBestType));
-
-		// This object can be huge!
-		final Map<String, IntList> entityEvents = new HashMap<>(entityStart.size());
+	private Deque<BucketData> createBucketData(Map<Integer, List<String>> bucket2Entities, Object2IntMap<String> entityLengths) {
+		final Map<String, IntList> entityEvents = new HashMap<>(entityLengths.size());
 
 		for (int pos = 0, size = rowEntities.size(); pos < size; pos++) {
 			final String entity = rowEntities.get(pos);
 			entityEvents.computeIfAbsent(entity, (ignored) -> new IntArrayList()).add(pos);
 		}
+		rowEntities.clear();
+		rowEntities.trimToSize();
 
-		for (int colIdx = 0; colIdx < columns.length; colIdx++) {
-			final PPColumn ppColumn = columns[colIdx];
-			final ColumnValues columnValues = values[colIdx];
+		final Deque<BucketData> buckets = new ArrayDeque<>(bucket2Entities.size());
 
-			//No need to preprocess the column further more, if it does not contain values, likely backed by a compound ColumnStore
-			if (columnValues == null) {
-				continue;
-			}
-			final ColumnStore store = columnStores.get(ppColumn.getName());
+		for (Map.Entry<Integer, List<String>> bucket : bucket2Entities.entrySet()) {
+			final Object2IntMap<String> entityStarts = new Object2IntOpenHashMap<>();
+			final Object2IntMap<String> entityEnds = new Object2IntOpenHashMap<>();
+			final IntList sourceEvents = new IntArrayList();
 
-			entityStart.object2IntEntrySet().forEach(entry -> {
-				final String entity = entry.getKey();
-				int outIndex = entry.getIntValue();
+			int currentStart = 0;
+			for (String entity : bucket.getValue()) {
+				final int length = entityLengths.getInt(entity);
+				final IntList events = entityEvents.remove(entity);
 
-				final IntList events = entityEvents.getOrDefault(entity, IntLists.emptyList());
-
-				for (int inIndex : events) {
-					if (columnValues.isNull(inIndex)) {
-						store.setNull(outIndex);
-					}
-					else {
-						final Object raw = columnValues.get(inIndex);
-						ppColumn.getParser().setValue(store, outIndex, raw);
-					}
-					outIndex++;
+				if (events == null || events.size() != length) {
+					throw new IllegalStateException("Entity events are not aligned for " + entity);
 				}
-			});
+
+				entityStarts.put(entity, currentStart);
+				entityEnds.put(entity, currentStart + length);
+				currentStart += length;
+
+				for (int event : events) {
+					sourceEvents.add(event);
+				}
+			}
+
+			buckets.addLast(new BucketData(bucket.getKey(), entityStarts, entityEnds, sourceEvents.toIntArray(), new HashMap<>()));
 		}
-		return columnStores;
+
+		if (!entityEvents.isEmpty()) {
+			throw new IllegalStateException("Not all entity events were assigned to a bucket");
+		}
+
+		return buckets;
 	}
 
-	private static void writePreprocessed(File file, PreprocessedHeader header, Map<String, Integer> globalStarts, Map<String, Integer> globalLengths, Map<String, ColumnStore> data, Map<Integer, Collection<String>> bucket2Entities) throws IOException {
+	@SuppressWarnings({"rawtypes", "unchecked"})
+	private void populateBucketStores(Iterable<BucketData> buckets) {
+		for (int columnIndex = 0; columnIndex < columns.length; columnIndex++) {
+			final PPColumn column = columns[columnIndex];
+			final ColumnValues columnValues = values[columnIndex];
+
+			log.info("Compute best Subtype for Column[{}] with {}", column.getName(), column.getParser());
+
+			try {
+				for (BucketData bucket : buckets) {
+					final ColumnStore store = column.createStore(bucket.sourceEvents.length);
+
+					if (columnValues != null) {
+						for (int localEvent = 0; localEvent < bucket.sourceEvents.length; localEvent++) {
+							final int sourceEvent = bucket.sourceEvents[localEvent];
+
+							if (columnValues.isNull(sourceEvent)) {
+								store.setNull(localEvent);
+							}
+							else {
+								column.getParser().setValue(store, localEvent, columnValues.get(sourceEvent));
+							}
+						}
+					}
+
+					bucket.stores.put(column.getName(), store);
+				}
+			}
+			finally {
+				values[columnIndex] = null;
+			}
+		}
+
+		for (BucketData bucket : buckets) {
+			bucket.releaseSourceEvents();
+		}
+	}
+
+	private static void writePreprocessed(File file, PreprocessedHeader header, Deque<BucketData> buckets) throws IOException {
 		final OutputStream out = new GZIPOutputStream(new FileOutputStream(file));
 		try (JsonGenerator generator = Jackson.BINARY_MAPPER.copy().enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET).getFactory().createGenerator(out)) {
 
@@ -195,89 +254,55 @@ public class Preprocessed {
 
 			log.debug("Writing data");
 
-			for (Map.Entry<Integer, Collection<String>> bucketIds : bucket2Entities.entrySet()) {
-				final Collection<String> entities = bucketIds.getValue();
-
-				final Map<String, Integer> starts = Maps.filterKeys(globalStarts, entities::contains);
-				final Map<String, Integer> lengths = Maps.filterKeys(globalLengths, entities::contains);
-
-				final PreprocessedData preprocessedData = selectBucket(bucketIds.getKey(), starts, lengths, data);
-
-				generator.writeObject(preprocessedData);
+			BucketData bucket;
+			while ((bucket = buckets.pollFirst()) != null) {
+				generator.writeObject(bucket.toPreprocessedData());
 			}
 		}
 	}
 
-	private static PreprocessedData selectBucket(int bucket, Map<String, Integer> localStarts, Map<String, Integer> localLengths, Map<String, ColumnStore> stores) {
-
-
-		final IntList selectionStart = new IntArrayList();
-		final IntList selectionLength = new IntArrayList();
-
-
-		// First entity of Bucket starts at 0, the following are appended.
-		final Object2IntMap<String> entityStarts = new Object2IntOpenHashMap<>();
-		final Object2IntMap<String> entityEnds = new Object2IntOpenHashMap<>();
-
-
-		int currentStart = 0;
-
-		for (Map.Entry<String, Integer> entity2Start : localStarts.entrySet()) {
-			final String entity = entity2Start.getKey();
-			final int start = entity2Start.getValue();
-
-			final int length = localLengths.get(entity);
-
-			selectionStart.add(start);
-
-			selectionLength.add(length);
-
-			entityStarts.put(entity, currentStart);
-			entityEnds.put(entity, currentStart + length);
-
-			currentStart += length;
-		}
-
-		final Map<String, ColumnStore> selected = new HashMap<>();
-
-		for (Map.Entry<String, ColumnStore> entry : stores.entrySet()) {
-			final String name = entry.getKey();
-			final ColumnStore store = entry.getValue();
-
-			selected.put(name, store.select(selectionStart.toIntArray(), selectionLength.toIntArray()));
-		}
-
-		return new PreprocessedData(bucket, entityStarts, entityEnds, selected);
-	}
-
-	public synchronized String addPrimary(String primary) {
+	String addPrimary(String primary) {
+		ensureMutable();
 		return primaryColumn.addLine(primary);
 	}
 
-	public synchronized void addRow(String primaryId, PPColumn[] columns, Object[] outRow) {
+	void addRow(String primaryId, OutputRow outRow) {
+		ensureMutable();
+		if (outRow.size() != columns.length || values.length != columns.length) {
+			throw new IllegalArgumentException("Output row and columns are not aligned");
+		}
+
 		final int event = rowEntities.size();
-		rowEntities.add(primaryId);
 
-		for (int col = 0; col < outRow.length; col++) {
-
-			if (values[col] == null && outRow[col] != null) {
-				throw new IllegalStateException(String.format("Expecting %s to be NULL, because no ColumnValues could be generated by the associated parser", outRow[col]));
+		for (int col = 0; col < outRow.size(); col++) {
+			if (values[col].getSize() != event) {
+				throw new IllegalStateException("Columns are not aligned");
 			}
+		}
 
-			if (values[col] == null) {
-				continue;
-			}
-			final int idx = values[col].add(outRow[col]);
+		for (int col = 0; col < outRow.size(); col++) {
+			final int idx = values[col].add(outRow, col);
 
 			if (event != idx) {
 				throw new IllegalStateException("Columns are not aligned");
 			}
 
-			log.trace("Registering `{}` for Column[{}]", outRow[col], columns[col].getName());
-			columns[col].getParser().addLine(outRow[col]);
+			columns[col].getParser().addLine(outRow, col);
 		}
+
+		rowEntities.add(primaryId);
 
 		//update stats
 		rows++;
+	}
+
+	private void ensureMutable() {
+		if (Thread.currentThread() != ownerThread) {
+			throw new IllegalStateException("Preprocessed data must only be accessed by its owning thread");
+		}
+
+		if (finalized) {
+			throw new IllegalStateException("Preprocessed data has already been finalized");
+		}
 	}
 }
