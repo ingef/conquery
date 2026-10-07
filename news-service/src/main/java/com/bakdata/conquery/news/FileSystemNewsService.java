@@ -173,7 +173,7 @@ public class FileSystemNewsService implements NewsService {
 					continue;
 				}
 
-				log.trace("Loading file {}", fileName);
+				log.debug("BEGIN loading file {}", fileName);
 
 				String dateString = matcher.group("date");
 				String fsSafeId = matcher.group("id");
@@ -205,7 +205,7 @@ public class FileSystemNewsService implements NewsService {
 					continue;
 				}
 
-				log.debug("Loaded file {}", fileName);
+				log.trace("DONE loading file {}", fileName);
 			}
 
 		}
