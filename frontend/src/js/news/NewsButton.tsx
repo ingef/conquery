@@ -5,6 +5,7 @@ import { tv } from "tailwind-variants";
 import { Button } from "../ui-components/Button";
 import { Popover } from "../ui-components/Popover";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
+import { headingStyle } from "../ui-components/Typography";
 import { UnreadDot } from "../ui-components/UnreadDot";
 import { NewsList } from "./NewsList";
 import { useNews } from "./useNews";
@@ -19,16 +20,13 @@ const unreadMarker = tv({
   ],
 });
 
-// explicit: a RAC Heading renders an h3, which has base styles
 const headline = tv({
   base: [
     "flex items-center",
     "gap-2",
-    "m-0",
     "px-5 py-3",
     "border-b border-gray-100",
-    "text-sm leading-5 font-medium",
-    "text-gray-800",
+    headingStyle({ level: 4 }),
   ],
 });
 
