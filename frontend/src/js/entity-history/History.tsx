@@ -155,7 +155,7 @@ export const History = () => {
     <TimelineSearchProvider>
       <div className={fullScreen()}>
         <Group orientation="horizontal">
-          <Panel minSize={400} defaultSize={400} maxSize={800}>
+          <Panel minSize={300} defaultSize={400} maxSize={800}>
             <Navigation
               className="h-full pt-[55px] pb-[10px]"
               blurred={blurred}
