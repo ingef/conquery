@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { MegaphoneIcon } from "lucide-react";
 import { Button } from "./Button";
+import { C2 } from "./Typography";
 import { UnreadDot } from "./UnreadDot";
 
 export default {
@@ -15,10 +16,10 @@ export const Default: Story = {};
 
 export const NextToText: Story = {
   render: () => (
-    <p className="flex items-center gap-2 text-sm font-medium">
+    <div className="flex items-center gap-2">
       <UnreadDot />
-      An unread entry
-    </p>
+      <C2 strong>An unread entry</C2>
+    </div>
   ),
 };
 

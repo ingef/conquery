@@ -1,12 +1,12 @@
 import { parseISO } from "date-fns";
-import { ExternalLinkIcon } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useDateFormatter } from "react-aria";
-import { Link } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import type { NewsItemT } from "../api/types";
 import { useIntersectionObserver } from "../common/useIntersectionObserver";
+import { Link } from "../ui-components/Link";
+import { C2, C3, H4 } from "../ui-components/Typography";
 import { UnreadDot } from "../ui-components/UnreadDot";
 
 const READ_AFTER_MS = 1500;
@@ -20,15 +20,13 @@ const list = tv({
   ],
 });
 
-// explicit: through the portal the text would inherit body's line-height and light weight
 const root = tv({
   base: [
     "relative",
-    "flex flex-col",
+    "flex flex-col items-start",
     "gap-1",
     "px-5 py-4",
-    "text-sm leading-5 font-normal",
-    "text-gray-800",
+    "whitespace-pre-line",
   ],
 });
 
@@ -42,20 +40,6 @@ const unreadMarker = tv({
   variants: {
     isUnread: { false: "opacity-0" },
   },
-});
-
-const link = tv({
-  base: [
-    "flex items-center self-start",
-    "gap-1",
-    "rounded-sm",
-    "font-medium",
-    "text-primary-500",
-    "cursor-pointer",
-    "outline-none",
-    "hover:underline",
-    "data-focus-visible:underline",
-  ],
 });
 
 const NewsListItem = ({
@@ -86,24 +70,20 @@ const NewsListItem = ({
 
   return (
     <li className={root()}>
-      <p className="relative text-xs text-gray-500">
+      <div className="relative flex">
         <span className={unreadMarker({ isUnread })}>
           <UnreadDot />
         </span>
-        <time dateTime={date}>{dateFormatter.format(parseISO(date))}</time>
+        <C3 as="span" tone="muted">
+          <time dateTime={date}>{dateFormatter.format(parseISO(date))}</time>
+        </C3>
         {isUnread && <span className="sr-only">{t("news.unread")}</span>}
-      </p>
-      <h4 className="font-bold">{title}</h4>
-      <p className="whitespace-pre-line">{description}</p>
+      </div>
+      <H4>{title}</H4>
+      <C2>{description}</C2>
       {href && (
-        <Link
-          href={href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={link()}
-        >
+        <Link href={href} external>
           {t("news.more")}
-          <ExternalLinkIcon />
         </Link>
       )}
       <span ref={endRef} className="absolute bottom-1 left-0 size-px" />
