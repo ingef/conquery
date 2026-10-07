@@ -26,7 +26,7 @@ const root = tv({
     "[-webkit-overflow-scrolling:touch]",
     "pt-0 pr-5 pb-5 pl-[10px]",
     "inline-grid",
-    "grid-cols-[280px_auto]",
+    "grid-cols-[360px_auto]",
     "gap-x-[4px] gap-y-5",
     "w-full",
     "h-full",

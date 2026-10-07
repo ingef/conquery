@@ -42,11 +42,10 @@ const eventItemContent = tv({
 
 const colBucket = tv({
   base: [
-    "grid grid-cols-3 min-[1800px]:grid-cols-4 min-[2500px]:grid-cols-5",
+    "grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))]",
     "gap-x-[10px] gap-y-[3px]",
     "w-full",
     "px-1 py-px",
-    "text-black",
   ],
 });
 
