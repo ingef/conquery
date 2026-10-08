@@ -55,8 +55,8 @@ import org.jooq.impl.DSL;
 final class ResolvedConceptCompiler {
 
 	static QueryStep compile(ConceptNode concept, EntitySchema entitySchema, CompilerDialect dialect,
-			SqlNameGenerator names, boolean negate, Optional<DateRange> restriction,
-			Optional<QueryStep> stratificationTable) {
+							 SqlNameGenerator names, boolean negate, Optional<DateRange> restriction,
+							 Optional<QueryStep> stratificationTable) {
 		ResolvedSelectConverter selectConverter = new ResolvedSelectConverter();
 		List<ConnectorCompilation> connectors = concept.connectors().stream()
 				.map(connector -> compileConnector(concept, connector, dialect, names, restriction, selectConverter, stratificationTable))
@@ -82,9 +82,9 @@ final class ResolvedConceptCompiler {
 	}
 
 	private static Optional<ConnectorCompilation> compileConnector(ConceptNode concept, ResolvedConnector connector,
-			CompilerDialect dialect, SqlNameGenerator names,
-			Optional<DateRange> restriction, ResolvedSelectConverter selectConverter,
-			Optional<QueryStep> stratificationTable) {
+																   CompilerDialect dialect, SqlNameGenerator names,
+																   Optional<DateRange> restriction, ResolvedSelectConverter selectConverter,
+																   Optional<QueryStep> stratificationTable) {
 		String connectorName = names.conceptConnectorName(concept, connector);
 		boolean connectorEventDateSelectsPresent = connector.selects().stream().anyMatch(ResolvedConceptCompiler::isEventDateSelect);
 		boolean conceptEventDateSelectsPresent = concept.selects().stream().anyMatch(ResolvedConceptCompiler::isEventDateSelect);
@@ -96,10 +96,16 @@ final class ResolvedConceptCompiler {
 						SchemaSql.field(secondary, String.class)))
 				.orElseGet(() -> new SqlIdColumns(SchemaSql.field(connector.primaryId(), String.class)))
 				.withAlias();
+		SqlIdColumns operationIds = stratificationTable
+				.map(table -> table.getSelects().getIds())
+				.orElse(ids);
+		Optional<ColumnDateRange> stratificationDate = stratificationTable
+				.flatMap(table -> table.getQualifiedSelects().getStratificationDate());
 		ColumnDateRange validityDate = validityDate(connector.validityDate(), restriction, dialect);
 		List<SqlFilters> filters = new ArrayList<>();
 		ResolvedFilterConverter filterConverter = new ResolvedFilterConverter();
-		FilterConversionContext filterContext = new FilterConversionContext(dialect, names, plan.tables(), ids);
+		FilterConversionContext filterContext = new FilterConversionContext(
+				dialect, names, plan.tables(), operationIds, stratificationDate);
 		connector.filters().stream().map(filter -> filterConverter.convert(filter, filterContext)).forEach(filters::add);
 		ResolvedConditionConverter conditionConverter = new ResolvedConditionConverter();
 		List<WhereCondition> conditions = connector.conditions().stream()
@@ -120,20 +126,21 @@ final class ResolvedConceptCompiler {
 							BuiltInSelects.ConceptValues connectorValues = new BuiltInSelects.ConceptValues(
 									values.name(), List.of(column));
 							selects.add(selectConverter.convert(connectorValues,
-									selectContext(dialect, names, plan, ids, validityDate, connectorName,
+									selectContext(dialect, names, plan, operationIds, validityDate, stratificationDate, connectorName,
 											names.selectName(select), conceptValueSources(column, connector, plan, dialect))));
 						});
 			}
 		}
 		for (ResolvedSelect select : connector.selects()) {
-			selects.add(selectConverter.convert(select, selectContext(dialect, names, plan, ids, validityDate,
+			selects.add(selectConverter.convert(select, selectContext(dialect, names, plan, operationIds, validityDate,
+					stratificationDate,
 					connectorName, names.selectName(select))));
 		}
 		org.jooq.Table<org.jooq.Record> sourceTable = connector.conceptIdMapping()
 				.map(mapping -> mapping.selectedConcepts(plan.sourceTable(), dialect))
 				.orElse(plan.sourceTable());
 		return ConnectorCteCompiler.compileConnector(ConnectorCtePipelineAssembler.assemble(
-				plan, sourceTable, ids, validityDate, selects, filters, stratificationTable))
+						plan, sourceTable, ids, validityDate, selects, filters, stratificationTable))
 				.map(step -> new ConnectorCompilation(connector, plan, step));
 	}
 
@@ -148,30 +155,34 @@ final class ResolvedConceptCompiler {
 		}
 		ConceptIdMappingSelection mapping = connector.conceptIdMapping().orElseThrow();
 		return List.of(new SelectConversionContext.ConceptColumnSource(
-						plan.sourceTable().getName(),
-						mapping.source().resolvedConceptIds(plan.sourceTable(), dialect),
-						mapping.source().resolvedIdOrRoot(mapping.rootLocalId()),
-						List.of(SchemaSql.field(column, Object.class).isNotNull())
-				));
+				plan.sourceTable().getName(),
+				mapping.source().resolvedConceptIds(plan.sourceTable(), dialect),
+				mapping.source().resolvedIdOrRoot(mapping.rootLocalId()),
+				List.of(SchemaSql.field(column, Object.class).isNotNull())
+		));
 	}
 
 	private static SelectConversionContext selectContext(CompilerDialect dialect, SqlNameGenerator names,
-			ConnectorCtePlan plan, SqlIdColumns ids, ColumnDateRange validityDate, String connectorName, String alias) {
+														 ConnectorCtePlan plan, SqlIdColumns ids, ColumnDateRange validityDate,
+														 Optional<ColumnDateRange> stratificationDate, String connectorName, String alias) {
 		return new SelectConversionContext(dialect, names, plan.tables(), ids,
-				Optional.of(validityDate.asValidityDateRange(connectorName)), alias);
+				Optional.of(validityDate.asValidityDateRange(connectorName)), stratificationDate, alias, Map.of(), List.of());
 	}
 
 	private static SelectConversionContext selectContext(CompilerDialect dialect, SqlNameGenerator names,
-			ConnectorCtePlan plan, SqlIdColumns ids, ColumnDateRange validityDate, String connectorName, String alias,
-			List<SelectConversionContext.ConceptColumnSource> conceptColumnSources) {
+														 ConnectorCtePlan plan, SqlIdColumns ids, ColumnDateRange validityDate,
+														 Optional<ColumnDateRange> stratificationDate, String connectorName, String alias,
+														 List<SelectConversionContext.ConceptColumnSource> conceptColumnSources) {
 		return new SelectConversionContext(dialect, names, plan.tables(), ids,
-				Optional.of(validityDate.asValidityDateRange(connectorName)), alias, Map.of(), conceptColumnSources);
+				Optional.of(validityDate.asValidityDateRange(connectorName)), stratificationDate, alias, Map.of(),
+				conceptColumnSources);
 	}
 
 	private static ColumnDateRange validityDate(ResolvedValidityDate value, Optional<DateRange> restriction,
-			CompilerDialect dialect) {
+												CompilerDialect dialect) {
 		ColumnDateRange physical = switch (value) {
-			case ResolvedValidityDate.None ignored -> restriction.map(dialect::dateRangeLiteral).orElseGet(dialect::unboundedDateRange);
+			case ResolvedValidityDate.None ignored ->
+					restriction.map(dialect::dateRangeLiteral).orElseGet(dialect::unboundedDateRange);
 			case ResolvedValidityDate.Point point -> dialect.dateRange(SchemaSql.field(point.column(), Date.class),
 					SchemaSql.field(point.column(), Date.class));
 			case ResolvedValidityDate.Range range -> dialect.dateRange(SchemaSql.field(range.start(), Date.class),
@@ -189,9 +200,11 @@ final class ResolvedConceptCompiler {
 	private static Optional<Condition> validityPresentCondition(ResolvedValidityDate value) {
 		return switch (value) {
 			case ResolvedValidityDate.None ignored -> Optional.empty();
-			case ResolvedValidityDate.Point point -> Optional.of(SchemaSql.field(point.column(), Object.class).isNotNull());
-			case ResolvedValidityDate.Range range -> Optional.of(SchemaSql.field(range.start(), Object.class).isNotNull()
-					.or(SchemaSql.field(range.end(), Object.class).isNotNull()));
+			case ResolvedValidityDate.Point point ->
+					Optional.of(SchemaSql.field(point.column(), Object.class).isNotNull());
+			case ResolvedValidityDate.Range range ->
+					Optional.of(SchemaSql.field(range.start(), Object.class).isNotNull()
+							.or(SchemaSql.field(range.end(), Object.class).isNotNull()));
 		};
 	}
 

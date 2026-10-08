@@ -22,18 +22,26 @@ public record SelectConversionContext(
 		SqlTables tables,
 		SqlIdColumns ids,
 		Optional<ColumnDateRange> validityDate,
+		Optional<ColumnDateRange> stratificationDate,
 		String alias,
 		Map<String, String> conceptColumnTables,
 		List<ConceptColumnSource> conceptColumnSources
 ) {
 	public SelectConversionContext(CompilerDialect dialect, SqlNameGenerator nameGenerator, SqlTables tables, SqlIdColumns ids,
-			Optional<ColumnDateRange> validityDate, String alias) {
-		this(dialect, nameGenerator, tables, ids, validityDate, alias, Map.of(), List.of());
+								   Optional<ColumnDateRange> validityDate, String alias) {
+		this(dialect, nameGenerator, tables, ids, validityDate, Optional.empty(), alias, Map.of(), List.of());
 	}
 
 	public SelectConversionContext(CompilerDialect dialect, SqlNameGenerator nameGenerator, SqlTables tables, SqlIdColumns ids,
-			Optional<ColumnDateRange> validityDate, String alias, Map<String, String> conceptColumnTables) {
-		this(dialect, nameGenerator, tables, ids, validityDate, alias, conceptColumnTables, List.of());
+								   Optional<ColumnDateRange> validityDate, String alias, Map<String, String> conceptColumnTables) {
+		this(dialect, nameGenerator, tables, ids, validityDate, Optional.empty(), alias, conceptColumnTables, List.of());
+	}
+
+	public SelectConversionContext(CompilerDialect dialect, SqlNameGenerator nameGenerator, SqlTables tables, SqlIdColumns ids,
+								   Optional<ColumnDateRange> validityDate, String alias, Map<String, String> conceptColumnTables,
+								   List<ConceptColumnSource> conceptColumnSources) {
+		this(dialect, nameGenerator, tables, ids, validityDate, Optional.empty(), alias, conceptColumnTables,
+				conceptColumnSources);
 	}
 
 	public SelectConversionContext {

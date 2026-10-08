@@ -166,6 +166,30 @@ class ResolvedSelectConverterTest {
 	}
 
 	@Test
+	void shouldUseInclusiveStratificationEndForDateDistance() {
+		var base = context();
+		var date = new ResolvedColumn("events.date", VALUE.table(), "date", ColumnType.DATE, true);
+		var stratificationDate = ColumnDateRange.of(
+				DSL.field(DSL.name("window", "start"), Date.class),
+				DSL.field(DSL.name("window", "end"), Date.class)
+		);
+		var context = new SelectConversionContext(
+				base.dialect(), base.nameGenerator(), base.tables(), base.ids(), base.validityDate(),
+				Optional.of(stratificationDate), base.alias(), base.conceptColumnTables(), base.conceptColumnSources()
+		);
+
+		var result = converter.convert(
+				new BuiltInSelects.DateDistance("value", date, ChronoUnit.YEARS, LocalDate.of(2020, 6, 15)),
+				context
+		);
+
+		assertEquals(
+				"date_distance(\"events\".\"date\", add_days(\"window\".\"end\", -1)) as \"value\"",
+				render(result.getPreprocessingSelects().getFirst().toFields().getFirst())
+		);
+	}
+
+	@Test
 	void shouldConvertDistinctWithEventFilteringAndOrderedStringAggregation() {
 		var result = converter.convert(new BuiltInSelects.Values("value", VALUE, BuiltInSelects.ValueOperation.DISTINCT, Optional.empty()), context());
 		var aggregation = result.getAdditionalPredecessor().orElseThrow();
@@ -228,25 +252,75 @@ class ResolvedSelectConverterTest {
 	}
 
 	private static class TestDialect implements CompilerDialect {
-		@Override public org.jooq.Condition orAgg(Field<Boolean> field) { return DSL.max(field.cast(Integer.class)).gt(0); }
-		@Override public Field<?> arrayOut(List<Field<String>> fields) { return DSL.array(fields); }
-		@Override public Field<Integer> dateDistance(ChronoUnit unit, Field<Date> start, Field<Date> end) {
+		@Override
+		public org.jooq.Condition orAgg(Field<Boolean> field) {
+			return DSL.max(field.cast(Integer.class)).gt(0);
+		}
+
+		@Override
+		public Field<?> arrayOut(List<Field<String>> fields) {
+			return DSL.array(fields);
+		}
+
+		@Override
+		public Field<Integer> dateDistance(ChronoUnit unit, Field<Date> start, Field<Date> end) {
 			return DSL.function("date_distance", Integer.class, start, end);
 		}
-		@Override public Field<Integer> dateDistance(ChronoUnit unit, Field<Date> start, LocalDate end) {
+
+		@Override
+		public Field<Integer> dateDistance(ChronoUnit unit, Field<Date> start, LocalDate end) {
 			return dateDistance(unit, start, DSL.inline(Date.valueOf(end)));
 		}
-		@Override public <T> Field<T> cast(Field<?> field, org.jooq.DataType<T> type) { return field.cast(type); }
-		@Override public Field<String> stringAggregation(Field<String> field, Field<String> delimiter, List<Field<?>> order) {
+
+		@Override
+		public Field<Date> addDays(Field<Date> date, Field<Integer> days) {
+			return DSL.function("add_days", Date.class, date, days);
+		}
+
+		@Override
+		public <T> Field<T> cast(Field<?> field, org.jooq.DataType<T> type) {
+			return field.cast(type);
+		}
+
+		@Override
+		public Field<String> stringAggregation(Field<String> field, Field<String> delimiter, List<Field<?>> order) {
 			return DSL.field("string_agg({0}, {1} {2})", String.class, field, delimiter, DSL.orderBy(order));
 		}
-		@Override public Field<Date> minimumDate() { return DSL.field("minimum_date", Date.class); }
-		@Override public Field<Date> maximumDate() { return DSL.field("maximum_date", Date.class); }
-		@Override public <T> Field<T> anyValue(Field<T> field) { return field; }
-		@Override public <T> Field<T> random(Field<T> field) { return DSL.function("random_value", field.getDataType(), field); }
-		@Override public Field<?> renderDateRange(Field<Date> start, Field<Date> end) { return start; }
-		@Override public Field<?> aggregateDateRanges(Field<Date> start, Field<Date> end) { return start; }
-		@Override public int getNameMaxLength() { return 127; }
+
+		@Override
+		public Field<Date> minimumDate() {
+			return DSL.field("minimum_date", Date.class);
+		}
+
+		@Override
+		public Field<Date> maximumDate() {
+			return DSL.field("maximum_date", Date.class);
+		}
+
+		@Override
+		public <T> Field<T> anyValue(Field<T> field) {
+			return field;
+		}
+
+		@Override
+		public <T> Field<T> random(Field<T> field) {
+			return DSL.function("random_value", field.getDataType(), field);
+		}
+
+		@Override
+		public Field<?> renderDateRange(Field<Date> start, Field<Date> end) {
+			return start;
+		}
+
+		@Override
+		public Field<?> aggregateDateRanges(Field<Date> start, Field<Date> end) {
+			return start;
+		}
+
+		@Override
+		public int getNameMaxLength() {
+			return 127;
+		}
 	}
 
 	private record UnsupportedSelect(String name) implements ResolvedSelect {

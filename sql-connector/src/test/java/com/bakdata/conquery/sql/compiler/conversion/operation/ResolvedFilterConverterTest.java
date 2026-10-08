@@ -31,6 +31,7 @@ import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.compiler.ir.concept.SqlFilters;
 import com.bakdata.conquery.sql.compiler.ir.condition.ConditionWrappingWhereCondition;
 import com.bakdata.conquery.sql.compiler.ir.condition.WhereClauses;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.compiler.naming.SqlNameGenerator;
 import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
@@ -130,6 +131,31 @@ class ResolvedFilterConverterTest {
 
 		assertEquals(
 				"(date_distance('years', \"analytics\".\"events\".\"start_date\", date '2025-02-01') >= 18 and date_distance('years', \"analytics\".\"events\".\"start_date\", date '2025-02-01') <= 65)",
+				render(result)
+		);
+	}
+
+	@Test
+	void shouldUseInclusiveStratificationEndForDateDistanceRange() {
+		BuiltInFilters.DateDistanceRange filter = new BuiltInFilters.DateDistanceRange(
+				"age",
+				DATE_COLUMN,
+				ChronoUnit.YEARS,
+				LocalDate.of(2025, 2, 1),
+				NumberRange.closed(18, 65)
+		);
+		ColumnDateRange stratificationDate = ColumnDateRange.of(
+				field(name("window", "start"), Date.class),
+				field(name("window", "end"), Date.class)
+		);
+		FilterConversionContext context = new FilterConversionContext(
+				CONTEXT.dialect(), CONTEXT.nameGenerator(), CONTEXT.tables(), CONTEXT.ids(), Optional.of(stratificationDate)
+		);
+
+		SqlFilters result = converter.convert(filter, context);
+
+		assertEquals(
+				"(date_distance('years', \"analytics\".\"events\".\"start_date\", add_days(\"window\".\"end\", -1)) >= 18 and date_distance('years', \"analytics\".\"events\".\"start_date\", add_days(\"window\".\"end\", -1)) <= 65)",
 				render(result)
 		);
 	}
@@ -329,6 +355,11 @@ class ResolvedFilterConverterTest {
 					startDate,
 					DSL.inline(Date.valueOf(endDate))
 			);
+		}
+
+		@Override
+		public Field<Date> addDays(Field<Date> date, Field<Integer> days) {
+			return DSL.function("add_days", Date.class, date, days);
 		}
 
 		@Override

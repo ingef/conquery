@@ -4,8 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
+import java.util.function.Function;
 
 import com.bakdata.conquery.models.datasets.ColumnType;
 import com.bakdata.conquery.models.query.DateAggregationAction;
@@ -23,6 +26,7 @@ import com.bakdata.conquery.sql.model.form.ResolvedFormQuery;
 import com.bakdata.conquery.sql.model.node.AllEntitiesNode;
 import com.bakdata.conquery.sql.model.node.ConceptNode;
 import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
+import com.bakdata.conquery.sql.model.operation.ResolvedSelect;
 import com.bakdata.conquery.sql.model.range.DateRange;
 import com.bakdata.conquery.sql.model.result.ResultColumn;
 import com.bakdata.conquery.sql.model.result.ResultType;
@@ -95,14 +99,59 @@ class FormSqlCompilerTest {
 
 		CompiledQuery relativeCompiled = compiler.compile(relative, dialect);
 		CompiledQuery entityDateCompiled = compiler.compile(entityDate, dialect);
+		String entityDateSql = entityDateCompiled.sql().replaceAll("\\s+", " ").toLowerCase(Locale.ROOT);
 
 		assertTrue(relativeCompiled.sql().contains("index_selector"), relativeCompiled.sql());
 		assertTrue(relativeCompiled.sql().contains("\"scope\""), relativeCompiled.sql());
-		assertTrue(entityDateCompiled.sql().contains("overwrite_bounds"), entityDateCompiled.sql());
+		assertTrue(entityDateSql.contains(
+				"greatest(to_date('2020-01-01', 'yyyy-mm-dd'), \"extract_ids\".\"concept_prerequisite_claims-0_validity_date_start\")"
+		), entityDateCompiled.sql());
+		assertTrue(entityDateSql.contains(
+				"\"overwrite_bounds\".\"stratification_bounds_start\""
+		), entityDateCompiled.sql());
 		assertEquals(formResults(true).stream().map(ResultColumn::outputId).toList(),
 				relativeCompiled.columns().stream().skip(1).map(CompiledColumn::outputId).toList());
 		assertEquals(formResults(false).stream().map(ResultColumn::outputId).toList(),
 				entityDateCompiled.columns().stream().skip(1).map(CompiledColumn::outputId).toList());
+	}
+
+	@Test
+	void shouldUseStratificationEndForDateDistanceSelects() {
+		ResolvedQuery feature = connectorFeature(
+				"age",
+				table -> new BuiltInSelects.DateDistance(
+						"age",
+						new ResolvedColumn("events.birth-date", table, "birth_date", ColumnType.DATE, true),
+						ChronoUnit.YEARS,
+						LocalDate.of(2023, 3, 28)
+				),
+				ResultType.Primitive.INTEGER
+		);
+		String sql = compileAbsoluteForm(feature).sql().replaceAll("\\s+", " ").toLowerCase(Locale.ROOT);
+
+		assertTrue(sql.contains(
+				"years_between(\"events\".\"birth_date\", add_days(\"full_stratification\".\"stratification_bounds_end\", -1))"
+		), sql);
+	}
+
+	@Test
+	void shouldCompileFirstValueSelectWithStratifiedIds() {
+		ResolvedQuery feature = connectorFeature(
+				"first-value",
+				table -> new BuiltInSelects.Values(
+						"first-value",
+						new ResolvedColumn("events.value", table, "value", ColumnType.STRING, true),
+						BuiltInSelects.ValueOperation.FIRST,
+						Optional.empty()
+				),
+				ResultType.Primitive.STRING
+		);
+
+		String sql = compileAbsoluteForm(feature).sql().toLowerCase(Locale.ROOT);
+
+		assertTrue(sql.contains("value_select_first_row_step"), sql);
+		assertTrue(sql.contains("\"resolution\""), sql);
+		assertTrue(sql.contains("\"index\""), sql);
 	}
 
 	private static ResolvedQuery feature() {
@@ -111,6 +160,47 @@ class FormSqlCompilerTest {
 
 	private static ResolvedQuery feature(String name) {
 		return datedQuery(name, true);
+	}
+
+	private static CompiledQuery compileAbsoluteForm(ResolvedQuery feature) {
+		ResolvedFormQuery form = new ResolvedFormQuery(
+				new ResolvedQuery(ENTITY_SCHEMA, new AllEntitiesNode(), false, List.of()),
+				List.of(feature),
+				new ResolvedFormMode.Absolute(
+						new DateRange(Optional.of(LocalDate.of(2012, 1, 16)), Optional.of(LocalDate.of(2012, 12, 17))),
+						List.of(new ResolutionAndAlignment(FormResolution.COMPLETE, FormAlignment.NO_ALIGN))),
+				List.of(
+						new ResultColumn("resolution", ResultType.Primitive.STRING),
+						new ResultColumn("index", ResultType.Primitive.INTEGER),
+						new ResultColumn("range", ResultType.Primitive.DATE_RANGE),
+						feature.resultColumns().getFirst())
+		);
+		return new FormSqlCompiler(DSL.using(SQLDialect.DEFAULT)).compile(form, new HanaCompilerDialect());
+	}
+
+	private static ResolvedQuery connectorFeature(
+			String name,
+			Function<SqlTable, ResolvedSelect> selectFactory,
+			ResultType.Primitive resultType
+	) {
+		SqlTable events = SqlTable.of("events", "catalog", "events");
+		ResolvedConnector connector = new ResolvedConnector(
+				"claims",
+				events,
+				new ResolvedColumn("events.entity-id", events, "person_id", ColumnType.STRING, false),
+				Optional.empty(),
+				new ResolvedValidityDate.Point(new ResolvedColumn(
+						"events.date", events, "event_date", ColumnType.DATE, true)),
+				List.of(),
+				List.of(selectFactory.apply(events)),
+				List.of()
+		);
+		return new ResolvedQuery(
+				ENTITY_SCHEMA,
+				new ConceptNode(name, List.of(connector), List.of(), DateAggregationAction.BLOCK),
+				false,
+				List.of(new ResultColumn(name, resultType))
+		);
 	}
 
 	private static ResolvedQuery datedQuery(String name, boolean withSelect) {

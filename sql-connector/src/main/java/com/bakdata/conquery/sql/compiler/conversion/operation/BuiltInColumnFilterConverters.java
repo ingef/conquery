@@ -59,8 +59,10 @@ final class BuiltInColumnFilterConverters {
 			FilterConversionContext context
 	) {
 		Field<Date> startDate = SchemaSql.field(filter.column(), Date.class);
+		Field<Date> endDate = DateDistanceSqlAggregator.endDate(
+				filter.endDate(), context.stratificationDate(), context.dialect());
 		Field<BigDecimal> distance = context.dialect()
-				.dateDistance(filter.unit(), startDate, filter.endDate())
+				.dateDistance(filter.unit(), startDate, endDate)
 				.coerce(BigDecimal.class);
 		return eventFilter(new InclusiveRangeCondition<>(distance, filter.range()));
 	}

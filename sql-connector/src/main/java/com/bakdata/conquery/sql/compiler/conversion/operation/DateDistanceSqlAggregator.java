@@ -1,11 +1,15 @@
 package com.bakdata.conquery.sql.compiler.conversion.operation;
 
 import java.sql.Date;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 
+import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import org.jooq.Field;
@@ -17,7 +21,17 @@ public final class DateDistanceSqlAggregator {
 
 	static ConnectorSqlSelects connectorSelect(BuiltInSelects.DateDistance select, SelectConversionContext context) {
 		Field<Date> startDate = DSL.field(DSL.name(context.tables().getRootTable(), select.column().physicalName()), Date.class);
-		return selects(context.dialect().dateDistance(select.unit(), startDate, select.endDate()), context);
+		Field<Date> endDate = endDate(select.endDate(), context.stratificationDate(), context.dialect());
+		return selects(context.dialect().dateDistance(select.unit(), startDate, endDate), context);
+	}
+
+	static Field<Date> endDate(LocalDate fallback, Optional<ColumnDateRange> stratificationDate,
+							   CompilerDialect dialect) {
+		return stratificationDate
+				.map(dialect::toDualColumn)
+				.map(ColumnDateRange::getEnd)
+				.map(end -> dialect.addDays(end, DSL.inline(-1)))
+				.orElseGet(() -> DSL.inline(Date.valueOf(fallback)));
 	}
 
 	/** Supports a resolved per-row end date, as used by stratified forms. */
