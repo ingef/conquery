@@ -1,0 +1,94 @@
+{
+  "type": "QUERY_TEST",
+  "label": "VALIDITY_DATE_EXCLUDE_QUERY Test",
+  "expectedCsv": "tests/query/VALIDITY_DATE_EXCLUDE_QUERY/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "CONCEPT",
+      "ids": [
+        "concept.test_child1"
+      ],
+      "tables": [
+        {
+          "id": "concept.connector",
+          "dateColumn": {
+            "value": "concept.connector.other_date"
+          }
+        }
+      ],
+      "selects": [
+        "concept.exists"
+      ],
+      "excludeFromTimeAggregation": true
+    }
+  },
+  "concepts": [
+    {
+      "label": "concept",
+      "type": "TREE",
+      "selects": {
+        "type": "EXISTS",
+        "name": "exists"
+      },
+      "connectors": {
+        "name": "connector",
+        "column": "table.test_column",
+        "validityDates": [
+          {
+            "name": "datum",
+            "column": "table.datum"
+          },
+          {
+            "name": "other_date",
+            "column": "table.other_date"
+          }
+        ]
+      },
+      "children": [
+        {
+          "name": "test_child1",
+          "condition": {
+            "type": "EQUAL",
+            "values": "A1"
+          },
+          "children": []
+        },
+        {
+          "name": "test_child2",
+          "condition": {
+            "type": "EQUAL",
+            "values": "B2"
+          },
+          "children": []
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/VALIDITY_DATE_EXCLUDE_QUERY/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "other_date",
+            "type": "DATE"
+          },
+          {
+            "name": "test_column",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+}
