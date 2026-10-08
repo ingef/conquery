@@ -5,7 +5,7 @@ import { tv } from "tailwind-variants";
 import { Button } from "../ui-components/Button";
 import { C2 } from "../ui-components/Typography";
 
-const root = tv({ base: ["flex items-center justify-center", "gap-2"] });
+const root = tv({ base: ["flex items-center justify-end", "gap-2"] });
 
 export default function Pagination({
   page,
