@@ -12,8 +12,16 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.LocalNamespace;
+import com.bakdata.conquery.sql.compiler.DefaultSqlCompiler;
+import com.bakdata.conquery.sql.compiler.FormSqlCompiler;
+import com.bakdata.conquery.sql.compiler.TableExportSqlCompiler;
 import com.bakdata.conquery.sql.conquery.SqlExecutionManager;
-import com.bakdata.conquery.sql.conversion.NodeConversions;
+import com.bakdata.conquery.sql.conversion.ResolvedFormAdapter;
+import com.bakdata.conquery.sql.conversion.ResolvedFormMapper;
+import com.bakdata.conquery.sql.conversion.ResolvedQueryAdapter;
+import com.bakdata.conquery.sql.conversion.ResolvedQueryMapper;
+import com.bakdata.conquery.sql.conversion.ResolvedTableExportAdapter;
+import com.bakdata.conquery.sql.conversion.ResolvedTableExportMapper;
 import com.bakdata.conquery.sql.conversion.SqlConverter;
 import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
@@ -49,8 +57,18 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 			ResultSetProcessor resultSetProcessor = dialectBundle.getResultSetProcessor(config);
 			SqlExecutionService sqlExecutionService = new SqlExecutionService(dslContext, resultSetProcessor);
 
-			NodeConversions nodeConversions = new NodeConversions(config.getIdColumns(), dialectBundle, dslContext, sqlExecutionService, clock, connection.getConnection().getPrimaryColumn());
-			SqlConverter sqlConverter = new SqlConverter(nodeConversions, config);
+			ResolvedQueryMapper resolvedQueryMapper = new ResolvedQueryMapper(
+					config.getIdColumns(), dialectBundle.getFunctionProvider(), clock,
+					connection.getConnection().getPrimaryColumn());
+			ResolvedQueryAdapter resolvedQueryAdapter = new ResolvedQueryAdapter(
+					environment.getValidator(), new DefaultSqlCompiler(dslContext), resolvedQueryMapper);
+			ResolvedTableExportAdapter tableExportAdapter = new ResolvedTableExportAdapter(
+					new ResolvedTableExportMapper(resolvedQueryMapper, clock, connection.getConnection().getPrimaryColumn()),
+					new TableExportSqlCompiler(dslContext));
+			ResolvedFormAdapter formAdapter = new ResolvedFormAdapter(
+					new ResolvedFormMapper(resolvedQueryMapper), new FormSqlCompiler(dslContext));
+			SqlConverter sqlConverter = new SqlConverter(
+					resolvedQueryAdapter, tableExportAdapter, formAdapter, dialectBundle.getCompilerDialect());
 			ExecutionManager executionManager = new SqlExecutionManager(sqlConverter, sqlExecutionService, metaStorage, datasetRegistry, config);
 			SqlStorageHandler sqlStorageHandler = new SqlStorageHandler(sqlExecutionService);
 			SqlEntityResolver sqlEntityResolver = new SqlEntityResolver(config.getIdColumns(), dslContext, dialectBundle, sqlExecutionService);
