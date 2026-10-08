@@ -17,23 +17,15 @@ export default {
 
 type Story = StoryObj<typeof Card>;
 
-export const WithHeading: Story = {
-  render: () => (
-    <Card>
-      <H3>Regions</H3>
-      <C3 tone="muted">12 entries</C3>
-      <div className="mt-4">
-        <C2>North, South, East and West, with their population per year.</C2>
-      </div>
-    </Card>
-  ),
-};
-
-export const Stacked: Story = {
+export const Default: Story = {
   render: () => (
     <div className="flex flex-col gap-[10px]">
       <Card>
-        <C2>Population</C2>
+        <H3>Regions</H3>
+        <C3 tone="muted">12 entries</C3>
+        <div className="mt-4">
+          <C2>North, South, East and West, with their population per year.</C2>
+        </div>
       </Card>
       <Card>
         <C2>Products</C2>
