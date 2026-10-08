@@ -25,6 +25,10 @@ const dateText = tv({
   ],
 });
 
+const idText = tv({
+  base: ["pr-2", textStyle({ size: 2, strong: true, truncate: true })],
+});
+
 const text = tv({
   base: textStyle({ size: 3 }),
   variants: {
@@ -91,17 +95,6 @@ const MatchingStats = (props: Props) => {
 
   return (
     <div className={root()}>
-      {idLabel && (
-        <>
-          <MicroscopeIcon className={icon()} />
-          <div className="shrink-0">
-            <p className={dateText()}>{idLabel}</p>
-            <p className={text({ zero: isZero })}>
-              {t("queryEditor.secondaryId")}
-            </p>
-          </div>
-        </>
-      )}
       <HashIcon className={icon()} />
       <div className="shrink-0">
         <p className={numberText({ zero: isZero })}>
@@ -153,6 +146,19 @@ const MatchingStats = (props: Props) => {
           <span className={suffix()}>{`${t("infoPane.date.to")}`}</span>
         </p>
       </div>
+      {idLabel && (
+        <>
+          <MicroscopeIcon className={icon()} />
+          <div className="min-w-0">
+            <p className={idText()} title={idLabel}>
+              {idLabel}
+            </p>
+            <p className={text({ zero: isZero })}>
+              {t("queryEditor.secondaryId")}
+            </p>
+          </div>
+        </>
+      )}
     </div>
   );
 };

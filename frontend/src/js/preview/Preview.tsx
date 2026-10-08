@@ -28,29 +28,27 @@ const fullScreen = tv({
 });
 
 const content = tv({
-  base: ["flex flex-col", "gap-[10px]", "px-5 pt-[55px] pb-5"],
+  base: ["flex flex-col", "gap-5", "px-5 pt-[55px] pb-5"],
 });
 
 const topRow = tv({ base: ["flex items-center", "gap-[30px]"] });
 
-// the stats stand beside the cards, like the info pane beside the panes
-const main = tv({
-  base: ["grid grid-cols-[auto_minmax(0,1fr)]", "gap-5", "items-start"],
+const section = tv({ base: ["flex flex-col", "gap-[10px]"] });
+
+const sectionHeader = tv({
+  base: ["flex items-start justify-between", "gap-5"],
 });
 
-const cards = tv({ base: ["flex flex-col", "gap-[10px]"] });
-
-const section = tv({ base: ["flex flex-col", "gap-4"] });
-
-const cardHeader = tv({
-  base: ["flex items-start justify-between", "gap-5"],
+// the stats stand beside the charts, like the info pane beside the panes
+const statistics = tv({
+  base: ["grid grid-cols-[auto_minmax(0,1fr)]", "gap-5", "items-start"],
 });
 
 const loading = tv({
   base: ["flex items-center justify-center", "h-[65vh]"],
 });
 
-const CardHeader = ({
+const SectionHeader = ({
   title,
   subtitle,
   children,
@@ -59,7 +57,7 @@ const CardHeader = ({
   subtitle: string;
   children?: ReactNode;
 }) => (
-  <div className={cardHeader()}>
+  <div className={sectionHeader()}>
     <div className="min-w-0">
       <H3>{title}</H3>
       <C3 tone="muted">{subtitle}</C3>
@@ -78,7 +76,7 @@ export default function Preview() {
   const [page, setPage] = useState<number>(0);
   const [popOver, setPopOver] = useState<PreviewStatistics | null>(null);
   const onClose = () => dispatch(closePreview());
-  const statistics = preview.statisticsData;
+  const stats = preview.statisticsData;
   const idLabel = useMemo(() => {
     const primaryIdLabel = t("common.entitiesFound", { count: 2 });
     if (preview.queryData?.secondaryId) {
@@ -109,88 +107,88 @@ export default function Preview() {
               <C3 tone="muted">{t("preview.headline")}</C3>
             </div>
           </div>
-          <div className={main()}>
-            <MatchingStats
-              matchingEntities={statistics?.entities}
-              matchingEntries={statistics?.total}
-              dateRange={statistics?.dateRange}
-              idLabel={idLabel}
-            />
-            <div className={cards()}>
-              <Card>
-                <section className={section()}>
-                  <CardHeader
-                    title={t("preview.statisticsHeadline")}
-                    subtitle={t("preview.statisticsSubline")}
+          <section className={section()}>
+            <SectionHeader
+              title={t("preview.statisticsHeadline")}
+              subtitle={t("preview.statisticsSubline")}
+            >
+              {stats && (
+                <MenuTrigger>
+                  <Button intent="secondary">
+                    {t("preview.statisticsHeadline")}
+                    <ChevronDownIcon />
+                  </Button>
+                  <Menu
+                    aria-label={t("preview.statisticsHeadline")}
+                    placement="bottom end"
+                    onAction={(key) => {
+                      const stat = stats.statistics.find(
+                        (stat) => stat.label === key,
+                      );
+                      setPopOver(stat ?? null);
+                    }}
                   >
-                    {statistics && (
-                      <MenuTrigger>
-                        <Button intent="secondary">
-                          {t("preview.statisticsHeadline")}
-                          <ChevronDownIcon />
-                        </Button>
-                        <Menu
-                          aria-label={t("preview.statisticsHeadline")}
-                          placement="bottom end"
-                          onAction={(key) => {
-                            const stat = statistics.statistics.find(
-                              (stat) => stat.label === key,
-                            );
-                            setPopOver(stat ?? null);
-                          }}
-                        >
-                          {statistics.statistics.map((stat) => (
-                            <MenuItem key={stat.label} id={stat.label}>
-                              {stat.label}
-                            </MenuItem>
-                          ))}
-                        </Menu>
-                      </MenuTrigger>
-                    )}
-                  </CardHeader>
-                  {statistics ? (
-                    <Charts
-                      statistics={statistics.statistics}
-                      showPopup={(statistic: PreviewStatistics) => {
-                        setPopOver(statistic);
-                      }}
-                      page={page}
-                      setPage={setPage}
-                    />
-                  ) : (
-                    <div className={loading()}>
-                      <LoaderCircleIcon className="size-[30px]" />
-                    </div>
-                  )}
-                </section>
-              </Card>
-              {popOver && (
-                <DiagramModal
-                  statistic={popOver}
-                  onClose={() => setPopOver(null)}
-                />
+                    {stats.statistics.map((stat) => (
+                      <MenuItem key={stat.label} id={stat.label}>
+                        {stat.label}
+                      </MenuItem>
+                    ))}
+                  </Menu>
+                </MenuTrigger>
               )}
-              {preview.arrowReader &&
-                preview.initialTableData?.value &&
-                preview.queryData && (
-                  <Card>
-                    <section className={section()}>
-                      <CardHeader
-                        title={t("preview.previewHeadline")}
-                        subtitle={t("preview.previewSubline", {
-                          count: preview.initialTableData.value.numRows,
-                        })}
-                      />
-                      <Table
-                        arrowReader={preview.arrowReader}
-                        initialTableData={preview.initialTableData}
-                        queryData={preview.queryData}
-                      />
-                    </section>
-                  </Card>
+            </SectionHeader>
+            <div className={statistics()}>
+              <div className="max-w-[300px]">
+                <MatchingStats
+                  matchingEntities={stats?.entities}
+                  matchingEntries={stats?.total}
+                  dateRange={stats?.dateRange}
+                  idLabel={idLabel}
+                />
+              </div>
+              <Card>
+                {stats ? (
+                  <Charts
+                    statistics={stats.statistics}
+                    showPopup={(statistic: PreviewStatistics) => {
+                      setPopOver(statistic);
+                    }}
+                    page={page}
+                    setPage={setPage}
+                  />
+                ) : (
+                  <div className={loading()}>
+                    <LoaderCircleIcon className="size-[30px]" />
+                  </div>
                 )}
+              </Card>
             </div>
-          </div>
+          </section>
+          {popOver && (
+            <DiagramModal
+              statistic={popOver}
+              onClose={() => setPopOver(null)}
+            />
+          )}
+          {preview.arrowReader &&
+            preview.initialTableData?.value &&
+            preview.queryData && (
+              <section className={section()}>
+                <SectionHeader
+                  title={t("preview.previewHeadline")}
+                  subtitle={t("preview.previewSubline", {
+                    count: preview.initialTableData.value.numRows,
+                  })}
+                />
+                <Card>
+                  <Table
+                    arrowReader={preview.arrowReader}
+                    initialTableData={preview.initialTableData}
+                    queryData={preview.queryData}
+                  />
+                </Card>
+              </section>
+            )}
         </div>
       </ScrollBox>
     </div>

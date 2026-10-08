@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { tv } from "tailwind-variants";
 
 const card = tv({
-  base: ["rounded", "border border-gray-100", "bg-white", "p-[14px]"],
+  base: ["rounded", "border border-gray-100", "bg-white", "p-3"],
 });
 
 /**
