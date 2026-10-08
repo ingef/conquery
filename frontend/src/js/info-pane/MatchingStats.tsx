@@ -4,7 +4,6 @@ import {
   UnfoldHorizontalIcon,
   UserIcon,
 } from "lucide-react";
-import type { HTMLAttributes } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import type { DateRangeT } from "../api/types";
@@ -12,6 +11,10 @@ import { numberToThreeDigitArray } from "../common/helpers/commonHelper";
 import { formatDate, parseDate } from "../common/helpers/dateHelper";
 import { exists } from "../common/helpers/exists";
 import { headingStyle, textStyle } from "../ui-components/Typography";
+
+const root = tv({
+  base: ["grid grid-cols-[auto_1fr]", "gap-3", "items-center"],
+});
 
 const dateText = tv({
   base: [
@@ -55,7 +58,7 @@ const suffix = tv({
   base: [textStyle({ size: 3, tone: "muted" }), "ml-[5px]"],
 });
 
-interface Props extends HTMLAttributes<HTMLDivElement> {
+interface Props {
   matchingEntries?: number | null;
   matchingEntities?: number | null;
   dateRange?: DateRangeT;
@@ -64,8 +67,7 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
 
 const MatchingStats = (props: Props) => {
   const { t } = useTranslation();
-  const { matchingEntries, matchingEntities, dateRange, idLabel, ...rest } =
-    props;
+  const { matchingEntries, matchingEntities, dateRange, idLabel } = props;
 
   const isZero = props.matchingEntries === 0;
   const isZeroEntities = props.matchingEntities === 0;
@@ -88,7 +90,7 @@ const MatchingStats = (props: Props) => {
     : "- - - - - - -";
 
   return (
-    <div {...rest}>
+    <div className={root()}>
       {idLabel && (
         <>
           <MicroscopeIcon className={icon()} />

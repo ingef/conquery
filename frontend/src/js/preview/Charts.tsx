@@ -1,33 +1,26 @@
-import { t } from "i18next";
 import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
 import { useHotkeys } from "react-hotkeys-hook";
+import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import type { PreviewStatistics } from "../api/types";
 import { Button } from "../ui-components/Button";
+import { C2 } from "../ui-components/Typography";
 import Diagram from "./Diagram";
 
-const diagram = tv({
-  base: ["h-[27vh]", "mr-[15px]", "p-[5px]"],
-});
-
-// the old styles also declared `font-size: 24` on the buttons — a unitless
-// value, invalid css, never applied
-const directionSelector = tv({
-  base: [
-    "col-start-1 col-end-3 row-start-3",
-    "flex flex-row items-center justify-center",
-    "mb-[5px]",
-    "px-[100px]",
-  ],
-});
+const root = tv({ base: ["flex flex-col", "gap-4"] });
 
 const diagramContainer = tv({
-  base: ["grid grid-cols-2", "gap-[5px]", "overflow-x-hidden"],
+  base: ["grid grid-cols-2", "gap-5", "overflow-x-hidden"],
+});
+
+const diagram = tv({ base: "h-[27vh]" });
+
+const pagination = tv({
+  base: ["flex items-center justify-center", "gap-2"],
 });
 
 type ChartProps = {
   statistics: PreviewStatistics[];
-  className?: string;
   showPopup: (statistic: PreviewStatistics) => void;
   page: number;
   setPage: (page: number) => void;
@@ -37,11 +30,11 @@ const DIAGRAMS_PER_PAGE = 4;
 
 export default function Charts({
   statistics,
-  className,
   showPopup,
   page,
   setPage,
 }: ChartProps) {
+  const { t } = useTranslation();
   const diagramsOnPage = statistics.slice(
     page * DIAGRAMS_PER_PAGE,
     (page + 1) * DIAGRAMS_PER_PAGE,
@@ -59,21 +52,18 @@ export default function Charts({
   useHotkeys("right", () => updatePage(1), [page]);
 
   return (
-    <div className={className}>
+    <div className={root()}>
       <div className={diagramContainer()}>
-        {diagramsOnPage.map((statistic) => {
-          return (
-            <div key={statistic.label}>
-              <Diagram
-                className={diagram()}
-                stat={statistic}
-                onClick={() => showPopup(statistic)}
-              />
-            </div>
-          );
-        })}
+        {diagramsOnPage.map((statistic) => (
+          <Diagram
+            key={statistic.label}
+            className={diagram()}
+            stat={statistic}
+            onClick={() => showPopup(statistic)}
+          />
+        ))}
       </div>
-      <div className={directionSelector()}>
+      <div className={pagination()}>
         <Button
           intent="tertiary"
           aria-label={t("preview.previousPage")}
@@ -82,10 +72,9 @@ export default function Charts({
         >
           <ArrowLeftIcon />
         </Button>
-        <span>
-          {t("preview.page")} {page + 1}/
-          {Math.ceil(statistics.length / DIAGRAMS_PER_PAGE)}
-        </span>
+        <C2 as="span">
+          {t("preview.page")} {page + 1}/{maxPage}
+        </C2>
         <Button
           intent="tertiary"
           aria-label={t("preview.nextPage")}

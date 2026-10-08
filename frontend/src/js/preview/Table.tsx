@@ -20,8 +20,6 @@ interface Props {
 // flipped so the horizontal scrollbar sits on top; the inner table flips back
 const root = tv({
   base: [
-    "grow",
-    "shadow-[0_0_10px_0_rgba(0,0,0,0.2)]",
     "[transform:rotateX(180deg)]",
     "[&_table]:[transform:rotateX(-180deg)]",
   ],
@@ -31,12 +29,15 @@ const table = tv({
   base: [
     "w-full",
     "border-spacing-0",
-    "[&_th]:bg-gray-50 [&_th]:text-left [&_th]:font-normal",
+    "[&_th]:bg-bg-50 [&_th]:text-left",
+    "[&_th]:max-w-[25ch] [&_th]:overflow-hidden [&_th]:text-ellipsis [&_th]:whitespace-nowrap",
     "[&_td]:max-w-[25ch] [&_td]:overflow-hidden [&_td]:text-ellipsis [&_td]:whitespace-nowrap",
-    "[&_th]:p-[10px] [&_td]:p-[10px]",
-    "[&_th]:border-r [&_th]:border-b [&_th]:border-gray-400",
-    "[&_td]:border-r [&_td]:border-b [&_td]:border-gray-400",
+    "[&_th]:px-2 [&_th]:py-[5px] [&_td]:px-2 [&_td]:py-[5px]",
+    "[&_th]:border-r [&_th]:border-b [&_th]:border-gray-100",
+    "[&_td]:border-r [&_td]:border-b [&_td]:border-gray-100",
     "[&_th:last-of-type]:border-r-0 [&_td:last-of-type]:border-r-0",
+    "[&_tbody_tr:last-of-type_td]:border-b-0",
+    "[&_tbody_tr:hover_td]:bg-gray-50",
     "[&_.rc-table-measure-cell]:py-0 [&_.rc-table-measure-cell]:border-y-0",
     "[&_.rc-table-measure-cell-content]:invisible [&_.rc-table-measure-cell-content]:pointer-events-none",
     "[&_.rc-table-measure-cell-content]:h-0 [&_.rc-table-measure-cell-content]:overflow-hidden",
@@ -65,8 +66,15 @@ export default memo(function Table({
       arrowReader.schema?.fields.map((field) => {
         const renderer = getRenderFunctionByFieldName(field.name);
 
+        const title = field.name.charAt(0).toUpperCase() + field.name.slice(1);
+
         return {
-          title: field.name.charAt(0).toUpperCase() + field.name.slice(1),
+          title: (
+            <C2 as="span" strong>
+              {title}
+            </C2>
+          ),
+          onHeaderCell: () => ({ title }),
           dataIndex: field.name,
           key: field.name,
           render: (value: string | Vector) => {

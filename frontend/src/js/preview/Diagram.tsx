@@ -24,6 +24,7 @@ type DiagramProps = {
   onClick?: () => void;
   height?: string | number;
   width?: string | number;
+  showTitle?: boolean;
 };
 function transformBarStatsToData(
   stats: BarStatistics,
@@ -95,6 +96,7 @@ export default function Diagram({
   onClick,
   height,
   width,
+  showTitle = true,
 }: DiagramProps) {
   const data = useMemo(() => {
     const color = `rgba(${hexToRgbA(getCssVarColor("--color-primary-500"))}, 1)`;
@@ -121,7 +123,7 @@ export default function Diagram({
       },
       plugins: {
         title: {
-          display: true,
+          display: showTitle,
           font: {
             weight: "normal",
             size: 14,
@@ -210,7 +212,7 @@ export default function Diagram({
     }
 
     throw new Error("Unknown stats type");
-  }, [data?.labels, stat, t, shouldTickRender]);
+  }, [data?.labels, stat, t, shouldTickRender, showTitle]);
 
   return (
     <div className={className}>
