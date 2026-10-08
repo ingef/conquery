@@ -138,7 +138,7 @@ export default function Preview() {
               )}
             </SectionHeader>
             <div className={statistics()}>
-              <div className="max-w-[300px]">
+              <div className="max-w-[200px]">
                 <MatchingStats
                   matchingEntities={stats?.entities}
                   matchingEntries={stats?.total}
