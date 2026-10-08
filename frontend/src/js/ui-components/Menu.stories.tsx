@@ -103,3 +103,27 @@ export const WithTooltipOnTrigger: Story = {
     </TooltipTrigger>
   ),
 };
+
+const regions = ["North", "South", "East", "West", "Central"];
+const manyItems = Array.from({ length: 200 }, (_, i) => ({
+  id: `item-${i}`,
+  label: `${regions[i % regions.length]} region ${i + 1}${
+    i % 3 === 0 ? ", population and products per year" : ""
+  }`,
+}));
+
+/** 200 items: every hover re-renders the whole list (react-aria, see Menu.tsx) */
+export const ManyItems: Story = {
+  render: () => (
+    <MenuTrigger>
+      <Button intent="secondary">200 items</Button>
+      <Menu aria-label="Regions" onAction={(key) => console.log(key)}>
+        {manyItems.map((item) => (
+          <MenuItem key={item.id} id={item.id}>
+            {item.label}
+          </MenuItem>
+        ))}
+      </Menu>
+    </MenuTrigger>
+  ),
+};
