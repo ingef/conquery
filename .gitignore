@@ -59,6 +59,7 @@ hs_err_pid*
 **/.iml
 **/.idea
 /storage/
+/news/
 *.iml
 
 # Jupyter notebook tutorial development
