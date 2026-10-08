@@ -29,18 +29,15 @@ export const WithHeading: Story = {
   ),
 };
 
-export const WithoutPadding: Story = {
+export const Stacked: Story = {
   render: () => (
-    <Card padding="none">
-      <div className="border-gray-100 border-b px-[14px] py-2">
-        <C2 strong>Year</C2>
-      </div>
-      <div className="px-[14px] py-2">
-        <C2>2024</C2>
-      </div>
-      <div className="border-gray-100 border-t px-[14px] py-2">
-        <C2>2025</C2>
-      </div>
-    </Card>
+    <div className="flex flex-col gap-[10px]">
+      <Card>
+        <C2>Population</C2>
+      </Card>
+      <Card>
+        <C2>Products</C2>
+      </Card>
+    </div>
   ),
 };

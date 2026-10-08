@@ -30,9 +30,7 @@ const card = tv({
   base: ["relative", "grid grid-cols-[auto_45px_1fr]", "gap-[3px]", "py-[5px]"],
 });
 
-const eventItemContent = tv({
-  base: ["rounded", "overflow-hidden", "[&>div:first-of-type]:pt-[14px]"],
-});
+const eventItemContent = tv({ base: ["flex flex-col", "gap-5"] });
 
 const colBucket = tv({
   base: [
@@ -43,9 +41,7 @@ const colBucket = tv({
   ],
 });
 
-const flex = tv({
-  base: ["flex items-start", "gap-[5px]", "pt-3 pr-[15px] pb-[10px] pl-[6px]"],
-});
+const flex = tv({ base: ["flex items-start", "gap-[5px]"] });
 
 const rawDataBadge = tv({
   base: ["absolute top-[4px] left-[55px]", "z-1"],
@@ -118,8 +114,8 @@ const EventCard = ({
         event={row}
         sourceColumn={sourceColumn}
       />
-      <div className="mt-[5px]">
-        <Card padding="none">
+      <div className="mt-[5px] min-w-0">
+        <Card>
           <div className={eventItemContent()}>
             {contentFilter.money && applicableMoney.length > 0 && (
               <div className={flex()}>
