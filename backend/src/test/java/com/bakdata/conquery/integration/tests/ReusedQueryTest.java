@@ -3,7 +3,6 @@ package com.bakdata.conquery.integration.tests;
 import static com.bakdata.conquery.integration.json.ConqueryTestSpec.readJson;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.File;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
@@ -30,7 +29,6 @@ import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
