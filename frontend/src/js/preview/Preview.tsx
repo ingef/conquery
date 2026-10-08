@@ -13,6 +13,7 @@ import type { PreviewStatistics, SecondaryId } from "../api/types";
 import type { StateT } from "../app/reducers";
 import MatchingStats from "../info-pane/MatchingStats";
 import { Button } from "../ui-components/Button";
+import { Card } from "../ui-components/Card";
 import { Menu, MenuItem } from "../ui-components/Menu";
 import { C3, H3 } from "../ui-components/Typography";
 import { closePreview } from "./actions";
@@ -32,23 +33,17 @@ const content = tv({
 
 const topRow = tv({ base: ["flex items-center", "gap-[30px]"] });
 
-const card = tv({
-  base: [
-    "flex flex-col",
-    "gap-4",
-    "rounded",
-    "bg-white",
-    "p-[14px]",
-    "shadow-[1px_1px_5px_0px_rgba(0,0,0,0.2)]",
-  ],
+// the stats stand beside the cards, like the info pane beside the panes
+const main = tv({
+  base: ["grid grid-cols-[auto_minmax(0,1fr)]", "gap-5", "items-start"],
 });
+
+const cards = tv({ base: ["flex flex-col", "gap-[10px]"] });
+
+const section = tv({ base: ["flex flex-col", "gap-4"] });
 
 const cardHeader = tv({
   base: ["flex items-start justify-between", "gap-5"],
-});
-
-const statisticsBody = tv({
-  base: ["grid grid-cols-[auto_minmax(0,1fr)]", "gap-5", "items-start"],
 });
 
 const loading = tv({
@@ -114,82 +109,88 @@ export default function Preview() {
               <C3 tone="muted">{t("preview.headline")}</C3>
             </div>
           </div>
-          <section className={card()}>
-            <CardHeader
-              title={t("preview.statisticsHeadline")}
-              subtitle={t("preview.statisticsSubline")}
-            >
-              {statistics && (
-                <MenuTrigger>
-                  <Button intent="secondary">
-                    {t("preview.statisticsHeadline")}
-                    <ChevronDownIcon />
-                  </Button>
-                  <Menu
-                    aria-label={t("preview.statisticsHeadline")}
-                    placement="bottom end"
-                    onAction={(key) => {
-                      const stat = statistics.statistics.find(
-                        (stat) => stat.label === key,
-                      );
-                      setPopOver(stat ?? null);
-                    }}
-                  >
-                    {statistics.statistics.map((stat) => (
-                      <MenuItem key={stat.label} id={stat.label}>
-                        {stat.label}
-                      </MenuItem>
-                    ))}
-                  </Menu>
-                </MenuTrigger>
-              )}
-            </CardHeader>
-            {statistics ? (
-              <div className={statisticsBody()}>
-                <MatchingStats
-                  matchingEntities={statistics.entities}
-                  matchingEntries={statistics.total}
-                  dateRange={statistics.dateRange}
-                  idLabel={idLabel}
-                />
-                <Charts
-                  statistics={statistics.statistics}
-                  showPopup={(statistic: PreviewStatistics) => {
-                    setPopOver(statistic);
-                  }}
-                  page={page}
-                  setPage={setPage}
-                />
-              </div>
-            ) : (
-              <div className={loading()}>
-                <LoaderCircleIcon className="size-[30px]" />
-              </div>
-            )}
-          </section>
-          {popOver && (
-            <DiagramModal
-              statistic={popOver}
-              onClose={() => setPopOver(null)}
+          <div className={main()}>
+            <MatchingStats
+              matchingEntities={statistics?.entities}
+              matchingEntries={statistics?.total}
+              dateRange={statistics?.dateRange}
+              idLabel={idLabel}
             />
-          )}
-          {preview.arrowReader &&
-            preview.initialTableData?.value &&
-            preview.queryData && (
-              <section className={card()}>
-                <CardHeader
-                  title={t("preview.previewHeadline")}
-                  subtitle={t("preview.previewSubline", {
-                    count: preview.initialTableData.value.numRows,
-                  })}
+            <div className={cards()}>
+              <Card>
+                <section className={section()}>
+                  <CardHeader
+                    title={t("preview.statisticsHeadline")}
+                    subtitle={t("preview.statisticsSubline")}
+                  >
+                    {statistics && (
+                      <MenuTrigger>
+                        <Button intent="secondary">
+                          {t("preview.statisticsHeadline")}
+                          <ChevronDownIcon />
+                        </Button>
+                        <Menu
+                          aria-label={t("preview.statisticsHeadline")}
+                          placement="bottom end"
+                          onAction={(key) => {
+                            const stat = statistics.statistics.find(
+                              (stat) => stat.label === key,
+                            );
+                            setPopOver(stat ?? null);
+                          }}
+                        >
+                          {statistics.statistics.map((stat) => (
+                            <MenuItem key={stat.label} id={stat.label}>
+                              {stat.label}
+                            </MenuItem>
+                          ))}
+                        </Menu>
+                      </MenuTrigger>
+                    )}
+                  </CardHeader>
+                  {statistics ? (
+                    <Charts
+                      statistics={statistics.statistics}
+                      showPopup={(statistic: PreviewStatistics) => {
+                        setPopOver(statistic);
+                      }}
+                      page={page}
+                      setPage={setPage}
+                    />
+                  ) : (
+                    <div className={loading()}>
+                      <LoaderCircleIcon className="size-[30px]" />
+                    </div>
+                  )}
+                </section>
+              </Card>
+              {popOver && (
+                <DiagramModal
+                  statistic={popOver}
+                  onClose={() => setPopOver(null)}
                 />
-                <Table
-                  arrowReader={preview.arrowReader}
-                  initialTableData={preview.initialTableData}
-                  queryData={preview.queryData}
-                />
-              </section>
-            )}
+              )}
+              {preview.arrowReader &&
+                preview.initialTableData?.value &&
+                preview.queryData && (
+                  <Card>
+                    <section className={section()}>
+                      <CardHeader
+                        title={t("preview.previewHeadline")}
+                        subtitle={t("preview.previewSubline", {
+                          count: preview.initialTableData.value.numRows,
+                        })}
+                      />
+                      <Table
+                        arrowReader={preview.arrowReader}
+                        initialTableData={preview.initialTableData}
+                        queryData={preview.queryData}
+                      />
+                    </section>
+                  </Card>
+                )}
+            </div>
+          </div>
         </div>
       </ScrollBox>
     </div>

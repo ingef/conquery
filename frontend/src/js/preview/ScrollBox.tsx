@@ -14,13 +14,7 @@ const root = tv({ base: "overflow-auto" });
 
 // a white backing, because the secondary button is transparent over the content
 const scrollTopButton = tv({
-  base: [
-    "absolute right-5 bottom-5",
-    "z-3",
-    "rounded",
-    "bg-white",
-    "shadow-[1px_1px_5px_0px_rgba(0,0,0,0.2)]",
-  ],
+  base: ["absolute right-5 bottom-5", "z-3", "rounded", "bg-white"],
 });
 
 export default function ScrollBox({

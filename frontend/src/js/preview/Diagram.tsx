@@ -3,6 +3,7 @@ import { addMonths, format } from "date-fns";
 import { useMemo } from "react";
 import { Bar, Line } from "react-chartjs-2";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 import type {
   BarStatistics,
   DateStatistics,
@@ -17,6 +18,10 @@ import {
   previewStatsIsDateStats,
   useDateTickHandler,
 } from "./util";
+
+const root = tv({
+  variants: { clickable: { true: "cursor-pointer" } },
+});
 
 type DiagramProps = {
   stat: PreviewStatistics;
@@ -215,7 +220,7 @@ export default function Diagram({
   }, [data?.labels, stat, t, shouldTickRender, showTitle]);
 
   return (
-    <div className={className}>
+    <div className={root({ clickable: !!onClick, className })}>
       {previewStatsIsBarStats(stat) ? (
         <Bar
           options={options as ChartOptions<"bar">}
