@@ -16,7 +16,6 @@ const item = tv({
     "rounded",
     "cursor-pointer",
     "outline-none",
-    "transition-[background-color] duration-100",
     "data-hovered:bg-gray-50",
     "data-selected:bg-primary-50 data-selected:text-primary-500",
     "data-selected:data-hovered:bg-primary-100",

@@ -33,7 +33,6 @@ export const listBoxItem = tv({
     // explicit: through the portal an item would inherit body's styles
     textStyle({ size: 2, tone: "default" }),
     "outline-none",
-    "transition-[background-color] duration-100",
     // hover like a menu item; a selected option keeps its tint, one step darker under the pointer
     "data-focused:bg-gray-50",
     "data-selected:bg-primary-50 data-selected:text-primary-500",
