@@ -8,6 +8,7 @@ import type {
   CurrencyConfigT,
 } from "../../api/types";
 import { exists } from "../../common/helpers/exists";
+import { Card } from "../../ui-components/Card";
 import { Highlighter } from "../../ui-components/Highlighter";
 import {
   Tooltip,
@@ -29,16 +30,7 @@ const card = tv({
   base: ["relative", "grid grid-cols-[auto_45px_1fr]", "gap-[3px]", "py-[5px]"],
 });
 
-const eventItemContent = tv({
-  base: [
-    "mt-[5px]",
-    "rounded",
-    "shadow-[0_0_1px_1px_var(--color-gray-100)]",
-    "bg-white",
-    "overflow-hidden",
-    "[&>div:first-of-type]:pt-[14px]",
-  ],
-});
+const eventItemContent = tv({ base: ["flex flex-col", "gap-5"] });
 
 const colBucket = tv({
   base: [
@@ -49,9 +41,7 @@ const colBucket = tv({
   ],
 });
 
-const flex = tv({
-  base: ["flex items-start", "gap-[5px]", "pt-3 pr-[15px] pb-[10px] pl-[6px]"],
-});
+const flex = tv({ base: ["flex items-start", "gap-[5px]"] });
 
 const rawDataBadge = tv({
   base: ["absolute top-[4px] left-[55px]", "z-1"],
@@ -124,112 +114,116 @@ const EventCard = ({
         event={row}
         sourceColumn={sourceColumn}
       />
-      <div className={eventItemContent()}>
-        {contentFilter.money && applicableMoney.length > 0 && (
-          <div className={flex()}>
-            <TooltipTrigger>
-              <TooltipTarget
-                role="img"
-                aria-label={moneyTooltip}
-                excludeFromTabOrder
-              >
-                <EuroIcon className={bucketIcon()} />
-              </TooltipTarget>
-              <Tooltip>{moneyTooltip}</Tooltip>
-            </TooltipTrigger>
-            <div className={colBucket()}>
-              {applicableMoney.map((column) => (
-                <div key={column.label}>
-                  <TinyLabel>{column.defaultLabel}</TinyLabel>
-                  <C3 as="code">
-                    <NumericFormat<InputAttributes>
-                      thousandSeparator={currencyConfig.thousandSeparator}
-                      decimalSeparator={currencyConfig.decimalSeparator}
-                      decimalScale={currencyConfig.decimalScale}
-                      suffix={` ${currencyConfig.unit}`}
-                      displayType="text"
-                      value={parseFloat(row[column.label] as string)}
-                    />
-                  </C3>
+      <div className="mt-[5px] min-w-0">
+        <Card>
+          <div className={eventItemContent()}>
+            {contentFilter.money && applicableMoney.length > 0 && (
+              <div className={flex()}>
+                <TooltipTrigger>
+                  <TooltipTarget
+                    role="img"
+                    aria-label={moneyTooltip}
+                    excludeFromTabOrder
+                  >
+                    <EuroIcon className={bucketIcon()} />
+                  </TooltipTarget>
+                  <Tooltip>{moneyTooltip}</Tooltip>
+                </TooltipTrigger>
+                <div className={colBucket()}>
+                  {applicableMoney.map((column) => (
+                    <div key={column.label}>
+                      <TinyLabel>{column.defaultLabel}</TinyLabel>
+                      <C3 as="code">
+                        <NumericFormat<InputAttributes>
+                          thousandSeparator={currencyConfig.thousandSeparator}
+                          decimalSeparator={currencyConfig.decimalSeparator}
+                          decimalScale={currencyConfig.decimalScale}
+                          suffix={` ${currencyConfig.unit}`}
+                          displayType="text"
+                          value={parseFloat(row[column.label] as string)}
+                        />
+                      </C3>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-        {groupedRowsKeysWithDifferentValues && groupedRows && (
-          <GroupedContent
-            columns={columns}
-            contentFilter={contentFilter}
-            groupedRows={groupedRows}
-            groupedRowsKeysWithDifferentValues={
-              groupedRowsKeysWithDifferentValues
-            }
-            currencyConfig={currencyConfig}
-            rootConceptIdsByColumn={rootConceptIdsByColumn}
-          />
-        )}
-        {contentFilter.rest && applicableRest.length > 0 && (
-          <div className={flex()}>
-            <TooltipTrigger>
-              <TooltipTarget
-                role="img"
-                aria-label={restTooltip}
-                excludeFromTabOrder
-              >
-                <InfoIcon className={bucketIcon()} />
-              </TooltipTarget>
-              <Tooltip>{restTooltip}</Tooltip>
-            </TooltipTrigger>
-            <div className={colBucket()}>
-              {applicableRest.map((column) => (
-                <div key={column.label}>
-                  <TinyLabel>{column.defaultLabel}</TinyLabel>
-                  <C3 as="span">
-                    {searchTerm && searchTerm.length > 0 ? (
-                      <Highlighter
-                        searchWords={searchTerm.split(" ")}
-                        textToHighlight={row[column.label] as string}
-                      />
-                    ) : (
-                      (row[column.label] as string)
-                    )}
-                  </C3>
+              </div>
+            )}
+            {groupedRowsKeysWithDifferentValues && groupedRows && (
+              <GroupedContent
+                columns={columns}
+                contentFilter={contentFilter}
+                groupedRows={groupedRows}
+                groupedRowsKeysWithDifferentValues={
+                  groupedRowsKeysWithDifferentValues
+                }
+                currencyConfig={currencyConfig}
+                rootConceptIdsByColumn={rootConceptIdsByColumn}
+              />
+            )}
+            {contentFilter.rest && applicableRest.length > 0 && (
+              <div className={flex()}>
+                <TooltipTrigger>
+                  <TooltipTarget
+                    role="img"
+                    aria-label={restTooltip}
+                    excludeFromTabOrder
+                  >
+                    <InfoIcon className={bucketIcon()} />
+                  </TooltipTarget>
+                  <Tooltip>{restTooltip}</Tooltip>
+                </TooltipTrigger>
+                <div className={colBucket()}>
+                  {applicableRest.map((column) => (
+                    <div key={column.label}>
+                      <TinyLabel>{column.defaultLabel}</TinyLabel>
+                      <C3 as="span">
+                        {searchTerm && searchTerm.length > 0 ? (
+                          <Highlighter
+                            searchWords={searchTerm.split(" ")}
+                            textToHighlight={row[column.label] as string}
+                          />
+                        ) : (
+                          (row[column.label] as string)
+                        )}
+                      </C3>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-        {contentFilter.groupId && applicableGroupableIds.length > 0 && (
-          <div className={flex()}>
-            <TooltipTrigger>
-              <TooltipTarget
-                role="img"
-                aria-label={groupableIdsTooltip}
-                excludeFromTabOrder
-              >
-                <FingerprintPatternIcon className={bucketIcon()} />
-              </TooltipTarget>
-              <Tooltip>{groupableIdsTooltip}</Tooltip>
-            </TooltipTrigger>
-            <div className={colBucket()}>
-              {applicableGroupableIds.map((column) => (
-                <div key={column.label}>
-                  <TinyLabel>{column.defaultLabel}</TinyLabel>
-                  <C3 as="span">
-                    {searchTerm && searchTerm.length > 0 ? (
-                      <Highlighter
-                        searchWords={searchTerm.split(" ")}
-                        textToHighlight={row[column.label] as string}
-                      />
-                    ) : (
-                      (row[column.label] as string)
-                    )}
-                  </C3>
+              </div>
+            )}
+            {contentFilter.groupId && applicableGroupableIds.length > 0 && (
+              <div className={flex()}>
+                <TooltipTrigger>
+                  <TooltipTarget
+                    role="img"
+                    aria-label={groupableIdsTooltip}
+                    excludeFromTabOrder
+                  >
+                    <FingerprintPatternIcon className={bucketIcon()} />
+                  </TooltipTarget>
+                  <Tooltip>{groupableIdsTooltip}</Tooltip>
+                </TooltipTrigger>
+                <div className={colBucket()}>
+                  {applicableGroupableIds.map((column) => (
+                    <div key={column.label}>
+                      <TinyLabel>{column.defaultLabel}</TinyLabel>
+                      <C3 as="span">
+                        {searchTerm && searchTerm.length > 0 ? (
+                          <Highlighter
+                            searchWords={searchTerm.split(" ")}
+                            textToHighlight={row[column.label] as string}
+                          />
+                        ) : (
+                          (row[column.label] as string)
+                        )}
+                      </C3>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
           </div>
-        )}
+        </Card>
       </div>
     </div>
   );
