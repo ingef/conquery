@@ -30,7 +30,12 @@ type DiagramProps = {
   height?: string | number;
   width?: string | number;
   showTitle?: boolean;
+  /** cuts category labels on the axis, the tooltip keeps the full label */
+  maxLabelLength?: number;
 };
+
+const cut = (label: string, maxLength: number) =>
+  label.length > maxLength ? `${label.slice(0, maxLength - 1)}…` : label;
 function transformBarStatsToData(
   stats: BarStatistics,
   color: string,
@@ -102,6 +107,7 @@ export default function Diagram({
   height,
   width,
   showTitle = true,
+  maxLabelLength,
 }: DiagramProps) {
   const data = useMemo(() => {
     const color = `rgba(${hexToRgbA(getCssVarColor("--color-primary-500"))}, 1)`;
@@ -174,6 +180,14 @@ export default function Diagram({
             title: yScaleTitle,
             beginAtZero: true,
           },
+          x: {
+            ticks: {
+              callback: (valueIndex: number) => {
+                const label = String(data?.labels?.[valueIndex] ?? "");
+                return maxLabelLength ? cut(label, maxLabelLength) : label;
+              },
+            },
+          },
         },
       } as ChartOptions<"bar">;
     }
@@ -217,7 +231,7 @@ export default function Diagram({
     }
 
     throw new Error("Unknown stats type");
-  }, [data?.labels, stat, t, shouldTickRender, showTitle]);
+  }, [data?.labels, stat, t, shouldTickRender, showTitle, maxLabelLength]);
 
   return (
     <div className={root({ clickable: !!onClick, className })}>

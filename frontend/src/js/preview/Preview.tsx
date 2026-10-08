@@ -17,8 +17,9 @@ import { Card } from "../ui-components/Card";
 import { Menu, MenuItem } from "../ui-components/Menu";
 import { C3, H3 } from "../ui-components/Typography";
 import { closePreview } from "./actions";
-import Charts from "./Charts";
+import Charts, { DIAGRAMS_PER_PAGE } from "./Charts";
 import DiagramModal from "./DiagramModal";
+import Pagination from "./Pagination";
 import type { PreviewStateT } from "./reducer";
 import ScrollBox from "./ScrollBox";
 import Table from "./Table";
@@ -154,7 +155,6 @@ export default function Preview() {
                       setPopOver(statistic);
                     }}
                     page={page}
-                    setPage={setPage}
                   />
                 ) : (
                   <div className={loading()}>
@@ -163,6 +163,15 @@ export default function Preview() {
                 )}
               </Card>
             </div>
+            {stats && (
+              <Pagination
+                page={page}
+                pageCount={Math.ceil(
+                  stats.statistics.length / DIAGRAMS_PER_PAGE,
+                )}
+                setPage={setPage}
+              />
+            )}
           </section>
           {popOver && (
             <DiagramModal
