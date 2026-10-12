@@ -4,7 +4,6 @@ import {
   UnfoldHorizontalIcon,
   UserIcon,
 } from "lucide-react";
-import type { HTMLAttributes } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import type { DateRangeT } from "../api/types";
@@ -13,6 +12,10 @@ import { formatDate, parseDate } from "../common/helpers/dateHelper";
 import { exists } from "../common/helpers/exists";
 import { headingStyle, textStyle } from "../ui-components/Typography";
 
+const root = tv({
+  base: ["grid grid-cols-[auto_1fr]", "gap-3", "items-center"],
+});
+
 const dateText = tv({
   base: [
     "pr-2",
@@ -20,6 +23,10 @@ const dateText = tv({
     "flex items-center",
     "whitespace-nowrap",
   ],
+});
+
+const idText = tv({
+  base: ["pr-2", textStyle({ size: 2, strong: true, truncate: true })],
 });
 
 const text = tv({
@@ -55,7 +62,7 @@ const suffix = tv({
   base: [textStyle({ size: 3, tone: "muted" }), "ml-[5px]"],
 });
 
-interface Props extends HTMLAttributes<HTMLDivElement> {
+interface Props {
   matchingEntries?: number | null;
   matchingEntities?: number | null;
   dateRange?: DateRangeT;
@@ -64,8 +71,7 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
 
 const MatchingStats = (props: Props) => {
   const { t } = useTranslation();
-  const { matchingEntries, matchingEntities, dateRange, idLabel, ...rest } =
-    props;
+  const { matchingEntries, matchingEntities, dateRange, idLabel } = props;
 
   const isZero = props.matchingEntries === 0;
   const isZeroEntities = props.matchingEntities === 0;
@@ -88,18 +94,7 @@ const MatchingStats = (props: Props) => {
     : "- - - - - - -";
 
   return (
-    <div {...rest}>
-      {idLabel && (
-        <>
-          <MicroscopeIcon className={icon()} />
-          <div className="shrink-0">
-            <p className={dateText()}>{idLabel}</p>
-            <p className={text({ zero: isZero })}>
-              {t("queryEditor.secondaryId")}
-            </p>
-          </div>
-        </>
-      )}
+    <div className={root()}>
       <HashIcon className={icon()} />
       <div className="shrink-0">
         <p className={numberText({ zero: isZero })}>
@@ -151,6 +146,19 @@ const MatchingStats = (props: Props) => {
           <span className={suffix()}>{`${t("infoPane.date.to")}`}</span>
         </p>
       </div>
+      {idLabel && (
+        <>
+          <MicroscopeIcon className={icon()} />
+          <div className="min-w-0">
+            <p className={idText()} title={idLabel}>
+              {idLabel}
+            </p>
+            <p className={text({ zero: isZero })}>
+              {t("queryEditor.secondaryId")}
+            </p>
+          </div>
+        </>
+      )}
     </div>
   );
 };

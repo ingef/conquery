@@ -3,6 +3,7 @@ import { addMonths, format } from "date-fns";
 import { useMemo } from "react";
 import { Bar, Line } from "react-chartjs-2";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 import type {
   BarStatistics,
   DateStatistics,
@@ -18,13 +19,23 @@ import {
   useDateTickHandler,
 } from "./util";
 
+const root = tv({
+  variants: { clickable: { true: "cursor-pointer" } },
+});
+
 type DiagramProps = {
   stat: PreviewStatistics;
   className?: string;
   onClick?: () => void;
   height?: string | number;
   width?: string | number;
+  showTitle?: boolean;
+  /** cuts category labels on the axis, the tooltip keeps the full label */
+  maxLabelLength?: number;
 };
+
+const cut = (label: string, maxLength: number) =>
+  label.length > maxLength ? `${label.slice(0, maxLength - 1)}…` : label;
 function transformBarStatsToData(
   stats: BarStatistics,
   color: string,
@@ -95,6 +106,8 @@ export default function Diagram({
   onClick,
   height,
   width,
+  showTitle = true,
+  maxLabelLength,
 }: DiagramProps) {
   const data = useMemo(() => {
     const color = `rgba(${hexToRgbA(getCssVarColor("--color-primary-500"))}, 1)`;
@@ -121,7 +134,7 @@ export default function Diagram({
       },
       plugins: {
         title: {
-          display: true,
+          display: showTitle,
           font: {
             weight: "normal",
             size: 14,
@@ -167,6 +180,14 @@ export default function Diagram({
             title: yScaleTitle,
             beginAtZero: true,
           },
+          x: {
+            ticks: {
+              callback: (valueIndex: number) => {
+                const label = String(data?.labels?.[valueIndex] ?? "");
+                return maxLabelLength ? cut(label, maxLabelLength) : label;
+              },
+            },
+          },
         },
       } as ChartOptions<"bar">;
     }
@@ -210,10 +231,10 @@ export default function Diagram({
     }
 
     throw new Error("Unknown stats type");
-  }, [data?.labels, stat, t, shouldTickRender]);
+  }, [data?.labels, stat, t, shouldTickRender, showTitle, maxLabelLength]);
 
   return (
-    <div className={className}>
+    <div className={root({ clickable: !!onClick, className })}>
       {previewStatsIsBarStats(stat) ? (
         <Bar
           options={options as ChartOptions<"bar">}

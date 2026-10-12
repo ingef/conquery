@@ -170,7 +170,7 @@ export const Navigation = memo(
         )}
         <div className={entityIdNav()}>
           {!empty && (
-            <div className="grid">
+            <div className="flex justify-center">
               <TooltipTrigger delay={tooltipDelay.long}>
                 <Button
                   aria-label={`${t("history.prevButtonLabel")} (shift + ⬆)`}
@@ -201,7 +201,7 @@ export const Navigation = memo(
           </LoadHistoryDropzone>
           {!empty && (
             <>
-              <div className="grid">
+              <div className="flex justify-center">
                 <TooltipTrigger delay={tooltipDelay.long}>
                   <Button
                     aria-label={`${t("history.nextButtonLabel")} (shift + ⬇)`}

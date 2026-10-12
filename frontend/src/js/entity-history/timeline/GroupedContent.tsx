@@ -29,12 +29,9 @@ const grid = tv({
   base: ["inline-grid", "gap-x-[10px] gap-y-[5px]", "whitespace-nowrap"],
 });
 
+// indented past the bucket icons above and below
 const extraArea = tv({
-  base: [
-    "pt-2 pr-[15px] pb-3 pl-[49px]",
-    "overflow-x-auto",
-    "[-webkit-overflow-scrolling:touch]",
-  ],
+  base: ["pl-[43px]", "overflow-x-auto", "[-webkit-overflow-scrolling:touch]"],
 });
 
 const getColumnDescriptionContentType = (

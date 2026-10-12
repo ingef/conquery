@@ -27,7 +27,8 @@ const menuItem = tv({
     "flex items-center",
     "gap-[10px]",
     "rounded",
-    "h-[30px] px-3",
+    // the menu scrolls at its max height instead of squeezing the items
+    "h-[30px] shrink-0 px-3",
     textStyle({ size: 2, tone: "default" }),
     "whitespace-nowrap",
     "cursor-pointer",
