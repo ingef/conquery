@@ -32,9 +32,9 @@ const menuItem = tv({
     "whitespace-nowrap",
     "cursor-pointer",
     "outline-none",
+    // hover moves focus and re-renders every item, so long menus lag: adobe/react-spectrum#5897
     "data-focused:bg-gray-50",
     "data-disabled:cursor-not-allowed data-disabled:opacity-40",
-    "transition-[background-color] duration-100",
   ],
   variants: {
     danger: { true: "text-red" },
