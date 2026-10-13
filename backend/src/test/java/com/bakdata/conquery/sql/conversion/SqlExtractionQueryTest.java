@@ -22,10 +22,10 @@ import com.bakdata.conquery.models.datasets.ColumnType;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.sql.compiler.ColumnRole;
-import com.bakdata.conquery.sql.compiler.CompiledColumn;
-import com.bakdata.conquery.sql.compiler.CompiledQuery;
-import com.bakdata.conquery.sql.compiler.dialect.hana.HanaCompilerDialect;
+import com.bakdata.conquery.sql.translate.ColumnRole;
+import com.bakdata.conquery.sql.translate.TranslatedColumn;
+import com.bakdata.conquery.sql.translate.TranslatedQuery;
+import com.bakdata.conquery.sql.translate.dialect.hana.HanaTranslatorDialect;
 import com.bakdata.conquery.sql.model.ResolvedQuery;
 import com.bakdata.conquery.sql.model.node.AllEntitiesNode;
 import com.bakdata.conquery.sql.model.result.ResultType;
@@ -41,29 +41,29 @@ class SqlExtractionQueryTest {
 		ResolvedQuery query = validAllEntitiesQuery();
 		ResolvedQueryAdapter adapter = new ResolvedQueryAdapter(
 				Validation.buildDefaultValidatorFactory().getValidator(),
-				(resolved, dialect) -> new CompiledQuery(
+				(resolved, dialect) -> new TranslatedQuery(
 						"select entity_id from entities",
-						List.of(new CompiledColumn(
+						List.of(new TranslatedColumn(
 								"entity-id", "entity_id", ResultType.Primitive.STRING, ColumnRole.ENTITY_ID
 						))
 				),
 				mock(ResolvedQueryMapper.class)
 		);
 
-		var adapted = adapter.compile(query, new HanaCompilerDialect(), List.of());
+		var adapted = adapter.translate(query, new HanaTranslatorDialect(), List.of());
 
 		assertEquals("select entity_id from entities", adapted.getSql());
 		assertEquals(List.of(), adapted.getResultInfos());
 	}
 
 	@Test
-	void shouldRejectInvalidResolvedInputBeforeInvokingTheCompiler() {
+	void shouldRejectInvalidResolvedInputBeforeInvokingTheTranslator() {
 		AtomicBoolean compilerInvoked = new AtomicBoolean();
 		ResolvedQueryAdapter adapter = new ResolvedQueryAdapter(
 				Validation.buildDefaultValidatorFactory().getValidator(),
 				(query, dialect) -> {
 					compilerInvoked.set(true);
-					throw new AssertionError("compiler must not be invoked");
+					throw new AssertionError("translate must not be invoked");
 				},
 				mock(ResolvedQueryMapper.class)
 		);
@@ -77,8 +77,8 @@ class SqlExtractionQueryTest {
 				List.of()
 		);
 
-		assertThrows(ConstraintViolationException.class, () -> adapter.compile(
-				invalid, new HanaCompilerDialect(), List.of()
+		assertThrows(ConstraintViolationException.class, () -> adapter.translate(
+				invalid, new HanaTranslatorDialect(), List.of()
 		));
 		assertFalse(compilerInvoked.get());
 	}
@@ -94,11 +94,11 @@ class SqlExtractionQueryTest {
 		when(mapper.map(same(query), eq(Optional.empty()), same(resultInfos))).thenReturn(resolved);
 		ResolvedQueryAdapter adapter = new ResolvedQueryAdapter(
 				Validation.buildDefaultValidatorFactory().getValidator(),
-				(ignored, dialect) -> compiledWithOneResult(),
+				(ignored, dialect) -> translatedWithOneResult(),
 				mapper
 		);
 
-		var adapted = adapter.compile(query, new HanaCompilerDialect());
+		var adapted = adapter.translate(query, new HanaTranslatorDialect());
 
 		assertEquals(resultInfos, adapted.getResultInfos());
 		verify(query, times(1)).getResultInfos();
@@ -122,23 +122,23 @@ class SqlExtractionQueryTest {
 		when(mapper.map(same(nested), eq(Optional.of(resolvedSecondaryId)), same(resultInfos))).thenReturn(resolved);
 		ResolvedQueryAdapter adapter = new ResolvedQueryAdapter(
 				Validation.buildDefaultValidatorFactory().getValidator(),
-				(ignored, dialect) -> compiledWithOneResult(),
+				(ignored, dialect) -> translatedWithOneResult(),
 				mapper
 		);
 
-		var adapted = adapter.compile(query, new HanaCompilerDialect());
+		var adapted = adapter.translate(query, new HanaTranslatorDialect());
 
 		assertEquals(resultInfos, adapted.getResultInfos());
 		verify(query, times(1)).getResultInfos();
 		verify(mapper).map(same(nested), eq(Optional.of(resolvedSecondaryId)), same(resultInfos));
 	}
 
-	private static CompiledQuery compiledWithOneResult() {
-		return new CompiledQuery(
+	private static TranslatedQuery translatedWithOneResult() {
+		return new TranslatedQuery(
 				"select entity_id, result from entities",
 				List.of(
-						new CompiledColumn("entity-id", "entity_id", ResultType.Primitive.STRING, ColumnRole.ENTITY_ID),
-						new CompiledColumn("result", "result", ResultType.Primitive.STRING, ColumnRole.RESULT)
+						new TranslatedColumn("entity-id", "entity_id", ResultType.Primitive.STRING, ColumnRole.ENTITY_ID),
+						new TranslatedColumn("result", "result", ResultType.Primitive.STRING, ColumnRole.RESULT)
 				)
 		);
 	}

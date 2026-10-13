@@ -7,9 +7,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.sql.Date;
 import java.util.Locale;
 
-import com.bakdata.conquery.sql.compiler.dialect.clickhouse.ClickhouseCompilerDialect;
-import com.bakdata.conquery.sql.compiler.dialect.hana.HanaCompilerDialect;
-import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
+import com.bakdata.conquery.sql.translate.dialect.clickhouse.ClickhouseTranslatorDialect;
+import com.bakdata.conquery.sql.translate.dialect.hana.HanaTranslatorDialect;
+import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.dialect.clickhouse.ClickhouseDialectBundle;
 import com.bakdata.conquery.sql.conversion.dialect.clickhouse.ClickhouseFunctionProvider;
 import com.bakdata.conquery.sql.conversion.dialect.hana.HanaDialectBundle;
@@ -23,7 +23,7 @@ class SqlExtractionDialectTest {
 	@Test
 	void shouldKeepClickhouseRangeBoundsNullableAfterCoalesce() {
 		var dialect = new ClickhouseDialectBundle();
-		var range = dialect.getCompilerDialect().dateRange(DSL.field(DSL.name("events", "start"), Date.class),
+		var range = dialect.getTranslatorDialect().dateRange(DSL.field(DSL.name("events", "start"), Date.class),
 				DSL.field(DSL.name("events", "end"), Date.class));
 		// ClickHouse otherwise replaces missing outer-join values with the epoch date.
 		for (var bound : range.toFields()) {
@@ -37,8 +37,8 @@ class SqlExtractionDialectTest {
 		var clickhouse = new ClickhouseDialectBundle();
 		var hana = new HanaDialectBundle();
 
-		assertInstanceOf(ClickhouseCompilerDialect.class, clickhouse.getCompilerDialect());
-		assertInstanceOf(HanaCompilerDialect.class, hana.getCompilerDialect());
+		assertInstanceOf(ClickhouseTranslatorDialect.class, clickhouse.getTranslatorDialect());
+		assertInstanceOf(HanaTranslatorDialect.class, hana.getTranslatorDialect());
 		assertInstanceOf(ClickhouseFunctionProvider.class, clickhouse.getFunctionProvider());
 		assertInstanceOf(HanaSqlFunctionProvider.class, hana.getFunctionProvider());
 	}
@@ -53,7 +53,7 @@ class SqlExtractionDialectTest {
 		assertEquals(
 				DSL.using(SQLDialect.CLICKHOUSE).renderInlined(
 						dialect.getFunctionProvider().isNotEmptyDateRange(range)),
-				DSL.using(SQLDialect.CLICKHOUSE).renderInlined(dialect.getCompilerDialect().isNotEmptyDateRange(range))
+				DSL.using(SQLDialect.CLICKHOUSE).renderInlined(dialect.getTranslatorDialect().isNotEmptyDateRange(range))
 		);
 	}
 }

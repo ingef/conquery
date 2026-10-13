@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
+import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Record;
@@ -28,7 +28,7 @@ public record ConceptIdMappingSource(
 			Set<Integer> includedLocalIds,
 			boolean includesRoot,
 			boolean resolveConceptIds,
-			CompilerDialect dialect
+			TranslatorDialect dialect
 	) {
 		if (includesRoot && !resolveConceptIds) {
 			return connectorTable;
@@ -41,7 +41,7 @@ public record ConceptIdMappingSource(
 		return connectorTable.innerJoin(mapping.table()).on(joinCondition(dialect).and(conceptFilterCondition));
 	}
 
-	public TableLike<? extends Record> resolvedConceptIds(Table<Record> connectorTable, CompilerDialect dialect) {
+	public TableLike<? extends Record> resolvedConceptIds(Table<Record> connectorTable, TranslatorDialect dialect) {
 		return connectorTable.leftJoin(mapping.table()).on(joinCondition(dialect));
 	}
 
@@ -49,7 +49,7 @@ public record ConceptIdMappingSource(
 		return DSL.coalesce(mapping.resolvedId(), DSL.inline(rootLocalId));
 	}
 
-	public Condition joinCondition(CompilerDialect dialect) {
+	public Condition joinCondition(TranslatorDialect dialect) {
 		return joinCondition(dialect.unconditionalJoinCondition());
 	}
 

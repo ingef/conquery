@@ -8,33 +8,33 @@ import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.sql.compiler.ColumnRole;
-import com.bakdata.conquery.sql.compiler.CompiledQuery;
-import com.bakdata.conquery.sql.compiler.SqlCompiler;
-import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
+import com.bakdata.conquery.sql.translate.ColumnRole;
+import com.bakdata.conquery.sql.translate.TranslatedQuery;
+import com.bakdata.conquery.sql.translate.SqlTranslator;
+import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
 import com.bakdata.conquery.sql.model.ResolvedQuery;
 import com.bakdata.conquery.sql.validation.ResolvedQueryValidation;
 
-/** Maps initialized backend queries, validates the resolved input, and adapts compiler output to the backend contract. */
+/** Maps initialized backend queries, validates the resolved input, and adapts translate output to the backend contract. */
 public final class ResolvedQueryAdapter {
 
 	private final ResolvedQueryValidation validation;
-	private final SqlCompiler compiler;
+	private final SqlTranslator translator;
 	private final ResolvedQueryMapper mapper;
 
-	public ResolvedQueryAdapter(Validator validator, SqlCompiler compiler, ResolvedQueryMapper mapper) {
+	public ResolvedQueryAdapter(Validator validator, SqlTranslator translator, ResolvedQueryMapper mapper) {
 		this.validation = new ResolvedQueryValidation(validator);
-		this.compiler = compiler;
+		this.translator = translator;
 		this.mapper = mapper;
 	}
 
-	public SqlQuery compile(ConceptQuery query, CompilerDialect dialect) {
-		return compile(query, Optional.empty(), query.getResultInfos(), dialect);
+	public SqlQuery translate(ConceptQuery query, TranslatorDialect dialect) {
+		return translate(query, Optional.empty(), query.getResultInfos(), dialect);
 	}
 
-	public SqlQuery compile(SecondaryIdQuery query, CompilerDialect dialect) {
-		return compile(
+	public SqlQuery translate(SecondaryIdQuery query, TranslatorDialect dialect) {
+		return translate(
 				query.getQuery(),
 				Optional.of(query.getSecondaryId().resolve()),
 				query.getResultInfos(),
@@ -42,28 +42,28 @@ public final class ResolvedQueryAdapter {
 		);
 	}
 
-	private SqlQuery compile(
+	private SqlQuery translate(
 			ConceptQuery query,
 			Optional<SecondaryIdDescription> secondaryId,
 			List<ResultInfo> resultInfos,
-			CompilerDialect dialect
+			TranslatorDialect dialect
 	) {
-		return compile(mapper.map(query, secondaryId, resultInfos), dialect, resultInfos);
+		return translate(mapper.map(query, secondaryId, resultInfos), dialect, resultInfos);
 	}
 
-	public SqlQuery compile(
+	public SqlQuery translate(
 			ResolvedQuery resolvedQuery,
-			CompilerDialect dialect,
+			TranslatorDialect dialect,
 			List<ResultInfo> resultInfos
 	) {
 		validation.validate(resolvedQuery);
-		CompiledQuery compiled = compiler.compile(resolvedQuery, dialect);
+		TranslatedQuery compiled = translator.translate(resolvedQuery, dialect);
 		long resultColumnCount = compiled.columns().stream()
 				.filter(column -> column.role() == ColumnRole.RESULT)
 				.count();
 		if (resultColumnCount != resultInfos.size()) {
 			throw new IllegalStateException(
-					"Compiler returned %d result columns for %d backend result descriptors"
+					"Translator returned %d result columns for %d backend result descriptors"
 							.formatted(resultColumnCount, resultInfos.size())
 			);
 		}

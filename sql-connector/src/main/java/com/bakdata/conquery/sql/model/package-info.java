@@ -3,7 +3,7 @@
  *
  * <p>Instances in this package must not require repository access or identifier resolution during compilation. They
  * describe query semantics and physical database objects, but deliberately exclude dataset routing, datasource
- * selection, connections, dialects, and SQL compiler state.</p>
+ * selection, connections, dialects, and SQL translate state.</p>
  *
  * <p>The root query aggregate is complemented by dedicated packages for query nodes, operations, ranges, result
  * metadata, and physical schema references. Validation and SQL business logic live in sibling packages so this package

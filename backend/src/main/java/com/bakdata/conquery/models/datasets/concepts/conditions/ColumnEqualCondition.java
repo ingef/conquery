@@ -12,8 +12,8 @@ import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
-import com.bakdata.conquery.sql.compiler.ir.condition.StringValuesCondition;
-import com.bakdata.conquery.sql.compiler.ir.condition.WhereCondition;
+import com.bakdata.conquery.sql.translate.ir.condition.StringValuesCondition;
+import com.bakdata.conquery.sql.translate.ir.condition.WhereCondition;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.CollectionsUtil;

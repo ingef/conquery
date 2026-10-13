@@ -8,7 +8,7 @@ Preserve existing SQL behavior, including quirks. Preserve recognizable class na
 
 ## Current state
 
-The branch already contains `dataset-model`, resolved SQL input types, compiler contracts, query-step infrastructure, CTE composition, and condition/filter converters. The backend consumes extracted infrastructure, but `SqlCompiler` is only an interface: backend query conversion, aggregators, selects, forms, dialect implementations, and execution still contain substantive SQL responsibilities.
+The branch already contains `dataset-model`, resolved SQL input types, compiler contracts, query-step infrastructure, CTE composition, and condition/filter converters. The backend consumes extracted infrastructure, but `SqlTranslator` is only an interface: backend query conversion, aggregators, selects, forms, dialect implementations, and execution still contain substantive SQL responsibilities.
 
 Uncommitted aggregation conversion work is unfinished. Resume by reviewing and completing it; do not treat its current behavior or tests as an approved design. In particular, its distinct-sum path applies subtraction where the existing implementation ignores it. It also explicitly rejects duration `distinctBy`; determine whether this belongs in the strict boundary contract or must retain the existing behavior. Neither a cleaner implementation nor an existing new test establishes SQL compatibility.
 

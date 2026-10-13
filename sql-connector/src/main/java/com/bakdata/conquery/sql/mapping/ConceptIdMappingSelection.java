@@ -3,7 +3,7 @@ package com.bakdata.conquery.sql.mapping;
 import java.util.Objects;
 import java.util.Set;
 
-import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
+import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import org.jooq.Record;
 import org.jooq.Table;
 
@@ -21,7 +21,7 @@ public record ConceptIdMappingSelection(
 		includedLocalIds = Set.copyOf(includedLocalIds);
 	}
 
-	public Table<Record> selectedConcepts(Table<Record> connectorTable, CompilerDialect dialect) {
+	public Table<Record> selectedConcepts(Table<Record> connectorTable, TranslatorDialect dialect) {
 		return source.selectedConcepts(
 				connectorTable,
 				includedLocalIds,

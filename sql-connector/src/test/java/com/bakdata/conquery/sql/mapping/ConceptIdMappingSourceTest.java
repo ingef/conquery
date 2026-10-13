@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.bakdata.conquery.sql.compiler.dialect.hana.HanaCompilerDialect;
+import com.bakdata.conquery.sql.translate.dialect.hana.HanaTranslatorDialect;
 import org.jooq.Field;
 import org.jooq.SQLDialect;
 import org.jooq.Table;
@@ -30,7 +30,7 @@ class ConceptIdMappingSourceTest {
 		ConceptIdMappingSource source = new ConceptIdMappingSource(MAPPING, Map.of("code", EVENT_CODE));
 
 		Table<?> selected = source.selectedConcepts(
-				EVENTS, new LinkedHashSet<>(List.of(4, 7)), false, false, new HanaCompilerDialect()
+				EVENTS, new LinkedHashSet<>(List.of(4, 7)), false, false, new HanaTranslatorDialect()
 		);
 
 		assertEquals(
@@ -44,7 +44,7 @@ class ConceptIdMappingSourceTest {
 		ConceptIdMappingSource source = new ConceptIdMappingSource(MAPPING, Map.of("code", EVENT_CODE));
 
 		Table<?> selected = source.selectedConcepts(
-				EVENTS, Set.of(0, 4, 7), true, false, new HanaCompilerDialect()
+				EVENTS, Set.of(0, 4, 7), true, false, new HanaTranslatorDialect()
 		);
 
 		assertEquals("\"events\"", render(selected));
@@ -54,7 +54,7 @@ class ConceptIdMappingSourceTest {
 	void shouldLeftJoinAndFallBackToTheRootIdForConceptIdOutput() {
 		ConceptIdMappingSource source = new ConceptIdMappingSource(MAPPING, Map.of("code", EVENT_CODE));
 
-		TableLike<?> resolved = source.resolvedConceptIds(EVENTS, new HanaCompilerDialect());
+		TableLike<?> resolved = source.resolvedConceptIds(EVENTS, new HanaTranslatorDialect());
 
 		assertEquals(
 				"\"events\" left outer join \"diagnosis_ids\" on \"diagnosis_ids\".\"code\" = \"events\".\"diagnosis\"",
@@ -68,7 +68,7 @@ class ConceptIdMappingSourceTest {
 		ConceptIdMappingTable rootOnly = new ConceptIdMappingTable(DSL.name("root_ids"), List.of(), List.of());
 		ConceptIdMappingSource source = new ConceptIdMappingSource(rootOnly, Map.of());
 
-		TableLike<?> resolved = source.resolvedConceptIds(EVENTS, new HanaCompilerDialect());
+		TableLike<?> resolved = source.resolvedConceptIds(EVENTS, new HanaTranslatorDialect());
 
 		assertEquals("\"events\" left outer join \"root_ids\" on true = true", render(resolved));
 	}

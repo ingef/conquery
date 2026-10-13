@@ -3,8 +3,8 @@ package com.bakdata.conquery.sql.conversion.dialect.clickhouse;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
-import com.bakdata.conquery.sql.compiler.dialect.clickhouse.ClickhouseCompilerDialect;
+import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
+import com.bakdata.conquery.sql.translate.dialect.clickhouse.ClickhouseTranslatorDialect;
 import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
@@ -16,11 +16,11 @@ import org.jooq.SQLDialect;
 public class ClickhouseDialectBundle implements DialectBundle {
 
 	private final SqlFunctionProvider functionProvider;
-	private final CompilerDialect compilerDialect;
+	private final TranslatorDialect translatorDialect;
 
 	public ClickhouseDialectBundle() {
 		this.functionProvider = new ClickhouseFunctionProvider();
-		this.compilerDialect = new ClickhouseCompilerDialect();
+		this.translatorDialect = new ClickhouseTranslatorDialect();
 	}
 
 	@Override
@@ -49,8 +49,8 @@ public class ClickhouseDialectBundle implements DialectBundle {
 	}
 
 	@Override
-	public CompilerDialect getCompilerDialect() {
-		return compilerDialect;
+	public TranslatorDialect getTranslatorDialect() {
+		return translatorDialect;
 	}
 
 	@Override

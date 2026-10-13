@@ -113,7 +113,7 @@ void shouldIgnoreSubtractionInsideDistinctSumLikeExistingBackend() {
 - Modify connector `compiler/dialect/CompilerDialect.java`.
 - Create backend test `sql/conversion/SqlExtractionDialectTest.java`.
 
-**Interfaces:** `CompilerDialect` is the shared capability boundary. `DialectBundle` remains backend composition for configuration, datasource checks, result processors, and application type compatibility. Shared dialects must not register converters accepting backend `Visitable` or `Select` types.
+**Interfaces:** `TranslatorDialect` is the shared capability boundary. `DialectBundle` remains backend composition for configuration, datasource checks, result processors, and application type compatibility. Shared dialects must not register converters accepting backend `Visitable` or `Select` types.
 
 - [ ] Capture HANA/ClickHouse rendering expectations for date min/max, range construction, date arithmetic, quarters, arrays, concatenation, distinct selects, literal/no-op tables, and stratification expressions without opening a connection.
 - [ ] Move provider methods with unchanged jOOQ expressions; adapt `CDateRange` and application enums at the backend boundary. Preserve vendor-specific native date-range behavior; do not substitute a generic dual-column implementation merely because the neutral model makes it easier.
@@ -123,13 +123,13 @@ void shouldIgnoreSubtractionInsideDistinctSumLikeExistingBackend() {
 ### Task 4: Connect resolved concept queries to the shared compiler
 
 **Files:**
-- Create connector `compiler/DefaultSqlCompiler.java` implementing existing `SqlCompiler`.
+- Create connector `compiler/DefaultSqlCompiler.java` implementing existing `SqlTranslator`.
 - Modify connector `compiler/conversion/` and `compiler/ir/concept/` to connect existing condition, filter, select, and CTE components.
 - Create backend `conversion/ResolvedQueryAdapter.java`.
 - Adapt backend `conversion/{SqlConverter,NodeConversions}.java`, `conversion/cqelement/` converters, `conversion/query/{ConceptQueryConverter,CQReusedQueryConverter,SecondaryIdQueryConverter}.java`, and `conversion/model/SqlQuery.java`.
 - Create connector test `compiler/DefaultSqlCompilerTest.java` and backend test `sql/conversion/SqlExtractionQueryTest.java`.
 
-**Interfaces:** Preserve `SqlCompiler.compile(ResolvedQuery, CompilerDialect): CompiledQuery`. The backend adapter produces the existing `ResolvedQuery` from the already-resolved application query/context. Invoke `ResolvedQueryValidation.validate(ResolvedQuery)` once before compilation using the application's validator. Map ordered `CompiledColumn` metadata back to existing `ResultInfo` at the backend boundary.
+**Interfaces:** Preserve `SqlCompiler.compile(ResolvedQuery, CompilerDialect): CompiledQuery`. The backend adapter produces the existing `ResolvedQuery` from the already-resolved application query/context. Invoke `ResolvedQueryValidation.validate(ResolvedQuery)` once before compilation using the application's validator. Map ordered `TranslatedColumn` metadata back to existing `ResultInfo` at the backend boundary.
 
 - [ ] Build local compatibility fixtures for all-entities, AND/OR/negation, external IDs, date restrictions, concepts with multiple connector branches, reused queries, and secondary IDs. Include repeated names, empty optional selections, and validity-date output.
 - [ ] Assert ordered output IDs/types/aliases as well as rendered SQL. Add a validation-boundary test proving invalid nested operations are rejected before compiler invocation.
@@ -146,7 +146,7 @@ void shouldIgnoreSubtractionInsideDistinctSumLikeExistingBackend() {
 - Add resolved input records adjacent to those helpers for the values currently read from application form/export DTOs; reuse `DateRange`, resolved columns, existing query-step IR, and moved form vocabulary.
 - Create backend `sql/conversion/SqlExtractionFormTest.java` and `SqlExtractionExportTest.java`.
 
-**Interfaces:** Keep `ResolvedQuery` and `SqlCompiler` as the concept-query contract. Do not widen `ResolvedQuery` with unrelated optional form/export fields. Form helpers consume resolved dates, stratification settings, feature steps, and dialect functions; export helpers consume resolved columns and row predicates. Existing application converter entry points remain backend adapters.
+**Interfaces:** Keep `ResolvedQuery` and `SqlTranslator` as the concept-query contract. Do not widen `ResolvedQuery` with unrelated optional form/export fields. Form helpers consume resolved dates, stratification settings, feature steps, and dialect functions; export helpers consume resolved columns and row predicates. Existing application converter entry points remain backend adapters.
 
 - [ ] Pin original absolute/relative form SQL and output order for empty windows, boundary dates, complete resolution, and feature/outcome scopes. Include two feature groups and secondary IDs to expose join/alias collisions.
 - [ ] Pin table-export filter expressions separately from aggregation filters, including sum subtraction with null operands, duration distance, select filters, and date restrictions. Expected expressions come from the existing `convertForTableExport` methods.

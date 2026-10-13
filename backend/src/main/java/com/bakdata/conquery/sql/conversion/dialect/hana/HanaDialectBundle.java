@@ -3,8 +3,8 @@ package com.bakdata.conquery.sql.conversion.dialect.hana;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
-import com.bakdata.conquery.sql.compiler.dialect.hana.HanaCompilerDialect;
+import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
+import com.bakdata.conquery.sql.translate.dialect.hana.HanaTranslatorDialect;
 import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.execution.DefaultResultSetProcessor;
@@ -17,12 +17,12 @@ import org.jooq.SQLDialect;
 public class HanaDialectBundle implements DialectBundle {
 
 	private final SqlFunctionProvider functionProvider;
-	private final CompilerDialect compilerDialect;
+	private final TranslatorDialect translatorDialect;
 	private final SqlCDateSetParser dateSetParser;
 
 	public HanaDialectBundle() {
 		this.functionProvider = new HanaSqlFunctionProvider();
-		this.compilerDialect = new HanaCompilerDialect();
+		this.translatorDialect = new HanaTranslatorDialect();
 		this.dateSetParser = new HanaSqlCDateSetParser();
 	}
 
@@ -66,8 +66,8 @@ public class HanaDialectBundle implements DialectBundle {
 	}
 
 	@Override
-	public CompilerDialect getCompilerDialect() {
-		return compilerDialect;
+	public TranslatorDialect getTranslatorDialect() {
+		return translatorDialect;
 	}
 
 }

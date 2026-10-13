@@ -14,7 +14,7 @@ import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
-import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
+import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.conversion.model.EntitySchemaAdapter;
 import com.bakdata.conquery.sql.model.export.ResolvedExportTable;
 import com.bakdata.conquery.sql.model.export.ResolvedTableExportQuery;
@@ -36,7 +36,7 @@ public final class ResolvedTableExportMapper {
 		this.defaultPrimaryColumn = defaultPrimaryColumn;
 	}
 
-	public ResolvedTableExportQuery map(TableExportQuery query, CompilerDialect dialect) {
+	public ResolvedTableExportQuery map(TableExportQuery query, TranslatorDialect dialect) {
 		if (!(query.getQuery() instanceof ConceptQuery prerequisite)) {
 			throw new UnsupportedOperationException("Resolved table exports currently require a concept-query prerequisite");
 		}
