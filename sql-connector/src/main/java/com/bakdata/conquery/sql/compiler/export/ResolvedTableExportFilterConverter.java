@@ -13,6 +13,7 @@ import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
 import com.bakdata.conquery.sql.model.operation.BuiltInFilters;
 import com.bakdata.conquery.sql.model.operation.ResolvedAggregation;
 import com.bakdata.conquery.sql.model.operation.ResolvedFilter;
+import com.bakdata.conquery.sql.model.range.NumberRange;
 import com.bakdata.conquery.sql.model.range.SubstringRange;
 import com.bakdata.conquery.sql.model.schema.DateColumns;
 import org.jooq.Condition;
@@ -81,7 +82,7 @@ public final class ResolvedTableExportFilterConverter {
 		};
 	}
 
-	private static Condition inclusive(Field<BigDecimal> field, com.bakdata.conquery.sql.model.range.NumberRange range) {
+	private static Condition inclusive(Field<BigDecimal> field, NumberRange range) {
 		return new InclusiveRangeCondition<>(field, range).condition();
 	}
 

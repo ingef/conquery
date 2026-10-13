@@ -22,6 +22,7 @@ import com.bakdata.conquery.sql.compiler.query.ResolvedQueryStepCompiler;
 import com.bakdata.conquery.sql.compiler.rendering.QueryStepRenderer;
 import com.bakdata.conquery.sql.model.export.ResolvedExportTable;
 import com.bakdata.conquery.sql.model.export.ResolvedTableExportQuery;
+import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.model.schema.ResolvedValidityDate;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -75,7 +76,7 @@ public final class TableExportSqlCompiler {
 		output.add(new FieldWrapper<>(inline(value.source()).as(SharedAliases.SOURCE.getAlias())));
 		for (int index = 1; index < value.outputColumns().size(); index++) {
 			int outputIndex = index;
-			Optional<com.bakdata.conquery.sql.model.schema.ResolvedColumn> column = value.outputColumns().get(index);
+			Optional<ResolvedColumn> column = value.outputColumns().get(index);
 			Field<?> field = column.<Field<?>>map(resolved -> SchemaSql.field(resolved, Object.class)
 					.as(resolved.physicalName() + "-" + outputIndex))
 					.orElseGet(() -> inline(null, Object.class).as("null-" + outputIndex));
