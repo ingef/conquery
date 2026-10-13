@@ -1,6 +1,6 @@
 package com.bakdata.conquery.sql.compiler.dialect.hana;
 
-import static com.bakdata.conquery.sql.compiler.dialect.Interval.MONTHS_PER_QUARTER;
+import static com.bakdata.conquery.sql.compiler.form.Interval.MONTHS_PER_QUARTER;
 import static org.jooq.impl.DSL.*;
 
 import java.sql.Date;

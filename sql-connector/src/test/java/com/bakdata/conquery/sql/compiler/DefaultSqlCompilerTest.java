@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.datasets.ColumnType;
 import com.bakdata.conquery.models.query.DateAggregationAction;
 import com.bakdata.conquery.sql.compiler.dialect.hana.HanaCompilerDialect;
 import com.bakdata.conquery.sql.compiler.naming.SqlNameGenerator;
+import com.bakdata.conquery.sql.compiler.query.ResolvedQueryStepCompiler;
 import com.bakdata.conquery.sql.mapping.ConceptIdMappingSelection;
 import com.bakdata.conquery.sql.mapping.ConceptIdMappingSource;
 import com.bakdata.conquery.sql.mapping.ConceptIdMappingTable;

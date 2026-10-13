@@ -7,12 +7,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
-import com.bakdata.conquery.sql.compiler.conversion.operation.DistinctSelectConverter;
-import com.bakdata.conquery.sql.compiler.conversion.operation.SelectConversionContext;
-import com.bakdata.conquery.sql.compiler.forms.StratificationFunctions;
+import com.bakdata.conquery.sql.compiler.conversion.select.DistinctSelectConverter;
+import com.bakdata.conquery.sql.compiler.conversion.select.SelectConversionContext;
+import com.bakdata.conquery.sql.compiler.form.StratificationFunctions;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
-import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
+import com.bakdata.conquery.sql.compiler.query.concept.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
 import com.bakdata.conquery.sql.model.range.DateRange;
 import org.jooq.Condition;

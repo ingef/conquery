@@ -1,6 +1,6 @@
 package com.bakdata.conquery.sql.compiler.dialect.clickhouse;
 
-import static com.bakdata.conquery.sql.compiler.dialect.Interval.MONTHS_PER_QUARTER;
+import static com.bakdata.conquery.sql.compiler.form.Interval.MONTHS_PER_QUARTER;
 import static org.jooq.impl.DSL.*;
 
 import java.sql.Date;
@@ -10,11 +10,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
-import com.bakdata.conquery.sql.compiler.conversion.operation.SelectConversionContext;
+import com.bakdata.conquery.sql.compiler.conversion.select.SelectConversionContext;
 import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
-import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
+import com.bakdata.conquery.sql.compiler.query.concept.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
 import org.jooq.Condition;
 import org.jooq.DataType;
@@ -75,8 +75,7 @@ public class ClickhouseCompilerDialect implements CompilerDialect {
   @Override
   public ConnectorSqlSelects distinctSelect(
       BuiltInSelects.Values select, SelectConversionContext context) {
-    return com.bakdata.conquery.sql.compiler.conversion.operation.ClickhouseDistinctSelectConverter
-        .connectorSelect(select, context);
+		return ClickhouseDistinctSelectConverter.connectorSelect(select, context);
   }
 
   @Override

@@ -24,6 +24,18 @@ The module uses top-level packages as architectural boundaries:
 - `compiler` contains framework-neutral compilation contracts, including the public dialect capabilities;
 - SQL conversion and execution implementations belong in sibling packages, not below `model`.
 
+Within `compiler`, the root package contains compiler facades and compiled-result contracts. Its subpackages separate
+responsibilities as follows:
+
+- `compiler.conversion` dispatches resolved operations, with dedicated `aggregation`, `condition`, `filter`, and
+  `select` packages;
+- `compiler.query` plans and composes query-step graphs, with dedicated date-aggregation, concept, and interval-packing
+  packages;
+- `compiler.ir` contains the shared query-step, condition, and select representations rather than active compilers;
+- `compiler.form` and `compiler.export` contain use-case-specific compilation helpers;
+- `compiler.dialect`, `compiler.naming`, and `compiler.rendering` provide shared database capabilities, identifier
+  generation, and final SQL rendering.
+
 The resolved model is organized by responsibility:
 
 - `model.node` contains the normalized query tree;
@@ -72,14 +84,14 @@ optional validity date, resolved concept-column table mapping, and ordered prepa
 
 | Original backend responsibility | Shared implementation | Backend responsibility retained |
 | --- | --- | --- |
-| `ValueSelectUtil` | `compiler.conversion.operation.ValueSelectUtil` | First/last select DTO adaptation |
+| `ValueSelectUtil` | `compiler.conversion.select.ValueSelectUtil` | First/last select DTO adaptation |
 | `RandomValueSelectConverter` SQL | Shared converter with the same name | Column resolution and alias allocation |
 | `DistinctSelectConverter` SQL | Shared converter with the same name | Select DTO adaptation |
 | `ClickhouseDistinctSelectConverter` SQL | Shared converter with the same name | Dialect selection |
 | `MappableSingleColumnSelect.getSubstringSelect` SQL | `SubstringSelect.getSubstringSelect` | Mapping, result readers, range adaptation |
 | `DaterangeSelectUtil` select SQL | Shared helper with the same name | Resolved date-column adaptation |
 | `DateDistanceSqlAggregator` select SQL | Shared helper with the same name | Frozen/per-row end-date resolution and filter/export SQL |
-| `FlagSqlAggregator` select SQL | Shared aggregation converter | Filter/export predicates |
+| `FlagSqlAggregatorConverter` select SQL | Shared aggregation converter | Filter/export predicates |
 | Event date/duration select SQL | Shared converters with the original names | Application select metadata |
 | `ConceptColumnSelectConverter` SQL | Shared converter with the same name | Connector-column resolution and mapping-table preparation |
 

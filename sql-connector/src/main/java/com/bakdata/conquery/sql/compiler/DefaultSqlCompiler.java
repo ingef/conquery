@@ -3,9 +3,10 @@ package com.bakdata.conquery.sql.compiler;
 import java.util.Optional;
 
 import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
-import com.bakdata.conquery.sql.compiler.ir.FinalQueryStepComposer;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.naming.SqlNameGenerator;
+import com.bakdata.conquery.sql.compiler.query.FinalQueryStepComposer;
+import com.bakdata.conquery.sql.compiler.query.ResolvedQueryStepCompiler;
 import com.bakdata.conquery.sql.compiler.rendering.QueryStepRenderer;
 import com.bakdata.conquery.sql.model.ResolvedQuery;
 import org.jooq.DSLContext;
