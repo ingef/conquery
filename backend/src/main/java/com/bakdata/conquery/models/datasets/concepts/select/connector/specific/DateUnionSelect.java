@@ -10,8 +10,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.DateUnionAggregator;
 import com.bakdata.conquery.models.types.ResultType;
-import com.bakdata.conquery.sql.conversion.model.select.DateUnionSelectConverter;
-import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -57,8 +55,4 @@ public class DateUnionSelect extends Select implements DaterangeSelectOrFilter {
 		return processor::getDateRangeList;
 	}
 
-	@Override
-	public SelectConverter<DateUnionSelect> createConverter() {
-		return new DateUnionSelectConverter();
-	}
 }

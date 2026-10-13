@@ -62,4 +62,4 @@ jobs:
           java-version: '21'
           overwrite-settings: false
       - name: ${{ matrix.test-group.name }}
-        run: mvn test -T 1C -pl backend ${{ matrix.test-group.flags }}
+        run: mvn test -T 1C -pl backend -am ${{ matrix.test-group.flags }}

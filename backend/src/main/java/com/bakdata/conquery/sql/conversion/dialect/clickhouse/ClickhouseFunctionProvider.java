@@ -12,9 +12,9 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
+import com.bakdata.conquery.sql.compiler.ir.QueryStep;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
-import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import org.jetbrains.annotations.NotNull;
 import org.jooq.Condition;
 import org.jooq.DataType;
@@ -48,15 +48,6 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
         // But in the case of an anti-join (our Negation), this field will be sometimes null, while not testing as `is null` = true
         return field("{0}::Nullable(String)", String.class, inline(id, String.class));
     }
-
-    @Override
-    public Condition dateRestriction(ColumnDateRange dateRestriction, ColumnDateRange daterange) {
-        Condition dateRestrictionStartsBeforeDate = dateRestriction.getStart().lessThan(daterange.getEnd());
-        Condition dateRestrictionEndsAfterDate = dateRestriction.getEnd().greaterThan(daterange.getStart());
-
-        return condition(dateRestrictionStartsBeforeDate.and(dateRestrictionEndsAfterDate));
-    }
-
 
     @Override
     public ColumnDateRange forCDateRange(CDateRange daterange) {
@@ -98,11 +89,6 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
 
 
     @Override
-    public ColumnDateRange allRange() {
-        return ColumnDateRange.of(getMinDateExpression(), getMaxDateExpression());
-    }
-
-    @Override
     public <T> Field<T> anyValue(Field<T> field) {
         return DSL.anyValue(field);
     }
@@ -134,20 +120,25 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
     }
 
     private ColumnDateRange ofStartAndEnd(String tableName, Column startColumn, Column endColumn) {
+        return dateRange(field(name(tableName, startColumn.getName()), Date.class), field(name(tableName, endColumn.getName()), Date.class));
+    }
+
+    @Override
+    public ColumnDateRange dateRange(Field<Date> start, Field<Date> inclusiveEnd) {
 
         // Since coalesce makes Clickhouse certain, that the field is not nullable, it will do silly stuff with it down the line:
         // missing values (for example in outer-joins) will be coerced to 0 = 01-01-1970, which is clearly not correct
         // Therefore we tag the values as Nullable again to make Clickhouse show some respect
 
         Field<Date> rangeStart = field("{0}::Nullable(Date32)", Date.class, coalesce(
-                        field(name(tableName, startColumn.getName()), Date.class),
+                        start,
                         getMinDateExpression()
                 )
         );
         // when aggregating date ranges, we want to treat the last day of the range as excluded,
         // so when using the date value of the end column, we add +1 day as end of the date range
         Field<Date> rangeEnd = field("{0}::Nullable(Date32)", Date.class, coalesce(
-                        addDays(field(name(tableName, endColumn.getName()), Date.class), inline(1)),
+                        addDays(inclusiveEnd, inline(1)),
                         getMaxDateExpression()
                 )
         );
@@ -324,18 +315,6 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
     @Override
     public Field<String> yearQuarter(Field<Date> dateField) {
         return field("formatDateTime({0}, '%Y-Q%Q')", String.class, dateField);
-    }
-
-    @Override
-    public ColumnDateRange allRangeIf(Condition condition) {
-        return ColumnDateRange.of(
-                when(condition.isTrue(),
-                        getMinDateExpression()
-                ),
-                when(condition.isTrue(),
-                        getMaxDateExpression()
-                )
-        );
     }
 
 }

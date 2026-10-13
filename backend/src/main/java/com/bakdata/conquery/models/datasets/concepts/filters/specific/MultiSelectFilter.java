@@ -8,8 +8,6 @@ import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.query.filter.event.MultiSelectFilterNode;
 import com.bakdata.conquery.models.query.filter.event.SubstringMultiSelectFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
-import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
-import com.bakdata.conquery.sql.conversion.model.filter.MultiSelectFilterConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
@@ -39,8 +37,4 @@ public class MultiSelectFilter extends SelectFilter<Set<String>> {
 		return new MultiSelectFilterNode(getColumn().resolve(), value);
 	}
 
-	@Override
-	public FilterConverter<MultiSelectFilter, Set<String>> createConverter() {
-		return new MultiSelectFilterConverter();
-	}
 }

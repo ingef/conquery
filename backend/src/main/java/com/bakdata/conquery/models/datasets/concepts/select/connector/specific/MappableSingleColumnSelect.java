@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
 import static com.bakdata.conquery.models.types.ResultType.Primitive.STRING;
 import static com.bakdata.conquery.models.types.ResultType.resolveResultType;
-import static org.jooq.impl.DSL.*;
 
 import java.util.Collections;
 import java.util.Set;
@@ -25,15 +24,11 @@ import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
-import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
-import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
-import com.bakdata.conquery.sql.conversion.model.select.SingleColumnSqlSelect;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
-import org.jooq.Field;
+
 
 @Getter
 public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
@@ -55,31 +50,6 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 		super(column);
 		this.mapping = mapping;
 		this.substringRange = substringRange;
-	}
-
-	public static SingleColumnSqlSelect getSubstringSelect(
-			Column column, Range.IntegerRange substringRange, SelectContext<ConnectorSqlTables> selectContext,
-			String alias) {
-
-		Field<String> field = field(name(selectContext.getTables().getRootTable(), column.getName()), String.class);
-
-		if (substringRange != null && !substringRange.isAll()) {
-			if (substringRange.isAtLeast()) {
-				field = substring(field, 1 + substringRange.getMin());
-			}
-			else if (substringRange.isAtMost()) {
-				field = substring(field, 1, substringRange.getMax());
-			}
-			else {
-				field = substring(field, 1 + substringRange.getMin(), substringRange.getMax() - substringRange.getMin());
-			}
-		}
-
-		if (alias != null) {
-			field = field.as(name(alias));
-		}
-
-		return new FieldWrapper<>(field, column.getName());
 	}
 
 	@Override
