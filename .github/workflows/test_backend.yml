@@ -37,13 +37,13 @@ jobs:
       matrix:
         test-group:
           - name: Unit Test
-            flags: -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON, INTEGRATION_SQL_BACKEND"
+            flags: -pl backend,news-service -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON, INTEGRATION_SQL_BACKEND"
           - name: Programmatic Integration Tests
-            flags: -Dgroups="INTEGRATION_PROGRAMMATIC"
+            flags: -pl backend -Dgroups="INTEGRATION_PROGRAMMATIC"
           - name: JSON based Integration Tests
-            flags: -Dgroups="INTEGRATION_JSON"
+            flags: -pl backend -Dgroups="INTEGRATION_JSON"
           - name: SQL based Integration Tests
-            flags: -Dgroups="INTEGRATION_SQL_BACKEND"
+            flags: -pl backend -Dgroups="INTEGRATION_SQL_BACKEND"
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
@@ -62,4 +62,4 @@ jobs:
           java-version: '21'
           overwrite-settings: false
       - name: ${{ matrix.test-group.name }}
-        run: mvn test -T 1C -pl backend ${{ matrix.test-group.flags }}
+        run: mvn test -T 1C ${{ matrix.test-group.flags }}
