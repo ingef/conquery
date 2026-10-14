@@ -327,6 +327,11 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
     }
 
     @Override
+    public Field<Integer> year(Field<Date> dateField) {
+        return function("toYear", Integer.class, dateField);
+    }
+
+    @Override
     public ColumnDateRange allRangeIf(Condition condition) {
         return ColumnDateRange.of(
                 when(condition.isTrue(),

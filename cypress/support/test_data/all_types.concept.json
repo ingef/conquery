@@ -108,11 +108,6 @@
                 "type": "NUMBER"
             },
             {
-                "label": "PREFIX_TEXT",
-                "column": "table.STRING",
-                "type": "PREFIX_TEXT"
-            },
-            {
                 "label": "DATE_DISTANCE",
                 "column": "table.DATE",
                 "type": "DATE_DISTANCE"
