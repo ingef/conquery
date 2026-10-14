@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.preproc.parser;
 
 import java.util.BitSet;
 
+import com.bakdata.conquery.models.preproc.OutputRow;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
@@ -35,8 +36,25 @@ public abstract class ColumnValues<T> {
 		return event;
 	}
 
+	@SuppressWarnings("unchecked")
+	public int add(OutputRow outputRow, int outputIndex) {
+		return add((T) outputRow.getObject(outputIndex));
+	}
+
+	protected final int prepareAdd(boolean isNull) {
+		final int event = size();
+		if (isNull) {
+			nulls.set(event);
+		}
+		return event;
+	}
+
 	protected abstract void append(T obj);
 
 	protected abstract int size();
+
+	public final int getSize() {
+		return size();
+	}
 
 }

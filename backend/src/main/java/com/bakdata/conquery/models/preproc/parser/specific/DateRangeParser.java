@@ -56,6 +56,11 @@ public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 
 	@Override
 	protected DateRangeStore decideType() {
+		return decideType(getLines());
+	}
+
+	@Override
+	protected DateRangeStore decideType(int storeLines) {
 
 		// Quarters cannot encode open ranges.
 		if (!anyOpen && onlyQuarters) {
@@ -64,7 +69,7 @@ public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 			quarterParser.setMaxValue(maxValue);
 			quarterParser.setMinValue(minValue);
 
-			return new QuarterDateRangeStore(quarterParser.findBestType());
+			return new QuarterDateRangeStore(quarterParser.findBestType(storeLines));
 		}
 
 
@@ -78,7 +83,7 @@ public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 			maxParser.setLines(getLines());
 		}
 
-		return new DirectDateRangeStore(minParser.findBestType(), maxParser.findBestType());
+		return new DirectDateRangeStore(minParser.findBestType(storeLines), maxParser.findBestType(storeLines));
 	}
 
 	@Override
