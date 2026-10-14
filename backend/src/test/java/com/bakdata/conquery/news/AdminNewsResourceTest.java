@@ -9,14 +9,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import com.bakdata.conquery.io.jetty.IllegalArgumentExceptionMapper;
+import com.bakdata.conquery.io.jetty.JsonValidationExceptionMapper;
+import com.bakdata.conquery.io.jetty.NoSuchElementExceptionMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
 import io.dropwizard.testing.junit5.ResourceExtension;
@@ -27,7 +26,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(DropwizardExtensionsSupport.class)
 class AdminNewsResourceTest {
 
-	private static final MediaType PROBLEM_JSON = MediaType.valueOf("application/problem+json");
 	private static final NewsItem NEWS_ITEM = new NewsItem(
 			"release-1",
 			"Release 1",
@@ -39,6 +37,10 @@ class AdminNewsResourceTest {
 	private static final InMemoryNewsService NEWS_SERVICE = new InMemoryNewsService();
 	private static final ResourceExtension EXT = ResourceExtension.builder()
 			.addResource(new AdminNewsResource(NEWS_SERVICE))
+			.setRegisterDefaultExceptionMappers(false)
+			.addProvider(JsonValidationExceptionMapper.class)
+			.addProvider(NoSuchElementExceptionMapper.class)
+			.addProvider(IllegalArgumentExceptionMapper.class)
 			.build();
 
 	@BeforeEach
@@ -71,17 +73,19 @@ class AdminNewsResourceTest {
 	}
 
 	@Test
-	void reportsDuplicateNewsItemAsProblem() throws IOException {
+	void reportsDuplicateNewsItemAsBadRequest() throws IOException {
 		NEWS_SERVICE.addNewsItem(NEWS_ITEM);
 
 		try(Response response = EXT.target("/news").request()
 				.post(Entity.entity(newsJson(NEWS_ITEM), MediaType.APPLICATION_JSON_TYPE))) {
-			assertProblem(response, Response.Status.CONFLICT, "/news");
+			assertThat(response.getStatus()).isEqualTo(Response.Status.BAD_REQUEST.getStatusCode());
+			assertThat(response.getMediaType()).isEqualTo(MediaType.APPLICATION_JSON_TYPE);
+			assertThat(response.readEntity(String.class)).contains("Item with id release-1 already exists");
 		}
 	}
 
 	@Test
-	void reportsInvalidNewsItemAsProblem() {
+	void validatesNewsItemAtResourceBoundary() {
 		NewsItem invalid = new NewsItem(
 				"INVALID ID",
 				"",
@@ -93,9 +97,18 @@ class AdminNewsResourceTest {
 
 		try(Response response = EXT.target("/news").request()
 				.post(Entity.entity(newsJson(invalid), MediaType.APPLICATION_JSON_TYPE))) {
-			JsonNode problem = assertProblem(response, 422, "Unprocessable Entity", "/news");
-			assertThat(problem.get("detail").asText())
+			JsonNode error = assertValidationError(response);
+			assertThat(error.get("message").asText())
 					.contains("id", "title");
+		}
+	}
+
+	@Test
+	void rejectsNullNewsItemAtResourceBoundary() {
+		try(Response response = EXT.target("/news").request()
+				.post(Entity.entity("null", MediaType.APPLICATION_JSON_TYPE))) {
+			JsonNode error = assertValidationError(response);
+			assertThat(error.get("message").asText()).contains("addNewsItem.newsItem");
 		}
 	}
 
@@ -112,26 +125,21 @@ class AdminNewsResourceTest {
 	}
 
 	@Test
-	void reportsUnknownNewsItemAsProblem() {
+	void reportsUnknownNewsItemAsNotFound() {
 		try(Response response = EXT.target("/news/unknown").request().delete()) {
-			assertProblem(response, Response.Status.NOT_FOUND, "/news/unknown");
+			assertThat(response.getStatus()).isEqualTo(Response.Status.NOT_FOUND.getStatusCode());
+			assertThat(response.getMediaType()).isEqualTo(MediaType.APPLICATION_JSON_TYPE);
+			assertThat(response.readEntity(String.class)).contains("No news item with id 'unknown' exists");
 		}
 	}
 
-	private static JsonNode assertProblem(Response response, Response.Status status, String instanceSuffix) {
-		return assertProblem(response, status.getStatusCode(), status.getReasonPhrase(), instanceSuffix);
-	}
-
-	private static JsonNode assertProblem(Response response, int status, String title, String instanceSuffix) {
-		assertThat(response.getStatus()).isEqualTo(status);
-		assertThat(response.getMediaType()).isEqualTo(PROBLEM_JSON);
-		JsonNode problem = response.readEntity(JsonNode.class);
-		assertThat(problem.get("type").asText()).isEqualTo("about:blank");
-		assertThat(problem.get("title").asText()).isEqualTo(title);
-		assertThat(problem.get("status").asInt()).isEqualTo(status);
-		assertThat(problem.get("detail").asText()).isNotBlank();
-		assertThat(problem.get("instance").asText()).endsWith(instanceSuffix);
-		return problem;
+	private static JsonNode assertValidationError(Response response) {
+		assertThat(response.getStatus()).isEqualTo(422);
+		assertThat(response.getMediaType()).isEqualTo(MediaType.APPLICATION_JSON_TYPE);
+		JsonNode error = response.readEntity(JsonNode.class);
+		assertThat(error.get("code").asInt()).isEqualTo(422);
+		assertThat(error.get("message").asText()).isNotBlank();
+		return error;
 	}
 
 	private static String newsJson(NewsItem item) {
@@ -155,7 +163,6 @@ class AdminNewsResourceTest {
 
 	private static final class InMemoryNewsService implements NewsService {
 
-		private static final Validator VALIDATOR = Validation.buildDefaultValidatorFactory().getValidator();
 		private final Map<String, NewsItem> news = new LinkedHashMap<>();
 
 		@Override
@@ -171,10 +178,6 @@ class AdminNewsResourceTest {
 
 		@Override
 		public void addNewsItem(NewsItem item) {
-			Set<ConstraintViolation<NewsItem>> violations = VALIDATOR.validate(item);
-			if(!violations.isEmpty()) {
-				throw new ConstraintViolationException(violations);
-			}
 			if(news.putIfAbsent(item.id(), item) != null) {
 				throw new IllegalArgumentException("Item with id %s already exists".formatted(item.id()));
 			}
