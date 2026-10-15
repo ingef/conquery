@@ -114,7 +114,7 @@ public class ManagerNode implements Managed {
 		admin.register();
 
 		// Wire up news-service with jersey
-		NewsApi.register(environment.jersey().getResourceConfig(), admin.getJerseyConfig(), newsService);
+		NewsApi.register(environment.jersey().getResourceConfig(), admin.getJerseyConfig(), admin.getJerseyConfigUI(), newsService);
 
 		log.info("Registering ResourcesProvider");
 		for (Class<? extends ResourcesProvider> resourceProvider : CPSTypeIdResolver.listImplementations(ResourcesProvider.class)) {
