@@ -110,7 +110,6 @@
     "selectAFilter": "Kein Filter ausgewählt.",
     "dropConcept": "Füge weitere Elemente des selben Konzeptes hinzu",
     "includeSubnodes": "Untergeordnete Konzepte einbeziehen",
-    "tooManyValues": "{{count}} Werte ausgewählt",
     "filters": "Filter",
     "selects": "Ausgabewerte",
     "commonSelects": "Allgemeine Ausgabewerte",
@@ -220,6 +219,7 @@
     "ofTotal": " von {{count}}",
     "tagPlaceholder": "Ordner ...",
     "folders": "Ordner",
+    "selectedCount": "{{count}} Werte ausgewählt",
     "selectedValues": "Ausgewählte Werte"
   },
   "previousQueries": {

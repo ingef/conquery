@@ -109,7 +109,6 @@
     "selectAFilter": "Select a filter to see its description here.",
     "dropConcept": "Drop another concept here",
     "includeSubnodes": "Include subordinate concepts",
-    "tooManyValues": "{{count}} values selected",
     "filters": "Filters",
     "selects": "Additional values",
     "commonSelects": "Common additional values",
@@ -220,6 +219,7 @@
     "ofTotal": " of {{count}}",
     "tagPlaceholder": "Folder ...",
     "folders": "Folders",
+    "selectedCount": "{{count}} values selected",
     "selectedValues": "Selected values"
   },
   "previousQueries": {

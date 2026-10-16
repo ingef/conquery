@@ -68,12 +68,15 @@ export const optionMatchesQuery = (option: SelectOptionT, query?: string) => {
 export const withoutDuplicates = (
   existing: SelectOptionT[],
   added: SelectOptionT[],
-) => [
-  ...existing,
-  ...added.filter(
-    (option) => !existing.some((item) => item.value === option.value),
-  ),
-];
+) => {
+  const seen = new Set(existing.map((item) => item.value));
+  const fresh = added.filter((option) => {
+    if (seen.has(option.value)) return false;
+    seen.add(option.value);
+    return true;
+  });
+  return fresh.length === 0 ? existing : [...existing, ...fresh];
+};
 
 export type ComboBoxStateRef = RefObject<
   ContextType<typeof ComboBoxStateContext>
