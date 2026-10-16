@@ -12,13 +12,14 @@ import type { TableT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import { useDatasetId } from "../dataset/selectors";
-import { isMultiSelectFilter, resetFilters } from "../model/filter";
+import {
+  filterHasValue,
+  isMultiSelectFilter,
+  resetFilters,
+} from "../model/filter";
 import { nodeIsElement } from "../model/node";
 import TableFilters from "../query-node-editor/TableFilters";
-import type {
-  BigMultiSelectFilterWithValueType,
-  MultiSelectFilterWithValueType,
-} from "../standard-query-editor/types";
+import type { FilterWithValueType } from "../standard-query-editor/types";
 import { Button } from "../ui-components/Button";
 
 import type { LoadingPayload } from "./LoadHistoryDropzone";
@@ -46,34 +47,28 @@ export const SearchEntites = ({
   return <SearchEntitiesComponent table={searchConceptTable} onLoad={onLoad} />;
 };
 
-type MultiSelectFilter =
-  | MultiSelectFilterWithValueType
-  | BigMultiSelectFilterWithValueType;
-
 const useFilterState = (table: TableT) => {
   const allowlistedSearchFilters = useSelector<StateT, string[]>(
     (state) => state.entityHistory.defaultParams.searchFilters,
   );
-  const [searchFilters, setSearchFilters] = useState<MultiSelectFilter[]>(
-    resetFilters(
-      table.filters
-        .filter((f) => allowlistedSearchFilters.includes(f.id))
-        .filter(
-          (f): f is MultiSelectFilter =>
-            f.type === "BIG_MULTI_SELECT" || f.type === "MULTI_SELECT",
-        ),
-    ) as MultiSelectFilter[],
+  const [searchFilters, setSearchFilters] = useState<FilterWithValueType[]>(
+    () =>
+      resetFilters(
+        table.filters.filter((f) => allowlistedSearchFilters.includes(f.id)),
+      ),
   );
 
-  const setFilterValue = useCallback((filterIdx: number, value: unknown) => {
-    setSearchFilters((filters) =>
-      filters.map((f, i) =>
-        i === filterIdx
-          ? { ...f, value: value as MultiSelectFilterWithValueType["value"] }
-          : f,
-      ),
-    );
-  }, []);
+  const setFilterValue = useCallback(
+    (filterIdx: number, value: FilterWithValueType["value"]) => {
+      setSearchFilters((filters) =>
+        filters.map((f, i) =>
+          // value shape follows the filter type, TableFilter guarantees the match
+          i === filterIdx ? ({ ...f, value } as FilterWithValueType) : f,
+        ),
+      );
+    },
+    [],
+  );
 
   const postPrefixForSuggestions = usePostPrefixForSuggestions();
 
@@ -136,10 +131,7 @@ const useSubmitSearch = ({
   searchFilters,
   onLoad,
 }: {
-  searchFilters: (
-    | MultiSelectFilterWithValueType
-    | BigMultiSelectFilterWithValueType
-  )[];
+  searchFilters: FilterWithValueType[];
   onLoad: (payload: LoadingPayload) => void;
 }) => {
   const { t } = useTranslation();
@@ -153,13 +145,10 @@ const useSubmitSearch = ({
 
     setLoading(true);
 
-    const filterValues = searchFilters
-      .map((f) => ({
-        filter: f.id,
-        type: f.type as "MULTI_SELECT" | "BIG_MULTI_SELECT",
-        value: transformFilterValueToApi(f) as string[],
-      }))
-      .filter((f) => f.value.length !== 0);
+    const filterValues = searchFilters.filter(filterHasValue).flatMap((f) => {
+      const value = transformFilterValueToApi(f);
+      return value === null ? [] : [{ filter: f.id, type: f.type, value }];
+    });
 
     try {
       const result = await postResolveEntities(datasetId, filterValues);
@@ -190,7 +179,7 @@ const useSubmitSearch = ({
   ]);
 
   const hasFiltersSet = useMemo(
-    () => searchFilters.some((f) => (f.value?.length ?? 0) > 0),
+    () => searchFilters.some(filterHasValue),
     [searchFilters],
   );
 

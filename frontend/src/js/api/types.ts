@@ -183,7 +183,11 @@ export interface FilterConfigT {
     | "SELECT"
     | "MULTI_SELECT"
     | "BIG_MULTI_SELECT";
-  value: RangeFilterValueT | SelectFilterValueT | string | string[];
+  value:
+    | RangeFilterValueT
+    | SelectFilterValueT
+    | string
+    | SelectOptionT["value"][];
 }
 
 interface DateColumnConfigT {
