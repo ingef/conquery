@@ -26,7 +26,6 @@ import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.TableLike;
 import org.jooq.impl.DSL;
-import org.jooq.impl.SQLDataType;
 
 public class ConceptColumnSelectConverter implements SelectConverter<ConceptColumnSelect> {
 
@@ -154,7 +153,7 @@ public class ConceptColumnSelectConverter implements SelectConverter<ConceptColu
 			conditions = List.of(rawConceptColumn.isNotNull());
 		}
 
-		Field<String> casted = selectContext.getFunctionProvider().cast(connectorColumn, SQLDataType.VARCHAR).as(alias);
+		Field<String> casted = selectContext.getFunctionProvider().castToString(connectorColumn).as(alias);
 		FieldWrapper<String> connectorSelect = new FieldWrapper<>(casted);
 
 		Selects selects = Selects.builder()
