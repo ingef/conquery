@@ -36,6 +36,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
     public static final char DATE_SET_SEPARATOR = UNIT_SEPARATOR;
     private static final String ANY_CHAR_REGEX = ".*";
     private static final String NOP_TABLE = "DUMMY";
+    private final Field<Date> UNIX_0_DATE = toDateField("1970-01-01");
 
     @Override
     public String getAnyCharRegex() {
@@ -301,8 +302,9 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
         return function(unquotedName("TO_VARCHAR"), String.class, field);
     }
 
+    @Override
     public Field<Integer> dateToInteger(Field<Date> field) {
-        return function("DAYS_BETWEEN", Integer.class, field("to_date('19700101','YYYYMMDD')"), field);
+        return function("DAYS_BETWEEN", Integer.class, UNIX_0_DATE, field);
     }
 
     @Override
