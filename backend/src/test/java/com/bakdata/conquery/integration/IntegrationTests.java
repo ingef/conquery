@@ -119,11 +119,16 @@ public class IntegrationTests {
 	@SneakyThrows
 	public Stream<DynamicNode> sqlProgrammaticTests(DatabaseConnectionConfig databaseConfig, SqlConnectorConfig sqlConfig, TestDataImporter testDataImporter) {
 		this.config.setSqlConnectorConfig(sqlConfig);
-		return programmaticTests(testDataImporter, StandaloneSupport.Mode.SQL);
+		return programmaticTests(testDataImporter, StandaloneSupport.Mode.SQL, databaseConfig.getDialect());
 	}
 
 	@SneakyThrows
 	public Stream<DynamicNode> programmaticTests(TestDataImporter testImporter, StandaloneSupport.Mode mode) {
+		return programmaticTests(testImporter, mode, null);
+	}
+
+	@SneakyThrows
+	public Stream<DynamicNode> programmaticTests(TestDataImporter testImporter, StandaloneSupport.Mode mode, Dialect dialect) {
 		String regexFilter = System.getenv(TestTags.TEST_PROGRAMMATIC_REGEX_FILTER);
 		List<Class<?>> programmatic =
 				CPSTypeIdResolver.SCAN_RESULT.getClassesImplementing(ProgrammaticIntegrationTest.class.getName())
@@ -154,7 +159,7 @@ public class IntegrationTests {
 						throw new RuntimeException(e);
 					}
 				})
-				.filter(test -> test.isEnabled(mode))
+				.filter(test -> test.isEnabled(mode, dialect))
 				.map(programmaticIntegrationTest -> createDynamicProgrammaticTestNode(programmaticIntegrationTest, testImporter));
 	}
 
