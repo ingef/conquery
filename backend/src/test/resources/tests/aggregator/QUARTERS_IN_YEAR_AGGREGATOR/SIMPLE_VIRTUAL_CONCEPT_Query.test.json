@@ -1,0 +1,67 @@
+{
+  "type": "QUERY_TEST",
+  "label": "QUARTERS_IN_YEAR_AGGREGATOR Test",
+  "expectedCsv": "tests/aggregator/QUARTERS_IN_YEAR_AGGREGATOR/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "ids": [
+        "concept"
+      ],
+      "type": "CONCEPT",
+      "tables": [
+        {
+          "id": "concept.connector",
+          "selects": [
+            "concept.connector.select"
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "name": "concept",
+      "type": "TREE",
+      "connectors": [
+        {
+          "name": "connector",
+          "table": "table",
+          "validityDates": {
+            "name": "datum",
+            "column": "table.datum"
+          },
+          "selects": [
+            {
+              "name": "select",
+              "type": "QUARTERS_IN_YEAR",
+              "column": "table.behandlungsdatum"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/aggregator/QUARTERS_IN_YEAR_AGGREGATOR/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "behandlungsdatum",
+            "type": "DATE"
+          },
+          {
+            "name": "datum",
+            "type": "DATE"
+          }
+        ]
+      }
+    ]
+  }
+}
