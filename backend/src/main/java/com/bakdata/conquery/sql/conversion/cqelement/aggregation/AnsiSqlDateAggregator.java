@@ -2,7 +2,9 @@ package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
 
 
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
@@ -17,7 +19,9 @@ import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.Data;
+import org.jooq.Condition;
 import org.jooq.Field;
+import org.jooq.impl.DSL;
 
 @Data
 public class AnsiSqlDateAggregator implements SqlDateAggregator {
@@ -34,26 +38,34 @@ public class AnsiSqlDateAggregator implements SqlDateAggregator {
 			DateAggregationAction dateAggregationAction,
 			ConversionContext conversionContext
 	) {
-		SqlAggregationAction aggregationAction = switch (dateAggregationAction) {
-			case MERGE -> new MergeAggregateAction(joinedStep);
-			case INTERSECT -> new IntersectAggregationAction(joinedStep);
+		return switch (dateAggregationAction) {
+			case MERGE -> merge(joinedStep, carryThroughSelects, dateAggregationDates, conversionContext);
+			case INTERSECT -> intersect(joinedStep, carryThroughSelects, dateAggregationDates);
 			default -> throw new IllegalStateException("Unexpected date aggregation action: %s".formatted(dateAggregationAction));
 		};
+	}
 
+	private QueryStep merge(
+			QueryStep joinedStep,
+			List<SqlSelect> carryThroughSelects,
+			DateAggregationDates dateAggregationDates,
+			ConversionContext conversionContext
+	) {
+		SqlTables dateAggregationTables = DateAggregationCteStep.createMergeTables(joinedStep, conversionContext.getNameGenerator());
 		DateAggregationContext context =
 				DateAggregationContext.builder()
-									  .sqlAggregationAction(aggregationAction)
 									  .carryThroughSelects(carryThroughSelects)
 									  .dateAggregationDates(dateAggregationDates)
-									  .dateAggregationTables(aggregationAction.tableNames(conversionContext.getNameGenerator()))
+									  .dateAggregationTables(dateAggregationTables)
 									  .ids(joinedStep.getQualifiedSelects().getIds())
 									  .conversionContext(conversionContext)
 									  .build();
 
-		QueryStep finalDateAggregationStep = convertSteps(joinedStep, aggregationAction.dateAggregationCtes(), context);
-		if (!aggregationAction.requiresIntervalPackingAfterwards()) {
-			return finalDateAggregationStep;
-		}
+		QueryStep finalDateAggregationStep = convertSteps(
+				joinedStep,
+				List.of(new IntermediateTableCte(), new MergeCte()),
+				context
+		);
 
 		Selects predecessorSelects = finalDateAggregationStep.getSelects();
 		SqlTables intervalPackingTables = IntervalPackingCteStep.createTables(finalDateAggregationStep, context);
@@ -69,6 +81,47 @@ public class AnsiSqlDateAggregator implements SqlDateAggregator {
 									  .build();
 
 		return this.intervalPacker.aggregateAsValidityDate(intervalPackingContext);
+	}
+
+	private QueryStep intersect(
+			QueryStep joinedStep,
+			List<SqlSelect> carryThroughSelects,
+			DateAggregationDates dateAggregationDates
+	) {
+		List<Field<Date>> allStarts = dateAggregationDates.allStarts();
+		List<Field<Date>> allEnds = dateAggregationDates.allEnds();
+		Condition overlapCondition = MergeCte.overlapCondition(allStarts, allEnds, this.functionProvider);
+
+		Condition startIsNull = allStarts.stream()
+										 .map(Field::isNull)
+										 .reduce(Condition::or)
+										 .orElseThrow();
+		Condition startBeforeEnd = this.functionProvider.greatest(allStarts).lessThan(this.functionProvider.least(allEnds));
+		Condition noOverlapCondition = startIsNull.orNot(startBeforeEnd);
+
+		Field<Date> rangeStart = DSL.when(overlapCondition, this.functionProvider.greatest(allStarts))
+										  .otherwise(DSL.inline(null, Date.class))
+										  .as(DateAggregationCte.RANGE_START);
+		Field<Date> rangeEnd = DSL.when(overlapCondition, this.functionProvider.least(allEnds))
+										.otherwise(DSL.inline(null, Date.class))
+										.as(DateAggregationCte.RANGE_END);
+		ColumnDateRange intersectedValidityDate = ColumnDateRange.of(rangeStart, rangeEnd)
+																		 .asValidityDateRange(joinedStep.getCteName());
+
+		Selects intersectSelects = Selects.builder()
+										.ids(joinedStep.getSelects().getIds())
+										.validityDate(Optional.of(intersectedValidityDate))
+										.sqlSelects(carryThroughSelects)
+										.build();
+
+		List<Condition> conditions = new ArrayList<>(joinedStep.getConditions());
+		// Retain the former overlap/no-overlap union's three-valued-logic filtering for nullable end expressions.
+		conditions.add(overlapCondition.or(noOverlapCondition));
+
+		return joinedStep.toBuilder()
+						 .selects(intersectSelects)
+						 .conditions(conditions)
+						 .build();
 	}
 
 	@Override
@@ -95,7 +148,6 @@ public class AnsiSqlDateAggregator implements SqlDateAggregator {
 		SqlTables dateAggregationTables = DateAggregationCteStep.createInvertTables(baseStep, conversionContext.getNameGenerator());
 
 		DateAggregationContext context = DateAggregationContext.builder()
-															   .sqlAggregationAction(null) // when inverting, an aggregation has already been applied
 															   .carryThroughSelects(baseStepQualifiedSelects.getSqlSelects())
 															   .dateAggregationDates(dateAggregationDates)
 															   .dateAggregationTables(dateAggregationTables)
@@ -103,7 +155,7 @@ public class AnsiSqlDateAggregator implements SqlDateAggregator {
 															   .conversionContext(conversionContext)
 															   .build();
 
-		return convertSteps(baseStep, DateAggregationCteStep.createInvertCtes(), context);
+		return convertSteps(baseStep, List.of(new RowNumberCte(), new InvertCte()), context);
 	}
 
 	private QueryStep convertSteps(QueryStep baseStep, List<DateAggregationCte> dateAggregationCTEs, DateAggregationContext context) {
