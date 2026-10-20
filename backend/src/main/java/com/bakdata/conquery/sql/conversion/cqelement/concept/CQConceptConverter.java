@@ -263,6 +263,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 	private CQTableContext createTableContext(TablePath tablePath, CQConcept cqConcept, CQTable cqTable, ConversionContext conversionContext) {
 
 		SqlIdColumns ids = convertIds(cqConcept, cqTable, conversionContext);
+		SqlIdColumns preprocessingIds = getPreprocessingIds(ids, conversionContext);
 		ConnectorSqlTables connectorTables = tablePath.getConnectorTables(cqTable);
 		ColumnDateRange validityDateCalculation = convertValidityDate(conversionContext, cqTable.findValidityDate());
 
@@ -271,7 +272,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		List<SqlFilters> allSqlFiltersForTable = new ArrayList<>();
 
 		cqTable.getFilters().stream()
-				.map(filterValue -> filterValue.convertToSqlFilter(ids, conversionContext, connectorTables))
+				.map(filterValue -> filterValue.convertToSqlFilter(ids, preprocessingIds, conversionContext, connectorTables))
 				.forEach(allSqlFiltersForTable::add);
 
 		List<ConceptElement<?>> conceptElements = cqConcept.getElements().stream().<ConceptElement<?>>map(ConceptElementId::resolve).toList();
@@ -287,7 +288,14 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		allSqlFiltersForTable.add(dateRestrictionFilter(conversionContext, validityDateCalculation));
 
 		// convert selects
-		SelectContext<ConnectorSqlTables> selectContext = SelectContext.create(ids, Optional.of(validityDateCalculation.asValidityDateRange(connectorTables.getName())), connectorTables, conversionContext);
+		SelectContext<ConnectorSqlTables> selectContext = SelectContext.create(
+				ids,
+				Optional.of(validityDateCalculation.asValidityDateRange(connectorTables.getName())),
+				preprocessingIds,
+				Optional.of(validityDateCalculation),
+				connectorTables,
+				conversionContext
+		);
 		List<ConnectorSqlSelects> allSelectsForTable = new ArrayList<>();
 		ConnectorSqlSelects conceptColumnSelect = createConceptColumnConnectorSqlSelects(cqConcept, selectContext);
 		allSelectsForTable.add(conceptColumnSelect);
@@ -309,6 +317,14 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 				.resolveConceptIds(resolveConceptIds)
 				.conversionContext(conversionContext)
 				.build();
+	}
+
+	private static SqlIdColumns getPreprocessingIds(SqlIdColumns ids, ConversionContext conversionContext) {
+		if (conversionContext.isWithStratification()) {
+			return conversionContext.getStratificationTable().getQualifiedSelects().getIds();
+		}
+
+		return ids.getPredecessor().orElse(ids);
 	}
 
 }
