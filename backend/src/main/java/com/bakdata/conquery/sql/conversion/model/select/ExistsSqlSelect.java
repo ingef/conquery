@@ -63,7 +63,7 @@ public class ExistsSqlSelect implements SingleColumnSqlSelect {
 	@Override
 	public List<Field<?>> aggregateForFinalQuery(SqlFunctionProvider functionProvider) {
 		// We have to coalesce at the end of the query because full-outer-joins will create null values, which we want to avoid.
-		Field<Integer> coalesced = coalesce(max(select()), inline(0));
+		Field<Integer> coalesced = coalesce(functionProvider.anyValue(select()), inline(0));
 		return List.of(coalesced.as(alias));
 	}
 
