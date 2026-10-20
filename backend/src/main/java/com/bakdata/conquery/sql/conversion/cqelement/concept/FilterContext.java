@@ -17,6 +17,10 @@ import lombok.Value;
 public class FilterContext<V> implements Context {
 
 	SqlIdColumns ids;
+	/**
+	 * ID expressions available from the source tables of the preprocessing CTE.
+	 */
+	SqlIdColumns preprocessingIds;
 
 	/**
 	 * A filter value ({@link FilterValue#getValue()})
@@ -31,12 +35,18 @@ public class FilterContext<V> implements Context {
 	@Nullable
 	ConnectorSqlTables tables;
 
-	public static <V> FilterContext<V> forConceptConversion(SqlIdColumns ids, V value, ConversionContext conversionContext, ConnectorSqlTables tables) {
-		return new FilterContext<>(ids, value, conversionContext, tables);
+	public static <V> FilterContext<V> forConceptConversion(
+			SqlIdColumns ids,
+			SqlIdColumns preprocessingIds,
+			V value,
+			ConversionContext conversionContext,
+			ConnectorSqlTables tables
+	) {
+		return new FilterContext<>(ids, preprocessingIds, value, conversionContext, tables);
 	}
 
 	public static <V> FilterContext<V> forTableExport(SqlIdColumns ids, V value, ConversionContext conversionContext) {
-		return new FilterContext<>(ids, value, conversionContext, null);
+		return new FilterContext<>(ids, ids, value, conversionContext, null);
 	}
 
 	@Override
