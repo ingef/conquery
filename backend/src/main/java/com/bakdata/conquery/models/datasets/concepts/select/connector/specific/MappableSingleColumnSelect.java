@@ -61,6 +61,23 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 			Column column, Range.IntegerRange substringRange, SelectContext<ConnectorSqlTables> selectContext,
 			String alias) {
 
+		Field<String> field = getSubstringField(column, substringRange, selectContext);
+
+		if (alias != null) {
+			field = field.as(name(alias));
+		}
+
+		return new FieldWrapper<>(field, column.getName());
+	}
+
+	/**
+	 * Creates the unaliased input expression so it can be referenced by other expressions in the same SELECT list.
+	 */
+	public static Field<String> getSubstringField(
+			Column column,
+			Range.IntegerRange substringRange,
+			SelectContext<ConnectorSqlTables> selectContext
+	) {
 		Field<String> field = field(name(selectContext.getTables().getRootTable(), column.getName()), String.class);
 
 		if (substringRange != null && !substringRange.isAll()) {
@@ -75,11 +92,7 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 			}
 		}
 
-		if (alias != null) {
-			field = field.as(name(alias));
-		}
-
-		return new FieldWrapper<>(field, column.getName());
+		return field;
 	}
 
 	@Override
