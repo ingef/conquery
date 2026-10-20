@@ -9,17 +9,15 @@ import com.bakdata.conquery.sql.translate.ir.QueryStep;
 import com.bakdata.conquery.sql.translate.ir.Selects;
 import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
 import org.jooq.Field;
 
 @Getter
+@RequiredArgsConstructor
 class OverlapCte extends DateAggregationCte {
 
 	private final DateAggregationCteStep cteStep;
-
-	public OverlapCte(DateAggregationCteStep cteStep) {
-		this.cteStep = cteStep;
-	}
 
 	@Override
 	protected QueryStep convertStep(DateAggregationContext context, String predecessor, QueryStep previous) {

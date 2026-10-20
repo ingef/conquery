@@ -53,8 +53,8 @@ class RelativeStratification {
 		QueryStep indexStartStep = createIndexStartStep(form, indexSelectorStep);
 		QueryStep totalBoundsStep = createTotalBoundsStep(form, indexStartStep);
 
-		List<QueryStep> tables = form.getResolutionsAndAlignmentMap().stream()
-									 .map(ResolutionAndAlignment::getResolution)
+		List<QueryStep> tables = form.resolutions().stream()
+									 .map(ResolutionAndAlignment::resolution)
 									 .map(resolution -> createResolutionTable(totalBoundsStep, resolution, form, negate))
 									 .toList();
 
@@ -76,7 +76,7 @@ class RelativeStratification {
 		Selects predecessorSelects = prerequisite.getQualifiedSelects();
 		ColumnDateRange validityDate = predecessorSelects.getValidityDate()
 														 .orElseThrow(() -> new IllegalStateException("Expecting a validity date to be present"));
-		Field<Date> indexDate = stratificationFunctions.indexSelectorField(form.getIndexSelector(), validityDate)
+		Field<Date> indexDate = stratificationFunctions.indexSelectorField(form.indexSelector(), validityDate)
 													   .as(SharedAliases.INDEX_SELECTOR.getAlias());
 
 		Selects selects = Selects.builder()
@@ -98,7 +98,7 @@ class RelativeStratification {
 	 */
 	private QueryStep createIndexStartStep(RelativeFormSettings form, QueryStep indexSelectorStep) {
 
-		List<FieldWrapper<Date>> indexStartFields = stratificationFunctions.indexStartFields(form.getIndexPlacement(), form.getTimeUnit()).stream()
+		List<FieldWrapper<Date>> indexStartFields = stratificationFunctions.indexStartFields(form.indexPlacement(), form.timeUnit()).stream()
 																		   .map(FieldWrapper::new)
 																		   .toList();
 
@@ -120,7 +120,7 @@ class RelativeStratification {
 	 */
 	private QueryStep createTotalBoundsStep(RelativeFormSettings form, QueryStep indexStartStep) {
 
-		Interval interval = getInterval(form.getTimeUnit(), FormResolution.COMPLETE);
+		Interval interval = getInterval(form.timeUnit(), FormResolution.COMPLETE);
 		IntRange intRange = toGenerateSeriesBounds(form, FormResolution.COMPLETE);
 
 		Field<Date> minStratificationDate = stratificationFunctions.shiftByInterval(INDEX_START_NEGATIVE, interval, DSL.inline(intRange.min()), Offset.NONE);
@@ -151,11 +151,11 @@ class RelativeStratification {
 	private QueryStep createCompleteTable(QueryStep totalBoundsStep, RelativeFormSettings form, boolean negate) {
 
 		Selects predecessorSelects = totalBoundsStep.getQualifiedSelects();
-		Interval interval = getInterval(form.getTimeUnit(), FormResolution.COMPLETE);
+		Interval interval = getInterval(form.timeUnit(), FormResolution.COMPLETE);
 		IntRange intRange = toGenerateSeriesBounds(form, FormResolution.COMPLETE);
 
-		QueryStep featureTable = form.getTimeCountBefore() > 0 ? createCompleteFeatureTable(predecessorSelects, interval, intRange, totalBoundsStep) : null;
-		QueryStep outcomeTable = form.getTimeCountAfter() > 0 ? createCompleteOutcomeTable(predecessorSelects, interval, intRange, totalBoundsStep) : null;
+		QueryStep featureTable = form.timeCountBefore() > 0 ? createCompleteFeatureTable(predecessorSelects, interval, intRange, totalBoundsStep) : null;
+		QueryStep outcomeTable = form.timeCountAfter() > 0 ? createCompleteOutcomeTable(predecessorSelects, interval, intRange, totalBoundsStep) : null;
 
 		return QueryStep.createUnionAllStep(
 				Stream.concat(Stream.ofNullable(outcomeTable), Stream.ofNullable(featureTable)).toList(),
@@ -184,7 +184,7 @@ class RelativeStratification {
 		Field<Integer> seriesIndex = stratificationFunctions.intSeriesField();
 		Selects predecessorSelects = totalBoundsStep.getQualifiedSelects();
 		SqlIdColumns ids = predecessorSelects.getIds().withStratification(resolution.name(), seriesIndex, INDEX_SELECTOR);
-		Interval interval = getInterval(form.getTimeUnit(), resolution);
+		Interval interval = getInterval(form.timeUnit(), resolution);
 		IntRange bounds = toGenerateSeriesBounds(form, resolution);
 
 		QueryStep timeBeforeStep = createFeatureTable(totalBoundsStep, interval, seriesIndex, bounds, ids);
@@ -251,35 +251,35 @@ class RelativeStratification {
 		int timeCountBefore;
 		int timeCountAfter;
 
-		switch (relativeForm.getTimeUnit()) {
+		switch (relativeForm.timeUnit()) {
 			case QUARTERS -> {
 				if (resolution == FormResolution.YEARS) {
-					timeCountBefore = divideAndRoundUp(relativeForm.getTimeCountBefore(), 4);
-					timeCountAfter = divideAndRoundUp(relativeForm.getTimeCountAfter(), 4);
+					timeCountBefore = divideAndRoundUp(relativeForm.timeCountBefore(), 4);
+					timeCountAfter = divideAndRoundUp(relativeForm.timeCountAfter(), 4);
 				}
 				else {
-					timeCountBefore = relativeForm.getTimeCountBefore();
-					timeCountAfter = relativeForm.getTimeCountAfter();
+					timeCountBefore = relativeForm.timeCountBefore();
+					timeCountAfter = relativeForm.timeCountAfter();
 				}
 			}
 			case DAYS -> {
 				switch (resolution) {
 					case COMPLETE, DAYS -> {
-						timeCountBefore = relativeForm.getTimeCountBefore();
-						timeCountAfter = relativeForm.getTimeCountAfter();
+						timeCountBefore = relativeForm.timeCountBefore();
+						timeCountAfter = relativeForm.timeCountAfter();
 					}
 					case YEARS -> {
-						timeCountBefore = divideAndRoundUp(relativeForm.getTimeCountBefore(), Interval.YEAR_AS_DAYS_INTERVAL.getAmount());
-						timeCountAfter = divideAndRoundUp(relativeForm.getTimeCountAfter(), Interval.YEAR_AS_DAYS_INTERVAL.getAmount());
+						timeCountBefore = divideAndRoundUp(relativeForm.timeCountBefore(), Interval.YEAR_AS_DAYS_INTERVAL.getAmount());
+						timeCountAfter = divideAndRoundUp(relativeForm.timeCountAfter(), Interval.YEAR_AS_DAYS_INTERVAL.getAmount());
 					}
 					case QUARTERS -> {
-						timeCountBefore = divideAndRoundUp(relativeForm.getTimeCountBefore(), Interval.NINETY_DAYS_INTERVAL.getAmount());
-						timeCountAfter = divideAndRoundUp(relativeForm.getTimeCountAfter(), Interval.NINETY_DAYS_INTERVAL.getAmount());
+						timeCountBefore = divideAndRoundUp(relativeForm.timeCountBefore(), Interval.NINETY_DAYS_INTERVAL.getAmount());
+						timeCountAfter = divideAndRoundUp(relativeForm.timeCountAfter(), Interval.NINETY_DAYS_INTERVAL.getAmount());
 					}
-					default -> throw new CombinationNotSupportedException(relativeForm.getTimeUnit(), resolution);
+					default -> throw new CombinationNotSupportedException(relativeForm.timeUnit(), resolution);
 				}
 			}
-			default -> throw new CombinationNotSupportedException(relativeForm.getTimeUnit(), resolution);
+			default -> throw new CombinationNotSupportedException(relativeForm.timeUnit(), resolution);
 		}
 
 		return new IntRange(

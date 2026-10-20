@@ -5,13 +5,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 /** Compiler IR for the columns identifying an entity. */
+@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public class SqlIdColumns implements Qualifiable<SqlIdColumns> {
 
+	@Getter
 	private final Field<String> primaryColumn;
 	private final Field<String> secondaryId;
 	private final SqlIdColumns predecessor;
@@ -22,16 +27,6 @@ public class SqlIdColumns implements Qualifiable<SqlIdColumns> {
 
 	public SqlIdColumns(Field<String> primaryColumn) {
 		this(primaryColumn, null, null);
-	}
-
-	protected SqlIdColumns(Field<String> primaryColumn, Field<String> secondaryId, SqlIdColumns predecessor) {
-		this.primaryColumn = primaryColumn;
-		this.secondaryId = secondaryId;
-		this.predecessor = predecessor;
-	}
-
-	public Field<String> getPrimaryColumn() {
-		return primaryColumn;
 	}
 
 	public SqlIdColumns withAlias() {

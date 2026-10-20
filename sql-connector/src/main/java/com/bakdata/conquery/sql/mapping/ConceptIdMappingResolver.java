@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import lombok.experimental.UtilityClass;
 import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.Name;
@@ -17,10 +18,8 @@ import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 
 /** Resolves concept condition expressions into the contents of a physical concept ID mapping table. */
-public final class ConceptIdMappingResolver {
-
-	private ConceptIdMappingResolver() {
-	}
+@UtilityClass
+public class ConceptIdMappingResolver {
 
 	public static ConceptIdMappingTable resolve(
 			String conceptId,

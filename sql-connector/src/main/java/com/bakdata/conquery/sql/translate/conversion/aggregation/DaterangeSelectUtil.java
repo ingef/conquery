@@ -20,7 +20,9 @@ import com.bakdata.conquery.sql.translate.query.concept.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.translate.query.interval.IntervalPackingSelectTranslator;
 import com.bakdata.conquery.sql.translate.query.interval.IntervalPackingSelectPreparation;
 import com.bakdata.conquery.sql.model.schema.DateColumns;
+import lombok.experimental.UtilityClass;
 
+@UtilityClass
 public class DaterangeSelectUtil {
 	public static ConnectorSqlSelects createForSelect(
 			DateColumns dates,

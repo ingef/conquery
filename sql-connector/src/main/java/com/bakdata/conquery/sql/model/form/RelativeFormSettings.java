@@ -11,10 +11,4 @@ public record RelativeFormSettings(
 		List<ResolutionAndAlignment> resolutions
 ) {
 	public RelativeFormSettings { resolutions = List.copyOf(resolutions); }
-	public FormIndexSelector getIndexSelector() { return indexSelector; }
-	public FormIndexPlacement getIndexPlacement() { return indexPlacement; }
-	public int getTimeCountBefore() { return timeCountBefore; }
-	public int getTimeCountAfter() { return timeCountAfter; }
-	public FormCalendarUnit getTimeUnit() { return timeUnit; }
-	public List<ResolutionAndAlignment> getResolutionsAndAlignmentMap() { return resolutions; }
 }

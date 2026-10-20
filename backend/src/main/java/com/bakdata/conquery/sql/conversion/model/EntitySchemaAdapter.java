@@ -10,16 +10,15 @@ import com.bakdata.conquery.sql.model.schema.DateColumns;
 import com.bakdata.conquery.sql.model.schema.EntitySchema;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.model.schema.SqlTable;
+import lombok.experimental.UtilityClass;
 
 /**
  * Converts legacy backend schema objects into the connector's resolved schema model.
  *
  * <p>TODO Remove this adapter once backend query resolution produces resolved connector schema objects directly.</p>
  */
-public final class EntitySchemaAdapter {
-
-	private EntitySchemaAdapter() {
-	}
+@UtilityClass
+public class EntitySchemaAdapter {
 
 	public static EntitySchema from(IdColumnConfig idColumns) {
 		ColumnConfig primaryId = idColumns.findPrimaryIdColumn();

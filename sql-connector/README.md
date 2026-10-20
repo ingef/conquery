@@ -21,19 +21,19 @@ The module uses top-level packages as architectural boundaries:
 
 - `model` contains only the immutable, fully resolved compiler input;
 - `validation` contains Bean Validation constraints and the explicit validation boundary;
-- `compiler` contains framework-neutral compilation contracts, including the public dialect capabilities;
+- `translate` contains framework-neutral translation contracts, including the public dialect capabilities;
 - SQL conversion and execution implementations belong in sibling packages, not below `model`.
 
-Within `compiler`, the root package contains compiler facades and compiled-result contracts. Its subpackages separate
+Within `translate`, the root package contains translator facades and translated-result contracts. Its subpackages separate
 responsibilities as follows:
 
-- `compiler.conversion` dispatches resolved operations, with dedicated `aggregation`, `condition`, `filter`, and
+- `translate.conversion` dispatches resolved operations, with dedicated `aggregation`, `condition`, `filter`, and
   `select` packages;
-- `compiler.query` plans and composes query-step graphs, with dedicated date-aggregation, concept, and interval-packing
+- `translate.query` plans and composes query-step graphs, with dedicated date-aggregation, concept, and interval-packing
   packages;
-- `compiler.ir` contains the shared query-step, condition, and select representations rather than active compilers;
-- `compiler.form` and `compiler.export` contain use-case-specific compilation helpers;
-- `compiler.dialect`, `compiler.naming`, and `compiler.rendering` provide shared database capabilities, identifier
+- `translate.ir` contains the shared query-step, condition, and select representations rather than active translators;
+- `translate.form` and `translate.export` contain use-case-specific translation helpers;
+- `translate.dialect`, `translate.naming`, and `translate.rendering` provide shared database capabilities, identifier
   generation, and final SQL rendering.
 
 The resolved model is organized by responsibility:
@@ -70,7 +70,7 @@ Quarter counts preserve the legacy behavior: distinct
 year-quarter keys for single dates, and a sum of each event's quarter count for date pairs, including overlaps.
 Duration sums pack overlapping intervals first and exclude unbounded durations. Duration `distinctBy` is ignored,
 as in the existing backend SQL implementation. Physical date-range columns require dialect support for
-extracting half-open bounds through `CompilerDialect.dateRangeColumn`.
+extracting half-open bounds through `TranslatorDialect.dateRangeColumn`.
 
 The backend's sum, count, quarter-count, duration-sum, and flag-output adapters delegate to the shared converters.
 Flag filters compile separately as event predicates.
@@ -84,7 +84,7 @@ optional validity date, resolved concept-column table mapping, and ordered prepa
 
 | Original backend responsibility | Shared implementation | Backend responsibility retained |
 | --- | --- | --- |
-| `ValueSelectUtil` | `compiler.conversion.select.ValueSelectUtil` | First/last select DTO adaptation |
+| `ValueSelectUtil` | `translate.conversion.select.ValueSelectUtil` | First/last select DTO adaptation |
 | `RandomValueSelectConverter` SQL | Shared converter with the same name | Column resolution and alias allocation |
 | `DistinctSelectConverter` SQL | Shared converter with the same name | Select DTO adaptation |
 | `ClickhouseDistinctSelectConverter` SQL | Shared converter with the same name | Dialect selection |

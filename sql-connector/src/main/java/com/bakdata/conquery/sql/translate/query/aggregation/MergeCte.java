@@ -5,15 +5,13 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.sql.translate.ir.QueryStep;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
+@RequiredArgsConstructor
 class MergeCte extends DateAggregationCte {
 
 	private final DateAggregationCteStep cteStep;
-
-	public MergeCte(DateAggregationCteStep cteStep) {
-		this.cteStep = cteStep;
-	}
 
 	@Override
 	protected QueryStep convertStep(DateAggregationContext context, String predecessor, QueryStep previous) {

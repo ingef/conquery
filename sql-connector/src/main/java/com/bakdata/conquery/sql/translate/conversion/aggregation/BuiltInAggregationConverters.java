@@ -7,11 +7,10 @@ import com.bakdata.conquery.sql.translate.conversion.Converter;
 import com.bakdata.conquery.sql.translate.query.concept.CommonAggregationSelect;
 import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
 import com.bakdata.conquery.sql.model.operation.ResolvedAggregation;
+import lombok.experimental.UtilityClass;
 
-final class BuiltInAggregationConverters {
-
-	private BuiltInAggregationConverters() {
-	}
+@UtilityClass
+class BuiltInAggregationConverters {
 
 	static List<Converter<? extends ResolvedAggregation, CommonAggregationSelect<?>, AggregationConversionContext>> create() {
 		return List.of(

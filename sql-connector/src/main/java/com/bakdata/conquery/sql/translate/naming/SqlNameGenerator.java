@@ -10,6 +10,7 @@ import com.bakdata.conquery.sql.model.node.ConceptNode;
 import com.bakdata.conquery.sql.model.operation.ResolvedFilter;
 import com.bakdata.conquery.sql.model.operation.ResolvedSelect;
 import com.bakdata.conquery.sql.model.schema.ResolvedConnector;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Stateful generator for unique, length-constrained SQL aliases and CTE names.
@@ -18,6 +19,7 @@ import com.bakdata.conquery.sql.model.schema.ResolvedConnector;
  * model types so their stable technical identifiers remain part of the translate contract. Instances are not
  * thread-safe.</p>
  */
+@RequiredArgsConstructor
 public class SqlNameGenerator {
 
 	private static final Pattern WHITESPACE = Pattern.compile("\\s+");
@@ -28,10 +30,6 @@ public class SqlNameGenerator {
 	private int conceptCount;
 	private int andCount;
 	private int orCount;
-
-	public SqlNameGenerator(int nameMaxLength) {
-		this.nameMaxLength = nameMaxLength;
-	}
 
 	public String cteStepName(CteStep cteStep, String nodeLabel) {
 		return ensureValidLength(cteStep.cteName(nodeLabel));

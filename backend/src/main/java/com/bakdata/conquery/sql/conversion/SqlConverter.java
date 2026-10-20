@@ -9,25 +9,15 @@ import com.bakdata.conquery.models.forms.managed.EntityDateQuery;
 import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public class SqlConverter {
 
 	private final ResolvedQueryAdapter resolvedQueryAdapter;
 	private final ResolvedTableExportAdapter tableExportAdapter;
 	private final ResolvedFormAdapter formAdapter;
 	private final TranslatorDialect dialect;
-
-	public SqlConverter(
-			ResolvedQueryAdapter resolvedQueryAdapter,
-			ResolvedTableExportAdapter tableExportAdapter,
-			ResolvedFormAdapter formAdapter,
-			TranslatorDialect dialect
-	) {
-		this.resolvedQueryAdapter = resolvedQueryAdapter;
-		this.tableExportAdapter = tableExportAdapter;
-		this.formAdapter = formAdapter;
-		this.dialect = dialect;
-	}
 
 	public SqlQuery convert(QueryDescription queryDescription) {
 		if (queryDescription instanceof ConceptQuery conceptQuery) {

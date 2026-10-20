@@ -4,11 +4,16 @@ import java.sql.Date;
 import java.util.List;
 
 import com.bakdata.conquery.sql.translate.ir.QualifyingUtil;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 /** A two-column date-range representation used by translate transformations. */
+@Getter
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ColumnDateRange implements SqlSelect {
 
 	private static final String VALIDITY_DATE_COLUMN_NAME_SUFFIX = "_validity_date";
@@ -19,30 +24,12 @@ public final class ColumnDateRange implements SqlSelect {
 	private final Field<Date> end;
 	private final String alias;
 
-	private ColumnDateRange(Field<Date> start, Field<Date> end, String alias) {
-		this.start = start;
-		this.end = end;
-		this.alias = alias;
-	}
-
 	public static ColumnDateRange of(Field<Date> start, Field<Date> end) {
 		return new ColumnDateRange(start, end, "");
 	}
 
 	public static ColumnDateRange of(Field<Date> start, Field<Date> end, String alias) {
 		return new ColumnDateRange(start, end, alias);
-	}
-
-	public Field<Date> getStart() {
-		return start;
-	}
-
-	public Field<Date> getEnd() {
-		return end;
-	}
-
-	public String getAlias() {
-		return alias;
 	}
 
 	public ColumnDateRange asValidityDateRange(String alias) {

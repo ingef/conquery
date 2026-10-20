@@ -59,26 +59,16 @@ import com.bakdata.conquery.sql.model.schema.ResolvedConnector;
 import com.bakdata.conquery.sql.model.schema.ResolvedValidityDate;
 import com.bakdata.conquery.sql.model.schema.SqlTable;
 import com.bakdata.conquery.util.TablePrimaryColumnUtil;
+import lombok.RequiredArgsConstructor;
 
 /** Resolves the initialized backend concept-query tree into the SQL connector API. */
+@RequiredArgsConstructor
 public final class ResolvedQueryMapper {
 
 	private final IdColumnConfig idColumns;
 	private final SqlFunctionProvider functionProvider;
 	private final Clock clock;
 	private final String defaultPrimaryColumn;
-
-	public ResolvedQueryMapper(
-			IdColumnConfig idColumns,
-			SqlFunctionProvider functionProvider,
-			Clock clock,
-			String defaultPrimaryColumn
-	) {
-		this.idColumns = idColumns;
-		this.functionProvider = functionProvider;
-		this.clock = clock;
-		this.defaultPrimaryColumn = defaultPrimaryColumn;
-	}
 
 	ResolvedQuery map(
 			ConceptQuery query,

@@ -18,14 +18,13 @@ import com.bakdata.conquery.sql.translate.query.concept.SqlFilters;
 import com.bakdata.conquery.sql.model.operation.BuiltInFilters;
 import com.bakdata.conquery.sql.model.operation.ResolvedFilter;
 import com.bakdata.conquery.sql.model.range.SubstringRange;
+import lombok.experimental.UtilityClass;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 /** Built-in resolved filters that operate directly on connector columns. */
-final class BuiltInColumnFilterConverters {
-
-	private BuiltInColumnFilterConverters() {
-	}
+@UtilityClass
+class BuiltInColumnFilterConverters {
 
 	static List<Converter<? extends ResolvedFilter, SqlFilters, FilterConversionContext>> create() {
 		return List.of(

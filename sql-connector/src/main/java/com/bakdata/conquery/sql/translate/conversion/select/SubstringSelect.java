@@ -8,12 +8,12 @@ import com.bakdata.conquery.sql.translate.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.translate.ir.select.SingleColumnSqlSelect;
 import com.bakdata.conquery.sql.model.range.SubstringRange;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
+import lombok.experimental.UtilityClass;
 import org.jooq.Field;
 
 /** SQL portion of the backend's mappable single-column select. */
-public final class SubstringSelect {
-	private SubstringSelect() {
-	}
+@UtilityClass
+public class SubstringSelect {
 
 	public static SingleColumnSqlSelect getSubstringSelect(ResolvedColumn column, Optional<SubstringRange> substringRange, String rootTable, String alias) {
 		Field<String> field = field(name(rootTable, column.physicalName()), String.class);

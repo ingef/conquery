@@ -22,19 +22,15 @@ import com.bakdata.conquery.sql.model.range.DateRange;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.model.schema.SqlTable;
 import com.bakdata.conquery.util.TablePrimaryColumnUtil;
+import lombok.RequiredArgsConstructor;
 
 /** Resolves backend table-export DTOs into the connector-owned export model. */
+@RequiredArgsConstructor
 public final class ResolvedTableExportMapper {
 
 	private final ResolvedQueryMapper queryMapper;
 	private final Clock clock;
 	private final String defaultPrimaryColumn;
-
-	public ResolvedTableExportMapper(ResolvedQueryMapper queryMapper, Clock clock, String defaultPrimaryColumn) {
-		this.queryMapper = queryMapper;
-		this.clock = clock;
-		this.defaultPrimaryColumn = defaultPrimaryColumn;
-	}
 
 	public ResolvedTableExportQuery map(TableExportQuery query, TranslatorDialect dialect) {
 		if (!(query.getQuery() instanceof ConceptQuery prerequisite)) {

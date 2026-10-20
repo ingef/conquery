@@ -7,17 +7,14 @@ import com.bakdata.conquery.sql.translate.TranslatedQuery;
 import com.bakdata.conquery.sql.translate.FormSqlTranslator;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
+import lombok.RequiredArgsConstructor;
 
 /** Backend boundary for resolved form compilation. */
+@RequiredArgsConstructor
 public final class ResolvedFormAdapter {
 
 	private final ResolvedFormMapper mapper;
 	private final FormSqlTranslator translator;
-
-	public ResolvedFormAdapter(ResolvedFormMapper mapper, FormSqlTranslator translator) {
-		this.mapper = mapper;
-		this.translator = translator;
-	}
 
 	public SqlQuery translate(AbsoluteFormQuery query, TranslatorDialect dialect) {
 		return adapt(translator.translate(mapper.map(query), dialect), query);

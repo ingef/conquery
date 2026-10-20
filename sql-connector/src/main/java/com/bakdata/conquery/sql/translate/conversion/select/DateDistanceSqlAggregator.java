@@ -12,12 +12,12 @@ import com.bakdata.conquery.sql.translate.query.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.translate.query.concept.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
+import lombok.experimental.UtilityClass;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
-public final class DateDistanceSqlAggregator {
-	private DateDistanceSqlAggregator() {
-	}
+@UtilityClass
+public class DateDistanceSqlAggregator {
 
 	static ConnectorSqlSelects connectorSelect(BuiltInSelects.DateDistance select, SelectConversionContext context) {
 		Field<Date> startDate = DSL.field(DSL.name(context.tables().getRootTable(), select.column().physicalName()), Date.class);
