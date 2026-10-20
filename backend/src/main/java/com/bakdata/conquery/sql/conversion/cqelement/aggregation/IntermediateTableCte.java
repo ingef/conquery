@@ -2,33 +2,29 @@
 package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
 
 import java.sql.Date;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
-import lombok.Getter;
 import org.jooq.Condition;
 import org.jooq.Field;
 
-@Getter
 class IntermediateTableCte extends DateAggregationCte {
-
-	private final DateAggregationCteStep cteStep;
-
-	public IntermediateTableCte(DateAggregationCteStep cteStep) {
-		this.cteStep = cteStep;
-	}
 
 	@Override
 	protected QueryStep.QueryStepBuilder convertStep(DateAggregationContext context, String predecessor) {
 
-
-		List<SqlSelect> intermediateTableSelects = context.getSqlAggregationAction().getIntermediateTableSelects(
-				context.getDateAggregationDates(),
-				context.getCarryThroughSelects()
-		);
+		List<SqlSelect> intermediateTableSelects = Stream.of(
+													  context.getDateAggregationDates().allStartsAndEnds(),
+													  context.getCarryThroughSelects()
+											  )
+											  .flatMap(Collection::stream)
+											  .collect(Collectors.toList());
 		Selects selects = Selects.builder()
 								 .ids(context.getIds())
 								 .sqlSelects(intermediateTableSelects)
@@ -50,7 +46,13 @@ class IntermediateTableCte extends DateAggregationCte {
 
 		return QueryStep.builder()
 						.selects(selects)
+						.fromTable(QueryStep.toTableLike(predecessor))
 						.conditions(List.of(intermediateTableCondition));
+	}
+
+	@Override
+	public DateAggregationCteStep getCteStep() {
+		return DateAggregationCteStep.INTERMEDIATE_TABLE;
 	}
 
 }
