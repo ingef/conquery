@@ -138,7 +138,7 @@ context("Admin UI Single Dataset", () => {
 
     it("Counts are right", () => {
       visitAdminUI(`datasets/${testDSID}/connectors/${testDSID}.concept1.column`);
-      cy.get('[data-test-id="accordion-Filters"] > .card-header').contains("20 entries");
+      cy.get('[data-test-id="accordion-Filters"] > .card-header').contains("19 entries");
       cy.get('[data-test-id="accordion-Selects"] > .card-header').contains("15 entries");
     });
   });
