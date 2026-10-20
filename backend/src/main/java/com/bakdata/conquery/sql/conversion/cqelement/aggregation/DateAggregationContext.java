@@ -1,6 +1,5 @@
 package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,31 +25,16 @@ class DateAggregationContext implements Context, Qualifiable<DateAggregationCont
 	SqlTables dateAggregationTables;
 	DateAggregationDates dateAggregationDates;
 	@Builder.Default
-	Map<DateAggregationCteStep, List<QueryStep>> intervalMergeSteps = new HashMap<>();
-	SqlAggregationAction sqlAggregationAction;
+	Map<DateAggregationCteStep, QueryStep> dateAggregationSteps = new HashMap<>();
 	ConversionContext conversionContext;
 
 	public DateAggregationContext withStep(DateAggregationCteStep dateAggregationCteStep, QueryStep queryStep) {
-		this.intervalMergeSteps.computeIfAbsent(dateAggregationCteStep, k -> new ArrayList<>())
-							   .add(queryStep);
+		this.dateAggregationSteps.put(dateAggregationCteStep, queryStep);
 		return this;
 	}
 
 	public QueryStep getStep(DateAggregationCteStep dateAggregationCteStep) {
-		List<QueryStep> querySteps = intervalMergeSteps.get(dateAggregationCteStep);
-		if (querySteps != null && !querySteps.isEmpty()) {
-			return querySteps.getFirst();
-		}
-		return null;
-	}
-
-	public List<QueryStep> getSteps(DateAggregationCteStep dateAggregationCteStep) {
-		if (dateAggregationCteStep != DateAggregationCteStep.NODE_NO_OVERLAP) {
-			throw new UnsupportedOperationException(
-					"Only MergeCteStep.NODE_NO_OVERLAP has multiple steps. Use getStep() for all other DateAggregationSteps."
-			);
-		}
-		return this.intervalMergeSteps.get(dateAggregationCteStep);
+		return this.dateAggregationSteps.get(dateAggregationCteStep);
 	}
 
 	@Override

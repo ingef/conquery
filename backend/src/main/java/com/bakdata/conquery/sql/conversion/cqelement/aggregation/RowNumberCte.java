@@ -9,22 +9,15 @@ import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
-import lombok.Getter;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 /**
  * Concept for date range inversion taken from <a href="https://explainextended.com/2009/11/09/inverting-date-ranges/">Inverting date ranges</a>.
  */
-@Getter
 class RowNumberCte extends DateAggregationCte {
 
 	public static final String ROW_NUMBER_FIELD_NAME = "row_number";
-	private final DateAggregationCteStep cteStep;
-
-	public RowNumberCte(DateAggregationCteStep cteStep) {
-		this.cteStep = cteStep;
-	}
 
 	@Override
 	protected QueryStep.QueryStepBuilder convertStep(DateAggregationContext context, String predecessor) {
@@ -45,7 +38,13 @@ class RowNumberCte extends DateAggregationCte {
 										  .build();
 
 		return QueryStep.builder()
-						.selects(rowNumberSelects);
+						.selects(rowNumberSelects)
+						.fromTable(QueryStep.toTableLike(predecessor));
+	}
+
+	@Override
+	public DateAggregationCteStep getCteStep() {
+		return DateAggregationCteStep.ROW_NUMBER;
 	}
 
 }
