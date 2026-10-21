@@ -152,7 +152,7 @@ components:
         - properties:
             operation:
               type: string
-              enum: [ NULL ]
+              enum: [ "NULL" ]
 
     CopyOutput:
       description: "Parses and emits the values in inputColumn as the provided type."
@@ -581,9 +581,9 @@ components:
           $ref: "#/components/schemas/ColumnId"
         values:
           type: array
+          uniqueItems: true
           items:
             type: string
-            uniqueItems: true
         type:
           type: string
           enum: [ COLUMN_EQUAL ]
@@ -591,9 +591,9 @@ components:
       properties:
         values:
           type: array
+          uniqueItems: true
           items:
             type: string
-            uniqueItems: true
         type:
           type: string
           enum: [ EQUAL ]
