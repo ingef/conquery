@@ -42,15 +42,15 @@ export const useAbout = () => {
   return useContext(Context);
 };
 
+// build-time constants, see `define` in vite.config.ts
+const frontendTimestamp = __BUILD_TIMESTAMP__;
+const frontendGitDescribe = __BUILD_GIT_DESCRIBE__;
+
 const useVersion = () => {
   const backendVersions = useSelector<
     StateT,
     GetFrontendConfigResponseT["versions"]
   >((state) => state.startup.config.versions);
-
-  // THIS IS GETTING STATICALLY REPLACED USING "VITE DEFINE"
-  const frontendTimestamp = `__BUILD_TIMESTAMP__`.replace(/"/g, "");
-  const frontendGitDescribe = `__BUILD_GIT_DESCRIBE__`.replace(/"/g, "");
 
   return {
     backendVersions,
