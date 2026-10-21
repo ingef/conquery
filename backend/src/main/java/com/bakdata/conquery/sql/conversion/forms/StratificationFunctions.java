@@ -112,9 +112,9 @@ public abstract class StratificationFunctions {
 	public abstract Field<Integer> intSeriesField();
 
 	/**
-	 * Generates a series of integers from the start value to the exclusive end value.
+	 * Generates a series of integers from the start value to the inclusive end value.
 	 */
-	public abstract Table<Record> generateIntSeries(int start, int end);
+	public abstract Table<? extends Record> generateIntSeries(int start, int end);
 
 	/**
 	 * Generates a date field representing the {@link TemporalSamplerFactory} using the given validity date range.
