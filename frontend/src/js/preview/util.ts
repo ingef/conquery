@@ -6,13 +6,6 @@ import type {
 
 export const NUMBER_TYPES = ["NUMERIC", "INTEGER"];
 
-export function currencyFromSymbol(symbol: string): string {
-  // TODO: this is a workaround until the backend sends currency-codes
-  if (symbol === "€") return "EUR";
-
-  return "USD";
-}
-
 export function formatNumber(
   num: number,
   {

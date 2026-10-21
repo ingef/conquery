@@ -1,12 +1,9 @@
 import { EuroIcon, FingerprintPatternIcon, InfoIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-import type {
-  ColumnDescription,
-  ConceptIdT,
-  CurrencyConfigT,
-} from "../../api/types";
+import type { ColumnDescription, ConceptIdT } from "../../api/types";
 import { exists } from "../../common/helpers/exists";
+import { useMoneyFormatter } from "../../common/useMoneyFormatter";
 import { Card } from "../../ui-components/Card";
 import { Highlighter } from "../../ui-components/Highlighter";
 import {
@@ -22,7 +19,6 @@ import { useTimelineSearch } from "../timeline-search/timelineSearchState";
 import GroupedContent from "./GroupedContent";
 import { RawDataBadge } from "./RawDataBadge";
 import { TinyLabel } from "./TinyLabel";
-import { useMoneyFormatter } from "./useMoneyFormatter";
 import type { ColumnBuckets } from "./util/useColumnInformation";
 import { isDateColumn, isSourceColumn } from "./util/util";
 
@@ -67,7 +63,6 @@ const EventCard = ({
   dateColumn,
   sourceColumn,
   columnBuckets,
-  currencyConfig,
   contentFilter,
   rootConceptIdsByColumn,
   groupedRows,
@@ -79,14 +74,13 @@ const EventCard = ({
   sourceColumn: ColumnDescription;
   columnBuckets: ColumnBuckets;
   contentFilter: ContentFilterValue;
-  currencyConfig: CurrencyConfigT;
   rootConceptIdsByColumn: Record<string, ConceptIdT>;
   groupedRows?: EntityEvent[];
   groupedRowsKeysWithDifferentValues?: string[];
 }) => {
   const { searchTerm } = useTimelineSearch();
   const { t } = useTranslation();
-  const moneyFormatter = useMoneyFormatter(currencyConfig);
+  const moneyFormatter = useMoneyFormatter();
 
   const applicableGroupableIds = columnBuckets.groupableIds.filter(
     (column) =>
@@ -137,8 +131,7 @@ const EventCard = ({
                       <C3 as="code">
                         {moneyFormatter.format(
                           parseFloat(row[column.label] as string),
-                        )}{" "}
-                        {currencyConfig.unit}
+                        )}
                       </C3>
                     </div>
                   ))}
@@ -153,7 +146,6 @@ const EventCard = ({
                 groupedRowsKeysWithDifferentValues={
                   groupedRowsKeysWithDifferentValues
                 }
-                currencyConfig={currencyConfig}
                 rootConceptIdsByColumn={rootConceptIdsByColumn}
               />
             )}
