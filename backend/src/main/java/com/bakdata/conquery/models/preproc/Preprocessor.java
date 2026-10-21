@@ -28,7 +28,7 @@ import com.google.common.base.Strings;
 import com.google.common.io.CountingInputStream;
 import com.univocity.parsers.csv.CsvParser;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -36,255 +36,242 @@ import org.apache.commons.io.FileUtils;
 @Slf4j
 @UtilityClass
 public class Preprocessor {
-	private static final int PROGRESS_UPDATE_INTERVAL = 4096;
+    private static final int PROGRESS_UPDATE_INTERVAL = 4096;
 
-	/**
-	 * Create version of file-name with tag.
-	 */
-	public static File getTaggedVersion(File file, String tag, String extension) {
-		if (Strings.isNullOrEmpty(tag)) {
-			return file;
-		}
+    /**
+     * Create version of file-name with tag.
+     */
+    public static File getTaggedVersion(File file, String tag, String extension) {
+        if (Strings.isNullOrEmpty(tag)) {
+            return file;
+        }
 
-		return new File(file.getParentFile(), file.getName().replaceAll(Pattern.quote(extension) + "$", String.format(".%s%s", tag, extension)));
-	}
-
-
-	/**
-	 * Apply transformations in descriptor, then write them out to CQPP file for imports.
-	 * <p>
-	 * Reads CSV file, per row extracts the primary key, then applies other transformations on each row, then compresses the data with {@link ColumnStore}.
-	 */
-	public static void preprocess(PreprocessingJob preprocessingJob, ProgressBar totalProgress, ConqueryConfig config, int buckets) throws IOException {
-
-		final File preprocessedFile = preprocessingJob.getPreprocessedFile();
-		TableImportDescriptor descriptor = preprocessingJob.getDescriptor();
-
-		// Create temp file that will be moved when finished (we ensure the same file system, to avoid unnecessary copying)
-		File tmp = new File(preprocessedFile.getParentFile(), preprocessedFile.getName() + ".tmp");
-
-		// Ensures deletion on failure
-		tmp.deleteOnExit();
-
-		if (!Files.isWritable(tmp.getParentFile().toPath())) {
-			throw new IllegalArgumentException("No write permission in " + LogUtil.printPath(tmp.getParentFile()));
-		}
-
-		if (!Files.isWritable(preprocessedFile.toPath().getParent())) {
-			throw new IllegalArgumentException("No write permission in " + LogUtil.printPath(preprocessedFile
-																									 .toPath()
-																									 .getParent()));
-		}
-
-		//delete target file if it exists
-		if (preprocessedFile.exists()) {
-			FileUtils.forceDelete(preprocessedFile);
-		}
-
-		log.info("PREPROCESSING START in {}", preprocessingJob);
-
-		int errors = 0;
-
-		final Preprocessed result = new Preprocessed(config, preprocessingJob);
-
-		long lineId = 0;
-
-		// Gather exception classes to get better overview of what kind of errors are happening.
-		Object2IntMap<Class<? extends Throwable>> exceptions = new Object2IntArrayMap<>();
-		exceptions.defaultReturnValue(0);
+        return new File(file.getParentFile(), file.getName().replaceAll(Pattern.quote(extension) + "$", String.format(".%s%s", tag, extension)));
+    }
 
 
-		for (int inputSource = 0; inputSource < descriptor.getInputs().length; inputSource++) {
-			final TableInputDescriptor input = descriptor.getInputs()[inputSource];
-			final File sourceFile = resolveSourceFile(input.getSourceFile(), preprocessingJob.getCsvDirectory(), preprocessingJob.getTag());
+    /**
+     * Apply transformations in descriptor, then write them out to CQPP file for imports.
+     * <p>
+     * Reads CSV file, per row extracts the primary key, then applies other transformations on each row, then compresses the data with {@link ColumnStore}.
+     */
+    public static void preprocess(PreprocessingJob preprocessingJob, ProgressBar totalProgress, ConqueryConfig config, int buckets) throws IOException {
 
-			final String name = String.format("%s:%s[%d/%s]", descriptor.toString(), descriptor.getTable(), inputSource, sourceFile.getName());
-			ConqueryMDC.setLocation(name);
+        final File preprocessedFile = preprocessingJob.getPreprocessedFile();
+        TableImportDescriptor descriptor = preprocessingJob.getDescriptor();
 
-			if (!(sourceFile.exists() && sourceFile.canRead())) {
-				throw new FileNotFoundException(sourceFile.getAbsolutePath());
-			}
+        // Create temp file that will be moved when finished (we ensure the same file system, to avoid unnecessary copying)
+        File tmp = new File(preprocessedFile.getParentFile(), preprocessedFile.getName() + ".tmp");
 
-			CsvParser parser = null;
+        // Ensures deletion on failure
+        tmp.deleteOnExit();
 
+        if (!Files.isWritable(tmp.getParentFile().toPath())) {
+            throw new IllegalArgumentException("No write permission in " + LogUtil.printPath(tmp.getParentFile()));
+        }
 
-			try (CountingInputStream countingIn = new CountingInputStream(new FileInputStream(sourceFile))) {
-				long progress = 0;
-				int rowsSinceProgressUpdate = 0;
+        if (!Files.isWritable(preprocessedFile.toPath().getParent())) {
+            throw new IllegalArgumentException("No write permission in " + LogUtil.printPath(preprocessedFile
+                    .toPath()
+                    .getParent()));
+        }
 
-				CSVConfig csvSettings = config.getCsv();
-				// Create CSV parser according to config, but overriding some behaviour.
-				parser = csvSettings.withParseHeaders(true).withSkipHeader(false).createParser();
+        //delete target file if it exists
+        if (preprocessedFile.exists()) {
+            FileUtils.forceDelete(preprocessedFile);
+        }
 
-				parser.beginParsing(FileUtil.isGZipped(sourceFile) ? new GZIPInputStream(countingIn) : countingIn, csvSettings.getEncoding());
+        log.info("PREPROCESSING START in {}", preprocessingJob);
 
-				final String[] headers = parser.getContext().parsedHeaders();
+        int errors = 0;
 
-				final Object2IntArrayMap<String> headerMap = TableInputDescriptor.buildHeaderMap(headers);
+        final Preprocessed result = new Preprocessed(config, preprocessingJob);
 
-				// Compile filter.
-				final GroovyPredicate filter = input.createFilter(headers);
+        long lineId = 0;
 
-
-				DateReader dateReader = config.getLocale().getDateReader();
-				final OutputDescription.Output primaryOut = input.getPrimary().createForHeaders(headerMap, dateReader, config);
-				final List<OutputDescription.Output> outputs = new ArrayList<>();
-				final PPColumn[] columns = result.getColumns();
-
-				// Instantiate Outputs based on descriptors (apply header positions)
-				for (OutputDescription op : input.getOutput()) {
-					outputs.add(op.createForHeaders(headerMap, dateReader, config));
-				}
-
-				final OutputRow outRow = new OutputRow(outputs.size());
-				String[] row;
-
-				// Read all CSV lines, apply Output transformations and add the to preprocessed.
-				while ((row = parser.parseNext()) != null) {
-					rowsSinceProgressUpdate++;
-					if (rowsSinceProgressUpdate == PROGRESS_UPDATE_INTERVAL) {
-						progress = reportProgress(totalProgress, countingIn, progress);
-						rowsSinceProgressUpdate = 0;
-					}
-
-					// Check if row shall be evaluated
-					// This is explicitly NOT in a try-catch block as scripts may not fail and we should not recover from faulty scripts.
-					if (filter != null && !filter.filterRow(row)) {
-						continue;
-					}
-
-					try {
-						String primaryId =
-								(String) Objects.requireNonNull(primaryOut.createOutput(row, result.getPrimaryColumn(), lineId), "primaryId may not be null");
+        // Gather exception classes to get better overview of what kind of errors are happening.
+        Object2IntOpenHashMap<Class<? extends Throwable>> exceptions = new Object2IntOpenHashMap<>();
+        exceptions.defaultReturnValue(0);
 
 
-						final String primary = result.addPrimary(primaryId);
-						applyOutputs(outputs, columns, row, lineId, outRow);
+        for (int inputSource = 0; inputSource < descriptor.getInputs().length; inputSource++) {
+            final TableInputDescriptor input = descriptor.getInputs()[inputSource];
+            final File sourceFile = resolveSourceFile(input.getSourceFile(), preprocessingJob.getCsvDirectory(), preprocessingJob.getTag());
 
-						result.addRow(primary, outRow);
+            final String name = String.format("%s:%s[%d/%s]", descriptor.toString(), descriptor.getTable(), inputSource, sourceFile.getName());
+            ConqueryMDC.setLocation(name);
 
-					}
-					catch (OutputDescription.OutputException e) {
-						exceptions.put(e.getCause().getClass(), exceptions.getInt(e.getCause().getClass()) + 1);
+            if (!(sourceFile.exists() && sourceFile.canRead())) {
+                throw new FileNotFoundException(sourceFile.getAbsolutePath());
+            }
 
-						errors++;
-
-						if (log.isTraceEnabled() || errors < config.getPreprocessor().getMaximumPrintedErrors()) {
-							log.warn("Failed to parse `{}` from line: {} content: {}", e.getSource(), lineId, row, e.getCause());
-						}
-						else if (errors == config.getPreprocessor().getMaximumPrintedErrors()) {
-							log.warn("More erroneous lines occurred. Only the first "
-									 + config.getPreprocessor().getMaximumPrintedErrors()
-									 + " were printed.");
-						}
-
-					}
-					catch (Exception e) {
-						exceptions.put(e.getClass(), exceptions.getInt(e.getClass()) + 1);
-
-						errors++;
-
-						if (log.isTraceEnabled() || errors < config.getPreprocessor().getMaximumPrintedErrors()) {
-							log.warn("Failed to parse line: {} content: {}", lineId, row, e);
-						}
-						else if (errors == config.getPreprocessor().getMaximumPrintedErrors()) {
-							log.warn("More erroneous lines occurred. Only the first "
-									 + config.getPreprocessor().getMaximumPrintedErrors()
-									 + " were printed.");
-						}
-					}
-					finally {
-						lineId++;
-					}
-				}
-
-				reportProgress(totalProgress, countingIn, progress);
-
-			}
-			finally {
-				if (parser != null) {
-					parser.stopParsing();
-				}
-			}
-		}
-
-		if (errors > 0) {
-			log.warn("File `{}` contained {} faulty lines of ~{} total.", preprocessingJob, errors, lineId);
-		}
-
-		if (log.isWarnEnabled()) {
-			exceptions.forEach((clazz, count) -> log.warn("Got {} `{}`", count, clazz.getSimpleName()));
-		}
-
-		result.write(tmp, buckets);
-
-		if (errors > 0) {
-			log.warn("Had {}% faulty lines ({} of ~{} lines)", String.format("%.2f", 100d * (double) errors / (double) lineId), errors, lineId);
-		}
-
-		if ((double) errors / (double) lineId > config.getPreprocessor().getFaultyLineThreshold()) {
-			throw new RuntimeException("Too many faulty lines.");
-		}
+            CsvParser parser = null;
 
 
-		//if successful move the tmp file to the target location
-		FileUtils.moveFile(tmp, preprocessedFile);
-		log.info("PREPROCESSING DONE in {}", preprocessingJob);
-	}
+            try (CountingInputStream countingIn = new CountingInputStream(new FileInputStream(sourceFile))) {
+                long progress = 0;
+                int rowsSinceProgressUpdate = 0;
 
-	/**
-	 * Apply each output for a single row into the reusable output buffer.
-	 */
-	private static void applyOutputs(List<OutputDescription.Output> outputs, PPColumn[] columns, String[] row, long lineId, OutputRow outRow)
-			throws ParsingException, OutputDescription.OutputException {
-		for (int index = 0; index < outputs.size(); index++) {
-			final OutputDescription.Output out = outputs.get(index);
+                CSVConfig csvSettings = config.getCsv();
+                // Create CSV parser according to config, but overriding some behaviour.
+                parser = csvSettings.withParseHeaders(true).withSkipHeader(false).createParser();
 
-			try {
-				final Parser parser = columns[index].getParser();
+                parser.beginParsing(FileUtil.isGZipped(sourceFile) ? new GZIPInputStream(countingIn) : countingIn, csvSettings.getEncoding());
 
-				out.createOutput(row, parser, lineId, outRow, index);
-			}
-			catch (Exception e) {
-				outRow.clear();
-				throw new OutputDescription.OutputException(out.getDescription(), e);
-			}
-		}
-	}
+                final String[] headers = parser.getContext().parsedHeaders();
 
-	private static long reportProgress(ProgressBar totalProgress, CountingInputStream countingIn, long previousProgress) {
-		final long currentProgress = countingIn.getCount();
-		final long progress = currentProgress - previousProgress;
-		if (progress > 0) {
-			totalProgress.addCurrentValue(progress);
-		}
+                final Object2IntArrayMap<String> headerMap = TableInputDescriptor.buildHeaderMap(headers);
 
-		return currentProgress;
-	}
+                // Compile filter.
+                final GroovyPredicate filter = input.createFilter(headers);
 
-	/**
-	 * Resolve a source file with tag appended if present, in csvDirectory.
-	 */
-	public static File resolveSourceFile(String fileName, Path csvDirectory, Optional<String> tag) {
-		if (tag.isEmpty()) {
-			return csvDirectory.resolve(fileName).toFile();
-		}
 
-		String name = fileName;
-		final String suffix;
+                DateReader dateReader = config.getLocale().getDateReader();
+                final OutputDescription.Output primaryOut = input.getPrimary().createForHeaders(headerMap, dateReader, config);
+                final List<OutputDescription.Output> outputs = new ArrayList<>();
+                final PPColumn[] columns = result.getColumns();
 
-		if (name.endsWith(".csv.gz")) {
-			name = name.substring(0, name.length() - ".csv.gz".length());
-			suffix = ".csv.gz";
-		}
-		else if (name.endsWith(".csv")) {
-			name = name.substring(0, name.length() - ".csv".length());
-			suffix = ".csv";
-		}
-		else {
-			throw new IllegalArgumentException("Unknown suffix for file " + name);
-		}
+                // Instantiate Outputs based on descriptors (apply header positions)
+                for (OutputDescription op : input.getOutput()) {
+                    outputs.add(op.createForHeaders(headerMap, dateReader, config));
+                }
 
-		return csvDirectory.resolve(name + "." + tag.get() + suffix).toFile();
-	}
+                final OutputRow outRow = new OutputRow(outputs.size());
+                String[] row;
+
+                // Read all CSV lines, apply Output transformations and add the to preprocessed.
+                while ((row = parser.parseNext()) != null) {
+                    rowsSinceProgressUpdate++;
+                    if (rowsSinceProgressUpdate == PROGRESS_UPDATE_INTERVAL) {
+                        progress = reportProgress(totalProgress, countingIn, progress);
+                        rowsSinceProgressUpdate = 0;
+                    }
+
+                    // Check if row shall be evaluated
+                    // This is explicitly NOT in a try-catch block as scripts may not fail and we should not recover from faulty scripts.
+                    if (filter != null && !filter.filterRow(row)) {
+                        continue;
+                    }
+
+                    try {
+                        String primaryId =
+                                (String) Objects.requireNonNull(primaryOut.createOutput(row, result.getPrimaryColumn(), lineId), "primaryId may not be null");
+
+
+                        final String primary = result.addPrimary(primaryId);
+                        applyOutputs(outputs, columns, row, lineId, outRow);
+
+                        result.addRow(primary, outRow);
+
+                    } catch (OutputDescription.OutputException e) {
+                        exceptions.addTo(e.getCause().getClass(), 1);
+
+                        errors++;
+
+                        if (log.isTraceEnabled() || errors < config.getPreprocessor().getMaximumPrintedErrors()) {
+                            log.warn("Failed to parse `{}` from line: {} content: {}", e.getSource(), lineId, row, e.getCause());
+                        } else if (errors == config.getPreprocessor().getMaximumPrintedErrors()) {
+                            log.warn("More erroneous lines occurred. Only the first {} were printed.", config.getPreprocessor().getMaximumPrintedErrors());
+                        }
+
+                    } catch (Exception e) {
+                        exceptions.put(e.getClass(), exceptions.getInt(e.getClass()) + 1);
+
+                        errors++;
+
+                        if (log.isTraceEnabled() || errors < config.getPreprocessor().getMaximumPrintedErrors()) {
+                            log.warn("Failed to parse line: {} content: {}", lineId, row, e);
+                        } else if (errors == config.getPreprocessor().getMaximumPrintedErrors()) {
+                            log.warn("More erroneous lines occurred. Only the first {} were printed.", config.getPreprocessor().getMaximumPrintedErrors());
+                        }
+                    } finally {
+                        lineId++;
+                    }
+                }
+
+                reportProgress(totalProgress, countingIn, progress);
+
+            } finally {
+                if (parser != null) {
+                    parser.stopParsing();
+                }
+            }
+        }
+
+        if (errors > 0) {
+            log.warn("File `{}` contained {} faulty lines of ~{} total.", preprocessingJob, errors, lineId);
+        }
+
+        if (log.isWarnEnabled()) {
+            exceptions.forEach((clazz, count) -> log.warn("Got {} `{}`", count, clazz.getSimpleName()));
+        }
+
+        result.write(tmp, buckets);
+
+        if (errors > 0) {
+            log.warn("Had {}% faulty lines ({} of ~{} lines)", String.format("%.2f", 100d * (double) errors / (double) lineId), errors, lineId);
+        }
+
+        if ((double) errors / (double) lineId > config.getPreprocessor().getFaultyLineThreshold()) {
+            throw new RuntimeException("Too many faulty lines.");
+        }
+
+
+        //if successful move the tmp file to the target location
+        FileUtils.moveFile(tmp, preprocessedFile);
+        log.info("PREPROCESSING DONE in {}", preprocessingJob);
+    }
+
+    /**
+     * Apply each output for a single row into the reusable output buffer.
+     */
+    private static void applyOutputs(List<OutputDescription.Output> outputs, PPColumn[] columns, String[] row, long lineId, OutputRow outRow)
+            throws ParsingException, OutputDescription.OutputException {
+        for (int index = 0; index < outputs.size(); index++) {
+            final OutputDescription.Output out = outputs.get(index);
+
+            try {
+                final Parser parser = columns[index].getParser();
+
+                out.createOutput(row, parser, lineId, outRow, index);
+            } catch (Exception e) {
+                outRow.clear();
+                throw new OutputDescription.OutputException(out.getDescription(), e);
+            }
+        }
+    }
+
+    private static long reportProgress(ProgressBar totalProgress, CountingInputStream countingIn, long previousProgress) {
+        final long currentProgress = countingIn.getCount();
+        final long progress = currentProgress - previousProgress;
+        if (progress > 0) {
+            totalProgress.addCurrentValue(progress);
+        }
+
+        return currentProgress;
+    }
+
+    /**
+     * Resolve a source file with tag appended if present, in csvDirectory.
+     */
+    public static File resolveSourceFile(String fileName, Path csvDirectory, Optional<String> tag) {
+        if (tag.isEmpty()) {
+            return csvDirectory.resolve(fileName).toFile();
+        }
+
+        String name = fileName;
+        final String suffix;
+
+        if (name.endsWith(".csv.gz")) {
+            name = name.substring(0, name.length() - ".csv.gz".length());
+            suffix = ".csv.gz";
+        } else if (name.endsWith(".csv")) {
+            name = name.substring(0, name.length() - ".csv".length());
+            suffix = ".csv";
+        } else {
+            throw new IllegalArgumentException("Unknown suffix for file " + name);
+        }
+
+        return csvDirectory.resolve(name + "." + tag.get() + suffix).toFile();
+    }
 }

@@ -27,7 +27,6 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.google.common.hash.Hashing;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
-import it.unimi.dsi.fastutil.objects.Object2IntAVLTreeMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import lombok.AccessLevel;
@@ -116,7 +115,7 @@ public class Preprocessed {
 		ensureMutable();
 		finalized = true;
 
-		final Object2IntMap<String> entityLength = new Object2IntAVLTreeMap<>();
+		final Object2IntOpenHashMap<String> entityLength = new Object2IntOpenHashMap<>();
 
 		calculateEntityLengths(entityLength);
 
@@ -153,11 +152,10 @@ public class Preprocessed {
 	/**
 	 * Calculate the number of events per entity.
 	 */
-	private void calculateEntityLengths(Object2IntMap<String> entityLength) {
+	private void calculateEntityLengths(Object2IntOpenHashMap<String> entityLength) {
 
 		for (String entity : rowEntities) {
-			final int curr = entityLength.getOrDefault(entity, 0);
-			entityLength.put(entity, curr + 1);
+			entityLength.addTo(entity, 1);
 		}
 	}
 
