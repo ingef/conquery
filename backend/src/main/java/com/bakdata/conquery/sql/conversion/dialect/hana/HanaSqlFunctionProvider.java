@@ -301,8 +301,9 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
         return function(unquotedName("TO_VARCHAR"), String.class, field);
     }
 
+    @Override
     public Field<Integer> dateToInteger(Field<Date> field) {
-        return function("DAYS_BETWEEN", Integer.class, field("to_date('19700101','YYYYMMDD')"), field);
+        return function("DAYS_BETWEEN", Integer.class, toDateField("1970-01-01"), field);
     }
 
     @Override
