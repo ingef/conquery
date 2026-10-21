@@ -1,0 +1,84 @@
+{
+  "type": "QUERY_TEST",
+  "label": "Negation preserves selects",
+  "expectedCsv": "tests/query/NEGATION_WITH_SELECT/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "NEGATION",
+      "child": {
+        "type": "CONCEPT",
+        "ids": [
+          "concept"
+        ],
+        "tables": [
+          {
+            "id": "concept.connector",
+            "filters": [
+              {
+                "filter": "concept.connector.gender",
+                "type": "SELECT",
+                "value": "f"
+              }
+            ],
+            "selects": [
+              "concept.connector.value"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "concepts": [
+    {
+      "label": "concept",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "connector",
+          "table": "table",
+          "validityDates": {
+            "label": "datum",
+            "column": "table.datum"
+          },
+          "filters": {
+            "label": "gender",
+            "column": "table.gender",
+            "type": "SINGLE_SELECT"
+          },
+          "selects": {
+            "name": "value",
+            "type": "FIRST",
+            "column": "table.value"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/NEGATION_WITH_SELECT/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "gender",
+            "type": "STRING"
+          },
+          {
+            "name": "value",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+}
