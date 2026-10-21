@@ -92,9 +92,6 @@ importers:
       react-markdown:
         specifier: ^10.1.0
         version: 10.1.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1)
-      react-merge-refs:
-        specifier: ^3.0.2
-        version: 3.0.2(react@19.3.0)
       react-number-format:
         specifier: ^5.4.5
         version: 5.4.5(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -3074,14 +3071,6 @@ packages:
     peerDependencies:
       '@types/react': '>=18'
       react: '>=18'
-
-  react-merge-refs@3.0.2:
-    resolution: {integrity: sha512-MSZAfwFfdbEvwkKWP5EI5chuLYnNUxNS7vyS0i1Jp+wtd8J4Ga2ddzhaE68aMol2Z4vCnRM/oGOo1a3V75UPlw==}
-    peerDependencies:
-      react: '>=16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0'
-    peerDependenciesMeta:
-      react:
-        optional: true
 
   react-number-format@5.4.5:
     resolution: {integrity: sha512-y8O2yHHj3w0aE9XO8d2BCcUOOdQTRSVq+WIuMlLVucAm5XNjJAy+BoOJiuQMldVYVOKTMyvVNfnbl2Oqp+YxGw==}
@@ -6281,10 +6270,6 @@ snapshots:
       vfile: 6.0.3
     transitivePeerDependencies:
       - supports-color
-
-  react-merge-refs@3.0.2(react@19.3.0):
-    optionalDependencies:
-      react: 19.3.0
 
   react-number-format@5.4.5(react-dom@19.3.0(react@19.3.0))(react@19.3.0):
     dependencies:
