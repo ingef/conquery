@@ -119,9 +119,16 @@ public class ClickhouseStratificationFunctions extends StratificationFunctions {
 	}
 
 	@Override
-	public Table<Record> generateIntSeries(int start, int end) {
-		//TODO this only supports ungigned values. Probably need to handle negatives manually Q_Q
-		return table("generate_series({0}, {1}, 1)", start, end);
+	public Table<? extends Record> generateIntSeries(int start, int end) {
+		Field<Integer> startInclusive = functionProvider.castToInteger(inline(start));
+		Field<Integer> endExclusive = functionProvider.castToInteger(inline(end).plus(inline(1)));
+		Field<Integer> seriesIndex = field(
+				"arrayJoin(range({0}, {1}))",
+				Integer.class,
+				startInclusive,
+				endExclusive
+		).as(SERIES_INDEX.getName());
+		return select(seriesIndex).asTable();
 	}
 
 	@Override

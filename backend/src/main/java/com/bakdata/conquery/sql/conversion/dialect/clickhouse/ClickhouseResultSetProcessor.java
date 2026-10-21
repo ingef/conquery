@@ -2,16 +2,14 @@ package com.bakdata.conquery.sql.conversion.dialect.clickhouse;
 
 import java.math.BigDecimal;
 import java.sql.Array;
-import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
+import java.sql.Struct;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.sql.execution.DefaultResultSetProcessor;
@@ -19,73 +17,62 @@ import com.google.common.base.Preconditions;
 
 public class ClickhouseResultSetProcessor extends DefaultResultSetProcessor {
 
-	public static final String DATE_SEPARATOR = ",";
-
 	public ClickhouseResultSetProcessor(ConqueryConfig config) {
 		super(config, null);
 	}
 
 	@Override
 	public List<Integer> getDateRange(ResultSet resultSet, int columnIndex) throws SQLException {
-		String daterange = resultSet.getString(columnIndex);
+		Object daterange = resultSet.getObject(columnIndex);
 
 		if (daterange == null) {
 			return Collections.emptyList();
 		}
 
-		String[] dates = daterange.split(DATE_SEPARATOR);
-		Preconditions.checkArgument(dates.length == 2, "Dateranges must have a start and end.");
-
-		String startDateExpression = dates[0];
-		int startDate;
-		if (startDateExpression.equals(ClickhouseFunctionProvider.MIN_DATE_VALUE)) {
-			startDate = CDateRange.NEGATIVE_INFINITY;
-		}
-		else {
-			LocalDate dateValue = Date.valueOf(startDateExpression).toLocalDate();
-			startDate = CDate.ofLocalDate(dateValue);
-		}
-
-		String endDateExpression = dates[1];
-		int endDate;
-		if (endDateExpression.equals(ClickhouseFunctionProvider.MAX_DATE_VALUE)) {
-			endDate = CDateRange.POSITIVE_INFINITY;
-		}
-		else {
-			LocalDate dateValue = Date.valueOf(endDateExpression).toLocalDate();
-			endDate = CDate.ofLocalDate(dateValue);
-		}
-
-		return List.of(startDate, endDate);
+		Object[] rawTuple = daterange instanceof Struct struct ? struct.getAttributes() : (Object[]) daterange;
+		return toEpochDayRange(rawTuple);
 	}
 
 	public List<List<Integer>> toEpochDayRangeList(List<Object[]> raw) {
+		if (raw == null) {
+			return null;
+		}
+
 		List<List<Integer>> out = new ArrayList<>();
 
 		for (Object[] rawTuple : raw) {
-
-			if (rawTuple[0] == null) {
-				assert rawTuple[1] == null;
-				continue;
+			List<Integer> dateRange = toEpochDayRange(rawTuple);
+			if (!dateRange.isEmpty()) {
+				out.add(dateRange);
 			}
-
-			int begin = (Integer) rawTuple[0];
-			int end = (Integer) rawTuple[1];
-
-			if (begin == ClickhouseFunctionProvider.MIN_DATE_VALUE) {
-				begin = Integer.MIN_VALUE;
-			}
-			if (end == ClickhouseFunctionProvider.MAX_DATE_VALUE) {
-				end = Integer.MAX_VALUE;
-			}
-			else {
-				end--;
-			}
-
-			out.add(List.of(begin, end));
 		}
 
 		return out;
+	}
+
+	private List<Integer> toEpochDayRange(Object[] rawTuple) {
+		Preconditions.checkArgument(rawTuple.length == 2, "Dateranges must have a start and end.");
+
+		if (rawTuple[0] == null && rawTuple[1] == null) {
+			return Collections.emptyList();
+		}
+		Preconditions.checkArgument(rawTuple[0] != null && rawTuple[1] != null, "Dateranges must have a start and end.");
+		Preconditions.checkArgument(rawTuple[0] instanceof Number && rawTuple[1] instanceof Number, "Dateranges must contain integer values.");
+
+		int begin = ((Number) rawTuple[0]).intValue();
+		int end = ((Number) rawTuple[1]).intValue();
+
+		if (begin == ClickhouseFunctionProvider.MIN_DATE_VALUE) {
+			begin = CDateRange.NEGATIVE_INFINITY;
+		}
+		if (end == ClickhouseFunctionProvider.MAX_DATE_VALUE) {
+			end = CDateRange.POSITIVE_INFINITY;
+		}
+		else {
+			end--;
+		}
+
+		return List.of(begin, end);
 	}
 
 	private <T> List<T> sort(List<T> list, Comparator<T> sort) {
