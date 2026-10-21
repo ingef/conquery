@@ -4,10 +4,6 @@ import java.util.List;
 import java.util.Optional;
 
 import com.bakdata.conquery.models.query.DateAggregationAction;
-import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
-import com.bakdata.conquery.sql.translate.ir.JoinMode;
-import com.bakdata.conquery.sql.translate.ir.QueryStep;
-import com.bakdata.conquery.sql.translate.naming.SqlNameGenerator;
 import com.bakdata.conquery.sql.model.ResolvedQuery;
 import com.bakdata.conquery.sql.model.node.AllEntitiesNode;
 import com.bakdata.conquery.sql.model.node.AndNode;
@@ -18,6 +14,10 @@ import com.bakdata.conquery.sql.model.node.NegationNode;
 import com.bakdata.conquery.sql.model.node.OrNode;
 import com.bakdata.conquery.sql.model.node.QueryNode;
 import com.bakdata.conquery.sql.model.range.DateRange;
+import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
+import com.bakdata.conquery.sql.translate.ir.JoinMode;
+import com.bakdata.conquery.sql.translate.ir.QueryStep;
+import com.bakdata.conquery.sql.translate.naming.SqlNameGenerator;
 
 /** Compiles a resolved query graph to reusable query-step IR without rendering a final projection. */
 public final class ResolvedQueryStepTranslator {

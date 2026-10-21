@@ -11,9 +11,9 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
+import com.bakdata.conquery.sql.model.range.DateRange;
 import com.bakdata.conquery.sql.translate.dialect.clickhouse.ClickhouseTranslatorDialect;
 import com.bakdata.conquery.sql.translate.dialect.hana.HanaTranslatorDialect;
-import com.bakdata.conquery.sql.model.range.DateRange;
 import org.jooq.Field;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;

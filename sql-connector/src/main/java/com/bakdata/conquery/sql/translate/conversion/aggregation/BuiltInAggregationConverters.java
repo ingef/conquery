@@ -3,10 +3,10 @@ package com.bakdata.conquery.sql.translate.conversion.aggregation;
 import java.util.List;
 import java.util.function.BiFunction;
 
-import com.bakdata.conquery.sql.translate.conversion.Converter;
-import com.bakdata.conquery.sql.translate.query.concept.CommonAggregationSelect;
 import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
 import com.bakdata.conquery.sql.model.operation.ResolvedAggregation;
+import com.bakdata.conquery.sql.translate.conversion.Converter;
+import com.bakdata.conquery.sql.translate.query.concept.CommonAggregationSelect;
 
 final class BuiltInAggregationConverters {
 

@@ -2,7 +2,6 @@ package com.bakdata.conquery.sql.translate.conversion.select;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
@@ -10,6 +9,7 @@ import com.bakdata.conquery.sql.translate.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.translate.ir.SqlTables;
 import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.translate.naming.SqlNameGenerator;
+import lombok.NonNull;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Record;
@@ -51,15 +51,12 @@ public record SelectConversionContext(
 
 	/** SQL-resolved source for a concept-value column whose physical table needs preparation before selection. */
 	public record ConceptColumnSource(
-			String qualifier,
-			TableLike<? extends Record> table,
-			Field<?> value,
+			@NonNull String qualifier,
+			@NonNull TableLike<? extends Record> table,
+			@NonNull Field<?> value,
 			List<Condition> conditions
 	) {
 		public ConceptColumnSource {
-			Objects.requireNonNull(qualifier, "qualifier");
-			Objects.requireNonNull(table, "table");
-			Objects.requireNonNull(value, "value");
 			conditions = List.copyOf(conditions);
 		}
 	}
