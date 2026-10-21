@@ -10,6 +10,7 @@ import javax.annotation.Nullable;
 
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.collect.Range;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.AllArgsConstructor;
@@ -23,6 +24,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @With
 @Data
+// frontend.currency was removed, old configs may still set it
+@JsonIgnoreProperties(value = {"currency"})
 public class FrontendConfig {
 	/**
 	 * Years to include in entity preview.
