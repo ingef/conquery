@@ -22,6 +22,7 @@ import TableFilters from "../query-node-editor/TableFilters";
 import type { FilterWithValueType } from "../standard-query-editor/types";
 import { Button } from "../ui-components/Button";
 
+import { pickEntityId } from "./entityIds";
 import type { LoadingPayload } from "./LoadHistoryDropzone";
 import { useDefaultStatusOptions } from "./useDefaultStatusOptions";
 
@@ -139,6 +140,9 @@ const useSubmitSearch = ({
   const defaultStatusOptions = useDefaultStatusOptions();
   const datasetId = useDatasetId();
   const postResolveEntities = usePostResolveEntities();
+  const prioritizedIdColumns = useSelector<StateT, string[]>(
+    (state) => state.entityHistory.defaultParams.prioritizedIdColumns,
+  );
 
   const onSubmitSearch = useCallback(async () => {
     if (!datasetId) return;
@@ -153,9 +157,9 @@ const useSubmitSearch = ({
     try {
       const result = await postResolveEntities(datasetId, filterValues);
 
-      const loadedEntityIds = result.map((e) => {
-        const keys = Object.keys(e);
-        return { id: e[keys[0]], kind: keys[0] };
+      const loadedEntityIds = result.flatMap((idsByKind) => {
+        const entityId = pickEntityId(idsByKind, prioritizedIdColumns);
+        return entityId ? [entityId] : [];
       });
 
       setLoading(false);
@@ -172,6 +176,7 @@ const useSubmitSearch = ({
   }, [
     t,
     datasetId,
+    prioritizedIdColumns,
     onLoad,
     defaultStatusOptions,
     searchFilters,
