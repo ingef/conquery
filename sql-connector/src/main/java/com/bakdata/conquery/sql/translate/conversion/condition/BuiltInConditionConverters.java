@@ -3,13 +3,13 @@ package com.bakdata.conquery.sql.translate.conversion.condition;
 import java.util.List;
 import java.util.function.BiFunction;
 
+import com.bakdata.conquery.sql.model.operation.BuiltInConditions;
+import com.bakdata.conquery.sql.model.operation.ResolvedCondition;
 import com.bakdata.conquery.sql.translate.conversion.Converter;
 import com.bakdata.conquery.sql.translate.ir.SchemaSql;
 import com.bakdata.conquery.sql.translate.ir.condition.ConditionWrappingWhereCondition;
 import com.bakdata.conquery.sql.translate.ir.condition.StringValuesCondition;
 import com.bakdata.conquery.sql.translate.ir.condition.WhereCondition;
-import com.bakdata.conquery.sql.model.operation.BuiltInConditions;
-import com.bakdata.conquery.sql.model.operation.ResolvedCondition;
 import org.jooq.Field;
 
 /** Built-in mappings from resolved condition values to translate condition IR. */

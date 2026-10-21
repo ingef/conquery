@@ -4,12 +4,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import com.bakdata.conquery.sql.translate.ir.CteStep;
-import com.bakdata.conquery.sql.translate.ir.JoinMode;
 import com.bakdata.conquery.sql.model.node.ConceptNode;
 import com.bakdata.conquery.sql.model.operation.ResolvedFilter;
 import com.bakdata.conquery.sql.model.operation.ResolvedSelect;
 import com.bakdata.conquery.sql.model.schema.ResolvedConnector;
+import com.bakdata.conquery.sql.translate.ir.CteStep;
+import com.bakdata.conquery.sql.translate.ir.JoinMode;
 
 /**
  * Stateful generator for unique, length-constrained SQL aliases and CTE names.

@@ -2,13 +2,13 @@ package com.bakdata.conquery.sql.translate;
 
 import java.util.Optional;
 
+import com.bakdata.conquery.sql.model.ResolvedQuery;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.translate.ir.QueryStep;
 import com.bakdata.conquery.sql.translate.naming.SqlNameGenerator;
 import com.bakdata.conquery.sql.translate.query.FinalQueryStepComposer;
 import com.bakdata.conquery.sql.translate.query.ResolvedQueryStepTranslator;
 import com.bakdata.conquery.sql.translate.rendering.QueryStepRenderer;
-import com.bakdata.conquery.sql.model.ResolvedQuery;
 import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.jooq.Select;

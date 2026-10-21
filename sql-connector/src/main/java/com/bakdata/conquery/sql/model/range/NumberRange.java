@@ -1,11 +1,11 @@
 package com.bakdata.conquery.sql.model.range;
 
 import java.math.BigDecimal;
-import java.util.Objects;
 import java.util.Optional;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.common.InclusiveRange;
+import lombok.NonNull;
 
 /** Inclusive numeric range. An empty bound represents an unbounded side. */
 public record NumberRange(
@@ -29,8 +29,7 @@ public record NumberRange(
 		return new NumberRange(Optional.empty(), Optional.empty());
 	}
 
-	private static BigDecimal decimal(Number value) {
-		Objects.requireNonNull(value, "value");
+	private static BigDecimal decimal(@NonNull Number value) {
 		return value instanceof BigDecimal decimal ? decimal : new BigDecimal(value.toString());
 	}
 }

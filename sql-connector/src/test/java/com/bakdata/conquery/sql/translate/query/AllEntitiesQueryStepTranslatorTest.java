@@ -7,13 +7,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.sql.Date;
 
 import com.bakdata.conquery.models.datasets.ColumnType;
-import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
-import com.bakdata.conquery.sql.translate.ir.QueryStep;
-import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.model.node.AllEntitiesNode;
 import com.bakdata.conquery.sql.model.schema.EntitySchema;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.model.schema.SqlTable;
+import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
+import com.bakdata.conquery.sql.translate.ir.QueryStep;
+import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import org.jooq.Field;
 import org.junit.jupiter.api.Test;
 

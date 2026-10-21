@@ -3,11 +3,11 @@ package com.bakdata.conquery.sql.translate.conversion.condition;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.bakdata.conquery.sql.model.operation.ResolvedCondition;
 import com.bakdata.conquery.sql.translate.conversion.ConversionDispatcher;
 import com.bakdata.conquery.sql.translate.conversion.Converter;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.translate.ir.condition.WhereCondition;
-import com.bakdata.conquery.sql.model.operation.ResolvedCondition;
 
 /** Converts resolved condition-model values into translate condition IR. */
 public final class ResolvedConditionConverter {

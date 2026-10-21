@@ -12,7 +12,6 @@ import java.util.function.Function;
 
 import com.bakdata.conquery.models.datasets.ColumnType;
 import com.bakdata.conquery.models.query.DateAggregationAction;
-import com.bakdata.conquery.sql.translate.dialect.hana.HanaTranslatorDialect;
 import com.bakdata.conquery.sql.model.ResolvedQuery;
 import com.bakdata.conquery.sql.model.form.FormAlignment;
 import com.bakdata.conquery.sql.model.form.FormCalendarUnit;
@@ -35,6 +34,7 @@ import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.model.schema.ResolvedConnector;
 import com.bakdata.conquery.sql.model.schema.ResolvedValidityDate;
 import com.bakdata.conquery.sql.model.schema.SqlTable;
+import com.bakdata.conquery.sql.translate.dialect.hana.HanaTranslatorDialect;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Test;

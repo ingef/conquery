@@ -1,15 +1,15 @@
 package com.bakdata.conquery.sql.mapping;
 
-import java.util.Objects;
 import java.util.Set;
 
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
+import lombok.NonNull;
 import org.jooq.Record;
 import org.jooq.Table;
 
 /** Fully resolved concept-element selection applied to one connector source. */
 public record ConceptIdMappingSelection(
-		ConceptIdMappingSource source,
+		@NonNull ConceptIdMappingSource source,
 		Set<Integer> includedLocalIds,
 		boolean includesRoot,
 		boolean resolveConceptIds,
@@ -17,7 +17,6 @@ public record ConceptIdMappingSelection(
 ) {
 
 	public ConceptIdMappingSelection {
-		Objects.requireNonNull(source, "source");
 		includedLocalIds = Set.copyOf(includedLocalIds);
 	}
 

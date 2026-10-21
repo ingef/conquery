@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.sql.model.schema.DateColumns;
 import com.bakdata.conquery.sql.translate.conversion.select.SelectConversionContext;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.translate.ir.QueryStep;
@@ -17,9 +18,8 @@ import com.bakdata.conquery.sql.translate.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.translate.ir.select.SqlSelect;
 import com.bakdata.conquery.sql.translate.query.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.translate.query.concept.ConnectorSqlSelects;
-import com.bakdata.conquery.sql.translate.query.interval.IntervalPackingSelectTranslator;
 import com.bakdata.conquery.sql.translate.query.interval.IntervalPackingSelectPreparation;
-import com.bakdata.conquery.sql.model.schema.DateColumns;
+import com.bakdata.conquery.sql.translate.query.interval.IntervalPackingSelectTranslator;
 
 public class DaterangeSelectUtil {
 	public static ConnectorSqlSelects createForSelect(

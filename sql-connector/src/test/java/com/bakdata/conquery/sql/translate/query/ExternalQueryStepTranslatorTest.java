@@ -12,11 +12,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
-import com.bakdata.conquery.sql.translate.ir.QueryStep;
 import com.bakdata.conquery.sql.model.node.ExternalEntity;
 import com.bakdata.conquery.sql.model.node.ExternalNode;
 import com.bakdata.conquery.sql.model.range.DateRange;
+import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
+import com.bakdata.conquery.sql.translate.ir.QueryStep;
 import org.jooq.Field;
 import org.junit.jupiter.api.Test;
 

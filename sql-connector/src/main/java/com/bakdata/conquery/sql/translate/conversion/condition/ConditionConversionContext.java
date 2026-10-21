@@ -1,17 +1,11 @@
 package com.bakdata.conquery.sql.translate.conversion.condition;
 
-import java.util.Objects;
-
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
+import lombok.NonNull;
 
 /** Services available while converting a resolved condition into translate IR. */
 public record ConditionConversionContext(
-		TranslatorDialect dialect,
-		ResolvedConditionConverter conditionConverter
+		@NonNull TranslatorDialect dialect,
+		@NonNull ResolvedConditionConverter conditionConverter
 ) {
-
-	public ConditionConversionContext {
-		Objects.requireNonNull(dialect, "dialect");
-		Objects.requireNonNull(conditionConverter, "conditionConverter");
-	}
 }
