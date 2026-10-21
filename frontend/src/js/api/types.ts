@@ -26,13 +26,6 @@ export interface DateRangeT {
   max?: string;
 }
 
-export interface CurrencyConfigT {
-  unit: string;
-  thousandSeparator: string;
-  decimalSeparator: string;
-  decimalScale: number;
-}
-
 interface FilterBaseT {
   id: string;
   label: string;
@@ -298,7 +291,8 @@ export interface GetFrontendConfigResponseT {
     version: string | null; // probably shouldn't be nullable at all
     buildTime: string | null; // should be optional, not null
   }[];
-  currency: CurrencyConfigT;
+  /** ISO 4217 code of the currency that money columns hold */
+  currency: string;
   queryUpload: QueryUploadConfigT;
   manualUrl?: string;
   contactEmail?: string;

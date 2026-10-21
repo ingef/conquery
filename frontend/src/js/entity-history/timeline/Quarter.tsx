@@ -3,11 +3,7 @@ import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
-import type {
-  ColumnDescription,
-  ConceptIdT,
-  CurrencyConfigT,
-} from "../../api/types";
+import type { ColumnDescription, ConceptIdT } from "../../api/types";
 import { C3, H4 } from "../../ui-components/Typography";
 import type { ContentFilterValue } from "../ContentControl";
 import type { DetailLevel } from "../DetailControl";
@@ -66,7 +62,6 @@ export const Quarter = memo(
     dateColumn,
     sourceColumn,
     columnBuckets,
-    currencyConfig,
     rootConceptIdsByColumn,
     contentFilter,
   }: {
@@ -83,7 +78,6 @@ export const Quarter = memo(
     sourceColumn: ColumnDescription;
     columnBuckets: ColumnBuckets;
     contentFilter: ContentFilterValue;
-    currencyConfig: CurrencyConfigT;
     rootConceptIdsByColumn: Record<string, ConceptIdT>;
   }) => {
     const { t } = useTranslation();
@@ -144,7 +138,6 @@ export const Quarter = memo(
                       contentFilter={contentFilter}
                       rootConceptIdsByColumn={rootConceptIdsByColumn}
                       row={evt}
-                      currencyConfig={currencyConfig}
                     />
                   ));
                 } else {
@@ -168,7 +161,6 @@ export const Quarter = memo(
                       contentFilter={contentFilter}
                       rootConceptIdsByColumn={rootConceptIdsByColumn}
                       row={firstRowWithoutDifferences}
-                      currencyConfig={currencyConfig}
                       groupedRows={group}
                       groupedRowsKeysWithDifferentValues={groupDifferences}
                     />

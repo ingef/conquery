@@ -368,19 +368,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ColumnConfig"
-    CurrencyConfig:
-      description: Describes how the frontend shall interpret and display currency values.
-      type: object
-      properties:
-        prefix:
-          type: string
-        thousandSeparator:
-          type: string
-        decimalSeparator:
-          type: string
-          pattern: "[.,]"
-        decimalScale:
-          type: string
     VersionContainer:
       type: object
       properties:
@@ -413,7 +400,9 @@ components:
         contactEmail:
           $ref: "#/components/schemas/mail"
         currency:
-          $ref: "#/components/schemas/CurrencyConfig"
+          description: ISO 4217 code of the currency that money columns hold, e.g. EUR. Money filter values and arrow results are integers in its minor unit.
+          type: string
+          example: EUR
         upload:
           $ref: "#/components/schemas/UploadConfig"
     Error:

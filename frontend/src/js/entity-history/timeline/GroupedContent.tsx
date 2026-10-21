@@ -1,18 +1,14 @@
 import { memo, type ReactNode, useMemo } from "react";
 import { tv } from "tailwind-variants";
 
-import type {
-  ColumnDescription,
-  ConceptIdT,
-  CurrencyConfigT,
-} from "../../api/types";
+import type { ColumnDescription, ConceptIdT } from "../../api/types";
+import { useMoneyFormatter } from "../../common/useMoneyFormatter";
 import { C2 } from "../../ui-components/Typography";
 import type { ContentFilterValue, ContentType } from "../ContentControl";
 import { formatHistoryDayRange } from "../RowDates";
 import type { DateRow, EntityEvent } from "../reducer";
 import ConceptName from "./ConceptName";
 import { TinyLabel } from "./TinyLabel";
-import { useMoneyFormatter } from "./useMoneyFormatter";
 import {
   isConceptColumn,
   isDateColumn,
@@ -53,7 +49,6 @@ interface Props {
   columns: Record<string, ColumnDescription>;
   groupedRows: EntityEvent[];
   groupedRowsKeysWithDifferentValues: string[];
-  currencyConfig: CurrencyConfigT;
   rootConceptIdsByColumn: Record<string, ConceptIdT>;
   contentFilter: ContentFilterValue;
 }
@@ -62,7 +57,6 @@ const GroupedContent = ({
   columns,
   groupedRows,
   groupedRowsKeysWithDifferentValues,
-  currencyConfig,
   rootConceptIdsByColumn,
   contentFilter,
 }: Props) => {
@@ -108,7 +102,6 @@ const GroupedContent = ({
               key={key}
               columnDescription={columns[key]}
               cell={groupedRow[key]}
-              currencyConfig={currencyConfig}
               rootConceptIdsByColumn={rootConceptIdsByColumn}
             />
           )),
@@ -121,16 +114,14 @@ const GroupedContent = ({
 const Cell = memo(
   ({
     columnDescription,
-    currencyConfig,
     cell,
     rootConceptIdsByColumn,
   }: {
     columnDescription: ColumnDescription;
-    currencyConfig: CurrencyConfigT;
     cell: unknown;
     rootConceptIdsByColumn: Record<string, ConceptIdT>;
   }) => {
-    const moneyFormatter = useMoneyFormatter(currencyConfig);
+    const moneyFormatter = useMoneyFormatter();
 
     if (isDateColumn(columnDescription)) {
       return (cell as DateRow).from === (cell as DateRow).to ? (
