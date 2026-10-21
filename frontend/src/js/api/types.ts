@@ -551,6 +551,7 @@ export type GetEntityHistoryDefaultParamsResponse = HistorySources & {
   searchConcept: string | null; // concept id
   searchConnector: string | null; // connector id within the searchConcept, the table that holds the searchFilters
   searchFilters?: string[]; // allowlisted filter ids within the searchConnector
+  prioritizedIdColumns: string[]; // id kinds, most recognizable first
 };
 
 export interface EntityInfo {
