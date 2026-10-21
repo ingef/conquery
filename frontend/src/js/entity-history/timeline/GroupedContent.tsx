@@ -1,9 +1,4 @@
 import { memo, type ReactNode, useMemo } from "react";
-import {
-  type InputAttributes,
-  NumericFormat,
-  type NumericFormatProps,
-} from "react-number-format";
 import { tv } from "tailwind-variants";
 
 import type {
@@ -17,6 +12,7 @@ import { formatHistoryDayRange } from "../RowDates";
 import type { DateRow, EntityEvent } from "../reducer";
 import ConceptName from "./ConceptName";
 import { TinyLabel } from "./TinyLabel";
+import { useMoneyFormatter } from "./useMoneyFormatter";
 import {
   isConceptColumn,
   isDateColumn,
@@ -134,6 +130,8 @@ const Cell = memo(
     cell: unknown;
     rootConceptIdsByColumn: Record<string, ConceptIdT>;
   }) => {
+    const moneyFormatter = useMoneyFormatter(currencyConfig);
+
     if (isDateColumn(columnDescription)) {
       return (cell as DateRow).from === (cell as DateRow).to ? (
         <C2 as="span">{formatHistoryDayRange((cell as DateRow).from)}</C2>
@@ -156,17 +154,8 @@ const Cell = memo(
     }
 
     if (isMoneyColumn(columnDescription)) {
-      // typed up front with an explicit base type: the polymorphic NumericFormat
-      // props are otherwise too complex a union for tsc
-      const numericFormatProps: NumericFormatProps<InputAttributes> = {
-        ...currencyConfig,
-        displayType: "text",
-        value: parseFloat(cell as string),
-      };
       return (
-        <C2 as="span">
-          <NumericFormat<InputAttributes> {...numericFormatProps} />
-        </C2>
+        <C2 as="span">{moneyFormatter.format(parseFloat(cell as string))}</C2>
       );
     }
 
