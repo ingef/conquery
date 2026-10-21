@@ -1,6 +1,5 @@
 import { EuroIcon, FingerprintPatternIcon, InfoIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { type InputAttributes, NumericFormat } from "react-number-format";
 import { tv } from "tailwind-variants";
 import type {
   ColumnDescription,
@@ -23,6 +22,7 @@ import { useTimelineSearch } from "../timeline-search/timelineSearchState";
 import GroupedContent from "./GroupedContent";
 import { RawDataBadge } from "./RawDataBadge";
 import { TinyLabel } from "./TinyLabel";
+import { useMoneyFormatter } from "./useMoneyFormatter";
 import type { ColumnBuckets } from "./util/useColumnInformation";
 import { isDateColumn, isSourceColumn } from "./util/util";
 
@@ -86,6 +86,7 @@ const EventCard = ({
 }) => {
   const { searchTerm } = useTimelineSearch();
   const { t } = useTranslation();
+  const moneyFormatter = useMoneyFormatter(currencyConfig);
 
   const applicableGroupableIds = columnBuckets.groupableIds.filter(
     (column) =>
@@ -134,14 +135,10 @@ const EventCard = ({
                     <div key={column.label}>
                       <TinyLabel>{column.defaultLabel}</TinyLabel>
                       <C3 as="code">
-                        <NumericFormat<InputAttributes>
-                          thousandSeparator={currencyConfig.thousandSeparator}
-                          decimalSeparator={currencyConfig.decimalSeparator}
-                          decimalScale={currencyConfig.decimalScale}
-                          suffix={` ${currencyConfig.unit}`}
-                          displayType="text"
-                          value={parseFloat(row[column.label] as string)}
-                        />
+                        {moneyFormatter.format(
+                          parseFloat(row[column.label] as string),
+                        )}{" "}
+                        {currencyConfig.unit}
                       </C3>
                     </div>
                   ))}
