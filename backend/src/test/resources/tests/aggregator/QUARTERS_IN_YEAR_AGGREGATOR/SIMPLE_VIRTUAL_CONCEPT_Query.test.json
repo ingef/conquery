@@ -1,10 +1,7 @@
 {
   "type": "QUERY_TEST",
-  "label": "PREFIX_AGGREGATOR Test",
-  "expectedCsv": "tests/aggregator/PREFIX_AGGREGATOR/expected.csv",
-  "sqlSpec": {
-    "isEnabled": false
-  },
+  "label": "QUARTERS_IN_YEAR_AGGREGATOR Test",
+  "expectedCsv": "tests/aggregator/QUARTERS_IN_YEAR_AGGREGATOR/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -28,18 +25,19 @@
       "type": "TREE",
       "connectors": [
         {
-          "label": "connector",
+          "name": "connector",
           "table": "table",
           "validityDates": {
-            "label": "datum",
+            "name": "datum",
             "column": "table.datum"
           },
-          "selects": {
-            "type": "PREFIX",
-            "name": "select",
-            "column": "table.value",
-            "prefix": "f"
-          }
+          "selects": [
+            {
+              "name": "select",
+              "type": "QUARTERS_IN_YEAR",
+              "column": "table.behandlungsdatum"
+            }
+          ]
         }
       ]
     }
@@ -47,7 +45,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/aggregator/PREFIX_AGGREGATOR/content.csv",
+        "csv": "tests/aggregator/QUARTERS_IN_YEAR_AGGREGATOR/content.csv",
         "name": "table",
         "primaryColumn": {
           "name": "pid",
@@ -55,12 +53,12 @@
         },
         "columns": [
           {
-            "name": "datum",
+            "name": "behandlungsdatum",
             "type": "DATE"
           },
           {
-            "name": "value",
-            "type": "STRING"
+            "name": "datum",
+            "type": "DATE"
           }
         ]
       }
