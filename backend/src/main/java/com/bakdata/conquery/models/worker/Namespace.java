@@ -137,21 +137,25 @@ public abstract class Namespace implements Injectable {
 	abstract void registerColumnValuesInSearch(Set<Column> columns);
 
 	/**
-	 * Hook for actions that are best done after all data has been imported and is in a consistent state.
-	 * Such actions are for example search initialization and collection of matching statistics.
-	 *
-	 * @implNote This intentionally submits a SlowJob so that it will be queued after all jobs that are already in the queue (usually import jobs).
+	 * Schedules the collection of matching statistics after all jobs that are already queued (usually import jobs).
 	 */
-	public void postprocessData() {
-
+	public void scheduleMatchingStatsUpdate() {
 		getJobManager().addSlowJob(new SimpleJob(
-				"Initiate Update Matching Stats and InternalFilterSearch",
+				"Initiate Update Matching Stats",
+				this::updateMatchingStats
+		));
+	}
+
+	/**
+	 * Schedules the regeneration of the filter search after all jobs that are already queued (usually import jobs).
+	 */
+	public void scheduleFilterSearchUpdate() {
+		getJobManager().addSlowJob(new SimpleJob(
+				"Initiate Update InternalFilterSearch",
 				() -> {
 					updateInternToExternMappings();
-					updateMatchingStats();
 					updateFilterSearch();
 				}
 		));
-
 	}
 }
