@@ -337,12 +337,21 @@ public class AdminDatasetProcessor {
 	}
 
 	/**
-	 * Issues a postprocessing of the imported data for initializing certain internal modules that are either expensive or need the whole data present.
+	 * Schedules collection of matching statistics for the dataset.
 	 */
-	public void postprocessNamespace(DatasetId dataset) {
+	public void updateMatchingStats(DatasetId dataset) {
 		final Namespace ns = getDatasetRegistry().get(dataset);
 
-		ns.postprocessData();
+		ns.scheduleMatchingStatsUpdate();
+	}
+
+	/**
+	 * Schedules regeneration of the filter search for the dataset.
+	 */
+	public void updateFilterSearch(DatasetId dataset) {
+		final Namespace ns = getDatasetRegistry().get(dataset);
+
+		ns.scheduleFilterSearchUpdate();
 	}
 
 	public EntityIdMap getIdMapping(Namespace namespace) {
