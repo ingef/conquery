@@ -1,0 +1,54 @@
+{
+	"type": "FORM_TEST",
+	"label": "Relative export",
+    "sqlSpec": {
+    "isEnabled": true,
+    "supportedDialects": [
+       "HANA"
+    ]
+  },
+	"expectedCsv": {
+		"results": "tests/form/export/relative/relative-export/expected.csv"
+	},
+	"form": {
+		"type": "EXPORT_FORM",
+		"queryGroup": "00000000-0000-0000-0000-000000000001",
+		"resolution": "QUARTERS",
+		"alsoCreateCoarserSubdivisions": true,
+		"features": [
+			{
+				"ids": [
+					"alter"
+				],
+				"type": "CONCEPT",
+				"tables": [
+					{
+						"id": "alter.alter"
+					}
+				]
+			}
+		],
+		"timeMode": {
+			"value": "RELATIVE",
+			"indexSelector": "EARLIEST",
+			"timeUnit": "QUARTERS",
+            "timeCountAfter": 2,
+            "timeCountBefore": 6,
+			"indexPlacement": "BEFORE"
+		}
+	},
+	"concepts": [
+		"/tests/form/shared/alter.concept.json",
+		"/tests/form/shared/geschlecht.concept.json",
+		"/tests/form/shared/versichertentage.concept.json"
+	],
+	"content": {
+		"tables": [
+			"/tests/form/shared/vers_stamm.table.json",
+			"/tests/form/shared/vers_tage_range.table.json"
+		],
+		"previousQueryResults": [
+			"tests/form/export/relative/relative-export/query_results_1.csv"
+		]
+	}
+}

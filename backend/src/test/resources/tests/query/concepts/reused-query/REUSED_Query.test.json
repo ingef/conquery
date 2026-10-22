@@ -1,0 +1,36 @@
+{
+  "type": "QUERY_TEST",
+  "label": "Reused query",
+  "expectedCsv": "tests/query/concepts/reused-query/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "query": "00000000-0000-0000-0000-000000000001",
+      "type": "SAVED_QUERY"
+    }
+  },
+  "concepts": [
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/concepts/reused-query/content.csv",
+        "name": "test_table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "empty_column",
+            "type": "STRING"
+          }
+        ]
+      }
+    ],
+    "previousQueryResults": [
+      "tests/query/concepts/reused-query/query_results_1.csv",
+      "tests/query/concepts/reused-query/query_results_2.csv"
+    ]
+  }
+}

@@ -39,7 +39,7 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 
 		final StandaloneSupport conquery = testConquery.getSupport(name);
 
-		final String testJson = LoadingUtil.readResource("/tests/query/statistics/QUERY_STATISTICS_TESTS/SIMPLE_TREECONCEPT_Query.json");
+		final String testJson = LoadingUtil.readResource("/tests/query/statistics/collect-query-statistics/SIMPLE_TREECONCEPT_Query.json");
 
 		final DatasetId dataset = conquery.getDataset();
 

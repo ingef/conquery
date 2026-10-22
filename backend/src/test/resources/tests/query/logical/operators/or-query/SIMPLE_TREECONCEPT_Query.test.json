@@ -1,0 +1,98 @@
+{
+  "type": "QUERY_TEST",
+  "label": "OR query",
+  "expectedCsv": "tests/query/logical/operators/or-query/expected.csv",
+  "sqlSpec": {
+    "isEnabled": true,
+    "comment": "Logical will hopefully be kicked.",
+    "supportedDialects": [
+
+      "HANA"
+    ]
+  },
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "OR",
+      "createExists": true,
+      "children": [
+        {
+          "type": "CONCEPT",
+          "ids": [
+            "tree.a"
+          ],
+          "tables": [
+            {
+              "id": "tree.connector"
+            }
+          ]
+        },
+        {
+          "type": "CONCEPT",
+          "ids": [
+            "tree.b"
+          ],
+          "tables": [
+            {
+              "id": "tree.connector"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "name": "tree",
+      "type": "TREE",
+      "connectors": {
+        "name": "connector",
+        "column": "table.column",
+        "validityDates": {
+          "name": "datum",
+          "column": "table.datum"
+        }
+      },
+      "children": [
+        {
+          "name": "a",
+          "condition": {
+            "type": "EQUAL",
+            "values": "A"
+          },
+          "children": []
+        },
+        {
+          "name": "b",
+          "condition": {
+            "type": "EQUAL",
+            "values": "B"
+          },
+          "children": []
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/logical/operators/or-query/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "column",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+}

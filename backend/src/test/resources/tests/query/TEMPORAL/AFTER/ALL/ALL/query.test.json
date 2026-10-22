@@ -1,12 +1,12 @@
 {
   "type": "QUERY_TEST",
-  "label": "Temporal Test",
+  "label": "Temporal after: all → all",
   "sqlSpec": {
     "isEnabled": false,
     "supportedDialects": [
     ]
   },
-  "expectedCsv": "tests/query/TEMPORAL/AFTER/ALL/ALL/expected.csv",
+  "expectedCsv": "tests/query/temporal/after/all/all/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -96,7 +96,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/query/TEMPORAL/AFTER/ALL/ALL/content.csv",
+        "csv": "tests/query/temporal/after/all/all/content.csv",
         "name": "table",
         "primaryColumn": {
           "name": "pid",

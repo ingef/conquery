@@ -1,0 +1,55 @@
+{
+  "type": "FILTER_TEST",
+  "label": "Match selected flags",
+  "expectedCsv": "tests/filter/misc/match-selected-flags/expected.csv",
+  "content": {
+    "tables": {
+      "csv": "tests/filter/misc/match-selected-flags/content.csv",
+      "primaryColumn": {
+        "name": "id",
+        "type": "STRING"
+      },
+      "columns": [
+        {
+          "name": "date",
+          "type": "DATE"
+        },
+        {
+          "name": "a",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "b",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "c",
+          "type": "BOOLEAN"
+        }
+      ]
+    }
+  },
+  "connector": {
+    "filters": {
+      "type": "FLAGS",
+      "flags": {
+        "A": "table.a",
+        "B": "table.b",
+        "C": "table.c"
+      }
+    },
+    "validityDates": [
+      {
+        "name": "date",
+        "column": "table.date"
+      }
+    ]
+  },
+  "filterValue": {
+    "type": "MULTI_SELECT",
+    "value": [
+      "B",
+      "C"
+    ]
+  }
+}

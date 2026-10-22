@@ -146,7 +146,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 	private static SelectFilter<?> setupSearch(StandaloneSupport conquery) throws Exception {
 		//read test specification
 		final String testJson =
-				LoadingUtil.readResource("/tests/query/filters/select/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY.test.json");
+				LoadingUtil.readResource("/tests/query/filters/select/date-restricted-or-of-multi-select-concepts/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY.test.json");
 		final DatasetId dataset = conquery.getDataset();
 
 		final ConqueryTestSpec test = ConqueryTestSpec.readJson(dataset, testJson);

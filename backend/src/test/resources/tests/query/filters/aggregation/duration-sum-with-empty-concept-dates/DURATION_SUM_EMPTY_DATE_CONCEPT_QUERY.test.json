@@ -1,0 +1,81 @@
+{
+  "type": "QUERY_TEST",
+  "label": "Duration sum with empty concept dates",
+  "expectedCsv": "tests/query/filters/aggregation/duration-sum-with-empty-concept-dates/expected-zeitspanne.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "DATE_RESTRICTION",
+      "dateRange": {
+        "min": "2010-01-01",
+        "max": "2010-01-31"
+      },
+      "child": {
+        "type": "CONCEPT",
+        "ids": [
+          "kg_tage_duration_sum"
+        ],
+        "label": "KG-Tage DURATION_SUM",
+        "tables": [
+          {
+            "id": "kg_tage_duration_sum.kg_tage_connector",
+            "filters": [
+              {
+                "filter": "kg_tage_duration_sum.kg_tage_connector.datum",
+                "type": "INTEGER_RANGE",
+                "value": {
+                  "min": 0
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "concepts": [
+    {
+      "label": "kg_tage_duration_sum",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "kg_tage_connector",
+          "table": "table1",
+          "validityDates": {
+            "label": "datum",
+            "startColumn": "table1.anfang",
+            "endColumn": "table1.ende"
+          },
+          "filters": {
+            "label": "datum",
+            "startColumn": "table1.anfang",
+            "endColumn": "table1.ende",
+            "type": "DURATION_SUM"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/filters/aggregation/duration-sum-with-empty-concept-dates/content.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "anfang",
+            "type": "DATE"
+          },
+          {
+            "name": "ende",
+            "type": "DATE"
+          }
+        ]
+      }
+    ]
+  }
+}

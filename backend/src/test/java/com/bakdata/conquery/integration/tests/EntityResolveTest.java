@@ -39,7 +39,7 @@ public class EntityResolveTest implements ProgrammaticIntegrationTest {
 
 		final StandaloneSupport conquery = testConquery.getSupport(name);
 
-		final String testJson = LoadingUtil.readResource("/tests/query/exports/ENTITY_EXPORT_TESTS/SIMPLE_TREECONCEPT_Query.json");
+		final String testJson = LoadingUtil.readResource("/tests/query/exports/entity-export-query/SIMPLE_TREECONCEPT_Query.json");
 
 		final DatasetId dataset = conquery.getDataset();
 

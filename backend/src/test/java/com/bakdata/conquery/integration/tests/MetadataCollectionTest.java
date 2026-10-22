@@ -24,7 +24,7 @@ public class MetadataCollectionTest extends IntegrationTest.Simple implements Pr
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
 		//read test sepcification
-		String testJson = LoadingUtil.readResource("/tests/query/concepts/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json");
+		String testJson = LoadingUtil.readResource("/tests/query/concepts/simple-tree-concept-query/SIMPLE_TREECONCEPT_Query.test.json");
 
 		DatasetId dataset = conquery.getDataset();
 

@@ -1,0 +1,82 @@
+{
+  "type": "QUERY_TEST",
+  "label": "Concept condition is present",
+  "expectedCsv": "tests/query/filters/conditions/concept-condition-is-present/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "CONCEPT",
+      "ids": [
+        "concept.a1"
+      ],
+      "tables": [
+        {
+          "id": "concept.connector",
+          "filters": []
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "name": "concept",
+      "type": "TREE",
+      "connectors": {
+        "condition": {
+          "type": "PRESENT",
+          "column": "include"
+        },
+        "name": "connector",
+        "column": "table.test_column",
+        "validityDates": {
+          "label": "datum",
+          "column": "table.datum"
+        }
+      },
+      "children": [
+        {
+          "name": "a1",
+          "condition": {
+            "type": "EQUAL",
+            "values": "A1"
+          },
+          "children": []
+        },
+        {
+          "name": "b2",
+          "condition": {
+            "type": "EQUAL",
+            "values": "B2"
+          },
+          "children": []
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/filters/conditions/concept-condition-is-present/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "test_column",
+            "type": "STRING"
+          },
+          {
+            "name": "include",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+}

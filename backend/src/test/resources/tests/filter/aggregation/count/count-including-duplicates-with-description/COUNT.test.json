@@ -1,0 +1,43 @@
+{
+  "type": "FILTER_TEST",
+  "label": "Count including duplicates with description",
+  "expectedCsv": "tests/filter/aggregation/count/count-including-duplicates-with-description/expected_COUNT_Filter.csv",
+  "connector": {
+    "validityDates": {
+      "label": "Datum",
+      "column": "table.datum"
+    },
+    "filters": {
+      "type": "COUNT",
+      "description": "Test count_filter",
+      "column": "table.nr",
+      "distinct": "false"
+    }
+  },
+  "filterValue": {
+    "type": "INTEGER_RANGE",
+    "value": {
+      "min": 5,
+      "max": 6
+    }
+  },
+  "content": {
+    "tables": {
+      "csv": "tests/filter/aggregation/count/count-including-duplicates-with-description/content_COUNT_Filter.csv",
+      "primaryColumn": {
+        "name": "pid",
+        "type": "STRING"
+      },
+      "columns": [
+        {
+          "name": "nr",
+          "type": "INTEGER"
+        },
+        {
+          "name": "datum",
+          "type": "DATE"
+        }
+      ]
+    }
+  }
+}	

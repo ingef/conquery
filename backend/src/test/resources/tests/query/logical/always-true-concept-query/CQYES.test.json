@@ -1,0 +1,32 @@
+{
+  "type": "QUERY_TEST",
+  "label": "Always-true concept query",
+  "expectedCsv": "tests/query/logical/always-true-concept-query/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type" : "YES"
+    }
+  },
+  "concepts": [
+
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/logical/always-true-concept-query/content.csv",
+        "name": "test_table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          }
+        ]
+      }
+    ]
+  }
+}

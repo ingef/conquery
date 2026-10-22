@@ -1,0 +1,41 @@
+{
+  "type": "FILTER_TEST",
+  "label": "Count quarters in a date range",
+  "expectedCsv": "tests/filter/aggregation/count/count-quarters-in-a-date-range/expected.csv",
+  "content": {
+    "tables": {
+      "csv": "tests/filter/aggregation/count/count-quarters-in-a-date-range/content.csv",
+      "primaryColumn": {
+        "name": "pid",
+        "type": "STRING"
+      },
+      "columns": [
+        {
+          "name": "behandlungsdatum",
+          "type": "DATE"
+        },
+        {
+          "name": "datum",
+          "type": "DATE"
+        }
+      ]
+    }
+  },
+  "connector": {
+    "validityDates": {
+      "label": "Datum",
+      "column": "table.datum"
+    },
+    "filters": {
+      "column": "table.behandlungsdatum",
+      "type": "COUNT_QUARTERS"
+    }
+  },
+  "filterValue": {
+    "type": "INTEGER_RANGE",
+    "value": {
+      "min": 2,
+      "max": 3
+    }
+  }
+}

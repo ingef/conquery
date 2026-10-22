@@ -1,13 +1,13 @@
 {
   "type": "QUERY_TEST",
-  "label": "Temporal Test",
+  "label": "Temporal while: all → latest",
   "sqlSpec": {
     "isEnabled": false,
     "supportedDialects": [
        "HANA"
     ]
   },
-  "expectedCsv": "tests/query/TEMPORAL/WHILE/ALL/LATEST/expected.csv",
+  "expectedCsv": "tests/query/temporal/while/all/latest/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -93,7 +93,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/query/TEMPORAL/WHILE/ALL/LATEST/content.csv",
+        "csv": "tests/query/temporal/while/all/latest/content.csv",
         "name": "table",
         "primaryColumn": {
           "name": "pid",

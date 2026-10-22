@@ -1,0 +1,70 @@
+{
+    "type": "QUERY_TEST",
+    "label": "Simple virtual concept query",
+    "expectedCsv": "tests/query/concepts/simple-virtual-concept-query/expected.csv",
+    "query": {
+        "type": "CONCEPT_QUERY",
+        "root": {
+            "ids": [
+                "geschlecht_select"
+            ],
+            "type": "CONCEPT",
+          "label": "geschlecht_select",
+            "tables": [
+                {
+                    "id": "geschlecht_select.geschlecht_connector",
+                    "filters": [
+                        {
+                            "filter": "geschlecht_select.geschlecht_connector.geschlecht",
+                            "type": "MULTI_SELECT",
+                            "value": [
+                                "f"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "concepts": [
+        {
+          "label": "geschlecht_select",
+            "type": "TREE",
+            "connectors": [
+                {
+                    "label": "geschlecht_connector",
+                    "table": "table1",
+                    "validityDates": {"label": "datum" ,"column": "table1.datum"},
+                    "filters": {
+                      "label": "geschlecht",
+                        "description": "Geschlecht zur gegebenen Datumseinschränkung",
+                        "column": "table1.geschlecht",
+                        "type": "SELECT"
+                    }
+                }
+            ]
+        }
+    ],
+    "content": {
+        "tables": [
+			{
+                "csv": "tests/query/concepts/simple-virtual-concept-query/content.csv",
+				"name": "table1",
+                "primaryColumn": {
+                    "name": "pid",
+                    "type": "STRING"
+                },
+				"columns": [
+					{
+						"name": "datum",
+						"type": "DATE"
+					},
+					{
+						"name": "geschlecht",
+						"type": "STRING"
+					}
+				]
+			}
+		]
+    }
+}

@@ -1,13 +1,13 @@
 {
   "type": "QUERY_TEST",
-  "label": "Temporal Test",
+  "label": "Temporal while: any → earliest",
   "sqlSpec": {
     "isEnabled": false,
     "supportedDialects": [
        "HANA"
     ]
   },
-  "expectedCsv": "tests/query/TEMPORAL/WHILE/ANY/EARLIEST/expected.csv",
+  "expectedCsv": "tests/query/temporal/while/any/earliest/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -93,7 +93,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/query/TEMPORAL/WHILE/ANY/EARLIEST/content.csv",
+        "csv": "tests/query/temporal/while/any/earliest/content.csv",
         "name": "table",
         "primaryColumn": {
           "name": "pid",

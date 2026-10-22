@@ -1,0 +1,80 @@
+{
+  "type": "QUERY_TEST",
+  "label": "Concept without a validity date",
+  "expectedCsv": "tests/query/filters/date/concept-without-a-validity-date/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "CONCEPT",
+      "ids": [
+        "test_tree.test_child1"
+      ],
+      "tables": [
+        {
+          "id": "test_tree.test_column",
+          "selects": [
+            "test_tree.test_column.test_select"
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "test_tree",
+      "type": "TREE",
+      "connectors": {
+        "label": "tree_label",
+        "name": "test_column",
+        "column": "test_table.test_column",
+        "selects": [
+          {
+            "column": "test_table.test_column",
+            "default": true,
+            "label": "Ausgabe test",
+            "name": "test_select",
+            "type": "FIRST"
+          }
+        ]
+      },
+      "children": [
+        {
+          "label": "test_child1",
+          "description": " ",
+          "condition": {
+            "type": "EQUAL",
+            "values": "A1"
+          },
+          "children": []
+        },
+        {
+          "label": "test_child2",
+          "description": " ",
+          "condition": {
+            "type": "EQUAL",
+            "values": "B2"
+          },
+          "children": []
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/filters/date/concept-without-a-validity-date/content.csv",
+        "name": "test_table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "test_column",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+} 

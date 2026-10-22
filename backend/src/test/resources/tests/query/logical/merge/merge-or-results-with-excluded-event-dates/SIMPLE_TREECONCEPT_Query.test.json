@@ -1,0 +1,98 @@
+{
+  "type": "QUERY_TEST",
+  "label": "Merge OR results with excluded event dates",
+  "expectedCsv": "tests/query/logical/merge/merge-or-results-with-excluded-event-dates/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "dateAggregationMode": "MERGE",
+    "root": {
+      "type": "OR",
+      "children": [
+        {
+          "type": "CONCEPT",
+          "excludeFromTimeAggregation": true,
+          "ids": [
+            "tree.a"
+          ],
+          "tables": [
+            {
+              "id": "tree.connector",
+              "selects": [
+                "tree.connector.date_union"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "CONCEPT",
+          "ids": [
+            "tree.b"
+          ],
+          "tables": [
+            {
+              "id": "tree.connector"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "name": "tree",
+      "type": "TREE",
+      "connectors": {
+        "name": "connector",
+        "column": "table.column",
+        "selects": {
+          "type": "EVENT_DATE_UNION",
+          "name": "date_union"
+        },
+        "validityDates": {
+          "name": "datum",
+          "column": "table.datum"
+        }
+      },
+      "children": [
+        {
+          "name": "a",
+          "condition": {
+            "type": "EQUAL",
+            "values": "A"
+          },
+          "children": []
+        },
+        {
+          "name": "b",
+          "condition": {
+            "type": "EQUAL",
+            "values": "B"
+          },
+          "children": []
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/logical/merge/merge-or-results-with-excluded-event-dates/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "column",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+}

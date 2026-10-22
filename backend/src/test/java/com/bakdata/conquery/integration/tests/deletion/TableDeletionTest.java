@@ -46,7 +46,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 		final StandaloneSupport conquery = testConquery.getSupport(name);
 
-		final String testJson = LoadingUtil.readResource("/tests/query/lifecycle/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json");
+		final String testJson = LoadingUtil.readResource("/tests/query/lifecycle/query-after-deleting-imported-data/SIMPLE_TREECONCEPT_Query.test.json");
 
 		final DatasetId dataset = conquery.getDataset();
 		final Namespace namespace = conquery.getNamespace();

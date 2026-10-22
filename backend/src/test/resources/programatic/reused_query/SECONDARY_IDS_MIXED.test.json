@@ -1,7 +1,7 @@
 {
   "type": "QUERY_TEST",
   "label": "SECONDARY_ID_MIXED Test",
-  "expectedCsv": "tests/query/exports/SECONDARY_ID_MIXED/expected.csv",
+  "expectedCsv": "tests/query/exports/secondary-id-export-with-mixed-sources/expected.csv",
   "query": {
     "type": "SECONDARY_ID_QUERY",
     "secondaryId": "secondary",

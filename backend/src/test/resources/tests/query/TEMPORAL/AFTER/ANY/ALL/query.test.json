@@ -1,13 +1,13 @@
 {
   "type": "QUERY_TEST",
-  "label": "Temporal Test",
+  "label": "Temporal after: any → all",
   "sqlSpec": {
     "isEnabled": false,
     "supportedDialects": [
        "HANA"
     ]
   },
-  "expectedCsv": "tests/query/TEMPORAL/AFTER/ANY/ALL/expected.csv",
+  "expectedCsv": "tests/query/temporal/after/any/all/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -97,7 +97,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/query/TEMPORAL/AFTER/ANY/ALL/content.csv",
+        "csv": "tests/query/temporal/after/any/all/content.csv",
         "name": "table",
         "primaryColumn": {
           "name": "pid",

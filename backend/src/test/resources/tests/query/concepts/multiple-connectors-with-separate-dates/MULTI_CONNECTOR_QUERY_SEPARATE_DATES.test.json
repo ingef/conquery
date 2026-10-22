@@ -1,0 +1,124 @@
+{
+  "type": "QUERY_TEST",
+  "label": "Multiple connectors with separate dates",
+  "expectedCsv": "tests/query/concepts/multiple-connectors-with-separate-dates/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "CONCEPT",
+      "ids": [
+        "test_tree.test_child1"
+      ],
+      "tables": [
+        {
+          "id": "test_tree.test_column",
+          "filters": [],
+          "selects": [
+            "test_tree.test_column.event-dates"
+          ]
+        },
+        {
+          "id": "test_tree.test_column2",
+          "filters": []
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "test_tree",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "tree_label",
+          "name": "test_column",
+          "column": "test_table.test_column",
+          "validityDates": {
+            "label": "datum",
+            "column": "test_table.datum"
+          },
+          "selects": [
+            {
+              "type": "EVENT_DATE_UNION",
+              "name": "event-dates"
+            }
+          ]
+        },
+        {
+          "label": "tree_label2",
+          "name": "test_column2",
+          "column": "test_table2.test_column",
+          "validityDates": {
+            "label": "datum",
+            "column": "test_table2.datum"
+          },
+          "selects": [
+            {
+              "type": "EVENT_DATE_UNION",
+              "name": "event-dates"
+            }
+          ]
+        }
+      ],
+      "children": [
+        {
+          "label": "test_child1",
+          "description": " ",
+          "condition": {
+            "type": "EQUAL",
+            "values": "A1"
+          },
+          "children": []
+        },
+        {
+          "label": "test_child2",
+          "condition": {
+            "type": "EQUAL",
+            "values": "B2"
+          },
+          "children": []
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/concepts/multiple-connectors-with-separate-dates/content.csv",
+        "name": "test_table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "test_column",
+            "type": "STRING"
+          }
+        ]
+      },
+      {
+        "csv": "tests/query/concepts/multiple-connectors-with-separate-dates/content2.csv",
+        "name": "test_table2",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "test_column",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+}

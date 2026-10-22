@@ -1,0 +1,168 @@
+{
+  "type": "QUERY_TEST",
+  "label": "Entity export query",
+  "expectedCsv": "tests/query/exports/entity-export-query/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "CONCEPT",
+      "ids": [
+        "tree1.child_a"
+      ],
+      "tables": [
+        {
+          "id": "tree1.connector",
+          "filters": []
+        }
+      ]
+    }
+  },
+  "internToExternMappings": [
+    {
+      "name": "mapping",
+      "type": "CSV_MAP",
+      "internalColumn": "code",
+      "externalTemplate": "External: {{external}}",
+      "csv": "classpath:/tests/query/exports/entity-export-query/mapping.csv"
+    }
+  ],
+  "concepts": [
+    {
+      "label": "tree1",
+      "type": "TREE",
+      "children": [
+        {
+          "condition": {
+            "type": "EQUAL",
+            "values": [
+              "A1"
+            ]
+          },
+          "label": "Child A"
+        },
+        {
+          "condition": {
+            "type": "EQUAL",
+            "values": [
+              "B2"
+            ]
+          },
+          "label": "Child B"
+        }
+      ],
+      "connectors": [
+        {
+          "name": "connector",
+          "column": "table1.column",
+          "selects": [
+            {
+              "name": "values",
+              "type": "DISTINCT",
+              "column": "table1.column"
+            },
+            {
+              "name": "age",
+              "type": "DATE_DISTANCE",
+              "column": "table1.datum"
+            }
+          ],
+          "filters" : [
+            {
+              "name" : "values-filter",
+              "type" : "SELECT",
+              "column" : "table1.column"
+            }
+          ],
+          "validityDates": {
+            "label": "datum",
+            "column": "table1.datum"
+          }
+        }
+      ]
+    },
+    {
+      "label": "tree2",
+      "type": "TREE",
+      "connectors": [
+        {
+          "name": "connector",
+          "column": "table2.column",
+          "selects": [
+            {
+              "name": "values",
+              "type": "DISTINCT",
+              "column": "table2.column"
+            },
+            {
+              "name": "age",
+              "type": "DATE_DISTANCE",
+              "column": "table2.datum"
+            }
+          ],
+          "validityDates": {
+            "label": "datum",
+            "column": "table2.datum"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "secondaryIds": [
+      {
+        "name": "secondaryid",
+        "mapping": "mapping",
+        "description": "This is a SecondaryId"
+      }
+    ],
+    "tables": [
+      {
+        "csv": "tests/query/exports/entity-export-query/content1.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "column",
+            "type": "STRING"
+          },
+          {
+            "name": "codes",
+            "type": "STRING",
+            "secondaryId": "secondaryid"
+          }
+        ]
+      },
+      {
+        "csv": "tests/query/exports/entity-export-query/content2.csv",
+        "name": "table2",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "column",
+            "type": "STRING",
+            "description": "This is a column"
+          },
+          {
+            "name": "codes",
+            "type": "STRING",
+            "secondaryId": "secondaryid"
+          }
+        ]
+      }
+    ]
+  }
+}

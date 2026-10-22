@@ -39,7 +39,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 		final StandaloneSupport conquery = testConquery.getSupport(name);
 		final DatasetId dataset = conquery.getDataset();
 		Namespace namespace = conquery.getNamespace();
-		final String testJson = LoadingUtil.readResource("/tests/query/lifecycle/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json");
+		final String testJson = LoadingUtil.readResource("/tests/query/lifecycle/query-after-deleting-imported-data/SIMPLE_TREECONCEPT_Query.test.json");
 		final QueryTest test = ConqueryTestSpec.readJson(dataset, testJson);
 
 		// Manually import data, so we can do our own work.

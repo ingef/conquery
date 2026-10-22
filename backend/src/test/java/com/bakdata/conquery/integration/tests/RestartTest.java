@@ -57,8 +57,8 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		DatasetId dataset = conquery.getDataset();
 
 		log.info("Setup tests");
-		ConqueryTestSpec test1 = setupTestQuery(dataset, validator, conquery, "/tests/query/lifecycle/RESTART_TEST_DATA/SIMPLE_FRONTEND_Query.json");
-		ConqueryTestSpec test2 = setupTestQuery(dataset, validator, conquery, "/tests/query/concepts/MULTI_CONCEPT_SINGLE_TABLE/query.test.json");
+		ConqueryTestSpec test1 = setupTestQuery(dataset, validator, conquery, "/tests/query/lifecycle/query-data-after-restart/SIMPLE_FRONTEND_Query.json");
+		ConqueryTestSpec test2 = setupTestQuery(dataset, validator, conquery, "/tests/query/concepts/multiple-concepts-in-one-table/query.test.json");
 
 		log.info("Execute tests");
 		test1.executeTest(conquery);
