@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.ColumnDescription;
+import com.bakdata.conquery.models.preproc.OutputRow;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.DateReader;
@@ -83,6 +84,10 @@ public abstract class OutputDescription {
 		 */
 		protected abstract Object parseLine(String[] row, Parser type, long sourceLine) throws ParsingException;
 
+		protected void parseLine(String[] row, Parser type, long sourceLine, OutputRow outputRow, int outputIndex) throws ParsingException {
+			outputRow.setObject(outputIndex, parseLine(row, type, sourceLine));
+		}
+
 		/**
 		 * Parse row and test for NULL values, throwing an exception when Required but missing.
 		 */
@@ -94,6 +99,17 @@ public abstract class OutputDescription {
 			}
 
 			return parsed;
+		}
+
+		/**
+		 * Parse into a reusable row buffer and test for required null values.
+		 */
+		public void createOutput(String[] row, Parser type, long sourceLine, OutputRow outputRow, int outputIndex) throws ParsingException {
+			parseLine(row, type, sourceLine, outputRow, outputIndex);
+
+			if (OutputDescription.this.isRequired() && outputRow.isNull(outputIndex)) {
+				throw new IllegalArgumentException(String.format("Required Output[%s] produced NULL value at line %d", OutputDescription.this.getName(), sourceLine));
+			}
 		}
 	}
 
