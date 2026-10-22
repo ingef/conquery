@@ -1,0 +1,72 @@
+{
+  "type": "QUERY_TEST",
+  "label": "SIMPLE_TREECONCEPT_QUERY Test",
+  "expectedCsv": "tests/query/filters/conditions/SIMPLE_TREECONCEPT_CONNECTOR_CONDITION_WITH_CHILDREN_QUERY/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "CONCEPT",
+      "ids": [
+        "concept.a1"
+      ],
+      "tables": [
+        {
+          "id": "concept.column",
+          "filters": []
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "concept",
+      "type": "TREE",
+      "connectors": {
+        "condition": {
+          "type": "COLUMN_EQUAL",
+          "column": "include",
+          "values": "1"
+        },
+        "name": "column",
+        "column": "table.column",
+        "validityDates": {
+          "label": "datum",
+          "column": "table.datum"
+        }
+      },
+      "children": {
+        "name": "a1",
+        "condition": {
+          "type": "EQUAL",
+          "values": "A1"
+        }
+      }
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/filters/conditions/SIMPLE_TREECONCEPT_CONNECTOR_CONDITION_WITH_CHILDREN_QUERY/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "column",
+            "type": "STRING"
+          },
+          {
+            "name": "include",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+}

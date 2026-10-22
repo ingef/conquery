@@ -1,0 +1,159 @@
+{
+  "type": "QUERY_TEST",
+  "label": "MULTI_CONCEPT_QUERY_SEPARATE_DATES Test",
+  "expectedCsv": "tests/query/concepts/MULTI_CONCEPT_QUERY_SEPARATE_DATES/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+          "type": "CONCEPT",
+          "ids": [
+            "test_tree.test_child1"
+          ],
+          "tables": [
+            {
+              "id": "test_tree.test_column"
+            }
+          ],
+          "selects": "test_tree.event-date"
+        },
+        {
+          "type": "CONCEPT",
+          "ids": [
+            "test_tree2.test_child1"
+          ],
+          "tables": [
+            {
+              "id": "test_tree2.test_column2"
+            }
+          ],
+          "selects": [
+            "test_tree2.event-date"
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "test_tree",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "tree_label",
+          "name": "test_column",
+          "column": "test_table.test_column",
+          "validityDates": {
+            "label": "datum",
+            "column": "test_table.datum"
+          }
+        }
+      ],
+      "children": [
+        {
+          "label": "test_child1",
+          "condition": {
+            "type": "EQUAL",
+            "values": "A"
+          },
+          "children": []
+        },
+        {
+          "label": "test_child2",
+          "condition": {
+            "type": "EQUAL",
+            "values": "B"
+          },
+          "children": []
+        }
+      ],
+      "selects": [
+        {
+          "name": "event-date",
+          "type": "EVENT_DATE_UNION"
+        }
+      ]
+    },
+    {
+      "label": "test_tree2",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "tree_label",
+          "name": "test_column2",
+          "column": "test_table2.test_column",
+          "validityDates": {
+            "label": "datum",
+            "column": "test_table2.datum"
+          }
+        }
+      ],
+      "children": [
+        {
+          "label": "test_child1",
+          "condition": {
+            "type": "EQUAL",
+            "values": "1"
+          },
+          "children": []
+        },
+        {
+          "label": "test_child2",
+          "condition": {
+            "type": "EQUAL",
+            "values": "2"
+          },
+          "children": []
+        }
+      ],
+      "selects": [
+        {
+          "name": "event-date",
+          "type": "EVENT_DATE_UNION"
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/concepts/MULTI_CONCEPT_QUERY_SEPARATE_DATES/content.csv",
+        "name": "test_table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "test_column",
+            "type": "STRING"
+          }
+        ]
+      },
+      {
+        "csv": "tests/query/concepts/MULTI_CONCEPT_QUERY_SEPARATE_DATES/content2.csv",
+        "name": "test_table2",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "test_column",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+}

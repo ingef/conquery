@@ -30,7 +30,7 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 	public void execute(StandaloneSupport conquery) throws Exception {
 		final MetaStorage storage = conquery.getMetaStorage();
 		final DatasetId dataset = conquery.getDataset();
-		final String testJson = LoadingUtil.readResource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json");
+		final String testJson = LoadingUtil.readResource("/tests/query/concepts/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json");
 		final QueryTest test = ConqueryTestSpec.readJson(dataset, testJson);
 		final User user  = new User("testUser", "testUserLabel", storage);
 

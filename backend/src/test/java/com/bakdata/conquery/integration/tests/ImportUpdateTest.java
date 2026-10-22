@@ -40,7 +40,7 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 		final StandaloneSupport conquery = testConquery.getSupport(name);
 
 
-		String testJson = LoadingUtil.readResource("/tests/query/UPDATE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.json");
+		String testJson = LoadingUtil.readResource("/tests/query/lifecycle/UPDATE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.json");
 
 		final DatasetId dataset = conquery.getDataset();
 		final Namespace namespace = conquery.getNamespace();

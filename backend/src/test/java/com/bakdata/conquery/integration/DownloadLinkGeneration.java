@@ -34,7 +34,7 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 
 		final User user = new User("testU", "testU", storage);
 
-		final QueryTest test = (QueryTest) ConqueryTestSpec.fromResourcePath("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json");
+		final QueryTest test = (QueryTest) ConqueryTestSpec.fromResourcePath("/tests/query/concepts/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json");
 
 		storage.updateUser(user);
 

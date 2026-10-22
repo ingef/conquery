@@ -41,8 +41,8 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 		StandaloneSupport conquery = testConquery.getSupport(name);
 
 		// Read two JSONs with different Trees
-		final String testJson = LoadingUtil.readResource("/tests/query/UPDATE_CONCEPT_TESTS/SIMPLE_TREECONCEPT_Query.json");
-		final String testJson2 = LoadingUtil.readResource("/tests/query/UPDATE_CONCEPT_TESTS/SIMPLE_TREECONCEPT_2_Query.json");
+		final String testJson = LoadingUtil.readResource("/tests/query/lifecycle/UPDATE_CONCEPT_TESTS/SIMPLE_TREECONCEPT_Query.json");
+		final String testJson2 = LoadingUtil.readResource("/tests/query/lifecycle/UPDATE_CONCEPT_TESTS/SIMPLE_TREECONCEPT_2_Query.json");
 
 		final DatasetId dataset = conquery.getDataset();
 		final Namespace namespace = conquery.getNamespace();
