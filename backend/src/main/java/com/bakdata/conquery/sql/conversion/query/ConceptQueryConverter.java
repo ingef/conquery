@@ -85,13 +85,13 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 		if (conceptQuery.getDateAggregationMode() == DateAggregationMode.NONE) {
 			finalSelects = preFinalSelects.blockValidityDate();
 		}
-
-// In case all final selects have no validity-date, we convert it to infinity.
-		if (preFinalSelects.getValidityDate().isEmpty()) {
-			return preFinalSelects.toBuilder()
+		// In case all final selects have no validity-date, we convert it to infinity.
+		else if (preFinalSelects.getValidityDate().isEmpty()) {
+			finalSelects = preFinalSelects.toBuilder()
 					.validityDate(Optional.of(functionProvider.emptyColumnDateRange()))
 					.build();
 		}
+
 		return Selects.builder()
 				.ids(finalSelects.getIds())
 				.validityDate(finalSelects.getValidityDate())
