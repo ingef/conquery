@@ -3,11 +3,9 @@ package com.bakdata.conquery.sql.model.form;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
 
-import lombok.Getter;
-
 public record ResolutionAndAlignment(
-		@Getter @NotNull FormResolution resolution,
-		@Getter @NotNull FormAlignment alignment
+		@NotNull FormResolution resolution,
+		@NotNull FormAlignment alignment
 ) {
 	@AssertTrue(message = "alignment is not supported by resolution")
 	public boolean isCompatible() {

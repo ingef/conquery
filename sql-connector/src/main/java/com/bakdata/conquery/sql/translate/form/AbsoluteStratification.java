@@ -105,7 +105,7 @@ class AbsoluteStratification {
 	}
 
 	private QueryStep createResolutionTable(QueryStep indexStartStep, ResolutionAndAlignment resolutionAndAlignment) {
-		return switch (resolutionAndAlignment.getResolution()) {
+		return switch (resolutionAndAlignment.resolution()) {
 			case COMPLETE -> createCompleteTable();
 			case YEARS, QUARTERS, DAYS -> createIntervalTable(indexStartStep, resolutionAndAlignment);
 		};
@@ -148,7 +148,7 @@ class AbsoluteStratification {
 		);
 
 		Field<Integer> index = stratificationFunctions.index(countsCteSelects.getIds(), countsCte.getQualifiedSelects().getStratificationDate());
-		SqlIdColumns ids = countsCteSelects.getIds().withStratification(resolutionAndAlignment.getResolution().name(), index);
+		SqlIdColumns ids = countsCteSelects.getIds().withStratification(resolutionAndAlignment.resolution().name(), index);
 
 		Selects selects = Selects.builder()
 								 .ids(ids)
@@ -158,7 +158,7 @@ class AbsoluteStratification {
 		Condition stopOnMaxResolutionWindowCount = stratificationFunctions.stopOnMaxResolutionWindowCount(resolutionAndAlignment);
 
 		return QueryStep.builder()
-						.cteName(FormCteStep.stratificationCte(resolutionAndAlignment.getResolution()).getSuffix())
+						.cteName(FormCteStep.stratificationCte(resolutionAndAlignment.resolution()).getSuffix())
 						.selects(selects)
 						.fromTable(QueryStep.toTableLike(countsCte.getCteName()))
 						.fromTable(QueryStep.toTableLike(FormCteStep.INT_SERIES.getSuffix()))
@@ -184,7 +184,7 @@ class AbsoluteStratification {
 										   .build();
 
 		return QueryStep.builder()
-						.cteName(FormCteStep.countsCte(resolutionAndAlignment.getResolution()).getSuffix())
+						.cteName(FormCteStep.countsCte(resolutionAndAlignment.resolution()).getSuffix())
 						.selects(selects)
 						.fromTable(QueryStep.toTableLike(indexStartStep.getCteName()))
 						.build();

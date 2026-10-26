@@ -9,8 +9,8 @@ class CombinationNotSupportedException extends RuntimeException {
 
 	public CombinationNotSupportedException(ResolutionAndAlignment resolutionAndAlignment) {
 		super("Alignment %s does not fit the resolution %s.".formatted(
-				resolutionAndAlignment.getAlignment(),
-				resolutionAndAlignment.getResolution()
+				resolutionAndAlignment.alignment(),
+				resolutionAndAlignment.resolution()
 		));
 	}
 

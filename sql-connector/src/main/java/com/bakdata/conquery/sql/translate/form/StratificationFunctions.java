@@ -182,7 +182,7 @@ public abstract class StratificationFunctions {
 	 */
 	public Field<Integer> calculateResolutionWindowCount(ResolutionAndAlignment resolutionAndAlignment, ColumnDateRange bounds) {
 		TranslatorDialect functionProvider = getDialect();
-		return switch (resolutionAndAlignment.getResolution()) {
+		return switch (resolutionAndAlignment.resolution()) {
 			case COMPLETE -> DSL.inline(1);
 			case YEARS -> calculateResolutionWindowForYearResolution(resolutionAndAlignment, bounds, functionProvider);
 			case QUARTERS -> calculateResolutionWindowForQuarterResolution(resolutionAndAlignment, bounds, functionProvider);
@@ -198,7 +198,7 @@ public abstract class StratificationFunctions {
 
 		TranslatorDialect functionProvider = getDialect();
 
-		ColumnDateRange stratificationRange = switch (resolutionAndAlignment.getResolution()) {
+		ColumnDateRange stratificationRange = switch (resolutionAndAlignment.resolution()) {
 			case COMPLETE -> bounds;
 			case YEARS -> createStratificationRangeForYearResolution(resolutionAndAlignment);
 			case QUARTERS -> createStratificationRangeForQuarterResolution(resolutionAndAlignment);
@@ -231,7 +231,7 @@ public abstract class StratificationFunctions {
 	 */
 	public Condition stopOnMaxResolutionWindowCount(ResolutionAndAlignment resolutionAndAlignment) {
 		Field<Integer> seriesIndex = intSeriesField();
-		return switch (resolutionAndAlignment.getResolution()) {
+		return switch (resolutionAndAlignment.resolution()) {
 			case COMPLETE -> DSL.noCondition();
 			case YEARS -> windowCountForYearResolution(resolutionAndAlignment, seriesIndex);
 			case QUARTERS -> windowCountForQuarterResolution(resolutionAndAlignment, seriesIndex);
@@ -244,7 +244,7 @@ public abstract class StratificationFunctions {
 			ColumnDateRange bounds,
 			TranslatorDialect functionProvider
 	) {
-		return switch (resolutionAndAlignment.getAlignment()) {
+		return switch (resolutionAndAlignment.alignment()) {
 			case QUARTER -> functionProvider.dateDistance(ChronoUnit.MONTHS, QUARTER_START, QUARTER_END)
 											.divide(MONTHS_PER_QUARTER)
 											.as(SharedAliases.QUARTER_ALIGNED_COUNT.getAlias());
@@ -261,7 +261,7 @@ public abstract class StratificationFunctions {
 			ColumnDateRange bounds,
 			TranslatorDialect functionProvider
 	) {
-		return switch (resolutionAndAlignment.getAlignment()) {
+		return switch (resolutionAndAlignment.alignment()) {
 			case YEAR -> functionProvider.dateDistance(ChronoUnit.YEARS, YEAR_START, YEAR_END)
 										 .as(SharedAliases.YEAR_ALIGNED_COUNT.getAlias());
 			case QUARTER -> functionProvider.dateDistance(ChronoUnit.YEARS, QUARTER_START, YEAR_END_QUARTER_ALIGNED)
@@ -275,7 +275,7 @@ public abstract class StratificationFunctions {
 	}
 
 	private ColumnDateRange createStratificationRangeForQuarterResolution(ResolutionAndAlignment resolutionAndAlignment) {
-		return switch (resolutionAndAlignment.getAlignment()) {
+		return switch (resolutionAndAlignment.alignment()) {
 			case QUARTER -> calcRange(QUARTER_START, Interval.QUARTER_INTERVAL);
 			case DAY -> calcRange(INDEX_START, Interval.NINETY_DAYS_INTERVAL);
 			default -> throw new CombinationNotSupportedException(resolutionAndAlignment);
@@ -283,7 +283,7 @@ public abstract class StratificationFunctions {
 	}
 
 	private ColumnDateRange createStratificationRangeForYearResolution(ResolutionAndAlignment resolutionAndAlignment) {
-		return switch (resolutionAndAlignment.getAlignment()) {
+		return switch (resolutionAndAlignment.alignment()) {
 			case YEAR -> calcRange(YEAR_START, Interval.ONE_YEAR_INTERVAL);
 			case QUARTER -> calcRange(QUARTER_START, Interval.ONE_YEAR_INTERVAL);
 			case DAY -> calcRange(INDEX_START, Interval.YEAR_AS_DAYS_INTERVAL);
@@ -292,7 +292,7 @@ public abstract class StratificationFunctions {
 	}
 
 	private static Condition windowCountForQuarterResolution(ResolutionAndAlignment resolutionAndAlignment, Field<Integer> seriesIndex) {
-		return switch (resolutionAndAlignment.getAlignment()) {
+		return switch (resolutionAndAlignment.alignment()) {
 			case QUARTER -> seriesIndex.lessOrEqual(QUARTER_ALIGNED_COUNT);
 			case DAY -> seriesIndex.lessOrEqual(DAY_ALIGNED_COUNT);
 			default -> throw new CombinationNotSupportedException(resolutionAndAlignment);
@@ -300,7 +300,7 @@ public abstract class StratificationFunctions {
 	}
 
 	private static Condition windowCountForYearResolution(ResolutionAndAlignment resolutionAndAlignment, Field<Integer> seriesIndex) {
-		return switch (resolutionAndAlignment.getAlignment()) {
+		return switch (resolutionAndAlignment.alignment()) {
 			case YEAR -> seriesIndex.lessOrEqual(YEAR_ALIGNED_COUNT);
 			case QUARTER -> seriesIndex.lessOrEqual(QUARTER_ALIGNED_COUNT);
 			case DAY -> seriesIndex.lessOrEqual(DAY_ALIGNED_COUNT);
