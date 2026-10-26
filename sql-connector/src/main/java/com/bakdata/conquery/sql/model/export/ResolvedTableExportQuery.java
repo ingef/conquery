@@ -1,6 +1,7 @@
 package com.bakdata.conquery.sql.model.export;
 
 import java.util.List;
+import java.util.Objects;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotEmpty;
@@ -25,7 +26,7 @@ public record ResolvedTableExportQuery(
 
 	@AssertTrue(message = "result column outputIds must be unique")
 	public boolean isResultColumnOutputIdsUnique() {
-		return resultColumns == null || resultColumns.stream()
+		return resultColumns == null || resultColumns.stream().anyMatch(Objects::isNull) || resultColumns.stream()
 				.map(ResultColumn::outputId)
 				.distinct()
 				.count() == resultColumns.size();

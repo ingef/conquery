@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -159,6 +160,26 @@ class ResolvedModelValidationTest {
 		assertTrue(paths.contains("features"));
 		assertTrue(paths.contains("resultColumns"));
 		assertTrue(paths.stream().anyMatch(path -> path.endsWith("resolutions")));
+	}
+
+	@Test
+	void shouldReportNullResultColumnEntriesAsConstraintViolations() {
+		List<ResultColumn> resultColumns = Collections.singletonList(null);
+		ResolvedFormQuery form = new ResolvedFormQuery(
+				validQuery(),
+				List.of(validQuery()),
+				new ResolvedFormMode.Absolute(BOUNDS, List.of(completeResolution())),
+				resultColumns
+		);
+		ResolvedTableExportQuery tableExport = new ResolvedTableExportQuery(
+				validQuery(),
+				BOUNDS,
+				List.of(validExportTable()),
+				resultColumns
+		);
+
+		assertThrows(ConstraintViolationException.class, () -> validation.validate(form));
+		assertThrows(ConstraintViolationException.class, () -> validation.validate(tableExport));
 	}
 
 	private static ResolvedFormQuery validForm() {
