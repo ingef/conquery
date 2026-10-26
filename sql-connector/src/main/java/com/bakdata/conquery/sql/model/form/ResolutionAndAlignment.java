@@ -1,6 +1,26 @@
 package com.bakdata.conquery.sql.model.form;
 
-public record ResolutionAndAlignment(FormResolution resolution, FormAlignment alignment) {
-	public FormResolution getResolution() { return resolution; }
-	public FormAlignment getAlignment() { return alignment; }
+import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.NotNull;
+
+import lombok.Getter;
+
+public record ResolutionAndAlignment(
+		@Getter @NotNull FormResolution resolution,
+		@Getter @NotNull FormAlignment alignment
+) {
+	@AssertTrue(message = "alignment is not supported by resolution")
+	public boolean isCompatible() {
+		if (resolution == null || alignment == null) {
+			return true;
+		}
+		return switch (resolution) {
+			case COMPLETE -> alignment == FormAlignment.NO_ALIGN;
+			case YEARS -> alignment == FormAlignment.YEAR
+					|| alignment == FormAlignment.QUARTER
+					|| alignment == FormAlignment.DAY;
+			case QUARTERS -> alignment == FormAlignment.QUARTER || alignment == FormAlignment.DAY;
+			case DAYS -> alignment == FormAlignment.DAY;
+		};
+	}
 }
