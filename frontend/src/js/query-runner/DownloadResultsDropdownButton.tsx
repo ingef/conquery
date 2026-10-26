@@ -99,6 +99,8 @@ const DownloadResultsDropdownButton = ({
     return truncate(fileChoice.label);
   }, [fileChoice]);
 
+  const showDropdown = tiny || resultUrls.length > 1;
+
   return (
     <div className={frame({ bordered: !tiny })}>
       {!tiny && (
@@ -111,45 +113,49 @@ const DownloadResultsDropdownButton = ({
               {truncChosenLabel}
             </RacButton>
           </a>
-          <div className={separator()} />
+          {showDropdown && <div className={separator()} />}
         </>
       )}
-      <TooltipTrigger>
-        <MenuTrigger>
-          <RacButton aria-label={tooltip} className={part({ caret: true })}>
-            {tiny ? <DownloadIcon /> : <ChevronDownIcon />}
-          </RacButton>
-          <Menu
-            aria-label={t("previousQuery.downloadResults")}
-            onAction={(key) => {
-              const chosen = resultUrls.find(({ url }) => url === key);
-              if (chosen) {
-                setFileChoice({
-                  label: chosen.label,
-                  ending: getEnding(chosen.url),
-                });
-              }
-            }}
-          >
-            {resultUrls.map((resultUrl) => {
-              const { icon: FileTypeIcon, color } = getFileIcon(resultUrl.url);
+      {showDropdown && (
+        <TooltipTrigger>
+          <MenuTrigger>
+            <RacButton aria-label={tooltip} className={part({ caret: true })}>
+              {tiny ? <DownloadIcon /> : <ChevronDownIcon />}
+            </RacButton>
+            <Menu
+              aria-label={t("previousQuery.downloadResults")}
+              onAction={(key) => {
+                const chosen = resultUrls.find(({ url }) => url === key);
+                if (chosen) {
+                  setFileChoice({
+                    label: chosen.label,
+                    ending: getEnding(chosen.url),
+                  });
+                }
+              }}
+            >
+              {resultUrls.map((resultUrl) => {
+                const { icon: FileTypeIcon, color } = getFileIcon(
+                  resultUrl.url,
+                );
 
-              return (
-                <MenuItem
-                  key={resultUrl.url}
-                  id={resultUrl.url}
-                  href={`${resultUrl.url}?access_token=${encodeURIComponent(authToken)}`}
-                  textValue={resultUrl.label}
-                >
-                  <FileTypeIcon style={{ color }} />
-                  {truncate(resultUrl.label)}
-                </MenuItem>
-              );
-            })}
-          </Menu>
-        </MenuTrigger>
-        <Tooltip>{tooltip}</Tooltip>
-      </TooltipTrigger>
+                return (
+                  <MenuItem
+                    key={resultUrl.url}
+                    id={resultUrl.url}
+                    href={`${resultUrl.url}?access_token=${encodeURIComponent(authToken)}`}
+                    textValue={resultUrl.label}
+                  >
+                    <FileTypeIcon style={{ color }} />
+                    {truncate(resultUrl.label)}
+                  </MenuItem>
+                );
+              })}
+            </Menu>
+          </MenuTrigger>
+          <Tooltip>{tooltip}</Tooltip>
+        </TooltipTrigger>
+      )}
     </div>
   );
 };
