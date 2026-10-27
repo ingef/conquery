@@ -25,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 public class NewsResource extends HAuthorized {
 
     private final NewsService newsService;
+	private final NewsPublicationPolicy publicationPolicy;
     @PathParam(DATASET)
     DatasetId datasetId;
 
@@ -32,7 +33,9 @@ public class NewsResource extends HAuthorized {
     public Collection<FrontendNewsItem> getNews(@Auth Subject subject) {
         subject.authorize(datasetId, Ability.READ);
         List<NewsItem> news = newsService.getNews(datasetId.getName());
-        return news.stream().map(item ->
+		return news.stream()
+				.filter(publicationPolicy::isPublished)
+				.map(item ->
             new FrontendNewsItem(
                     item.id(),
                     item.title(),
@@ -40,6 +43,7 @@ public class NewsResource extends HAuthorized {
                     item.link(),
                     item.date()
             )
-        ).toList();
+				)
+				.toList();
     }
 }
