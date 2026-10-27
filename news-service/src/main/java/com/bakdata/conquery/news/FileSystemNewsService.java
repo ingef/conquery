@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -83,7 +84,7 @@ public class FileSystemNewsService implements NewsService {
 	@Override
 	public List<NewsItem> getNews(String category) {
 		return news.values().stream()
-				.filter(c -> category == null || c.newsItem().categories().contains(category))
+				.filter(c -> Strings.isNullOrEmpty(category)|| c.newsItem().categories().isEmpty() || c.newsItem().categories().contains(category))
 				.sorted(Comparator.comparing(NewsItemContainer::file))
 				.map(NewsItemContainer::newsItem).toList();
 	}
