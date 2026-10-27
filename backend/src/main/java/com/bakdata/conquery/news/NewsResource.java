@@ -26,7 +26,7 @@ public class NewsResource extends HAuthorized {
 
     private final NewsService newsService;
     @PathParam(DATASET)
-    DatasetId datasetId;
+    private DatasetId datasetId;
 
     @GET
     public Collection<FrontendNewsItem> getNews(@Auth Subject subject) {
