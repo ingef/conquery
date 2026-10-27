@@ -96,12 +96,7 @@ export const Money: Story = {
       label="Price"
       tooltip="Stored in cents, shown with two decimals and the unit."
       moneyRange
-      currencyConfig={{
-        unit: "€",
-        thousandSeparator: ".",
-        decimalSeparator: ",",
-        decimalScale: 2,
-      }}
+      currency="EUR"
       defaultValue={{ min: 1050, max: null }}
     />
   ),

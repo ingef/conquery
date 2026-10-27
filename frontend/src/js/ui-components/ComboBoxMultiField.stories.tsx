@@ -25,6 +25,23 @@ const REGIONS: SelectOptionT[] = [
   { value: "islands", label: "**Islands** – seasonal" },
 ];
 
+const ALL_REGIONS: SelectOptionT[] = Array.from({ length: 230 }, (_, i) => ({
+  value: `region-${i + 1}`,
+  label: `Region ${i + 1}`,
+}));
+
+// what the app's resolve endpoint does: known codes or labels become options, the rest stays as typed
+const resolveLines = (lines: string[]): SelectOptionT[] => {
+  const byValue = new Map<string, SelectOptionT>();
+  for (const line of lines) {
+    const option = ALL_REGIONS.find(
+      (o) => o.value === line || o.label.toLowerCase() === line.toLowerCase(),
+    ) ?? { value: line, label: line };
+    byValue.set(String(option.value), option);
+  }
+  return [...byValue.values()];
+};
+
 // each example keeps its own selection and shows what is stored
 const Stateful = ({
   defaultValue = [],
@@ -73,10 +90,6 @@ export const Creatable: Story = {
   ),
 };
 
-const ALL_REGIONS: SelectOptionT[] = Array.from({ length: 230 }, (_, i) => ({
-  value: `region-${i + 1}`,
-  label: `Region ${i + 1}`,
-}));
 const PAGE_SIZE = 25;
 
 // a server search: pages of 25 arrive after a delay, the total counts every match
@@ -136,40 +149,52 @@ const ServerSearch = () => {
 
 export const ServerSearchWithPaging: Story = { render: () => <ServerSearch /> };
 
-export const WithFileImport: Story = {
-  render: () => (
-    <Stateful
-      label="Regions"
-      tooltip="A dropped or pasted file's lines become values, one per line."
-      options={REGIONS}
-      onResolve={() => {}}
-    />
-  ),
-};
-
-const ManyValues = () => {
-  const [value, setValue] = useState<SelectOptionT[]>(
-    Array.from({ length: 201 }, (_, i) => ({
-      value: `value-${i}`,
-      label: `Value ${i}`,
-    })),
-  );
+// a dropped or pasted list adds to the selection, as it does in the app
+const FileImport = () => {
+  const [value, setValue] = useState<SelectOptionT[]>([]);
   return (
     <div className="flex w-96 flex-col">
       <ComboBoxMultiField
         label="Regions"
-        options={REGIONS}
+        tooltip="Drop or paste a file with one value per line: region-1 … region-230 or their labels resolve, other lines stay as typed. Typed text becomes a value with Enter."
+        options={ALL_REGIONS}
         value={value}
         onChange={setValue}
+        creatable
+        onResolve={(lines) =>
+          setValue((previous) =>
+            withoutDuplicates(previous, resolveLines(lines)),
+          )
+        }
       />
       <span className="mt-10 text-xs text-gray-400">
-        above 200 values the field only offers to clear them
+        {value.length} selected
       </span>
     </div>
   );
 };
 
-export const TooManyValues: Story = { render: () => <ManyValues /> };
+export const WithFileImport: Story = { render: () => <FileImport /> };
+
+const ManyValues = () => {
+  const [value, setValue] = useState<SelectOptionT[]>(ALL_REGIONS.slice(0, 25));
+  return (
+    <div className="flex w-96 flex-col">
+      <ComboBoxMultiField
+        label="Regions"
+        tooltip="Above 20 values the tags collapse into one that clears them all; single values still toggle in the list."
+        options={ALL_REGIONS}
+        value={value}
+        onChange={setValue}
+      />
+      <span className="mt-10 text-xs text-gray-400">
+        {value.length} selected
+      </span>
+    </div>
+  );
+};
+
+export const CollapsedTags: Story = { render: () => <ManyValues /> };
 
 export const WithError: Story = {
   render: () => (

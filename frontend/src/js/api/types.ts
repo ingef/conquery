@@ -26,13 +26,6 @@ export interface DateRangeT {
   max?: string;
 }
 
-export interface CurrencyConfigT {
-  unit: string;
-  thousandSeparator: string;
-  decimalSeparator: string;
-  decimalScale: number;
-}
-
 interface FilterBaseT {
   id: string;
   label: string;
@@ -183,7 +176,11 @@ export interface FilterConfigT {
     | "SELECT"
     | "MULTI_SELECT"
     | "BIG_MULTI_SELECT";
-  value: RangeFilterValueT | SelectFilterValueT | string | string[];
+  value:
+    | RangeFilterValueT
+    | SelectFilterValueT
+    | string
+    | SelectOptionT["value"][];
 }
 
 interface DateColumnConfigT {
@@ -294,7 +291,8 @@ export interface GetFrontendConfigResponseT {
     version: string | null; // probably shouldn't be nullable at all
     buildTime: string | null; // should be optional, not null
   }[];
-  currency: CurrencyConfigT;
+  /** ISO 4217 code of the currency that money columns hold */
+  currency: string;
   queryUpload: QueryUploadConfigT;
   manualUrl?: string;
   contactEmail?: string;
@@ -547,6 +545,7 @@ export type GetEntityHistoryDefaultParamsResponse = HistorySources & {
   searchConcept: string | null; // concept id
   searchConnector: string | null; // connector id within the searchConcept, the table that holds the searchFilters
   searchFilters?: string[]; // allowlisted filter ids within the searchConnector
+  prioritizedIdColumns: string[]; // id kinds, most recognizable first
 };
 
 export interface EntityInfo {

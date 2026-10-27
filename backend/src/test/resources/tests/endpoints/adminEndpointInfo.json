@@ -186,6 +186,11 @@
   },
   {
     "method": "POST",
+    "path": "/datasets/{dataset}/update-filter-search",
+    "clazz": "AdminDatasetResource"
+  },
+  {
+    "method": "POST",
     "path": "/datasets/{dataset}/weight",
     "clazz": "AdminDatasetResource"
   },

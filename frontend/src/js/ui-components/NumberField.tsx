@@ -1,11 +1,11 @@
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
-import { type Ref, useRef } from "react";
+import type { Ref } from "react";
+import { useObjectRef } from "react-aria";
 import {
   ButtonContext,
   NumberField as RacNumberField,
   type NumberFieldProps as RacNumberFieldProps,
 } from "react-aria-components";
-import { mergeRefs } from "react-merge-refs";
 
 import { exists } from "../common/helpers/exists";
 import { FieldError } from "./FieldError";
@@ -74,7 +74,7 @@ export const NumberField = ({
   inputRef,
   ...props
 }: NumberFieldProps) => {
-  const ownInputRef = useRef<HTMLInputElement>(null);
+  const ownInputRef = useObjectRef(inputRef);
 
   return (
     <RacNumberField
@@ -94,7 +94,7 @@ export const NumberField = ({
             </Label>
           )}
           <Input
-            ref={mergeRefs([ownInputRef, inputRef])}
+            ref={ownInputRef}
             placeholder={placeholder}
             isDisabled={isDisabled}
             isInvalid={isInvalid}

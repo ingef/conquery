@@ -83,6 +83,14 @@
       </button>
       <button
         type="button"
+        class="btn btn-secondary"
+        onclick="rest('/admin/datasets/${c.ds.id}/update-filter-search',{method: 'post'})"
+        data-cy="update-filter-search"
+      >
+        Update Filter Search
+      </button>
+      <button
+        type="button"
         class="btn btn-danger"
         onclick="rest('/admin/datasets/${c.ds.id}/clear-internToExtern-cache',{method: 'post'})"
       >

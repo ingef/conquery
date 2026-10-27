@@ -1,16 +1,8 @@
 import { memo, type ReactNode, useMemo } from "react";
-import {
-  type InputAttributes,
-  NumericFormat,
-  type NumericFormatProps,
-} from "react-number-format";
 import { tv } from "tailwind-variants";
 
-import type {
-  ColumnDescription,
-  ConceptIdT,
-  CurrencyConfigT,
-} from "../../api/types";
+import type { ColumnDescription, ConceptIdT } from "../../api/types";
+import { useMoneyFormatter } from "../../common/useMoneyFormatter";
 import { C2 } from "../../ui-components/Typography";
 import type { ContentFilterValue, ContentType } from "../ContentControl";
 import { formatHistoryDayRange } from "../RowDates";
@@ -57,7 +49,6 @@ interface Props {
   columns: Record<string, ColumnDescription>;
   groupedRows: EntityEvent[];
   groupedRowsKeysWithDifferentValues: string[];
-  currencyConfig: CurrencyConfigT;
   rootConceptIdsByColumn: Record<string, ConceptIdT>;
   contentFilter: ContentFilterValue;
 }
@@ -66,7 +57,6 @@ const GroupedContent = ({
   columns,
   groupedRows,
   groupedRowsKeysWithDifferentValues,
-  currencyConfig,
   rootConceptIdsByColumn,
   contentFilter,
 }: Props) => {
@@ -112,7 +102,6 @@ const GroupedContent = ({
               key={key}
               columnDescription={columns[key]}
               cell={groupedRow[key]}
-              currencyConfig={currencyConfig}
               rootConceptIdsByColumn={rootConceptIdsByColumn}
             />
           )),
@@ -125,15 +114,15 @@ const GroupedContent = ({
 const Cell = memo(
   ({
     columnDescription,
-    currencyConfig,
     cell,
     rootConceptIdsByColumn,
   }: {
     columnDescription: ColumnDescription;
-    currencyConfig: CurrencyConfigT;
     cell: unknown;
     rootConceptIdsByColumn: Record<string, ConceptIdT>;
   }) => {
+    const moneyFormatter = useMoneyFormatter();
+
     if (isDateColumn(columnDescription)) {
       return (cell as DateRow).from === (cell as DateRow).to ? (
         <C2 as="span">{formatHistoryDayRange((cell as DateRow).from)}</C2>
@@ -156,17 +145,8 @@ const Cell = memo(
     }
 
     if (isMoneyColumn(columnDescription)) {
-      // typed up front with an explicit base type: the polymorphic NumericFormat
-      // props are otherwise too complex a union for tsc
-      const numericFormatProps: NumericFormatProps<InputAttributes> = {
-        ...currencyConfig,
-        displayType: "text",
-        value: parseFloat(cell as string),
-      };
       return (
-        <C2 as="span">
-          <NumericFormat<InputAttributes> {...numericFormatProps} />
-        </C2>
+        <C2 as="span">{moneyFormatter.format(parseFloat(cell as string))}</C2>
       );
     }
 

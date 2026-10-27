@@ -16,17 +16,14 @@
   "rightPane": {
     "tabs": "Editors",
     "queryEditor": "Editor",
-    "timebasedQueryEditor": "Timebased Editor",
-    "externalForms": "Form Editor"
+    "externalForms": "Form Editor",
+    "editorV2": "Scientific Editor"
   },
   "conceptTreeList": {
     "loading": "Loading concept trees",
-    "loadingTree": "Loading concept: {{tree}}",
     "error": "Could not load concept: {{tree}}.",
     "noTrees": "Could not load concepts.",
     "noTreesExplanation": "Probably due to a network issue. Please try to refresh.",
-    "openAll": "Open all",
-    "closeAll": "Open individually",
     "searchPlaceholder": "Search concepts ...",
     "showMismatches": "Show all",
     "showMatchesOnly": "Show matches only",
@@ -41,7 +38,6 @@
     "startSuccess": "Query started",
     "endSuccess": "Query finished",
     "startError": "Failed to start the query.",
-    "resultError": "Could not load the query result.",
     "resultCount": "results",
     "resultCountSecondaryIdQuery": "analysis results",
     "queryFailed": "The query failed.",
@@ -49,8 +45,6 @@
   },
   "queryEditor": {
     "couldNotExpandNode": "Concept not found",
-    "couldNotInsertConceptList": "Could not insert the Concept List",
-    "edit": "Edit",
     "exclude": "Exclude",
     "date": "Date",
     "expand": "Expand",
@@ -74,7 +68,6 @@
   },
   "dropzone": {
     "dragElementPlease": "Add an element",
-    "dragQuery": "Add a query",
     "explanation": "You'll create a query in this area",
     "dropIntoThisArea": "Drop one of the following to get started",
     "aConcept": "a concept",
@@ -83,20 +76,15 @@
   },
   "datasetSelector": {
     "label": "Datasets",
-    "pleaseChoose": "Choose a dataset",
     "error": "Could not load datasets",
     "disabled": "Can't change the dataset at the moment."
   },
   "queryNodeEditor": {
-    "conceptTree": "Concept Tree",
-    "queryNode": "Query Node",
-    "conceptNodes": "Concept Nodes",
     "conceptNodeTables": "Input Tables",
     "sections": "Sections",
     "includeTable": "Include {{table}}",
     "properties": "Common properties",
     "reset": "Reset",
-    "resetSettings": "Reset to default settings",
     "clearAllSettings": "Clear all fields",
     "clearAllSettingsConfirm": "Clear now",
     "clearSettings": "Clear fields",
@@ -104,12 +92,7 @@
     "excludingTimestamps": "Excluded from time calculation",
     "excludeFromSecondaryId": "Exclude from analysis layer",
     "excludingFromSecondaryId": "Excluded from analysis layer",
-    "description": "Description",
-    "noDescriptionProvided": "No description provided.",
-    "selectAFilter": "Select a filter to see its description here.",
     "dropConcept": "Drop another concept here",
-    "includeSubnodes": "Include subordinate concepts",
-    "tooManyValues": "{{count}} values selected",
     "filters": "Filters",
     "selects": "Additional values",
     "commonSelects": "Common additional values",
@@ -129,7 +112,6 @@
   },
   "sharePreviousQueryModal": {
     "headline": "Edit sharing",
-    "groupsLabel": "Groups to share the query with",
     "groupsLabelQuery": "Groups to share the query with",
     "groupsLabelConfig": "Groups to share the form config with",
     "unshare": "Revoke sharing"
@@ -143,7 +125,6 @@
     "contact": "Contact",
     "confirm": "Confirm",
     "back": "Back",
-    "any": "Any",
     "save": "Save",
     "saveAndCloseEsc": "Save and close (ESC)",
     "edit": "Edit",
@@ -153,22 +134,11 @@
     "and": "and",
     "or": "or",
     "clear": "Clear",
-    "timeUnitDays": "days",
-    "title": "Title",
-    "description": "Description",
     "clearValue": "Clear value",
     "close": "Close",
     "create": "Create",
-    "addTag": "Add folder",
     "share": "Share",
     "shared": "Shared",
-    "loading": "Loading ...",
-    "average": "Average",
-    "median": "Median",
-    "min": "Min",
-    "max": "Max",
-    "std": "SD",
-    "sum": "Sum",
     "logout": "Logout",
     "dateInvalid": "Invalid date",
     "missingLabel": "Unknown",
@@ -188,7 +158,6 @@
     "collapse": "Hide info pane",
     "placeholder": "More information on a concept ...",
     "date": {
-      "daterange": "Date range",
       "from": "From",
       "to": "To"
     }
@@ -200,9 +169,7 @@
   "inputDateRange": {
     "from": "From",
     "to": "To",
-    "placeholder": "Select date",
     "openCalendar": "Open calendar",
-    "today": "Today",
     "dateFormat": "MM/dd/yyyy",
     "tooltip": {
       "possiblePattern": "y2000 => from: 01/01/2000 to: 01/31/2000 <br/> q2.2000 => from: 04/01/2000 to: 06/30/2000 <br/> m3.2000 => from: 03/01/2000 to: 03/31/2000"
@@ -220,6 +187,7 @@
     "ofTotal": " of {{count}}",
     "tagPlaceholder": "Folder ...",
     "folders": "Folders",
+    "selectedCount": "{{count}} values selected",
     "selectedValues": "Selected values"
   },
   "previousQueries": {
@@ -253,26 +221,6 @@
     "queries": "Queries only",
     "configs": "Forms only"
   },
-  "formConfigsFilter": {
-    "activeForm": "Active form"
-  },
-  "timebasedQueryEditor": {
-    "headline": "Anfragen in Relation",
-    "opBefore": "BEFORE",
-    "opBeforeOrSame": "BEFORE OR SAME",
-    "opDays": "DAYS BEFORE",
-    "opSame": "SAME",
-    "opDaysOrNoEventBefore": "DAYS OR NO EVENT BEFORE",
-    "timestampFirst": "FISRT",
-    "timestampLast": "LAST",
-    "timestampRandom": "RANDOM",
-    "timestamp": "Timestamp",
-    "condition": "Condition",
-    "timestampResultsFrom": "Use as result timestamp",
-    "addCondition": "Add condition",
-    "minDaysLabel": "Min. days",
-    "maxDaysLabel": "Max. days"
-  },
   "externalForms": {
     "manualButton": "Go to manual",
     "forms": "Form",
@@ -283,8 +231,7 @@
       "validSelectRequired": "Valid selects required for these concepts"
     },
     "default": {
-      "conceptDropzoneLabel": "Add a concept or a concept list",
-      "conceptColumnDropzoneLabel": "Add a concept or a concept list"
+      "conceptDropzoneLabel": "Add a concept or a concept list"
     },
     "copyModal": {
       "headline": "Copy concepts form another field",
@@ -294,31 +241,6 @@
     },
     "common": {
       "connectedWith": "Connected by",
-      "relativeToIndex": "Relative to index date",
-      "timespan": "Time span",
-      "dateMinLabel": "From",
-      "dateMaxLabel": "To",
-      "timeInterval": "Time interval",
-      "indexDate": {
-        "label": "index date",
-        "before": "BEFORE",
-        "neutral": "SAME",
-        "after": "AFTER"
-      },
-      "timeUnit": {
-        "label": "Time unit",
-        "days": "Days",
-        "quarters": "Quarters",
-        "years": "Years",
-        "complete": "All time"
-      },
-      "timestamp": {
-        "label": "Timestamp",
-        "first": "FIRST",
-        "last": "LAST",
-        "random": "RANDOM"
-      },
-      "edit": "Edit",
       "concept": {
         "expand": "Include / exclude sub-attributes",
         "copyFrom": "Copy from ...",
@@ -349,13 +271,11 @@
     "semicolon": "Semicolon",
     "colon": "Colon",
     "comma": "Comma",
-    "id": "ID",
     "dateSet": "Date set",
     "startDate": "Start date",
     "endDate": "End date",
     "extra": "Additional Column",
     "ignore": "IGNORE",
-    "partialSuccess": "Upload partially successful.",
     "resolved_one": "1 line resolved.",
     "resolved_other": "{{count}} lines resolved.",
     "unreadableDate_one": "Couldn't read the date for the following line",
@@ -368,13 +288,11 @@
     "label": "Name of the concept",
     "selectConceptRootNode": "What's in the list you dropped?",
     "insertNode": "Insert now",
-    "result": "Result",
     "resolvedCodes_one": "1 value resolved.",
     "resolvedCodes_other": "{{count}} values resolved.",
     "unknownCodes_one": "1 value not resolved",
     "unknownCodes_other": "{{count}} values not resolved",
     "error": "An error occurred when resolving the values.",
-    "nothingResolved": "No concept resolved.",
     "filterValuesFrom": "Filter values from",
     "conceptValuesFrom": "Concepts from",
     "includeUnresolved": "Include unresolved values",
@@ -384,21 +302,13 @@
   "uploadFilterListModal": {
     "headline": "Upload filter values"
   },
-  "conceptListDetailsModal": {
-    "conceptTreeRoot": "Concept Tree",
-    "conceptCodes": "Concept Codes"
-  },
   "uploadQueryResults": {
     "uploadResults": "Upload Query Result"
   },
   "previousQueriesFolderButton": {
     "tooltip": "Show / hide folders"
   },
-  "authorization": {
-    "unauthorized": "Authentitcation failed. An authentication token is missing or expired"
-  },
   "search": {
-    "placeholder": "Search ...",
     "resultLabel": "{{totalResults}} results ({{duration}} s)"
   },
   "inputDate": {
@@ -437,9 +347,7 @@
     "submit": "Login"
   },
   "formConfigs": {
-    "loading": "Loading form configurations",
-    "error": "Could not load form configurations.",
-    "noneFound": "No form configurations found"
+    "error": "Could not load form configurations."
   },
   "formConfig": {
     "loadSuccess": "Form configuration <strong>{{label}}</strong> was loaded successfully.",
@@ -455,7 +363,6 @@
     "closeAll": "Close all concepts"
   },
   "folders": {
-    "headline": "Folders",
     "noFolders": "none",
     "allQueries": "All",
     "add": "New folder",
@@ -473,7 +380,6 @@
     "tabConceptTrees": "Select concepts from concepts trees and use them in the Editor and Form Editor",
     "tabPreviousQueries": "Select previous queries and use them in the Editor, Timebased Editor and Form Editor. Select stored forms and use them in the Form Editor.",
     "tabQueryEditor": "In the Editor, a query may be built and sent.",
-    "tabTimebasedEditor": "In the Timebased Editor, a time-based query may be built and sent. That means, previous queries may be combined using time based relations, such as 'before' and 'after'.",
     "tabFormEditor": "The Form Editor allows for further analysis and statistics of previous queries.",
     "tabEditorV2": "An extended editor that allows advanced queries.",
     "datasetSelector": "Select the dataset – concept trees, previous queries and forms will be loaded.",
@@ -483,8 +389,7 @@
     "queryEditorExclude": "If selected, will return results which do not include the concepts from this column.",
     "queryEditorDate": "Select a date range for the concepts of this column.",
     "editorDropzoneAnd": "Drop concepts here to connect them logically via AND. Click to select a concept list.",
-    "editorDropzoneOr": "Drop concepts here to connect them logically via OR. Click to select a concept list.",
-    "queryNodeDetails": "Detail-Einstellungen bearbeiten"
+    "editorDropzoneOr": "Drop concepts here to connect them logically via OR. Click to select a concept list."
   },
   "history": {
     "infoTabs": "Info categories",
@@ -511,7 +416,6 @@
     "nextButtonLabel": "Next entity",
     "prevButtonLabel": "Previous entity",
     "downloadEntityData": "Download entity history",
-    "differencesTooltip": "Differences from the individual events",
     "closeAll": "Close all",
     "openAll": "Open all",
     "searchEntitiesButton": "Start History",
@@ -527,7 +431,6 @@
     },
     "content": {
       "money": "Money",
-      "secondaryId": "IDs from analysis layer",
       "concept": "Concepts",
       "rest": "Additional infos",
       "fingerprint": "IDs"
@@ -541,8 +444,6 @@
       "selectStatusTooltip": "Set possible status values, that may be assigned to individual entites during the history session."
     },
     "load": {
-      "importDescription": "Please provide aa CSV format with columns<br /><code><strong>ID kind</strong>;<strong>ID</strong> (+ optionally: ;<strong>status 1</strong>;<strong>status 2</strong>;...)</code>",
-      "importPlaceholder": "{{idkind}};A0123456788;interesting;\n{{idkind}};A0123456789;;not interesting",
       "error": "Couldn't load history for this file."
     },
     "searchResultLabel": "Found IDs",
@@ -564,7 +465,6 @@
     "flip": "Flip",
     "dates": "Dates",
     "negate": "Negate",
-    "connector": "Connector",
     "timeConnection": "Time connection",
     "editTimeConnection": "Edit time connection",
     "timestamp": "Timestamp",
@@ -575,7 +475,6 @@
     "delete": "Delete",
     "expand": "Expand",
     "edit": "Details",
-    "initialDropText": "Drop a concept or query here.",
     "datesExcluded": "No dates",
     "outputSection": "Output values",
     "filtersSection": "Filters",

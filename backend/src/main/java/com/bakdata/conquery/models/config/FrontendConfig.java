@@ -3,15 +3,14 @@ package com.bakdata.conquery.models.config;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
-import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.collect.Range;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.AllArgsConstructor;
@@ -25,11 +24,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @With
 @Data
+// frontend.currency was removed, old configs may still set it
+@JsonIgnoreProperties(value = {"currency"})
 public class FrontendConfig {
-	@Valid
-	@NotNull
-	private CurrencyConfig currency = new CurrencyConfig();
-
 	/**
 	 * Years to include in entity preview.
 	 */
@@ -97,15 +94,5 @@ public class FrontendConfig {
 
 		return true;
 	}
-
-	@Data
-	public static class CurrencyConfig {
-		@JsonAlias("prefix")
-		private String unit = "€";
-		private String thousandSeparator = ".";
-		private String decimalSeparator = ",";
-		private int decimalScale = 2;
-	}
-
 
 }

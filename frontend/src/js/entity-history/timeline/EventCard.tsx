@@ -1,13 +1,9 @@
 import { EuroIcon, FingerprintPatternIcon, InfoIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { type InputAttributes, NumericFormat } from "react-number-format";
 import { tv } from "tailwind-variants";
-import type {
-  ColumnDescription,
-  ConceptIdT,
-  CurrencyConfigT,
-} from "../../api/types";
+import type { ColumnDescription, ConceptIdT } from "../../api/types";
 import { exists } from "../../common/helpers/exists";
+import { useMoneyFormatter } from "../../common/useMoneyFormatter";
 import { Card } from "../../ui-components/Card";
 import { Highlighter } from "../../ui-components/Highlighter";
 import {
@@ -67,7 +63,6 @@ const EventCard = ({
   dateColumn,
   sourceColumn,
   columnBuckets,
-  currencyConfig,
   contentFilter,
   rootConceptIdsByColumn,
   groupedRows,
@@ -79,13 +74,13 @@ const EventCard = ({
   sourceColumn: ColumnDescription;
   columnBuckets: ColumnBuckets;
   contentFilter: ContentFilterValue;
-  currencyConfig: CurrencyConfigT;
   rootConceptIdsByColumn: Record<string, ConceptIdT>;
   groupedRows?: EntityEvent[];
   groupedRowsKeysWithDifferentValues?: string[];
 }) => {
   const { searchTerm } = useTimelineSearch();
   const { t } = useTranslation();
+  const moneyFormatter = useMoneyFormatter();
 
   const applicableGroupableIds = columnBuckets.groupableIds.filter(
     (column) =>
@@ -134,14 +129,9 @@ const EventCard = ({
                     <div key={column.label}>
                       <TinyLabel>{column.defaultLabel}</TinyLabel>
                       <C3 as="code">
-                        <NumericFormat<InputAttributes>
-                          thousandSeparator={currencyConfig.thousandSeparator}
-                          decimalSeparator={currencyConfig.decimalSeparator}
-                          decimalScale={currencyConfig.decimalScale}
-                          suffix={` ${currencyConfig.unit}`}
-                          displayType="text"
-                          value={parseFloat(row[column.label] as string)}
-                        />
+                        {moneyFormatter.format(
+                          parseFloat(row[column.label] as string),
+                        )}
                       </C3>
                     </div>
                   ))}
@@ -156,7 +146,6 @@ const EventCard = ({
                 groupedRowsKeysWithDifferentValues={
                   groupedRowsKeysWithDifferentValues
                 }
-                currencyConfig={currencyConfig}
                 rootConceptIdsByColumn={rootConceptIdsByColumn}
               />
             )}

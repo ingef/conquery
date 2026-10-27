@@ -13,6 +13,7 @@ import { transformQueryToApi } from "./apiHelper";
 import type {
   ConceptIdT,
   DatasetT,
+  FilterConfigT,
   GetConceptResponseT,
   GetConceptsResponseT,
   GetDatasetsResponseT,
@@ -411,14 +412,7 @@ export const usePostResolveEntities = () => {
   const api = useApi<PostResolveEntitiesResponse>();
 
   return useCallback(
-    (
-      datasetId: DatasetT["id"],
-      filterValues: {
-        filter: string; // id
-        type: "MULTI_SELECT" | "BIG_MULTI_SELECT";
-        value: string[];
-      }[],
-    ) =>
+    (datasetId: DatasetT["id"], filterValues: FilterConfigT[]) =>
       api({
         url: getProtectedUrl(`/datasets/${datasetId}/queries/resolve-entities`),
         method: "POST",
