@@ -31,7 +31,7 @@ class NewsResourceTest {
 				newsItem("future", TODAY.plusDays(1))
 		));
 		NewsResource resource = new NewsResource(newsService, PUBLICATION_POLICY);
-		resource.datasetId = new DatasetId("dataset-a");
+		resource.setDatasetId(new DatasetId("dataset-a"));
 
 		var result = resource.getNews(mock(Subject.class));
 

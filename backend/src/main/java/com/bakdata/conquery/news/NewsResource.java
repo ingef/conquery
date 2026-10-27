@@ -16,8 +16,11 @@ import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.resources.hierarchies.HAuthorized;
+import com.google.common.annotations.VisibleForTesting;
 import io.dropwizard.auth.Auth;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 @Path("datasets/{" + DATASET + "}/news")
 @Produces(MediaType.APPLICATION_JSON)
@@ -27,6 +30,7 @@ public class NewsResource extends HAuthorized {
     private final NewsService newsService;
 	private final NewsPublicationPolicy publicationPolicy;
     @PathParam(DATASET)
+	@Setter(value = AccessLevel.PACKAGE, onMethod_ = @VisibleForTesting)
     private DatasetId datasetId;
 
     @GET
