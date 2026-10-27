@@ -13,7 +13,7 @@ public class ManagedNewsService implements Managed, NewsService {
     @Delegate
     private NewsService newsService;
 
-	@Override
+    @Override
     public void start() throws Exception {
         this.newsService = new FileSystemNewsService(configuration.folder(), validator);
     }

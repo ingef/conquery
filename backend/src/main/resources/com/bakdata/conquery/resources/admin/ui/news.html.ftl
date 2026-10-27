@@ -237,6 +237,7 @@
 			if (className) cell.className = className;
 			cell.textContent = value || '—';
 			row.appendChild(cell);
+			return cell;
 		}
 
 		function safeLink(value) {
@@ -267,7 +268,15 @@
 			newsItems.forEach(function (item) {
 				const row = document.createElement('tr');
 				row.setAttribute('data-test-id', 'news-row-' + item.id);
-				appendTextCell(row, item.date);
+				const dateCell = appendTextCell(row, item.date);
+				if (item.publicationStatus === 'SCHEDULED') {
+					row.classList.add('table-warning');
+					const statusBadge = document.createElement('span');
+					statusBadge.className = 'badge badge-warning ml-2';
+					statusBadge.setAttribute('data-test-id', 'news-publication-status-' + item.id);
+					statusBadge.textContent = 'Not published yet';
+					dateCell.appendChild(statusBadge);
+				}
 				appendTextCell(row, item.title);
 				appendTextCell(row, item.description, 'news-description');
 

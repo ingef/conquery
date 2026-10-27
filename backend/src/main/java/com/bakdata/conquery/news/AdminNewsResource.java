@@ -24,17 +24,18 @@ import lombok.RequiredArgsConstructor;
 public class AdminNewsResource {
 
 	private final NewsService newsService;
+	private final NewsPublicationPolicy publicationPolicy;
 
 	@GET
-	public List<NewsItem> getNews() {
-		return newsService.getNews(null);
+	public List<AdminNewsItem> getNews() {
+		return newsService.getNews(null).stream().map(this::toAdminNewsItem).toList();
 	}
 
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response addNewsItem(@NotNull @Valid NewsItem newsItem) throws IOException {
 		newsService.addNewsItem(newsItem);
-		return Response.status(Response.Status.CREATED).entity(newsItem).build();
+		return Response.status(Response.Status.CREATED).entity(toAdminNewsItem(newsItem)).build();
 	}
 
 	@DELETE
@@ -45,5 +46,9 @@ public class AdminNewsResource {
 		}
 
 		return Response.noContent().build();
+	}
+
+	private AdminNewsItem toAdminNewsItem(NewsItem newsItem) {
+		return AdminNewsItem.from(newsItem, publicationPolicy.getStatus(newsItem));
 	}
 }
