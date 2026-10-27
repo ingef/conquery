@@ -3,8 +3,6 @@ package com.bakdata.conquery.models.preproc.outputs;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.preproc.OutputRow;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.models.preproc.parser.specific.IntegerParser;
 import com.bakdata.conquery.util.DateReader;
@@ -36,13 +34,8 @@ public class LineOutput extends OutputDescription {
 	public Output createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader, ConqueryConfig config) {
 		return new Output() {
 			@Override
-			protected Object parseLine(String[] row, Parser type, long sourceLine) throws ParsingException {
-				return sourceLine;
-			}
-
-			@Override
-			protected void parseLine(String[] row, Parser type, long sourceLine, OutputRow outputRow, int outputIndex) {
-				outputRow.setLong(outputIndex, sourceLine);
+			protected void writeLine(String[] row, Parser type, long sourceLine) {
+				((IntegerParser) type).addLong(sourceLine);
 			}
 		};
 	}

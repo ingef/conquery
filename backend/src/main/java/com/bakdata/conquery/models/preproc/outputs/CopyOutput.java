@@ -6,7 +6,6 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.preproc.OutputRow;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.DateReader;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
@@ -54,17 +53,8 @@ public class CopyOutput extends OutputDescription {
 
 		return new Output() {
 			@Override
-			protected Object parseLine(String[] row, Parser type, long sourceLine) throws ParsingException {
-				if (row[column] == null) {
-					return null;
-				}
-
-				return type.parse(row[column]);
-			}
-
-			@Override
-			protected void parseLine(String[] row, Parser type, long sourceLine, OutputRow outputRow, int outputIndex) throws ParsingException {
-				type.parse(row[column], outputRow, outputIndex);
+			protected void writeLine(String[] row, Parser type, long sourceLine) throws ParsingException {
+				type.parseAndAdd(row[column]);
 			}
 		};
 	}

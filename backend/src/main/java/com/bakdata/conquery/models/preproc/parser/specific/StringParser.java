@@ -7,10 +7,8 @@ import com.bakdata.conquery.models.events.EmptyStore;
 import com.bakdata.conquery.models.events.stores.primitive.StringStoreString;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import lombok.Getter;
-import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,7 +24,7 @@ public class StringParser extends Parser<String, StringStore> {
 	private static final Pattern DIGITS = Pattern.compile("^\\d+$");
 
 	public StringParser(ConqueryConfig config) {
-		super(config);
+		super(config, new StringColumnValues());
 	}
 
 	@Override
@@ -61,12 +59,6 @@ public class StringParser extends Parser<String, StringStore> {
 	@Override
 	public void setValue(StringStore store, int event, String value) {
 		store.setString(event, value);
-	}
-
-	@SneakyThrows
-	@Override
-	public ColumnValues<String> createColumnValues() {
-		return new StringColumnValues();
 	}
 
 }

@@ -7,7 +7,6 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
 import com.bakdata.conquery.models.events.stores.specific.DirectDateRangeStore;
 import com.bakdata.conquery.models.events.stores.specific.QuarterDateRangeStore;
-import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.DateReader;
 import lombok.ToString;
@@ -27,7 +26,7 @@ public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 	private boolean anyOpen;
 
 	public DateRangeParser(ConqueryConfig config) {
-		super(config);
+		super(config, new ListColumnValues<>());
 		minParser = new DateParser(config);
 		maxParser = new DateParser(config);
 		dateReader = config.getLocale().getDateReader();
@@ -46,11 +45,11 @@ public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 
 		if (v.hasUpperBound()) {
 			maxValue = Math.max(maxValue, v.getMaxValue());
-			maxParser.addLine(v.getMaxValue());
+			maxParser.registerDate(v.getMaxValue());
 		}
 		if (v.hasLowerBound()) {
 			minValue = Math.min(minValue, v.getMinValue());
-			minParser.addLine(v.getMinValue());
+			minParser.registerDate(v.getMinValue());
 		}
 	}
 
@@ -89,11 +88,6 @@ public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 	@Override
 	public void setValue(DateRangeStore store, int event, CDateRange value) {
 		store.setDateRange(event, value);
-	}
-
-	@Override
-	public ColumnValues<CDateRange> createColumnValues() {
-		return new ListColumnValues<>();
 	}
 
 }

@@ -8,11 +8,8 @@ import com.bakdata.conquery.models.events.stores.primitive.IntegerDateStore;
 import com.bakdata.conquery.models.events.stores.root.DateStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.preproc.OutputRow;
-import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.DateReader;
-import lombok.SneakyThrows;
 import lombok.ToString;
 
 @ToString(callSuper = true)
@@ -22,7 +19,7 @@ public class DateParser extends Parser<Integer, DateStore> {
 	private DateReader dateReader;
 
 	public DateParser(ConqueryConfig config) {
-		super(config);
+		super(config, new IntegerColumnValues());
 		subType = new IntegerParser(config);
 		dateReader = config.getLocale().getDateReader();
 
@@ -40,14 +37,13 @@ public class DateParser extends Parser<Integer, DateStore> {
 	}
 
 	@Override
-	public void parse(String value, OutputRow outputRow, int outputIndex) throws ParsingException {
+	public int parseAndAdd(String value) throws ParsingException {
 		if (value == null) {
-			outputRow.setNull(outputIndex);
-			return;
+			return add(null);
 		}
 
 		try {
-			outputRow.setLong(outputIndex, CDate.ofLocalDate(dateReader.parseToLocalDate(value)));
+			return addDate(CDate.ofLocalDate(dateReader.parseToLocalDate(value)));
 		}
 		catch (Exception e) {
 			throw parsingException(value, e);
@@ -55,28 +51,28 @@ public class DateParser extends Parser<Integer, DateStore> {
 	}
 
 	@Override
-	public Integer addLine(Integer v) {
-		if(v == null){
-			subType.addLine(null);
-			return super.addLine(null);
+	public int add(Integer value) {
+		if (value == null) {
+			recordNullLine();
+			subType.registerNull();
+			return requireColumnValues().add(null);
 		}
 
-		super.addLine(v);
-
-		return subType.addLine(v.longValue()).intValue();
+		return addDate(value.intValue());
 	}
 
-	@Override
-	public void addLine(OutputRow outputRow, int outputIndex) {
-		if (outputRow.isNull(outputIndex)) {
-			recordNullLine();
-			subType.addNull();
-			return;
-		}
+	public int addDate(int value) {
+		registerDate(value);
+		return ((IntegerColumnValues) requireColumnValues()).addInt(value);
+	}
 
-		final long value = outputRow.getLong(outputIndex);
+	public int getDate(int event) {
+		return ((IntegerColumnValues) requireColumnValues()).getInt(event);
+	}
+
+	void registerDate(int value) {
 		recordLongLine(value);
-		subType.addLong(value);
+		subType.registerLong(value);
 	}
 
 	@Override
@@ -93,12 +89,6 @@ public class DateParser extends Parser<Integer, DateStore> {
 	@Override
 	public void setValue(DateStore store, int event, Integer value) {
 		store.setDate(event, value);
-	}
-
-	@SneakyThrows
-	@Override
-	public ColumnValues createColumnValues() {
-		return new IntegerColumnValues();
 	}
 
 }

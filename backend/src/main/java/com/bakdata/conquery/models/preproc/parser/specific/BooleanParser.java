@@ -6,8 +6,6 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
 import com.bakdata.conquery.models.events.stores.root.BooleanStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.preproc.OutputRow;
-import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import lombok.ToString;
 import org.jetbrains.annotations.NotNull;
@@ -16,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 public class BooleanParser extends Parser<Boolean, BooleanStore> {
 
 	public BooleanParser(ConqueryConfig config) {
-		super(config);
+		super(config, new BooleanColumnValues());
 	}
 
 	@Override
@@ -25,28 +23,22 @@ public class BooleanParser extends Parser<Boolean, BooleanStore> {
 	}
 
 	@Override
-	public void parse(String value, OutputRow outputRow, int outputIndex) throws ParsingException {
+	public int parseAndAdd(String value) throws ParsingException {
 		if (value == null) {
-			outputRow.setNull(outputIndex);
-			return;
+			return add(null);
 		}
 
 		try {
-			outputRow.setBoolean(outputIndex, parseBoolean(value));
+			return addBoolean(parseBoolean(value));
 		}
 		catch (Exception e) {
 			throw parsingException(value, e);
 		}
 	}
 
-	@Override
-	public void addLine(OutputRow outputRow, int outputIndex) {
-		if (outputRow.isNull(outputIndex)) {
-			recordNullLine();
-			return;
-		}
-
-		recordBooleanLine(outputRow.getBoolean(outputIndex));
+	public int addBoolean(boolean value) {
+		recordBooleanLine(value);
+		return ((BooleanColumnValues) requireColumnValues()).addBoolean(value);
 	}
 
 	@NotNull
@@ -76,11 +68,6 @@ public class BooleanParser extends Parser<Boolean, BooleanStore> {
 		}
 
 		store.setBoolean(event, value);
-	}
-
-	@Override
-	public ColumnValues createColumnValues() {
-		return new BooleanColumnValues();
 	}
 
 }

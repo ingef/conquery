@@ -8,8 +8,6 @@ import com.bakdata.conquery.models.events.stores.primitive.ShortArrayStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.specific.RebasingIntegerStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.preproc.OutputRow;
-import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.NumberParsing;
 import lombok.Getter;
@@ -25,7 +23,7 @@ public class IntegerParser extends Parser<Long, IntegerStore> {
 	private long maxValue = Long.MIN_VALUE;
 
 	public IntegerParser(ConqueryConfig config) {
-		super(config);
+		super(config, new LongColumnValues());
 	}
 
 
@@ -35,14 +33,13 @@ public class IntegerParser extends Parser<Long, IntegerStore> {
 	}
 
 	@Override
-	public void parse(String value, OutputRow outputRow, int outputIndex) throws ParsingException {
+	public int parseAndAdd(String value) throws ParsingException {
 		if (value == null) {
-			outputRow.setNull(outputIndex);
-			return;
+			return add(null);
 		}
 
 		try {
-			outputRow.setLong(outputIndex, NumberParsing.parseLong(value));
+			return addLong(NumberParsing.parseLong(value));
 		}
 		catch (Exception e) {
 			throw parsingException(value, e);
@@ -51,10 +48,10 @@ public class IntegerParser extends Parser<Long, IntegerStore> {
 
 	@Override
 	protected void registerValue(Long v) {
-		registerValue(v.longValue());
+		updateRange(v.longValue());
 	}
 
-	private void registerValue(long v) {
+	private void updateRange(long v) {
 		if (v > maxValue) {
 			maxValue = v;
 		}
@@ -63,22 +60,17 @@ public class IntegerParser extends Parser<Long, IntegerStore> {
 		}
 	}
 
-	@Override
-	public void addLine(OutputRow outputRow, int outputIndex) {
-		if (outputRow.isNull(outputIndex)) {
-			recordNullLine();
-			return;
-		}
-
-		addLong(outputRow.getLong(outputIndex));
+	public int addLong(long value) {
+		registerLong(value);
+		return ((LongColumnValues) requireColumnValues()).addLong(value);
 	}
 
-	void addLong(long value) {
+	void registerLong(long value) {
 		recordLongLine(value);
-		registerValue(value);
+		updateRange(value);
 	}
 
-	void addNull() {
+	void registerNull() {
 		recordNullLine();
 	}
 
@@ -142,11 +134,6 @@ public class IntegerParser extends Parser<Long, IntegerStore> {
 	@Override
 	public void setValue(IntegerStore store, int event, Long value) {
 		store.setInteger(event, value);
-	}
-
-	@Override
-	public ColumnValues createColumnValues() {
-		return new LongColumnValues();
 	}
 
 }

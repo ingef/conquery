@@ -51,12 +51,13 @@ public class EpochDateRangeOutput extends OutputDescription {
 
 		return new Output() {
 			@Override
-			protected Object parseLine(String[] row, Parser type, long sourceLine) throws ParsingException {
+			protected void writeLine(String[] row, Parser type, long sourceLine) throws ParsingException {
 				final boolean startNull = Strings.isNullOrEmpty(row[startIndex]);
 				final boolean endNull = Strings.isNullOrEmpty(row[endIndex]);
 
 				if (startNull && endNull) {
-					return null;
+					type.add(null);
+					return;
 				}
 
 				if (!allowOpen && (startNull || endNull)) {
@@ -64,17 +65,19 @@ public class EpochDateRangeOutput extends OutputDescription {
 				}
 
 				if(startNull){
-					return CDateRange.atMost(Integer.parseInt(row[endIndex]));
+					type.add(CDateRange.atMost(Integer.parseInt(row[endIndex])));
+					return;
 				}
 
 				if(endNull){
-					return CDateRange.atLeast(Integer.parseInt(row[startIndex]));
+					type.add(CDateRange.atLeast(Integer.parseInt(row[startIndex])));
+					return;
 				}
 
 				int start = Integer.parseInt(row[startIndex]);
 				int end = Integer.parseInt(row[endIndex]);
 
-				return CDateRange.of(start, end);
+				type.add(CDateRange.of(start, end));
 			}
 		};
 	}

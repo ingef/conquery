@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.preproc.parser.specific;
 
-import com.bakdata.conquery.models.preproc.OutputRow;
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
@@ -16,17 +15,24 @@ class IntegerColumnValues extends ColumnValues<Integer> {
 		return values.getInt(event);
 	}
 
+	public int getInt(int event) {
+		return values.getInt(event);
+	}
+
 	@Override
 	protected void append(Integer obj) {
 		values.add(obj.intValue());
 	}
 
-	@Override
-	public int add(OutputRow outputRow, int outputIndex) {
-		final boolean isNull = outputRow.isNull(outputIndex);
-		final int event = prepareAdd(isNull);
-		values.add(isNull ? 0 : (int) outputRow.getLong(outputIndex));
+	public int addInt(int value) {
+		final int event = prepareAdd(false);
+		values.add(value);
 		return event;
+	}
+
+	@Override
+	protected void truncateValues(int size) {
+		values.removeElements(size, values.size());
 	}
 
 	@Override

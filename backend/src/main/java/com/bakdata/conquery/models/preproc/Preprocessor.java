@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
+import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.DateReader;
 import com.bakdata.conquery.util.io.ConqueryMDC;
@@ -128,6 +129,8 @@ public class Preprocessor {
 
                 DateReader dateReader = config.getLocale().getDateReader();
                 final OutputDescription.Output primaryOut = input.getPrimary().createForHeaders(headerMap, dateReader, config);
+                final Parser primaryParser = input.getPrimary().createParser(config);
+                final ColumnValues primaryValues = primaryParser.requireColumnValues();
                 final List<OutputDescription.Output> outputs = new ArrayList<>();
                 final PPColumn[] columns = result.getColumns();
 
@@ -136,7 +139,6 @@ public class Preprocessor {
                     outputs.add(op.createForHeaders(headerMap, dateReader, config));
                 }
 
-                final OutputRow outRow = new OutputRow(outputs.size());
                 String[] row;
 
                 // Read all CSV lines, apply Output transformations and add the to preprocessed.
@@ -154,16 +156,15 @@ public class Preprocessor {
                     }
 
                     try {
-                        String primaryId =
-                                (String) Objects.requireNonNull(primaryOut.createOutput(row, result.getPrimaryColumn(), lineId), "primaryId may not be null");
+                        final int primaryIndex = primaryOut.createOutput(row, primaryParser, lineId);
+                        final String primaryId = (String) Objects.requireNonNull(primaryValues.get(primaryIndex), "primaryId may not be null");
 
+                        applyOutputs(outputs, columns, row, lineId);
 
-                        final String primary = result.addPrimary(primaryId);
-                        applyOutputs(outputs, columns, row, lineId, outRow);
-
-                        result.addRow(primary, outRow);
+                        result.commitRow(primaryId);
 
                     } catch (OutputDescription.OutputException e) {
+                        result.discardRow();
                         exceptions.addTo(e.getCause().getClass(), 1);
 
                         errors++;
@@ -175,6 +176,7 @@ public class Preprocessor {
                         }
 
                     } catch (Exception e) {
+                        result.discardRow();
                         exceptions.put(e.getClass(), exceptions.getInt(e.getClass()) + 1);
 
                         errors++;
@@ -184,7 +186,9 @@ public class Preprocessor {
                         } else if (errors == config.getPreprocessor().getMaximumPrintedErrors()) {
                             log.warn("More erroneous lines occurred. Only the first {} were printed.", config.getPreprocessor().getMaximumPrintedErrors());
                         }
-                    } finally {
+                    }
+                    finally {
+                        primaryValues.truncate(0);
                         lineId++;
                     }
                 }
@@ -223,9 +227,9 @@ public class Preprocessor {
     }
 
     /**
-     * Apply each output for a single row into the reusable output buffer.
+     * Apply each output for a single row directly to its parser-owned column values.
      */
-    private static void applyOutputs(List<OutputDescription.Output> outputs, PPColumn[] columns, String[] row, long lineId, OutputRow outRow)
+    private static void applyOutputs(List<OutputDescription.Output> outputs, PPColumn[] columns, String[] row, long lineId)
             throws ParsingException, OutputDescription.OutputException {
         for (int index = 0; index < outputs.size(); index++) {
             final OutputDescription.Output out = outputs.get(index);
@@ -233,9 +237,8 @@ public class Preprocessor {
             try {
                 final Parser parser = columns[index].getParser();
 
-                out.createOutput(row, parser, lineId, outRow, index);
+                out.createOutput(row, parser, lineId);
             } catch (Exception e) {
-                outRow.clear();
                 throw new OutputDescription.OutputException(out.getDescription(), e);
             }
         }

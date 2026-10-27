@@ -23,6 +23,11 @@ class ListColumnValues<T> extends ColumnValues<T> {
 	}
 
 	@Override
+	protected void truncateValues(int size) {
+		objects.subList(size, objects.size()).clear();
+	}
+
+	@Override
 	protected int size() {
 		return objects.size();
 	}

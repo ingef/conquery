@@ -5,8 +5,6 @@ import com.bakdata.conquery.models.events.stores.primitive.DoubleArrayStore;
 import com.bakdata.conquery.models.events.stores.primitive.FloatArrayStore;
 import com.bakdata.conquery.models.events.stores.root.RealStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.preproc.OutputRow;
-import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.NumberParsing;
 import lombok.ToString;
@@ -22,7 +20,7 @@ public class RealParser extends Parser<Double, RealStore> {
 	private double floatULP = Float.NEGATIVE_INFINITY;
 
 	public RealParser(ConqueryConfig config) {
-		super(config);
+		super(config, new DoubleColumnValues());
 		requiredPrecision = config.getPreprocessor().getParsers().getMinPrecision();
 	}
 
@@ -32,14 +30,13 @@ public class RealParser extends Parser<Double, RealStore> {
 	}
 
 	@Override
-	public void parse(String value, OutputRow outputRow, int outputIndex) throws ParsingException {
+	public int parseAndAdd(String value) throws ParsingException {
 		if (value == null) {
-			outputRow.setNull(outputIndex);
-			return;
+			return add(null);
 		}
 
 		try {
-			outputRow.setDouble(outputIndex, NumberParsing.parseDouble(value));
+			return addDouble(NumberParsing.parseDouble(value));
 		}
 		catch (Exception e) {
 			throw parsingException(value, e);
@@ -60,16 +57,10 @@ public class RealParser extends Parser<Double, RealStore> {
 		floatULP = Math.max(floatULP, Math.ulp((float) value));
 	}
 
-	@Override
-	public void addLine(OutputRow outputRow, int outputIndex) {
-		if (outputRow.isNull(outputIndex)) {
-			recordNullLine();
-			return;
-		}
-
-		final double value = outputRow.getDouble(outputIndex);
+	public int addDouble(double value) {
 		recordDoubleLine(value);
 		registerValue(value);
+		return ((DoubleColumnValues) requireColumnValues()).addDouble(value);
 	}
 
 	/**
@@ -95,11 +86,6 @@ public class RealParser extends Parser<Double, RealStore> {
 	@Override
 	public void setValue(RealStore store, int event, Double value) {
 		store.setReal(event, value);
-	}
-
-	@Override
-	public ColumnValues createColumnValues() {
-		return new DoubleColumnValues();
 	}
 
 }

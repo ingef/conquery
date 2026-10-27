@@ -52,10 +52,11 @@ public class DateRangeOutput extends OutputDescription {
 
 		return new Output() {
 			@Override
-			protected Object parseLine(String[] row, Parser type, long sourceLine) throws ParsingException {
+			protected void writeLine(String[] row, Parser type, long sourceLine) throws ParsingException {
 
 				if (Strings.isNullOrEmpty(row[startIndex]) && Strings.isNullOrEmpty(row[endIndex])) {
-					return null;
+					type.add(null);
+					return;
 				}
 
 				if (!allowOpen && (Strings.isNullOrEmpty(row[startIndex]) || Strings.isNullOrEmpty(row[endIndex]))) {
@@ -65,7 +66,7 @@ public class DateRangeOutput extends OutputDescription {
 				LocalDate start = dateReader.parseToLocalDate(row[startIndex]);
 				LocalDate end = dateReader.parseToLocalDate(row[endIndex]);
 
-				return CDateRange.of(start, end);
+				type.add(CDateRange.of(start, end));
 			}
 		};
 	}

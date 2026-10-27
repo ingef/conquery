@@ -17,12 +17,12 @@ class DecimalParserTest {
 	public void test(){
 		final DecimalParser parser = new DecimalParser(new ConqueryConfig());
 
-		parser.addLine(BigDecimal.valueOf(10,1000));
-		parser.addLine(BigDecimal.valueOf(30,1000));
+		parser.add(BigDecimal.valueOf(10,1000));
+		parser.add(BigDecimal.valueOf(30,1000));
 
 		assertThat(parser.decideType()).isInstanceOf(ScaledDecimalStore.class);
 
-		parser.addLine(BigDecimal.valueOf(2, 62));
+		parser.add(BigDecimal.valueOf(2, 62));
 
 		assertThat(parser.decideType()).isInstanceOf(DecimalArrayStore.class);
 	}

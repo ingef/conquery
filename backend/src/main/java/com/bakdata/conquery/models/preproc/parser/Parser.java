@@ -6,47 +6,50 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.EmptyStore;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.preproc.OutputRow;
+import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
 /**
  * Base class used for parsing values in Preprocessing.
  * <p>
- * Values are fed into value by value into {@link #parse(String)} from CSV, internally analyzed and then an appropriate representation fed into the {@link ColumnStore} that was produced using {@link #findBestType()}.
+ * Values are fed into value by value through {@link #parseAndAdd(String)} from CSV, internally analyzed and then an appropriate representation fed into the {@link ColumnStore} that was produced using {@link #findBestType()}.
  *
  * @param <MAJOR_JAVA_TYPE> Storage class for preprocessing after parsing.
  * @param <STORE_TYPE>      Root {@link ColumnStore} that can handle the resulting value types of <MAJOR_JAVA_TYPE>.
  */
 @Getter
 @Setter
-@RequiredArgsConstructor
 @ToString
 public abstract class Parser<MAJOR_JAVA_TYPE, STORE_TYPE extends ColumnStore> {
 
 	@ToString.Exclude
 	private final ConqueryConfig config;
+	@ToString.Exclude
+	@Getter(AccessLevel.NONE)
+	@Setter(AccessLevel.NONE)
+	private ColumnValues<MAJOR_JAVA_TYPE> columnValues;
 
 	private int lines = 0;
 	private int nullLines = 0;
 
 
-	public final MAJOR_JAVA_TYPE parse(String v) throws ParsingException {
+	protected Parser(ConqueryConfig config, ColumnValues<MAJOR_JAVA_TYPE> columnValues) {
+		this.config = config;
+		this.columnValues = columnValues;
+	}
+
+	public int parseAndAdd(String v) throws ParsingException {
 		if (v == null) {
-			return null;
+			return add(null);
 		}
 		try {
-			return parseValue(v);
+			return add(parseValue(v));
 		}
 		catch (Exception e) {
 			throw parsingException(v, e);
 		}
-	}
-
-	public void parse(String value, OutputRow outputRow, int outputIndex) throws ParsingException {
-		outputRow.setObject(outputIndex, parse(value));
 	}
 
 	protected final ParsingException parsingException(String value, Exception cause) {
@@ -98,7 +101,7 @@ public abstract class Parser<MAJOR_JAVA_TYPE, STORE_TYPE extends ColumnStore> {
 	 *
 	 * @param v a parsed value.
 	 */
-	public MAJOR_JAVA_TYPE addLine(MAJOR_JAVA_TYPE v) {
+	public int add(MAJOR_JAVA_TYPE v) {
 		if (v == null) {
 			recordNullLine();
 		}
@@ -106,12 +109,7 @@ public abstract class Parser<MAJOR_JAVA_TYPE, STORE_TYPE extends ColumnStore> {
 			recordObjectLine(v);
 			registerValue(v);
 		}
-		return v;
-	}
-
-	@SuppressWarnings("unchecked")
-	public void addLine(OutputRow outputRow, int outputIndex) {
-		addLine((MAJOR_JAVA_TYPE) outputRow.getObject(outputIndex));
+		return requireColumnValues().add(v);
 	}
 
 	protected final void recordNullLine() {
@@ -147,6 +145,20 @@ public abstract class Parser<MAJOR_JAVA_TYPE, STORE_TYPE extends ColumnStore> {
 	public abstract void setValue(STORE_TYPE store, int event, MAJOR_JAVA_TYPE value);
 
 
-	public abstract ColumnValues createColumnValues();
+	public final ColumnValues<MAJOR_JAVA_TYPE> requireColumnValues() {
+		if (columnValues == null) {
+			throw new IllegalStateException("Column values have already been released");
+		}
+
+		return columnValues;
+	}
+
+	public final void truncateColumnValues(int size) {
+		requireColumnValues().truncate(size);
+	}
+
+	public final void releaseColumnValues() {
+		columnValues = null;
+	}
 
 }

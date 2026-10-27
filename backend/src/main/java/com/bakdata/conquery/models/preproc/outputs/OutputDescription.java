@@ -10,8 +10,8 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.ColumnDescription;
-import com.bakdata.conquery.models.preproc.OutputRow;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
+import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -75,41 +75,33 @@ public abstract class OutputDescription {
 		}
 
 		/**
-		 * Parse the line/row
+		 * Parse the line/row and append its output to the parser's column values.
 		 *
 		 * @param row        the row to parse
 		 * @param sourceLine the linenumber of the row in the input file
-		 * @return a value or null
 		 * @throws ParsingException
 		 */
-		protected abstract Object parseLine(String[] row, Parser type, long sourceLine) throws ParsingException;
-
-		protected void parseLine(String[] row, Parser type, long sourceLine, OutputRow outputRow, int outputIndex) throws ParsingException {
-			outputRow.setObject(outputIndex, parseLine(row, type, sourceLine));
-		}
+		protected abstract void writeLine(String[] row, Parser type, long sourceLine) throws ParsingException;
 
 		/**
-		 * Parse row and test for NULL values, throwing an exception when Required but missing.
+		 * Parse a row, verify that exactly one value was appended, and reject required NULL values.
 		 */
-		public Object createOutput(String[] row, Parser type, long sourceLine) throws ParsingException {
-			final Object parsed = parseLine(row, type, sourceLine);
+		public int createOutput(String[] row, Parser type, long sourceLine) throws ParsingException {
+			final ColumnValues columnValues = type.requireColumnValues();
+			final int outputIndex = columnValues.getSize();
 
-			if (OutputDescription.this.isRequired() && parsed == null) {
+			writeLine(row, type, sourceLine);
+
+			if (columnValues.getSize() != outputIndex + 1) {
+				throw new IllegalStateException("Output[%s] must write exactly one value at line %d"
+											.formatted(OutputDescription.this.getName(), sourceLine));
+			}
+
+			if (OutputDescription.this.isRequired() && columnValues.isNull(outputIndex)) {
 				throw new IllegalArgumentException(String.format("Required Output[%s] produced NULL value at line %d", OutputDescription.this.getName(), sourceLine));
 			}
 
-			return parsed;
-		}
-
-		/**
-		 * Parse into a reusable row buffer and test for required null values.
-		 */
-		public void createOutput(String[] row, Parser type, long sourceLine, OutputRow outputRow, int outputIndex) throws ParsingException {
-			parseLine(row, type, sourceLine, outputRow, outputIndex);
-
-			if (OutputDescription.this.isRequired() && outputRow.isNull(outputIndex)) {
-				throw new IllegalArgumentException(String.format("Required Output[%s] produced NULL value at line %d", OutputDescription.this.getName(), sourceLine));
-			}
+			return outputIndex;
 		}
 	}
 

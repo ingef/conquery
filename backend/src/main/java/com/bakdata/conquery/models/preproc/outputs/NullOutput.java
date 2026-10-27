@@ -41,8 +41,8 @@ public class NullOutput extends OutputDescription {
 	public Output createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader, ConqueryConfig config) {
 		return new Output() {
 			@Override
-			protected Object parseLine(String[] row, Parser type, long sourceLine) throws ParsingException {
-				return null;
+			protected void writeLine(String[] row, Parser type, long sourceLine) throws ParsingException {
+				type.add(null);
 			}
 		};
 	}

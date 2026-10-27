@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.preproc.parser.specific;
 import java.util.BitSet;
 import java.util.Objects;
 
-import com.bakdata.conquery.models.preproc.OutputRow;
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 
 class BooleanColumnValues extends ColumnValues<Boolean> {
@@ -37,15 +36,17 @@ class BooleanColumnValues extends ColumnValues<Boolean> {
 		size++;
 	}
 
-	@Override
-	public int add(OutputRow outputRow, int outputIndex) {
-		final boolean isNull = outputRow.isNull(outputIndex);
-		final int event = prepareAdd(isNull);
-		if (!isNull) {
-			values.set(size, outputRow.getBoolean(outputIndex));
-		}
+	public int addBoolean(boolean value) {
+		final int event = prepareAdd(false);
+		values.set(size, value);
 		size++;
 		return event;
+	}
+
+	@Override
+	protected void truncateValues(int size) {
+		values.clear(size, this.size);
+		this.size = size;
 	}
 
 }

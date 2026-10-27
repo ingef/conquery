@@ -11,18 +11,14 @@ import java.util.HashMap;
 import java.util.IntSummaryStatistics;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.TreeMap;
 import java.util.zip.GZIPOutputStream;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
-import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
-import com.bakdata.conquery.models.preproc.parser.specific.StringParser;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.google.common.hash.Hashing;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -43,15 +39,8 @@ public class Preprocessed {
 
 	private final PreprocessingJob job;
 	private final String name;
-	/**
-	 * @implSpec this is ALWAYS {@link StringStore}.
-	 */
-	private final StringParser primaryColumn;
-
 	private final PPColumn[] columns;
 	private final TableImportDescriptor descriptor;
-
-	private final ColumnValues[] values;
 	/**
 	 * Per row store, entity.
 	 */
@@ -95,18 +84,12 @@ public class Preprocessed {
 		final TableInputDescriptor input = descriptor.getInputs()[0];
 		columns = new PPColumn[input.getWidth()];
 
-		primaryColumn = (StringParser) MajorTypeId.STRING.createParser(config);
-
-		values = new ColumnValues[columns.length];
-
 		for (int index = 0; index < input.getWidth(); index++) {
 			final ColumnDescription columnDescription = input.getColumnDescription(index);
 			columns[index] = new PPColumn(columnDescription.getName(), columnDescription.getType());
 
 			final Parser parser = input.getOutput()[index].createParser(config);
 			columns[index].setParser(parser);
-
-			values[index] = Objects.requireNonNull(parser.createColumnValues(), () -> "Parser did not create ColumnValues: " + parser.getClass().getName());
 		}
 	}
 
@@ -208,7 +191,8 @@ public class Preprocessed {
 	private void populateBucketStores(Iterable<BucketData> buckets) {
 		for (int columnIndex = 0; columnIndex < columns.length; columnIndex++) {
 			final PPColumn column = columns[columnIndex];
-			final ColumnValues columnValues = values[columnIndex];
+			final Parser parser = column.getParser();
+			final ColumnValues columnValues = parser.requireColumnValues();
 
 			log.info("Compute best Subtype for Column[{}] with {}", column.getName(), column.getParser());
 
@@ -216,16 +200,14 @@ public class Preprocessed {
 				for (BucketData bucket : buckets) {
 					final ColumnStore store = column.createStore(bucket.sourceEvents.length);
 
-					if (columnValues != null) {
-						for (int localEvent = 0; localEvent < bucket.sourceEvents.length; localEvent++) {
-							final int sourceEvent = bucket.sourceEvents[localEvent];
+					for (int localEvent = 0; localEvent < bucket.sourceEvents.length; localEvent++) {
+						final int sourceEvent = bucket.sourceEvents[localEvent];
 
-							if (columnValues.isNull(sourceEvent)) {
-								store.setNull(localEvent);
-							}
-							else {
-								column.getParser().setValue(store, localEvent, columnValues.get(sourceEvent));
-							}
+						if (columnValues.isNull(sourceEvent)) {
+							store.setNull(localEvent);
+						}
+						else {
+							parser.setValue(store, localEvent, columnValues.get(sourceEvent));
 						}
 					}
 
@@ -233,7 +215,7 @@ public class Preprocessed {
 				}
 			}
 			finally {
-				values[columnIndex] = null;
+				parser.releaseColumnValues();
 			}
 		}
 
@@ -259,39 +241,30 @@ public class Preprocessed {
 		}
 	}
 
-	String addPrimary(String primary) {
+	void commitRow(String primaryId) {
 		ensureMutable();
-		return primaryColumn.addLine(primary);
-	}
-
-	void addRow(String primaryId, OutputRow outRow) {
-		ensureMutable();
-		if (outRow.size() != columns.length || values.length != columns.length) {
-			throw new IllegalArgumentException("Output row and columns are not aligned");
-		}
 
 		final int event = rowEntities.size();
 
-		for (int col = 0; col < outRow.size(); col++) {
-			if (values[col].getSize() != event) {
+		for (PPColumn column : columns) {
+			if (column.getParser().requireColumnValues().getSize() != event + 1) {
 				throw new IllegalStateException("Columns are not aligned");
 			}
-		}
-
-		for (int col = 0; col < outRow.size(); col++) {
-			final int idx = values[col].add(outRow, col);
-
-			if (event != idx) {
-				throw new IllegalStateException("Columns are not aligned");
-			}
-
-			columns[col].getParser().addLine(outRow, col);
 		}
 
 		rowEntities.add(primaryId);
 
 		//update stats
 		rows++;
+	}
+
+	void discardRow() {
+		ensureMutable();
+		final int committedRows = rowEntities.size();
+
+		for (PPColumn column : columns) {
+			column.getParser().truncateColumnValues(committedRows);
+		}
 	}
 
 	private void ensureMutable() {
