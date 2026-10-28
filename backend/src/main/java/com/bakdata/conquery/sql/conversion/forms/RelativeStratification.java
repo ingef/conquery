@@ -203,14 +203,16 @@ class RelativeStratification {
 	private QueryStep createOutcomeTable(QueryStep totalBoundsStep, Interval interval, Field<Integer> seriesIndex, Range<Integer> bounds, SqlIdColumns ids) {
 		Field<Date> outcomeRangeStart = stratificationFunctions.shiftByInterval(INDEX_START_POSITIVE, interval, seriesIndex, Offset.MINUS_ONE);
 		Field<Date> outcomeRangeEnd = stratificationFunctions.shiftByInterval(INDEX_START_POSITIVE, interval, seriesIndex, Offset.NONE);
-		Table<? extends Record> outcomeSeries = stratificationFunctions.generateIntSeries(1, bounds.getMax()).as(SharedAliases.INDEX.getAlias());
+		Table<? extends Record> outcomeSeries = stratificationFunctions.generateIntSeries(1, bounds.getMax())
+																.as(FormCteStep.INT_SERIES.getSuffix() + "_source");
 		return createIntervalStep(ids, outcomeRangeStart, outcomeRangeEnd, Optional.of(outcomeSeries), totalBoundsStep);
 	}
 
 	private QueryStep createFeatureTable(QueryStep totalBoundsStep, Interval interval, Field<Integer> seriesIndex, Range<Integer> bounds, SqlIdColumns ids) {
 		Field<Date> featureRangeStart = stratificationFunctions.shiftByInterval(INDEX_START_NEGATIVE, interval, seriesIndex, Offset.NONE);
 		Field<Date> featureRangeEnd = stratificationFunctions.shiftByInterval(INDEX_START_NEGATIVE, interval, seriesIndex, Offset.ONE);
-		Table<? extends Record> featureSeries = stratificationFunctions.generateIntSeries(bounds.getMin(), -1).as(SharedAliases.INDEX.getAlias());
+		Table<? extends Record> featureSeries = stratificationFunctions.generateIntSeries(bounds.getMin(), -1)
+																.as(FormCteStep.INT_SERIES.getSuffix() + "_source");
 		return createIntervalStep(ids, featureRangeStart, featureRangeEnd, Optional.of(featureSeries), totalBoundsStep);
 	}
 
