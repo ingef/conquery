@@ -58,7 +58,8 @@ class AbsoluteStratification {
 								 .sqlSelect(seriesIndex)
 								 .build();
 
-		Table<Record> seriesTable = stratificationFunctions.generateIntSeries(INDEX_START, INDEX_END).asTable(SharedAliases.INDEX.getAlias());
+		Table<Record> seriesTable = stratificationFunctions.generateIntSeries(INDEX_START, INDEX_END)
+												 .asTable(FormCteStep.INT_SERIES.getSuffix() + "_source");
 
 		return QueryStep.builder()
 						.cteName(FormCteStep.INT_SERIES.getSuffix())
@@ -145,7 +146,7 @@ class AbsoluteStratification {
 				countsCteSelects.getStratificationDate().get()
 		);
 
-		Field<Integer> index = stratificationFunctions.index(countsCteSelects.getIds(), countsCte.getQualifiedSelects().getStratificationDate());
+		Field<Integer> index = stratificationFunctions.intSeriesField();
 		SqlIdColumns ids = countsCteSelects.getIds().withAbsoluteStratification(resolutionAndAlignment.getResolution(), index);
 
 		Selects selects = Selects.builder()

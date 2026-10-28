@@ -1,6 +1,8 @@
 package com.bakdata.conquery.integration.sql.dialect;
 
+import java.sql.Date;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -21,12 +23,16 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
+import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.InsertValuesStepN;
 import org.jooq.Record;
 import org.jooq.RowN;
+import org.jooq.SQLDialect;
 import org.jooq.Table;
 import org.jooq.conf.ParamType;
+import org.jooq.impl.DSL;
+import org.jooq.impl.DefaultDataType;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DynamicNode;
@@ -106,6 +112,16 @@ public class ClickhouseSqlIntegrationTests extends IntegrationTests {
 	}
 
 	private static class ClickhouseTestFunctionProvider implements TestFunctionProvider {
+
+		@Override
+		public DataType<?> getDateType() {
+			return DefaultDataType.getDataType(SQLDialect.CLICKHOUSE, "Date32");
+		}
+
+		@Override
+		public Object toDateValue(LocalDate date) {
+			return DSL.function("toDate32", Date.class, DSL.inline(date.toString()));
+		}
 
 		@Override
 		public void insertValuesIntoTable(Table<Record> table, List<Field<?>> columns, List<RowN> content, Statement statement, DSLContext dslContext) {

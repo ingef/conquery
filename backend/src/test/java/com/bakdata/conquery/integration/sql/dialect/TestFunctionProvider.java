@@ -2,16 +2,27 @@ package com.bakdata.conquery.integration.sql.dialect;
 
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.jooq.DSLContext;
+import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.RowN;
 import org.jooq.Table;
 import org.jooq.conf.ParamType;
+import org.jooq.impl.SQLDataType;
 
 public interface TestFunctionProvider {
+
+	default DataType<?> getDateType() {
+		return SQLDataType.DATE;
+	}
+
+	default Object toDateValue(LocalDate date) {
+		return date;
+	}
 
 	default String createTableStatement(Table<Record> table, List<Field<?>> columns, DSLContext dslContext) {
 		return dslContext.createTable(table)
