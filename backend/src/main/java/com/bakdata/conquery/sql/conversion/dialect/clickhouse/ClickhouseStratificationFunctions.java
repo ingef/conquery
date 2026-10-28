@@ -74,7 +74,7 @@ public class ClickhouseStratificationFunctions extends StratificationFunctions {
 
 	@Override
 	public Field<Date> upperBoundYearEnd(ColumnDateRange dateRange) {
-		return field("addYears(toStartOfYear({0}), {1})", Date.class, dateRange.getEnd(), inline(1));
+		return function("addYears", Date.class, jumpToYearStart(inclusiveUpper(dateRange)), inline(1));
 	}
 
 	@Override
@@ -121,8 +121,13 @@ public class ClickhouseStratificationFunctions extends StratificationFunctions {
 
 	@Override
 	public Table<Record> generateIntSeries(int start, int end) {
-		//TODO this only supports ungigned values. Probably need to handle negatives manually Q_Q
-		return table("generate_series({0}, {1}, 1)", start, end);
+		int seriesLength = end - start + 1;
+		return table(
+				"(select toInt32(toInt32(number) + {0}) as {1} from numbers({2}))",
+				inline(start),
+				name(SERIES_INDEX.getName()),
+				inline(seriesLength)
+		);
 	}
 
 	@Override
@@ -133,7 +138,7 @@ public class ClickhouseStratificationFunctions extends StratificationFunctions {
 			case RANDOM -> {
 				// we calculate a random int which is in range of the date distance between upper and lower bound
 				Field<Integer> dateDistanceInDays = functionProvider.dateDistance(ChronoUnit.DAYS, validityDate.getStart(), validityDate.getEnd());
-				Field<Double> randomAmountOfDays = function("RAND", Double.class).times(dateDistanceInDays);
+				Field<Double> randomAmountOfDays = function("randCanonical", Double.class).times(dateDistanceInDays);
 				Field<Integer> flooredAsInt = functionProvider.cast(floor(randomAmountOfDays), SQLDataType.INTEGER);
 				// then we add this random amount (of days) to the start date
 				Field<Date> randomDateInRange = functionProvider.addDays(lower(validityDate), flooredAsInt);
