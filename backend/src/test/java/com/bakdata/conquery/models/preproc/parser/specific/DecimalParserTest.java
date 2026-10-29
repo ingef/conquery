@@ -17,14 +17,14 @@ class DecimalParserTest {
 	public void test(){
 		final DecimalParser parser = new DecimalParser(new ConqueryConfig());
 
-		parser.add(BigDecimal.valueOf(10,1000));
-		parser.add(BigDecimal.valueOf(30,1000));
+		parser.addDecimal(BigDecimal.valueOf(10,1000));
+		parser.addDecimal(BigDecimal.valueOf(30,1000));
 
-		assertThat(parser.decideType()).isInstanceOf(ScaledDecimalStore.class);
+		assertThat(parser.decideType(parser.getLines())).isInstanceOf(ScaledDecimalStore.class);
 
-		parser.add(BigDecimal.valueOf(2, 62));
+		parser.addDecimal(BigDecimal.valueOf(2, 62));
 
-		assertThat(parser.decideType()).isInstanceOf(DecimalArrayStore.class);
+		assertThat(parser.decideType(parser.getLines())).isInstanceOf(DecimalArrayStore.class);
 	}
 
 }

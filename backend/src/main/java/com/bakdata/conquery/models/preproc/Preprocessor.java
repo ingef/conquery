@@ -128,11 +128,10 @@ public class Preprocessor {
 
 
                 DateReader dateReader = config.getLocale().getDateReader();
-                final OutputDescription.Output primaryOut = input.getPrimary().createForHeaders(headerMap, dateReader, config);
-                final Parser primaryParser = input.getPrimary().createParser(config);
-                final ColumnValues primaryValues = primaryParser.requireColumnValues();
-                final List<OutputDescription.Output> outputs = new ArrayList<>();
-                final PPColumn[] columns = result.getColumns();
+                final OutputDescription.Output<?> primaryOut = input.getPrimary().createForHeaders(headerMap, dateReader, config);
+                final Parser<?, ?, ?> primaryParser = input.getPrimary().createParser(config);
+                final ColumnValues<?> primaryValues = primaryParser.getColumnValues();
+                final List<OutputDescription.Output<?>> outputs = new ArrayList<>();
 
                 // Instantiate Outputs based on descriptors (apply header positions)
                 for (OutputDescription op : input.getOutput()) {
@@ -156,15 +155,16 @@ public class Preprocessor {
                     }
 
                     try {
-                        final int primaryIndex = primaryOut.createOutput(row, primaryParser, lineId);
-                        final String primaryId = (String) Objects.requireNonNull(primaryValues.get(primaryIndex), "primaryId may not be null");
+						createOutput(primaryOut, primaryParser, row, lineId);
+						final String primaryId = (String) Objects.requireNonNull(primaryValues.get(0), "primaryId may not be null");
 
-                        applyOutputs(outputs, columns, row, lineId);
+						applyOutputs(outputs, result, row, lineId);
 
                         result.commitRow(primaryId);
 
                     } catch (OutputDescription.OutputException e) {
                         result.discardRow();
+
                         exceptions.addTo(e.getCause().getClass(), 1);
 
                         errors++;
@@ -177,6 +177,7 @@ public class Preprocessor {
 
                     } catch (Exception e) {
                         result.discardRow();
+
                         exceptions.put(e.getClass(), exceptions.getInt(e.getClass()) + 1);
 
                         errors++;
@@ -229,20 +230,26 @@ public class Preprocessor {
     /**
      * Apply each output for a single row directly to its parser-owned column values.
      */
-    private static void applyOutputs(List<OutputDescription.Output> outputs, PPColumn[] columns, String[] row, long lineId)
+	private static void applyOutputs(List<OutputDescription.Output<?>> outputs, Preprocessed result, String[] row, long lineId)
             throws ParsingException, OutputDescription.OutputException {
+
         for (int index = 0; index < outputs.size(); index++) {
-            final OutputDescription.Output out = outputs.get(index);
+            final OutputDescription.Output<?> out = outputs.get(index);
 
             try {
-                final Parser parser = columns[index].getParser();
+				final Parser<?, ?, ?> parser = result.getParser(index);
 
-                out.createOutput(row, parser, lineId);
+                createOutput(out, parser, row, lineId);
             } catch (Exception e) {
                 throw new OutputDescription.OutputException(out.getDescription(), e);
             }
         }
     }
+
+	@SuppressWarnings({"rawtypes", "unchecked"})
+	private static void createOutput(OutputDescription.Output<?> output, Parser<?, ?, ?> parser, String[] row, long lineId) throws ParsingException {
+		((OutputDescription.Output) output).createOutput(row, parser, lineId);
+	}
 
     private static long reportProgress(ProgressBar totalProgress, CountingInputStream countingIn, long previousProgress) {
         final long currentProgress = countingIn.getCount();

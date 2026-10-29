@@ -21,9 +21,9 @@ class DateRangeParserTest {
 		final DateRangeParser parser = new DateRangeParser(new ConqueryConfig());
 
 		List.of(CDateRange.of(10, 11), CDateRange.exactly(10))
-			.forEach(parser::add);
+			.forEach(parser::addDateRange);
 
-		final ColumnStore actual = parser.decideType();
+		final ColumnStore actual = parser.decideType(parser.getLines());
 
 		assertThat(actual).isInstanceOf(DirectDateRangeStore.class);
 
@@ -37,9 +37,9 @@ class DateRangeParserTest {
 		final DateRangeParser parser = new DateRangeParser(new ConqueryConfig());
 
 		List.of(CDateRange.of(10, 11), CDateRange.exactly(10), CDateRange.atMost(10))
-			.forEach(parser::add);
+			.forEach(parser::addDateRange);
 
-		assertThat(parser.decideType()).isInstanceOf(DirectDateRangeStore.class);
+		assertThat(parser.decideType(parser.getLines())).isInstanceOf(DirectDateRangeStore.class);
 	}
 
 	@Test
@@ -47,8 +47,8 @@ class DateRangeParserTest {
 		final DateRangeParser parser = new DateRangeParser(new ConqueryConfig());
 
 		List.of(CDateRange.of(QuarterUtils.getFirstDayOfQuarter(2011, 1), QuarterUtils.getLastDayOfQuarter(2011, 1)))
-			.forEach(parser::add);
+			.forEach(parser::addDateRange);
 
-		assertThat(parser.decideType()).isInstanceOf(QuarterDateRangeStore.class);
+		assertThat(parser.decideType(parser.getLines())).isInstanceOf(QuarterDateRangeStore.class);
 	}
 }

@@ -35,62 +35,62 @@ public class CompoundDateRangeOutput extends OutputDescription {
 	private boolean allowOpen;
 
 	@Override
-	public Output createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader, ConqueryConfig config) {
-		final Output startReader = Arrays.stream(getParent().getOutput())
+	@SuppressWarnings("unchecked")
+	public Output<CompoundDateRangeParser> createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader, ConqueryConfig config) {
+		final Output<DateParser> startReader = (Output<DateParser>) Arrays.stream(getParent().getOutput())
 										 .filter(output -> output.getName().equals(getStartColumn()))
 										 .findFirst()
 										 .orElseThrow()
 										 .createForHeaders(headers, dateReader, config);
 
-		final Output endReader = Arrays.stream(getParent().getOutput())
+		final Output<DateParser> endReader = (Output<DateParser>) Arrays.stream(getParent().getOutput())
 									   .filter(output -> output.getName().equals(getEndColumn()))
 									   .findFirst()
 									   .orElseThrow()
 									   .createForHeaders(headers, dateReader, config);
 
 		final DateParser dateParser = new DateParser(config);
-		final ColumnValues<Integer> bounds = dateParser.requireColumnValues();
+		final ColumnValues<Integer> bounds = dateParser.getColumnValues();
 
 
 		// This output only verifies that the parsed data is valid and present, it will not store the CDateRanges themselves
 		// Obviously this mean doing the work twice, but it's still better than storing the data twice also.
-		return new Output() {
+		return new Output<>() {
 			@Override
-			protected void writeLine(String[] row, Parser type, long sourceLine) throws ParsingException {
-				((CompoundDateRangeParser) type).addBoolean(parseRange(row, sourceLine));
-			}
-
-			private boolean parseRange(String[] row, long sourceLine) throws ParsingException {
-				final int firstBound = bounds.getSize();
-				try {
+			protected void processRow(String[] row, CompoundDateRangeParser type, long sourceLine) throws ParsingException {
+                try {
 					startReader.createOutput(row, dateParser, sourceLine);
 					endReader.createOutput(row, dateParser, sourceLine);
 
-					final boolean startNull = bounds.isNull(firstBound);
-					final boolean endNull = bounds.isNull(firstBound + 1);
+					final boolean startNull = bounds.isNull(0);
+					final boolean endNull = bounds.isNull(1);
 
 					if (startNull && endNull) {
-						return false;
-					}
+                        type.addBoolean(false);
+						return;
+                    }
 
-					if (!allowOpen && (startNull || endNull)) {
-						throw new IllegalArgumentException("Open Ranges are not allowed.");
-					}
+                    if (!allowOpen && (startNull || endNull)) {
+                        throw new IllegalArgumentException("Open Ranges are not allowed.");
+                    }
 
-					return
-							// Since it's not possible that BOTH are null either of them being null already implies an open and therefore valid range.
-							(startNull || endNull)
-							// row is included if start <= end
-							|| dateParser.getDate(firstBound) <= dateParser.getDate(firstBound + 1);
-				}
+                    // row is included if start <= end
+                    if (startNull || endNull
+                            // row is included if start <= end
+                            || dateParser.getDate(0) <= dateParser.getDate(1)) {
+                        type.addBoolean(true);
+                    }
+
+                }
 				finally {
-					bounds.truncate(firstBound);
+					bounds.truncate(0);
 				}
 			}
-		};
+
+        };
 	}
 
-	public Parser<?, ?> createParser(ConqueryConfig config) {
+	public Parser<?, ?, ?> createParser(ConqueryConfig config) {
 		return new CompoundDateRangeParser(config, startColumn, endColumn);
 	}
 

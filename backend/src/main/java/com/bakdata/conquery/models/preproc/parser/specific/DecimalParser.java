@@ -2,19 +2,18 @@ package com.bakdata.conquery.models.preproc.parser.specific;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Objects;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.stores.primitive.DecimalArrayStore;
 import com.bakdata.conquery.models.events.stores.root.DecimalStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.specific.ScaledDecimalStore;
-import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.Parser;
-import com.bakdata.conquery.util.NumberParsing;
 import lombok.ToString;
 
 @ToString(callSuper = true)
-public class DecimalParser extends Parser<BigDecimal, DecimalStore> {
+public class DecimalParser extends Parser<BigDecimal, DecimalStore, BigDecimalColumnValues> {
 
 	private transient int maxScale = Integer.MIN_VALUE;
 	private transient BigDecimal maxAbs;
@@ -23,23 +22,19 @@ public class DecimalParser extends Parser<BigDecimal, DecimalStore> {
 		super(config, new BigDecimalColumnValues());
 	}
 
-	@Override
-	protected BigDecimal parseValue(String value) throws ParsingException {
-		return NumberParsing.parseBig(value);
-	}
-
-	@Override
-	protected void registerValue(BigDecimal v) {
-		BigDecimal abs = v.abs();
-		if (v.scale() > maxScale) {
-			maxScale = v.scale();
+	public void addDecimal(BigDecimal value) {
+		Objects.requireNonNull(value, "value");
+		recordLine();
+		final BigDecimal abs = value.abs();
+		if (value.scale() > maxScale) {
+			maxScale = value.scale();
 		}
 		if (maxAbs == null || maxAbs.compareTo(abs) < 0) {
 			maxAbs = abs;
 		}
+		getColumnValues().addBigDecimal(value);
 	}
 
-	@Override
 	protected DecimalStore decideType() {
 		return decideType(getLines());
 	}
@@ -52,12 +47,10 @@ public class DecimalParser extends Parser<BigDecimal, DecimalStore> {
 			return DecimalArrayStore.create(storeLines);
 		}
 
-		IntegerParser sub = new IntegerParser(getConfig());
-		sub.setMaxValue(unscaled.longValueExact());
-		sub.setMinValue(-unscaled.longValueExact());
-		sub.setLines(getLines());
-		sub.setNullLines(getNullLines());
-		IntegerStore subDecision = sub.findBestType(storeLines);
+		IntegerStoreSelector selector = new IntegerStoreSelector();
+		selector.setMaxValue(unscaled.longValueExact());
+		selector.setMinValue(-unscaled.longValueExact());
+		IntegerStore subDecision = selector.decideType(storeLines);
 
 		return new ScaledDecimalStore(maxScale, subDecision);
 	}

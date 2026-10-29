@@ -6,10 +6,6 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 class IntegerColumnValues extends ColumnValues<Integer> {
 	private final IntArrayList values = new IntArrayList();
 
-	protected IntegerColumnValues() {
-		super(0);
-	}
-
 	@Override
 	public Integer get(int event) {
 		return values.getInt(event);
@@ -20,14 +16,13 @@ class IntegerColumnValues extends ColumnValues<Integer> {
 	}
 
 	@Override
-	protected void append(Integer obj) {
-		values.add(obj.intValue());
+	protected void appendNull() {
+		values.add(0);
 	}
 
-	public int addInt(int value) {
-		final int event = prepareAdd(false);
+	public void addInt(int value) {
+		prepareAdd(false);
 		values.add(value);
-		return event;
 	}
 
 	@Override

@@ -1,59 +1,53 @@
 package com.bakdata.conquery.models.preproc.parser.specific;
 
-import javax.annotation.Nonnull;
+import java.util.Objects;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.events.EmptyStore;
+import com.bakdata.conquery.models.events.stores.primitive.IntegerDateStore;
 import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
+import com.bakdata.conquery.models.events.stores.root.DateStore;
 import com.bakdata.conquery.models.events.stores.specific.DirectDateRangeStore;
 import com.bakdata.conquery.models.events.stores.specific.QuarterDateRangeStore;
 import com.bakdata.conquery.models.preproc.parser.Parser;
-import com.bakdata.conquery.util.DateReader;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @ToString(callSuper = true)
-public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
+public class DateRangeParser extends Parser<CDateRange, DateRangeStore, DateRangeColumnValues> {
 
-	private final DateParser minParser;
-	private final DateParser maxParser;
-	private final DateReader dateReader;
+	private final IntegerStoreSelector minSelector = new IntegerStoreSelector();
+	private final IntegerStoreSelector maxSelector = new IntegerStoreSelector();
+	private final IntegerStoreSelector quarterSelector = new IntegerStoreSelector();
 
 	private boolean onlyQuarters = true;
-	private int maxValue = CDateRange.NEGATIVE_INFINITY;
-	private int minValue = CDateRange.POSITIVE_INFINITY;
 	private boolean anyOpen;
 
 	public DateRangeParser(ConqueryConfig config) {
-		super(config, new ListColumnValues<>());
-		minParser = new DateParser(config);
-		maxParser = new DateParser(config);
-		dateReader = config.getLocale().getDateReader();
+		super(config, new DateRangeColumnValues());
 	}
 
-	@Override
-	protected CDateRange parseValue(@Nonnull String value) {
-		return dateReader.parseToCDateRange(value);
-	}
+	public void addDateRange(CDateRange value) {
+		Objects.requireNonNull(value, "value");
+		recordLine();
+		onlyQuarters = onlyQuarters && value.isSingleQuarter();
 
-	@Override
-	protected void registerValue(CDateRange v) {
-		onlyQuarters = onlyQuarters && v.isSingleQuarter();
+		anyOpen = anyOpen || value.isOpen();
 
-		anyOpen = anyOpen || v.isOpen();
-
-		if (v.hasUpperBound()) {
-			maxValue = Math.max(maxValue, v.getMaxValue());
-			maxParser.registerDate(v.getMaxValue());
+		if (value.hasUpperBound()) {
+			maxSelector.register(value.getMaxValue());
+			quarterSelector.register(value.getMaxValue());
 		}
-		if (v.hasLowerBound()) {
-			minValue = Math.min(minValue, v.getMinValue());
-			minParser.registerDate(v.getMinValue());
+		if (value.hasLowerBound()) {
+			minSelector.register(value.getMinValue());
+			quarterSelector.register(value.getMinValue());
 		}
+
+		getColumnValues().addDateRange(value);
 	}
 
-	@Override
 	protected DateRangeStore decideType() {
 		return decideType(getLines());
 	}
@@ -63,26 +57,17 @@ public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 
 		// Quarters cannot encode open ranges.
 		if (!anyOpen && onlyQuarters) {
-			final IntegerParser quarterParser = new IntegerParser(getConfig());
-			quarterParser.setLines(getLines());
-			quarterParser.setMaxValue(maxValue);
-			quarterParser.setMinValue(minValue);
-
-			return new QuarterDateRangeStore(quarterParser.findBestType(storeLines));
+			return new QuarterDateRangeStore(quarterSelector.decideType(storeLines));
 		}
 
+		return new DirectDateRangeStore(decideDateType(minSelector, storeLines), decideDateType(maxSelector, storeLines));
+	}
 
-		// They need to be aligned if they are non-empty.
-
-		if(!minParser.isEmpty()) {
-			minParser.setLines(getLines());
+	private static DateStore decideDateType(IntegerStoreSelector selector, int storeLines) {
+		if (selector.isEmpty()) {
+			return EmptyStore.INSTANCE;
 		}
-
-		if(!maxParser.isEmpty()){
-			maxParser.setLines(getLines());
-		}
-
-		return new DirectDateRangeStore(minParser.findBestType(storeLines), maxParser.findBestType(storeLines));
+		return new IntegerDateStore(selector.decideType(storeLines));
 	}
 
 	@Override

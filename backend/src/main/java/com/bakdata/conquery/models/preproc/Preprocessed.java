@@ -40,6 +40,8 @@ public class Preprocessed {
 	private final PreprocessingJob job;
 	private final String name;
 	private final PPColumn[] columns;
+	@Getter(AccessLevel.NONE)
+	private final Parser<?, ?, ?>[] parsers;
 	private final TableImportDescriptor descriptor;
 	/**
 	 * Per row store, entity.
@@ -83,14 +85,17 @@ public class Preprocessed {
 
 		final TableInputDescriptor input = descriptor.getInputs()[0];
 		columns = new PPColumn[input.getWidth()];
+		parsers = new Parser<?, ?, ?>[input.getWidth()];
 
 		for (int index = 0; index < input.getWidth(); index++) {
 			final ColumnDescription columnDescription = input.getColumnDescription(index);
 			columns[index] = new PPColumn(columnDescription.getName(), columnDescription.getType());
-
-			final Parser parser = input.getOutput()[index].createParser(config);
-			columns[index].setParser(parser);
+			parsers[index] = input.getOutput()[index].createParser(config);
 		}
+	}
+
+	Parser<?, ?, ?> getParser(int index) {
+		return parsers[index];
 	}
 
 
@@ -191,14 +196,14 @@ public class Preprocessed {
 	private void populateBucketStores(Iterable<BucketData> buckets) {
 		for (int columnIndex = 0; columnIndex < columns.length; columnIndex++) {
 			final PPColumn column = columns[columnIndex];
-			final Parser parser = column.getParser();
-			final ColumnValues columnValues = parser.requireColumnValues();
+			final Parser parser = parsers[columnIndex];
+			final ColumnValues columnValues = parser.getColumnValues();
 
-			log.info("Compute best Subtype for Column[{}] with {}", column.getName(), column.getParser());
+			log.info("Compute best Subtype for Column[{}] with {}", column.getName(), parser);
 
 			try {
 				for (BucketData bucket : buckets) {
-					final ColumnStore store = column.createStore(bucket.sourceEvents.length);
+					final ColumnStore store = parser.createSpecializedStore(bucket.sourceEvents.length);
 
 					for (int localEvent = 0; localEvent < bucket.sourceEvents.length; localEvent++) {
 						final int sourceEvent = bucket.sourceEvents[localEvent];
@@ -246,8 +251,8 @@ public class Preprocessed {
 
 		final int event = rowEntities.size();
 
-		for (PPColumn column : columns) {
-			if (column.getParser().requireColumnValues().getSize() != event + 1) {
+		for (Parser<?, ?, ?> parser : parsers) {
+			if (parser.getColumnValues().getSize() != event + 1) {
 				throw new IllegalStateException("Columns are not aligned");
 			}
 		}
@@ -262,8 +267,8 @@ public class Preprocessed {
 		ensureMutable();
 		final int committedRows = rowEntities.size();
 
-		for (PPColumn column : columns) {
-			column.getParser().truncateColumnValues(committedRows);
+		for (Parser<?, ?, ?> parser : parsers) {
+			parser.truncateColumnValues(committedRows);
 		}
 	}
 

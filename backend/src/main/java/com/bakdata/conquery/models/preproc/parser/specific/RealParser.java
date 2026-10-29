@@ -4,16 +4,14 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.stores.primitive.DoubleArrayStore;
 import com.bakdata.conquery.models.events.stores.primitive.FloatArrayStore;
 import com.bakdata.conquery.models.events.stores.root.RealStore;
-import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.Parser;
-import com.bakdata.conquery.util.NumberParsing;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 
 @Slf4j
 @ToString(callSuper = true)
-public class RealParser extends Parser<Double, RealStore> {
+public class RealParser extends Parser<Double, RealStore, DoubleColumnValues> {
 
 	private final double requiredPrecision;
 
@@ -24,49 +22,20 @@ public class RealParser extends Parser<Double, RealStore> {
 		requiredPrecision = config.getPreprocessor().getParsers().getMinPrecision();
 	}
 
-	@Override
-	protected Double parseValue(String value) throws ParsingException {
-		return NumberParsing.parseDouble(value);
-	}
-
-	@Override
-	public int parseAndAdd(String value) throws ParsingException {
-		if (value == null) {
-			return add(null);
-		}
-
-		try {
-			return addDouble(NumberParsing.parseDouble(value));
-		}
-		catch (Exception e) {
-			throw parsingException(value, e);
-		}
-	}
-
 	/**
 	 * Collect ULP of all values
 	 *
 	 * @see Math#ulp(float) for an explanation.
 	 */
-	@Override
-	protected void registerValue(Double v) {
-		registerValue(v.doubleValue());
-	}
-
-	private void registerValue(double value) {
+	public void addDouble(double value) {
+		recordLine();
 		floatULP = Math.max(floatULP, Math.ulp((float) value));
-	}
-
-	public int addDouble(double value) {
-		recordDoubleLine(value);
-		registerValue(value);
-		return ((DoubleColumnValues) requireColumnValues()).addDouble(value);
+		getColumnValues().addDouble(value);
 	}
 
 	/**
 	 * If values are within a margin of precision, we store them as floats.
 	 */
-	@Override
 	protected RealStore decideType() {
 		return decideType(getLines());
 	}

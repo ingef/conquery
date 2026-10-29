@@ -31,11 +31,11 @@ public class LineOutput extends OutputDescription {
 	}
 
 	@Override
-	public Output createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader, ConqueryConfig config) {
-		return new Output() {
+	public Output<IntegerParser> createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader, ConqueryConfig config) {
+		return new Output<>() {
 			@Override
-			protected void writeLine(String[] row, Parser type, long sourceLine) {
-				((IntegerParser) type).addLong(sourceLine);
+			protected void processRow(String[] row, IntegerParser type, long sourceLine) {
+				type.addLong(sourceLine);
 			}
 		};
 	}
@@ -45,7 +45,7 @@ public class LineOutput extends OutputDescription {
 		return MajorTypeId.INTEGER;
 	}
 	@Override
-	public Parser<?, ?> createParser(ConqueryConfig config) {
+	public Parser<?, ?, ?> createParser(ConqueryConfig config) {
 
 		return new IntegerParser(config);
 	}

@@ -7,24 +7,19 @@ import it.unimi.dsi.fastutil.longs.LongList;
 class LongColumnValues extends ColumnValues<Long> {
 	private final LongList values = new LongArrayList();
 
-	protected LongColumnValues() {
-		super(0L);
-	}
-
 	@Override
 	public Long get(int event) {
 		return values.getLong(event);
 	}
 
 	@Override
-	protected void append(Long obj) {
-		values.add(obj.longValue());
+	protected void appendNull() {
+		values.add(0L);
 	}
 
-	public int addLong(long value) {
-		final int event = prepareAdd(false);
+	public void addLong(long value) {
+		prepareAdd(false);
 		values.add(value);
-		return event;
 	}
 
 	@Override

@@ -1,12 +1,12 @@
 package com.bakdata.conquery.models.preproc.parser.specific;
 
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.EmptyStore;
 import com.bakdata.conquery.models.events.stores.primitive.StringStoreString;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
-import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import lombok.Getter;
 import lombok.ToString;
@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Getter
 @ToString(callSuper = true)
-public class StringParser extends Parser<String, StringStore> {
+public class StringParser extends Parser<String, StringStore, StringColumnValues> {
 
 
 	private static final Pattern DIGITS = Pattern.compile("^\\d+$");
@@ -27,17 +27,12 @@ public class StringParser extends Parser<String, StringStore> {
 		super(config, new StringColumnValues());
 	}
 
-	@Override
-	protected String parseValue(String value) throws ParsingException {
-		return value;
+	public void addString(String value) {
+		Objects.requireNonNull(value, "value");
+		recordLine();
+		getColumnValues().addString(value);
 	}
 
-	@Override
-	protected void registerValue(String v) {
-
-	}
-
-	@Override
 	protected StringStore decideType() {
 		return decideType(getLines());
 	}

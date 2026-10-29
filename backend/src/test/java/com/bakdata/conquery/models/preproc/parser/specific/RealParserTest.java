@@ -16,17 +16,17 @@ class RealParserTest {
 
 		final RealParser realParser = new RealParser(config);
 
-		realParser.registerValue(1d);
-		realParser.registerValue(2d);
-		realParser.registerValue(-3d);
+		realParser.addDouble(1d);
+		realParser.addDouble(2d);
+		realParser.addDouble(-3d);
 
 		// ULP is symmetric on the 0 axis and monotonic, so larger values have a larger ULP
 
-		assertThat(realParser.decideType()).isInstanceOf(FloatArrayStore.class);
+		assertThat(realParser.decideType(realParser.getLines())).isInstanceOf(FloatArrayStore.class);
 
-		realParser.registerValue(3000d);
+		realParser.addDouble(3000d);
 
-		assertThat(realParser.decideType()).isInstanceOf(DoubleArrayStore.class);
+		assertThat(realParser.decideType(realParser.getLines())).isInstanceOf(DoubleArrayStore.class);
 	}
 
 }

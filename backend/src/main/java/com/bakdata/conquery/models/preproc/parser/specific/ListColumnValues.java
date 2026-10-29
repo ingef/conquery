@@ -5,12 +5,8 @@ import java.util.List;
 
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 
-class ListColumnValues<T> extends ColumnValues<T> {
-	final List<T> objects = new ArrayList<>();
-
-	public ListColumnValues() {
-		super(null);
-	}
+abstract class ListColumnValues<T> extends ColumnValues<T> {
+	protected final List<T> objects = new ArrayList<>();
 
 	@Override
 	public T get(int event) {
@@ -18,8 +14,8 @@ class ListColumnValues<T> extends ColumnValues<T> {
 	}
 
 	@Override
-	protected void append(T obj) {
-		objects.add(obj);
+	protected void appendNull() {
+		objects.addLast(null);
 	}
 
 	@Override
