@@ -14,7 +14,7 @@ import jakarta.validation.constraints.Pattern;
  */
 @NotBlank
 @Pattern(regexp=ValidConqueryPermission.PERMISSION_PATTERN, message="Provide a valid shiro permission string with 3 parts at most, following this pattern: " + ValidConqueryPermission.PERMISSION_PATTERN)
-@Target({ElementType.FIELD, ElementType.PARAMETER})
+@Target({ElementType.TYPE_USE, ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = {}) // No custom validator needed if only using built-ins
 public @interface ValidConqueryPermission {
