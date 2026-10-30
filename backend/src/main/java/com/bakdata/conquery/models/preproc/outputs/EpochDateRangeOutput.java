@@ -43,20 +43,21 @@ public class EpochDateRangeOutput extends OutputDescription {
 	}
 
 	@Override
-	public Output createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader, ConqueryConfig config) {
+	public Output<DateRangeParser> createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader, ConqueryConfig config) {
 		assertRequiredHeaders(headers, startColumn, endColumn);
 
 		final int startIndex = headers.getInt(startColumn);
 		final int endIndex = headers.getInt(endColumn);
 
-		return new Output() {
+		return new Output<>() {
 			@Override
-			protected Object parseLine(String[] row, Parser type, long sourceLine) throws ParsingException {
+			protected void processRow(String[] row, DateRangeParser type, long sourceLine) throws ParsingException {
 				final boolean startNull = Strings.isNullOrEmpty(row[startIndex]);
 				final boolean endNull = Strings.isNullOrEmpty(row[endIndex]);
 
 				if (startNull && endNull) {
-					return null;
+					addNull(type, sourceLine);
+					return;
 				}
 
 				if (!allowOpen && (startNull || endNull)) {
@@ -64,17 +65,19 @@ public class EpochDateRangeOutput extends OutputDescription {
 				}
 
 				if(startNull){
-					return CDateRange.atMost(Integer.parseInt(row[endIndex]));
+					type.addDateRange(CDateRange.atMost(Integer.parseInt(row[endIndex])));
+					return;
 				}
 
 				if(endNull){
-					return CDateRange.atLeast(Integer.parseInt(row[startIndex]));
+					type.addDateRange(CDateRange.atLeast(Integer.parseInt(row[startIndex])));
+					return;
 				}
 
 				int start = Integer.parseInt(row[startIndex]);
 				int end = Integer.parseInt(row[endIndex]);
 
-				return CDateRange.of(start, end);
+				type.addDateRange(CDateRange.of(start, end));
 			}
 		};
 	}
@@ -85,7 +88,7 @@ public class EpochDateRangeOutput extends OutputDescription {
 	}
 
 	@Override
-	public Parser<?, ?> createParser(ConqueryConfig config) {
+	public Parser<?, ?, ?> createParser(ConqueryConfig config) {
 
 		return new DateRangeParser(config);
 	}

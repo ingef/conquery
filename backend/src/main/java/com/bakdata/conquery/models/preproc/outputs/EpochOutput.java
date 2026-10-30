@@ -34,19 +34,19 @@ public class EpochOutput extends OutputDescription {
 	}
 
 	@Override
-	public Output createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader, ConqueryConfig config) {
+	public Output<DateParser> createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader, ConqueryConfig config) {
 		assertRequiredHeaders(headers, inputColumn);
 		final int columnIndex = headers.getInt(inputColumn);
 
-		return new Output() {
+		return new Output<>() {
 			@Override
-			protected Object parseLine(String[] row, Parser type, long sourceLine) throws ParsingException {
+			protected void processRow(String[] row, DateParser type, long sourceLine) throws ParsingException {
 				if (row[columnIndex] == null) {
-					return null;
+					addNull(type, sourceLine);
+					return;
 				}
 
-
-				return Integer.parseInt(row[columnIndex]);
+				type.addDate(Integer.parseInt(row[columnIndex]));
 			}
 		};
 	}
@@ -57,7 +57,7 @@ public class EpochOutput extends OutputDescription {
 	}
 
 	@Override
-	public Parser<?, ?> createParser(ConqueryConfig config) {
+	public Parser<?, ?, ?> createParser(ConqueryConfig config) {
 
 		return new DateParser(config);
 	}

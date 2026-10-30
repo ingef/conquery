@@ -8,18 +8,24 @@ class DoubleColumnValues extends ColumnValues<Double> {
 
 	final DoubleBigList values = new DoubleBigArrayBigList();
 
-	public DoubleColumnValues() {
-		super(Double.NaN);
-	}
-
 	@Override
 	public Double get(int event) {
 		return values.getDouble(event);
 	}
 
 	@Override
-	protected void append(Double obj) {
-		values.add(obj.doubleValue());
+	protected void appendNull() {
+		values.add(Double.NaN);
+	}
+
+	public void addDouble(double value) {
+		prepareAdd(false);
+		values.add(value);
+	}
+
+	@Override
+	protected void truncateValues(int size) {
+		values.removeElements(size, values.size64());
 	}
 
 	@Override

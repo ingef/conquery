@@ -38,11 +38,11 @@ public class NullOutput extends OutputDescription {
 	}
 
 	@Override
-	public Output createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader, ConqueryConfig config) {
-		return new Output() {
+	public Output<Parser<?, ?, ?>> createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader, ConqueryConfig config) {
+		return new Output<>() {
 			@Override
-			protected Object parseLine(String[] row, Parser type, long sourceLine) throws ParsingException {
-				return null;
+			protected void processRow(String[] row, Parser<?, ?, ?> type, long sourceLine) throws ParsingException {
+				addNull(type, sourceLine);
 			}
 		};
 	}
@@ -52,7 +52,7 @@ public class NullOutput extends OutputDescription {
 		return inputType;
 	}
 
-	public Parser<?, ?> createParser(ConqueryConfig config) {
+	public Parser<?, ?, ?> createParser(ConqueryConfig config) {
 
 		return inputType.createParser(config);
 	}

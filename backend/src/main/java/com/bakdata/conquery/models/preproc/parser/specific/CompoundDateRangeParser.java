@@ -1,15 +1,10 @@
 package com.bakdata.conquery.models.preproc.parser.specific;
 
-import jakarta.validation.constraints.NotEmpty;
-
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
 import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
 import com.bakdata.conquery.models.events.stores.specific.CompoundDateRangeStore;
-import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
-import io.dropwizard.validation.ValidationMethod;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -20,23 +15,17 @@ import org.jetbrains.annotations.NotNull;
  */
 @Slf4j
 @ToString(callSuper = true)
-public class CompoundDateRangeParser extends Parser<Boolean, DateRangeStore> {
+public class CompoundDateRangeParser extends Parser<Boolean, DateRangeStore, BooleanColumnValues> {
 
-	@NotNull
-	@NotEmpty
 	private final String startColumn, endColumn;
 
 
 	public CompoundDateRangeParser(ConqueryConfig config, @NotNull String startColumn, @NotNull String endColumn) {
-		super(config);
+		super(config, new BooleanColumnValues());
 		this.endColumn = endColumn;
 		this.startColumn = startColumn;
 	}
 
-	@ValidationMethod(message = "Start-Column must be different to End-Column")
-	public boolean isStartColumnNotEqualsEndColumn() {
-		return !startColumn.equals(endColumn);
-	}
 
 	@Override
 	public boolean isEmpty() {
@@ -45,14 +34,18 @@ public class CompoundDateRangeParser extends Parser<Boolean, DateRangeStore> {
 	}
 
 
-	@Override
-	protected Boolean parseValue(@NotNull String value) throws ParsingException {
-		throw new IllegalStateException("this Parser cannot parse values.");
+	public void addBoolean(boolean value) {
+		recordLine();
+		getColumnValues().addBoolean(value);
+	}
+
+	protected DateRangeStore decideType() {
+		return decideType(getLines());
 	}
 
 	@Override
-	protected DateRangeStore decideType() {
-		return new CompoundDateRangeStore(this.startColumn, this.endColumn, BitSetStore.create(getLines()));
+	protected DateRangeStore decideType(int storeLines) {
+		return new CompoundDateRangeStore(this.startColumn, this.endColumn, BitSetStore.create(storeLines));
 	}
 
 
@@ -63,8 +56,4 @@ public class CompoundDateRangeParser extends Parser<Boolean, DateRangeStore> {
 		compoundStore.setHas(event, value);
 	}
 
-	@Override
-	public ColumnValues createColumnValues() {
-		return new BooleanColumnValues();
-	}
 }

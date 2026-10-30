@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.ColumnDescription;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
+import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -67,33 +68,42 @@ public abstract class OutputDescription {
 	/**
 	 * Describes a transformation of an input row to a single value.
 	 */
-	public abstract class Output {
+	public abstract class Output<PARSER_TYPE extends Parser<?, ?, ?>> {
 
 		public OutputDescription getDescription() {
 			return OutputDescription.this;
 		}
 
 		/**
-		 * Parse the line/row
+		 * Parse the line/row and append its output to the parser's column values.
 		 *
 		 * @param row        the row to parse
 		 * @param sourceLine the linenumber of the row in the input file
-		 * @return a value or null
 		 * @throws ParsingException
 		 */
-		protected abstract Object parseLine(String[] row, Parser type, long sourceLine) throws ParsingException;
+		protected abstract void processRow(String[] row, PARSER_TYPE type, long sourceLine) throws ParsingException;
 
-		/**
-		 * Parse row and test for NULL values, throwing an exception when Required but missing.
-		 */
-		public Object createOutput(String[] row, Parser type, long sourceLine) throws ParsingException {
-			final Object parsed = parseLine(row, type, sourceLine);
-
-			if (OutputDescription.this.isRequired() && parsed == null) {
+		protected final void addNull(PARSER_TYPE type, long sourceLine) {
+			type.addNull();
+			if (OutputDescription.this.isRequired()) {
 				throw new IllegalArgumentException(String.format("Required Output[%s] produced NULL value at line %d", OutputDescription.this.getName(), sourceLine));
 			}
+		}
 
-			return parsed;
+		/**
+		 * Parse a row and verify that exactly one value was appended.
+		 */
+		public void createOutput(String[] row, PARSER_TYPE type, long sourceLine) throws ParsingException {
+			final ColumnValues<?> columnValues = type.getColumnValues();
+			final int outputIndex = columnValues.getSize();
+
+			processRow(row, type, sourceLine);
+
+			if (columnValues.getSize() != outputIndex + 1) {
+				throw new IllegalStateException("Output[%s] must write exactly one value at line %d"
+											.formatted(OutputDescription.this.getName(), sourceLine));
+			}
+
 		}
 	}
 
@@ -133,7 +143,7 @@ public abstract class OutputDescription {
 	 * @param config
 	 * @return the output for the specific headers.
 	 */
-	public abstract Output createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader, ConqueryConfig config);
+	public abstract Output<?> createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader, ConqueryConfig config);
 
 	/**
 	 * The resulting type after {@link Output} has been applied.
@@ -149,6 +159,6 @@ public abstract class OutputDescription {
 		return new ColumnDescription(name, getResultType());
 	}
 
-	public abstract Parser<?, ?> createParser(ConqueryConfig config);
+	public abstract Parser<?, ?, ?> createParser(ConqueryConfig config);
 
 }

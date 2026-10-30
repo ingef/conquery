@@ -44,28 +44,31 @@ public class DateRangeOutput extends OutputDescription {
 	}
 
 	@Override
-	public Output createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader, ConqueryConfig config) {
+	public Output<DateRangeParser> createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader, ConqueryConfig config) {
 		assertRequiredHeaders(headers, startColumn, endColumn);
 
 		final int startIndex = headers.getInt(startColumn);
 		final int endIndex = headers.getInt(endColumn);
 
-		return new Output() {
+		return new Output<>() {
 			@Override
-			protected Object parseLine(String[] row, Parser type, long sourceLine) throws ParsingException {
+			protected void processRow(String[] row, DateRangeParser type, long sourceLine) throws ParsingException {
+				final boolean startNull = Strings.isNullOrEmpty(row[startIndex]);
+				final boolean endNull = Strings.isNullOrEmpty(row[endIndex]);
 
-				if (Strings.isNullOrEmpty(row[startIndex]) && Strings.isNullOrEmpty(row[endIndex])) {
-					return null;
+				if (startNull && endNull) {
+					addNull(type, sourceLine);
+					return;
 				}
 
-				if (!allowOpen && (Strings.isNullOrEmpty(row[startIndex]) || Strings.isNullOrEmpty(row[endIndex]))) {
+				if (!allowOpen && (startNull || endNull)) {
 					throw new IllegalArgumentException("Open Ranges are not allowed.");
 				}
 
 				LocalDate start = dateReader.parseToLocalDate(row[startIndex]);
 				LocalDate end = dateReader.parseToLocalDate(row[endIndex]);
 
-				return CDateRange.of(start, end);
+				type.addDateRange(CDateRange.of(start, end));
 			}
 		};
 	}
@@ -76,7 +79,7 @@ public class DateRangeOutput extends OutputDescription {
 	}
 
 	@Override
-	public Parser<?, ?> createParser(ConqueryConfig config) {
+	public Parser<?, ?, ?> createParser(ConqueryConfig config) {
 
 		return new DateRangeParser(config);
 	}

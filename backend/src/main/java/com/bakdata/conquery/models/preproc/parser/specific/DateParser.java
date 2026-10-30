@@ -1,70 +1,44 @@
 package com.bakdata.conquery.models.preproc.parser.specific;
 
-import javax.annotation.Nonnull;
-
-import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.stores.primitive.IntegerDateStore;
 import com.bakdata.conquery.models.events.stores.root.DateStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
-import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
-import com.bakdata.conquery.util.DateReader;
-import lombok.SneakyThrows;
 import lombok.ToString;
 
 @ToString(callSuper = true)
-public class DateParser extends Parser<Integer, DateStore> {
+public class DateParser extends Parser<Integer, DateStore, IntegerColumnValues> {
 
-	private IntegerParser subType;
-	private DateReader dateReader;
+	private final IntegerStoreSelector selector = new IntegerStoreSelector();
 
 	public DateParser(ConqueryConfig config) {
-		super(config);
-		subType = new IntegerParser(config);
-		dateReader = config.getLocale().getDateReader();
-
+		super(config, new IntegerColumnValues());
 	}
 
-	@Override
-	public void setLines(int lines) {
-		super.setLines(lines);
-		subType.setLines(lines);
+	public void addDate(int value) {
+		recordLine();
+		selector.register(value);
+		getColumnValues().addInt(value);
 	}
 
-	@Override
-	protected Integer parseValue(@Nonnull String value) throws ParsingException {
-		return CDate.ofLocalDate(dateReader.parseToLocalDate(value));
+	public int getDate(int event) {
+		return getColumnValues().getInt(event);
 	}
 
-	@Override
-	public Integer addLine(Integer v) {
-		if(v == null){
-			subType.addLine(null);
-			return super.addLine(null);
-		}
-
-		super.addLine(v);
-
-		return subType.addLine(v.longValue()).intValue();
-	}
-
-	@Override
 	protected DateStore decideType() {
-		IntegerStore subDecision = subType.findBestType();
+		return decideType(getLines());
+	}
+
+	@Override
+	protected DateStore decideType(int storeLines) {
+		IntegerStore subDecision = selector.decideType(storeLines);
 		return new IntegerDateStore(subDecision);
 	}
 
 	@Override
 	public void setValue(DateStore store, int event, Integer value) {
 		store.setDate(event, value);
-	}
-
-	@SneakyThrows
-	@Override
-	public ColumnValues createColumnValues() {
-		return new IntegerColumnValues();
 	}
 
 }
