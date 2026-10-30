@@ -77,6 +77,9 @@ public class ConqueryConfig extends Configuration implements Injectable {
 	private StandaloneConfig standalone = new StandaloneConfig();
 	@Valid
 	@NotNull
+	private StartupConfig startup = new StartupConfig();
+	@Valid
+	@NotNull
 	private StoreFactory storage = new XodusStoreFactory();
 	@Valid
 	@NotNull

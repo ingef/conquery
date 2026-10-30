@@ -19,6 +19,7 @@ import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.mode.Manager;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.config.StartupConfig;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -247,6 +248,16 @@ public class ManagerNode implements Managed {
 		loadMetaStorage();
 
 		manager.start();
+
+		final StartupConfig startupConfig = getConfig().getStartup();
+		for (Namespace namespace : getDatasetRegistry().getNamespaces()) {
+			if (startupConfig.isUpdateMatchingStats()) {
+				namespace.scheduleMatchingStatsUpdate();
+			}
+			if (startupConfig.isUpdateFilterSearch()) {
+				namespace.scheduleFilterSearchUpdate();
+			}
+		}
 	}
 
 	@Override
