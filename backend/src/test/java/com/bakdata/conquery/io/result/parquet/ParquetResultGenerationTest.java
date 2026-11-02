@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -26,6 +27,7 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.results.EntityResult;
+import com.google.common.io.CountingOutputStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.parquet.example.data.Group;
@@ -142,6 +144,20 @@ public class ParquetResultGenerationTest {
 
 	}
 
+	@Test
+	void delegateBulkWrites() throws IOException {
+		TrackingOutputStream delegate = new TrackingOutputStream();
+		ParquetRenderer.PositionTrackingOutputStream output =
+				new ParquetRenderer.PositionTrackingOutputStream(new CountingOutputStream(delegate));
+
+		output.write(new byte[]{1, 2, 3});
+		output.write(new byte[]{4, 5, 6, 7}, 1, 2);
+
+		assertThat(delegate.singleByteWrites).isZero();
+		assertThat(delegate.bulkWrites).isEqualTo(2);
+		assertThat(output.getPos()).isEqualTo(5);
+	}
+
 	private CharSequence extractHeader(GroupType type) {
 		StringJoiner stringJoiner = new StringJoiner("\t");
 		type.getFields().stream().map(Type::getName).forEach(stringJoiner::add);
@@ -243,6 +259,21 @@ public class ParquetResultGenerationTest {
 					}
 				}
 			};
+		}
+	}
+
+	private static class TrackingOutputStream extends OutputStream {
+		private int singleByteWrites;
+		private int bulkWrites;
+
+		@Override
+		public void write(int value) {
+			singleByteWrites++;
+		}
+
+		@Override
+		public void write(byte[] buffer, int offset, int length) {
+			bulkWrites++;
 		}
 	}
 }

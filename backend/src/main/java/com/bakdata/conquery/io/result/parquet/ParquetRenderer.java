@@ -108,6 +108,16 @@ public class ParquetRenderer {
 		public void write(int b) throws IOException {
 			stream.write(b);
 		}
+
+		@Override
+		public void write(byte[] buffer) throws IOException {
+			stream.write(buffer);
+		}
+
+		@Override
+		public void write(byte[] buffer, int offset, int length) throws IOException {
+			stream.write(buffer, offset, length);
+		}
 	}
 
 
