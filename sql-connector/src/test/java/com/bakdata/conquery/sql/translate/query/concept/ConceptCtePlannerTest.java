@@ -18,13 +18,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.sql.Date;
 import java.util.Optional;
 
+import com.bakdata.conquery.sql.model.schema.SqlTable;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.translate.ir.QueryStep;
 import com.bakdata.conquery.sql.translate.ir.Selects;
 import com.bakdata.conquery.sql.translate.ir.SqlTables;
 import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.translate.naming.SqlNameGenerator;
-import com.bakdata.conquery.sql.model.schema.SqlTable;
 import org.jooq.Field;
 import org.junit.jupiter.api.Test;
 

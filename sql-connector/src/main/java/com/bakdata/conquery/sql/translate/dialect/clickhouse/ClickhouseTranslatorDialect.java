@@ -10,12 +10,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
+import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
 import com.bakdata.conquery.sql.translate.conversion.select.SelectConversionContext;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.translate.ir.QueryStep;
 import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.translate.query.concept.ConnectorSqlSelects;
-import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;

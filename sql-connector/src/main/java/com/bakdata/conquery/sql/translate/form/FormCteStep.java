@@ -1,7 +1,7 @@
 package com.bakdata.conquery.sql.translate.form;
 
-import com.bakdata.conquery.sql.translate.ir.CteStep;
 import com.bakdata.conquery.sql.model.form.FormResolution;
+import com.bakdata.conquery.sql.translate.ir.CteStep;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 

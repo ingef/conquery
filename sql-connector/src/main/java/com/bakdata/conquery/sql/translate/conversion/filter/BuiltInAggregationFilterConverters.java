@@ -3,6 +3,8 @@ package com.bakdata.conquery.sql.translate.conversion.filter;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.bakdata.conquery.sql.model.operation.BuiltInFilters;
+import com.bakdata.conquery.sql.model.operation.ResolvedFilter;
 import com.bakdata.conquery.sql.translate.conversion.Converter;
 import com.bakdata.conquery.sql.translate.conversion.aggregation.AggregationConversionContext;
 import com.bakdata.conquery.sql.translate.conversion.aggregation.ResolvedAggregationConverter;
@@ -12,8 +14,6 @@ import com.bakdata.conquery.sql.translate.query.concept.CommonAggregationSelect;
 import com.bakdata.conquery.sql.translate.query.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.translate.query.concept.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.translate.query.concept.SqlFilters;
-import com.bakdata.conquery.sql.model.operation.BuiltInFilters;
-import com.bakdata.conquery.sql.model.operation.ResolvedFilter;
 import org.jooq.Field;
 
 final class BuiltInAggregationFilterConverters {

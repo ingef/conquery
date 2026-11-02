@@ -7,13 +7,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.sql.Date;
 import java.util.Locale;
 
-import com.bakdata.conquery.sql.translate.dialect.clickhouse.ClickhouseTranslatorDialect;
-import com.bakdata.conquery.sql.translate.dialect.hana.HanaTranslatorDialect;
-import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.dialect.clickhouse.ClickhouseDialectBundle;
 import com.bakdata.conquery.sql.conversion.dialect.clickhouse.ClickhouseFunctionProvider;
 import com.bakdata.conquery.sql.conversion.dialect.hana.HanaDialectBundle;
 import com.bakdata.conquery.sql.conversion.dialect.hana.HanaSqlFunctionProvider;
+import com.bakdata.conquery.sql.translate.dialect.clickhouse.ClickhouseTranslatorDialect;
+import com.bakdata.conquery.sql.translate.dialect.hana.HanaTranslatorDialect;
+import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Test;

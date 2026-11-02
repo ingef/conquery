@@ -2,6 +2,7 @@ package com.bakdata.conquery.sql.translate.dialect.clickhouse;
 
 import static org.jooq.impl.DSL.field;
 
+import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
 import com.bakdata.conquery.sql.translate.conversion.select.SelectConversionContext;
 import com.bakdata.conquery.sql.translate.conversion.select.SubstringSelect;
 import com.bakdata.conquery.sql.translate.ir.SqlTables;
@@ -9,7 +10,6 @@ import com.bakdata.conquery.sql.translate.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.translate.ir.select.SingleColumnSqlSelect;
 import com.bakdata.conquery.sql.translate.query.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.translate.query.concept.ConnectorSqlSelects;
-import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
 
 public class ClickhouseDistinctSelectConverter {
 

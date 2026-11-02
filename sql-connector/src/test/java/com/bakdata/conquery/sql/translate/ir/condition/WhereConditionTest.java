@@ -13,8 +13,8 @@ import java.math.BigDecimal;
 import java.sql.Date;
 import java.util.List;
 
-import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.model.range.NumberRange;
+import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.SQLDialect;

@@ -5,13 +5,13 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
+import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
+import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.translate.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.translate.query.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.translate.query.concept.ConnectorSqlSelects;
-import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
-import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 

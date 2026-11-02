@@ -9,6 +9,7 @@ import static com.bakdata.conquery.sql.translate.query.interval.IntervalPackingC
 import java.util.HashMap;
 import java.util.Map;
 
+import com.bakdata.conquery.sql.model.schema.SqlTable;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.translate.ir.CteStep;
 import com.bakdata.conquery.sql.translate.ir.QueryStep;
@@ -16,7 +17,6 @@ import com.bakdata.conquery.sql.translate.ir.SchemaSql;
 import com.bakdata.conquery.sql.translate.ir.SqlTables;
 import com.bakdata.conquery.sql.translate.naming.SqlNameGenerator;
 import com.bakdata.conquery.sql.translate.query.interval.IntervalPackingCteStep;
-import com.bakdata.conquery.sql.model.schema.SqlTable;
 import lombok.experimental.UtilityClass;
 import org.jooq.Record;
 import org.jooq.Table;

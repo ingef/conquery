@@ -3,11 +3,11 @@ package com.bakdata.conquery.sql.translate.conversion.filter;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.bakdata.conquery.sql.model.operation.ResolvedFilter;
 import com.bakdata.conquery.sql.translate.conversion.ConversionDispatcher;
 import com.bakdata.conquery.sql.translate.conversion.Converter;
 import com.bakdata.conquery.sql.translate.conversion.aggregation.ResolvedAggregationConverter;
 import com.bakdata.conquery.sql.translate.query.concept.SqlFilters;
-import com.bakdata.conquery.sql.model.operation.ResolvedFilter;
 
 /** Converts resolved filter-model values into connector filter IR. */
 public final class ResolvedFilterConverter {

@@ -14,13 +14,13 @@ import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
-import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.conversion.model.EntitySchemaAdapter;
 import com.bakdata.conquery.sql.model.export.ResolvedExportTable;
 import com.bakdata.conquery.sql.model.export.ResolvedTableExportQuery;
 import com.bakdata.conquery.sql.model.range.DateRange;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.model.schema.SqlTable;
+import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.util.TablePrimaryColumnUtil;
 
 /** Resolves backend table-export DTOs into the connector-owned export model. */

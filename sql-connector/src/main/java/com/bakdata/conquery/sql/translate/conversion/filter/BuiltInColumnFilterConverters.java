@@ -5,6 +5,9 @@ import java.sql.Date;
 import java.util.List;
 import java.util.function.BiFunction;
 
+import com.bakdata.conquery.sql.model.operation.BuiltInFilters;
+import com.bakdata.conquery.sql.model.operation.ResolvedFilter;
+import com.bakdata.conquery.sql.model.range.SubstringRange;
 import com.bakdata.conquery.sql.translate.conversion.Converter;
 import com.bakdata.conquery.sql.translate.conversion.select.DateDistanceSqlAggregator;
 import com.bakdata.conquery.sql.translate.ir.SchemaSql;
@@ -15,9 +18,6 @@ import com.bakdata.conquery.sql.translate.ir.condition.WhereClauses;
 import com.bakdata.conquery.sql.translate.ir.condition.WhereCondition;
 import com.bakdata.conquery.sql.translate.query.concept.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.translate.query.concept.SqlFilters;
-import com.bakdata.conquery.sql.model.operation.BuiltInFilters;
-import com.bakdata.conquery.sql.model.operation.ResolvedFilter;
-import com.bakdata.conquery.sql.model.range.SubstringRange;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 

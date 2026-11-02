@@ -1,7 +1,7 @@
 package com.bakdata.conquery.sql.translate;
 
-import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.model.ResolvedQuery;
+import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 
 /**
  * Compiles a fully resolved query into self-contained SQL for a selected database dialect.
