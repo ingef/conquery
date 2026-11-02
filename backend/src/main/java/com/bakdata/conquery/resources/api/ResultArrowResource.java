@@ -1,6 +1,5 @@
 package com.bakdata.conquery.resources.api;
 
-import static com.bakdata.conquery.io.result.ResultUtil.checkSingleTableResult;
 import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 import java.net.MalformedURLException;
@@ -48,7 +47,6 @@ public class ResultArrowResource {
 			@QueryParam("limit") OptionalLong limit
 			) {
 
-		checkSingleTableResult(query.resolve());
 		log.info("Result for {} download on dataset {} by subject {} ({}).", query, query.getDataset(), subject.getId(), subject.getName());
 		return processor.createResultFile(subject, query, pretty, limit);
 	}
@@ -84,7 +82,6 @@ public class ResultArrowResource {
 			@QueryParam("pretty") Optional<Boolean> pretty,
 			@QueryParam("limit") OptionalLong limit
 	) {
-		checkSingleTableResult(execution.resolve());
 		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, execution.getDataset(), subject.getId(), subject.getName());
 		return processor.createResultStream(subject, execution, pretty.orElse(false), limit);
 	}

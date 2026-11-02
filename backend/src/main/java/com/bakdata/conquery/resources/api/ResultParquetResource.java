@@ -1,6 +1,5 @@
 package com.bakdata.conquery.resources.api;
 
-import static com.bakdata.conquery.io.result.ResultUtil.checkSingleTableResult;
 import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_PARQUET;
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
@@ -58,7 +57,6 @@ public class ResultParquetResource {
 			@QueryParam("pretty") @DefaultValue("false") boolean pretty,
 			@QueryParam("limit") OptionalLong limit) {
 
-		checkSingleTableResult(execution.resolve());
 		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, execution.getDataset(), subject.getId(), subject.getName());
 		return processor.createResultFile(subject, execution, pretty, limit);
 	}

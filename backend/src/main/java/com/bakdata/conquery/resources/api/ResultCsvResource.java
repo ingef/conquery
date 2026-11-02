@@ -1,6 +1,5 @@
 package com.bakdata.conquery.resources.api;
 
-import static com.bakdata.conquery.io.result.ResultUtil.checkSingleTableResult;
 import static com.bakdata.conquery.io.result.ResultUtil.determineCharset;
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
@@ -59,10 +58,8 @@ public class ResultCsvResource {
 			@QueryParam("limit") OptionalLong limit
 	) {
 
-		ManagedExecution execution = executionId.resolve();
-		checkSingleTableResult(execution);
-		log.info("Result for {} download on dataset {} by subject {} ({}).", executionId, execution.getDataset(), subject.getId(), subject.getName());
+		log.info("Result for {} download on dataset {} by subject {} ({}).", executionId, executionId.getDataset(), subject.getId(), subject.getName());
 
-		return processor.createResult((ManagedExecution & SingleTableResult) execution, subject, pretty, determineCharset(userAgent, queryCharset), limit);
+		return processor.createResult(executionId, subject, pretty, determineCharset(userAgent, queryCharset), limit);
 	}
 }

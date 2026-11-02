@@ -6,7 +6,6 @@ import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDown
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
-import java.util.Locale;
 import java.util.OptionalLong;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.WebApplicationException;
@@ -15,18 +14,12 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
 
 import com.bakdata.conquery.io.result.ResultUtil;
+import com.bakdata.conquery.io.result.ResultExportContext;
+import com.bakdata.conquery.io.result.ResultExportPreparation;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
-import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.query.SingleTableResult;
-import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.ResourceConstants;
-import com.bakdata.conquery.util.io.ConqueryMDC;
-import com.bakdata.conquery.util.io.IdColumnUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.io.EofException;
@@ -37,33 +30,18 @@ public class ResultCsvProcessor {
 
 	private final ConqueryConfig config;
 
-	public <E extends ManagedExecution & SingleTableResult> Response createResult(E exec, Subject subject, boolean pretty, Charset charset, OptionalLong limit) {
-
-		ManagedExecutionId execId = exec.getId();
-		final Namespace namespace = exec.getNamespace();
-
-
-		ConqueryMDC.setLocation(subject.getName());
+	public Response createResult(ManagedExecutionId execId, Subject subject, boolean pretty, Charset charset, OptionalLong limit) {
 		log.info("Downloading results for {}", execId);
 
-		ResultUtil.authorizeExecutable(subject, exec);
+		final ResultExportContext context = ResultExportPreparation.prepare(subject, execId, pretty, limit, config);
 
 		// Check if subject is permitted to download on all datasets that were referenced by the query
-		authorizeDownloadDatasets(subject, exec);
-
-		// Initialize execution so columns can be correctly accounted
-		exec.initExecutable();
-
-		final IdPrinter idPrinter = IdColumnUtil.getIdPrinter(subject, exec, namespace, config.getIdColumns().getIds());
-
-		// Get the locale extracted by the LocaleFilter
-		final Locale locale = I18n.LOCALE.get();
-		final PrintSettings settings = new PrintSettings(pretty, locale, config, idPrinter::createId, null);
+		authorizeDownloadDatasets(subject, context.execution());
 
 		final StreamingOutput out = os -> {
 			try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, charset))) {
-				final CsvRenderer renderer = new CsvRenderer(config.getCsv().createWriter(writer), settings);
-				renderer.toCSV(config.getIdColumns().getIdResultInfos(), exec.collectResultInfos(), exec.streamResults(limit), settings, charset);
+				final CsvRenderer renderer = new CsvRenderer(config.getCsv().createWriter(writer), context.printSettings());
+				renderer.toCSV(context.idResultInfos(), context.resultInfos(), context.streamResults(), context.printSettings(), charset);
 			}
 			catch (EofException e) {
 				log.trace("User canceled download");
@@ -72,12 +50,12 @@ public class ResultCsvProcessor {
 				throw new WebApplicationException("Failed to load result", e);
 			}
 			finally {
-				log.trace("FINISHED downloading {}", exec.getId());
+				log.trace("FINISHED downloading {}", context.execution().getId());
 			}
 		};
 
 		return makeResponseWithFileName(Response.ok(out),
-										String.join(".", exec.getLabelWithoutAutoLabelSuffix(), ResourceConstants.FILE_EXTENTION_CSV),
+										String.join(".", context.execution().getLabelWithoutAutoLabelSuffix(), ResourceConstants.FILE_EXTENTION_CSV),
 										new MediaType("text", "csv", charset.toString()),
 										ResultUtil.ContentDispositionOption.ATTACHMENT
 		);

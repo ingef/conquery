@@ -1,6 +1,5 @@
 package com.bakdata.conquery.resources.api;
 
-import static com.bakdata.conquery.io.result.ResultUtil.checkSingleTableResult;
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
 import java.net.MalformedURLException;
@@ -47,7 +46,6 @@ public class ResultExcelResource {
 			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
 			@QueryParam("pretty") @DefaultValue("true") boolean pretty,
 			@QueryParam("limit") OptionalLong limit) {
-		checkSingleTableResult(execution.resolve());
 		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, execution.getDataset(), subject.getId(), subject.getName());
 		return processor.createResult(subject, execution, pretty, limit);
 	}
