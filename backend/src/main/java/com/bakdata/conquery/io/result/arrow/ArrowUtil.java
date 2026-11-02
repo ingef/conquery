@@ -3,6 +3,7 @@ package com.bakdata.conquery.io.result.arrow;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.bakdata.conquery.io.result.PreparedResultColumn;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
@@ -91,6 +92,12 @@ public class ArrowUtil {
 				   .map(i -> fieldFor(i.getType(), collector.getUniqueName(i, printSettings)))
 				   .toList();
 
+	}
+
+	public static List<Field> generateFields(@NonNull List<PreparedResultColumn> columns) {
+		return columns.stream()
+					  .map(column -> fieldFor(column.type(), column.name()))
+					  .toList();
 	}
 
 	@NotNull

@@ -2,8 +2,8 @@ package com.bakdata.conquery.io.result.parquet;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
+import com.bakdata.conquery.io.result.PreparedResultColumn;
 import com.bakdata.conquery.io.result.arrow.ArrowUtil;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -11,7 +11,6 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.resultinfo.printers.ColumnarResultPrinters;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
-import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.types.ResultType;
@@ -61,27 +60,29 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 			Because Parquet Schemas rely on primitive types with logical annotations
 			which are tedious to configure, we take the detour over the arrow schema.
 		 */
+		final PreparedResultColumn.Columns columns = PreparedResultColumn.prepare(
+				idHeaders,
+				resultValueInfos,
+				uniqueNamer,
+				printSettings1,
+				new ColumnarResultPrinters()
+		);
+		return generateSchema(columns);
+	}
+
+	private static MessageType generateSchema(PreparedResultColumn.Columns columns) {
 		final SchemaMapping schemaMapping =
-				new SchemaConverter().fromArrow(new Schema(ArrowUtil.generateFields(idHeaders, resultValueInfos, uniqueNamer, printSettings1)));
+				new SchemaConverter().fromArrow(new Schema(ArrowUtil.generateFields(columns.allColumns())));
 
 		return schemaMapping.getParquetSchema();
 
 	}
 
-	private static List<ColumnConsumer> generateColumnConsumers(List<ResultInfo> idHeaders, List<ResultInfo> resultInfos) {
-		return Stream.concat(idHeaders.stream(), resultInfos.stream())
-					 .map(ResultInfo::getType)
+	private static List<ColumnConsumer> generateColumnConsumers(List<PreparedResultColumn> columns) {
+		return columns.stream()
+					 .map(PreparedResultColumn::type)
 					 .map(EntityResultWriteSupport::columnConsumerForType)
 					 .toList();
-
-	}
-
-	private static List<Printer> generateColumnPrinters(List<ResultInfo> idHeaders, List<ResultInfo> resultInfos, PrintSettings printSettings, PrinterFactory printerFactory) {
-
-		return Stream.concat(idHeaders.stream(), resultInfos.stream())
-					 .map(info -> info.createPrinter(printerFactory, printSettings))
-					 .toList();
-
 	}
 
 	private static ColumnConsumer columnConsumerForType(ResultType resultType) {
@@ -102,9 +103,15 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 
 	@Override
 	public WriteContext init(Configuration configuration) {
-		schema = generateSchema(idHeaders, resultInfo, new UniqueNamer(printSettings), printSettings);
-		columnConsumers = generateColumnConsumers(idHeaders, resultInfo);
-		columnPrinters = generateColumnPrinters(idHeaders, resultInfo, printSettings, new ColumnarResultPrinters());
+		final PreparedResultColumn.Columns columns = PreparedResultColumn.prepare(
+				idHeaders,
+				resultInfo,
+				printSettings,
+				new ColumnarResultPrinters()
+		);
+		schema = generateSchema(columns);
+		columnConsumers = generateColumnConsumers(columns.allColumns());
+		columnPrinters = columns.allColumns().stream().map(PreparedResultColumn::printer).toList();
 		return new WriteContext(schema, Map.of());
 	}
 
