@@ -67,7 +67,7 @@ public class CsvResultGenerationTest {
 		try (Writer writer = new BufferedWriter(new OutputStreamWriter(bufferOut, charset))) {
 
 			final CsvRenderer renderer = new CsvRenderer(CONFIG.getCsv().createWriter(writer), printSettings);
-			renderer.toCSV(getIdFields(), mquery.collectResultInfos(), mquery.streamResults(OptionalLong.empty()), printSettings, charset);
+			renderer.toCSV(getIdFields(), mquery.collectResultInfos(), mquery.streamResults(OptionalLong.empty()), charset);
 		}
 
 		final String computed = bufferOut.toString(charset);
@@ -98,7 +98,7 @@ public class CsvResultGenerationTest {
 
 		try (Writer writer = new BufferedWriter(new OutputStreamWriter(output, charset))) {
 			final CsvRenderer renderer = new CsvRenderer(CONFIG.getCsv().createWriter(writer), printSettings);
-			renderer.toCSV(getIdFields(), getTestQuery().collectResultInfos(), unorderedResults.stream(), printSettings, charset);
+			renderer.toCSV(getIdFields(), getTestQuery().collectResultInfos(), unorderedResults.stream(), charset);
 		}
 
 		final String[] lines = output.toString(charset).split("\\R");

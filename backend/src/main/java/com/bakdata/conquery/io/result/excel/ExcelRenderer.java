@@ -13,7 +13,6 @@ import java.util.stream.Stream;
 import c10n.C10N;
 import com.bakdata.conquery.internationalization.ExcelSheetNameC10n;
 import com.bakdata.conquery.io.result.PreparedResultColumn;
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ExcelConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -61,7 +60,7 @@ public class ExcelRenderer {
 	}
 
 	public <E extends ManagedExecution & SingleTableResult> void renderToStream(
-			List<ResultInfo> idHeaders, E exec, OutputStream outputStream, OptionalLong limit, PrintSettings printSettings, MetaStorage storage)
+			List<ResultInfo> idHeaders, E exec, OutputStream outputStream, OptionalLong limit)
 			throws IOException {
 		final List<ResultInfo> resultInfosExec = exec.getResultInfos();
 		final PreparedResultColumn.Columns columns = PreparedResultColumn.prepare(
@@ -71,7 +70,7 @@ public class ExcelRenderer {
 				new ExcelResultPrinters()
 		);
 
-		setMetaData(exec, storage);
+		setMetaData(exec);
 
 		final SXSSFSheet sheet = workbook.createSheet(C10N.get(ExcelSheetNameC10n.class, I18n.LOCALE.get()).result());
 		try {
@@ -97,7 +96,7 @@ public class ExcelRenderer {
 	/**
 	 * Include meta data in the xlsx such as the title, owner/author, tag and the name of this instance.
 	 */
-	private <E extends ManagedExecution & SingleTableResult> void setMetaData(E exec, MetaStorage metaStorage) {
+	private <E extends ManagedExecution & SingleTableResult> void setMetaData(E exec) {
 		final POIXMLProperties.CoreProperties coreProperties = workbook.getXSSFWorkbook().getProperties().getCoreProperties();
 		coreProperties.setTitle(exec.getLabelWithoutAutoLabelSuffix());
 

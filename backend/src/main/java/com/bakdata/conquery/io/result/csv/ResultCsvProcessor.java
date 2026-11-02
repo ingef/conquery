@@ -1,7 +1,6 @@
 package com.bakdata.conquery.io.result.csv;
 
 import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDownloadDatasets;
 
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
@@ -13,9 +12,9 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
 
-import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.io.result.ResultExportContext;
 import com.bakdata.conquery.io.result.ResultExportPreparation;
+import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -35,13 +34,10 @@ public class ResultCsvProcessor {
 
 		final ResultExportContext context = ResultExportPreparation.prepare(subject, execId, pretty, limit, config);
 
-		// Check if subject is permitted to download on all datasets that were referenced by the query
-		authorizeDownloadDatasets(subject, context.execution());
-
 		final StreamingOutput out = os -> {
 			try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, charset))) {
 				final CsvRenderer renderer = new CsvRenderer(config.getCsv().createWriter(writer), context.printSettings());
-				renderer.toCSV(context.idResultInfos(), context.resultInfos(), context.streamResults(), context.printSettings(), charset);
+				renderer.toCSV(context.idResultInfos(), context.resultInfos(), context.streamResults(), charset);
 			}
 			catch (EofException e) {
 				log.trace("User canceled download");

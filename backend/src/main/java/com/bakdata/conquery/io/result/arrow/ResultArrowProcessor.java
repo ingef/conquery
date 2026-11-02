@@ -13,9 +13,9 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
 
-import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.io.result.ResultExportContext;
 import com.bakdata.conquery.io.result.ResultExportPreparation;
+import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.config.ArrowConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;

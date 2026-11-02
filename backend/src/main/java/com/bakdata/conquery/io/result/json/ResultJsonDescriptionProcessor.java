@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.util.io.ConqueryMDC;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.io.EofException;
@@ -26,6 +27,8 @@ import org.eclipse.jetty.io.EofException;
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class ResultJsonDescriptionProcessor {
 
+	private static final ObjectWriter QUERY_DESCRIPTION_WRITER =
+			Jackson.MAPPER.writerWithDefaultPrettyPrinter().forType(QueryDescription.class);
 
 	public Response createResult(Subject subject, ManagedExecutionId execId) {
 
@@ -38,10 +41,7 @@ public class ResultJsonDescriptionProcessor {
 
 		final StreamingOutput out = os -> {
 			try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os))) {
-				Jackson.MAPPER.copy()
-							  .writerWithDefaultPrettyPrinter()
-							  .forType(QueryDescription.class)
-							  .writeValue(writer, exec.getSubmitted());
+				QUERY_DESCRIPTION_WRITER.writeValue(writer, exec.getSubmitted());
 			}
 			catch (EofException e) {
 				log.trace("User canceled download");

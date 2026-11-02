@@ -8,10 +8,9 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
 
-import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.io.result.ResultExportContext;
 import com.bakdata.conquery.io.result.ResultExportPreparation;
-import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ExcelConfig;
@@ -29,7 +28,6 @@ public class ResultExcelProcessor {
 	// Media type according to https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
 	public static final MediaType MEDIA_TYPE = new MediaType("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 
-	private final MetaStorage metaStorage;
 	private final ConqueryConfig conqueryConfig;
 
 	private final ExcelConfig excelConfig;
@@ -46,9 +44,7 @@ public class ResultExcelProcessor {
 					context.idResultInfos(),
 					(ManagedExecution & SingleTableResult) context.execution(),
 					output,
-					context.limit(),
-					context.printSettings(),
-					metaStorage
+					context.limit()
 			);
 			log.trace("FINISHED downloading {}", context.execution().getId());
 		};

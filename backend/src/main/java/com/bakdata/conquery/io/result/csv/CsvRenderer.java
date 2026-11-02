@@ -23,11 +23,11 @@ public class CsvRenderer {
 	private final CsvWriter writer;
 	private final PrintSettings cfg;
 
-	public void toCSV(List<ResultInfo> idHeaders, List<ResultInfo> infos, Stream<EntityResult> resultStream, PrintSettings printSettings, Charset charset) {
+	public void toCSV(List<ResultInfo> idHeaders, List<ResultInfo> infos, Stream<EntityResult> resultStream, Charset charset) {
 		final PreparedResultColumn.Columns columns = PreparedResultColumn.prepare(
 				idHeaders,
 				infos,
-				printSettings,
+				cfg,
 				StringResultPrinters.forCharset(charset)
 		);
 		final String[] headers = columns.allColumns().stream().map(PreparedResultColumn::name).toArray(String[]::new);
