@@ -27,27 +27,27 @@ import lombok.Setter;
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class NewsResource extends HAuthorized {
 
-    private final NewsService newsService;
+	private final NewsService newsService;
 	private final NewsPublicationPolicy publicationPolicy;
-    @PathParam(DATASET)
+	@PathParam(DATASET)
 	@Setter(value = AccessLevel.PACKAGE, onMethod_ = @VisibleForTesting)
-    private DatasetId datasetId;
+	private DatasetId datasetId;
 
-    @GET
-    public Collection<FrontendNewsItem> getNews(@Auth Subject subject) {
-        subject.authorize(datasetId, Ability.READ);
-        List<NewsItem> news = newsService.getNews(datasetId.getName());
+	@GET
+	public Collection<FrontendNewsItem> getNews(@Auth Subject subject) {
+		subject.authorize(datasetId, Ability.READ);
+		List<NewsItem> news = newsService.getNews(datasetId.getName());
 		return news.stream()
 				.filter(publicationPolicy::isPublished)
 				.map(item ->
-            new FrontendNewsItem(
-                    item.id(),
-                    item.title(),
-                    item.description(),
-                    item.link(),
-                    item.date()
-            )
+						new FrontendNewsItem(
+								item.id(),
+								item.title(),
+								item.description(),
+								item.link(),
+								item.date()
+						)
 				)
 				.toList();
-    }
+	}
 }
