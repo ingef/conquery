@@ -9,7 +9,7 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
-import com.bakdata.conquery.models.query.resultinfo.printers.ArrowResultPrinters;
+import com.bakdata.conquery.models.query.resultinfo.printers.ColumnarResultPrinters;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.query.results.EntityResult;
@@ -104,7 +104,7 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 	public WriteContext init(Configuration configuration) {
 		schema = generateSchema(idHeaders, resultInfo, new UniqueNamer(printSettings), printSettings);
 		columnConsumers = generateColumnConsumers(idHeaders, resultInfo);
-		columnPrinters = generateColumnPrinters(idHeaders, resultInfo, printSettings, new ArrowResultPrinters());
+		columnPrinters = generateColumnPrinters(idHeaders, resultInfo, printSettings, new ColumnarResultPrinters());
 		return new WriteContext(schema, Map.of());
 	}
 

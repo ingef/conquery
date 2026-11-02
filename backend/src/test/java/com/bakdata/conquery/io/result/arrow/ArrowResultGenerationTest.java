@@ -34,7 +34,7 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
-import com.bakdata.conquery.models.query.resultinfo.printers.ArrowResultPrinters;
+import com.bakdata.conquery.models.query.resultinfo.printers.ColumnarResultPrinters;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import lombok.extern.slf4j.Slf4j;
@@ -248,7 +248,7 @@ public class ArrowResultGenerationTest {
 					   getIdFields(),
 					   mquery.collectResultInfos(),
 					   mquery.streamResults(OptionalLong.empty()),
-					   new ArrowResultPrinters()
+					   new ColumnarResultPrinters()
 		);
 
 		InputStream inputStream = new ByteArrayInputStream(output.toByteArray());
@@ -280,7 +280,7 @@ public class ArrowResultGenerationTest {
 					getIdFields(),
 					query.collectResultInfos(),
 					query.streamResults(OptionalLong.empty()),
-					new ArrowResultPrinters(),
+					new ColumnarResultPrinters(),
 					allocator
 			);
 
@@ -302,7 +302,7 @@ public class ArrowResultGenerationTest {
 					getIdFields(),
 					query.collectResultInfos(),
 					query.streamResults(OptionalLong.empty()),
-					new ArrowResultPrinters(),
+					new ColumnarResultPrinters(),
 					allocator
 			)).isInstanceOf(IllegalStateException.class);
 

@@ -20,7 +20,7 @@ import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.config.ArrowConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.resultinfo.printers.ArrowResultPrinters;
+import com.bakdata.conquery.models.query.resultinfo.printers.ColumnarResultPrinters;
 import com.google.common.io.CountingOutputStream;
 import io.dropwizard.util.DataSize;
 import lombok.RequiredArgsConstructor;
@@ -84,7 +84,7 @@ public class ResultArrowProcessor {
 						context.idResultInfos(),
 						context.resultInfos(),
 						context.streamResults(),
-						new ArrowResultPrinters()
+						new ColumnarResultPrinters()
 				);
 			}
 			catch (Exception e) {

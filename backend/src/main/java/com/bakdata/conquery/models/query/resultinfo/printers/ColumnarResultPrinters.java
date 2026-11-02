@@ -8,8 +8,11 @@ import com.bakdata.conquery.models.query.resultinfo.printers.common.IdentityPrin
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Produces native values for columnar result formats such as Arrow and Parquet.
+ */
 @Slf4j
-public class ArrowResultPrinters extends JavaResultPrinters {
+public class ColumnarResultPrinters extends JavaResultPrinters {
 
 	@Override
 	public Printer<Number> getDatePrinter(PrintSettings printSettings) {
@@ -24,7 +27,7 @@ public class ArrowResultPrinters extends JavaResultPrinters {
 	private record MoneyPrinter(int fractionDigits) implements Printer<Number> {
 		@Override
 		public Object apply(@NotNull Number value) {
-			if (value instanceof BigDecimal bigDecimal){
+			if (value instanceof BigDecimal bigDecimal) {
 				if (bigDecimal.scale() > fractionDigits) {
 					log.warn("Rounding money value '{}' as scale is greater than {}", bigDecimal, fractionDigits);
 				}
