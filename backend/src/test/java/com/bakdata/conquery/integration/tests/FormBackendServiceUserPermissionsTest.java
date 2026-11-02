@@ -24,6 +24,7 @@ public class FormBackendServiceUserPermissionsTest extends IntegrationTest.Simpl
 
 	private static final String FORM_PERMISSION = "forms:CREATE:configured-form";
 	private static final String QUERY_PERMISSION = "queries:READ:configured-query";
+	private static final String CONCEPT_PERMISSION_TEMPLATE = "concepts:READ:${DATASET}@configured-concept";
 	private static final String UNCONFIGURED_PERMISSION = "forms:CREATE:other-form";
 
 	@Override
@@ -40,21 +41,26 @@ public class FormBackendServiceUserPermissionsTest extends IntegrationTest.Simpl
 		final FormBackendConfig formBackendConfig = new FormBackendConfig();
 		formBackendConfig.setId("permission-test");
 		formBackendConfig.setManagerNode(conquery.getStandaloneCommand().getManagerNode());
-		formBackendConfig.setServiceUserPermissions(List.of(FORM_PERMISSION, QUERY_PERMISSION));
+		formBackendConfig.setServiceUserPermissions(List.of(FORM_PERMISSION, QUERY_PERMISSION, CONCEPT_PERMISSION_TEMPLATE));
+
+		assertThat(conquery.getValidator().validateProperty(formBackendConfig, "serviceUserPermissions")).isEmpty();
 
 		User serviceUser = null;
 		try {
 			serviceUser = formBackendConfig.createServiceUser(originalUser, dataset);
+			final WildcardPermission renderedConceptPermission = new WildcardPermission(String.format("concepts:READ:%s@configured-concept", dataset.getName()));
 
 			assertThat(serviceUser.getPermissions()).contains(originalPermission);
 			assertThat(isPermitted(serviceUser, new WildcardPermission(FORM_PERMISSION))).isTrue();
 			assertThat(isPermitted(serviceUser, new WildcardPermission(QUERY_PERMISSION))).isTrue();
+			assertThat(isPermitted(serviceUser, renderedConceptPermission)).isTrue();
 			assertThat(isPermitted(serviceUser, new WildcardPermission(UNCONFIGURED_PERMISSION))).isFalse();
 			assertThat(serviceUser.isPermitted(dataset, Ability.DOWNLOAD)).isTrue();
 
 			assertThat(originalUser.getPermissions()).containsExactlyInAnyOrderElementsOf(originalPermissions);
 			assertThat(isPermitted(originalUser, new WildcardPermission(FORM_PERMISSION))).isFalse();
 			assertThat(isPermitted(originalUser, new WildcardPermission(QUERY_PERMISSION))).isFalse();
+			assertThat(isPermitted(originalUser, renderedConceptPermission)).isFalse();
 			assertThat(originalUser.isPermitted(dataset, Ability.DOWNLOAD)).isFalse();
 		}
 		finally {
