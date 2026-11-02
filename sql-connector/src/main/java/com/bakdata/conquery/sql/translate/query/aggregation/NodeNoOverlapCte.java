@@ -10,18 +10,16 @@ import com.bakdata.conquery.sql.translate.ir.Selects;
 import com.bakdata.conquery.sql.translate.ir.SqlTables;
 import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
 import org.jooq.Field;
 
+@RequiredArgsConstructor
 class NodeNoOverlapCte extends DateAggregationCte {
 
 	@Getter
 	private final DateAggregationCteStep cteStep;
 	private int counter = 0; // used to make each no-overlap CTE name unique
-
-	public NodeNoOverlapCte(DateAggregationCteStep cteStep) {
-		this.cteStep = cteStep;
-	}
 
 	@Override
 	protected QueryStep convertStep(DateAggregationContext context, String predecessor, QueryStep previous) {

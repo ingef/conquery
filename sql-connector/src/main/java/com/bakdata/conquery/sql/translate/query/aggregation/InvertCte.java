@@ -15,6 +15,7 @@ import com.bakdata.conquery.sql.translate.ir.Selects;
 import com.bakdata.conquery.sql.translate.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Record;
@@ -25,16 +26,13 @@ import org.jooq.TableOnConditionStep;
  * Concept for date range inversion taken from <a href="https://explainextended.com/2009/11/09/inverting-date-ranges/">Inverting date ranges</a>.
  */
 @Getter
+@RequiredArgsConstructor
 class InvertCte extends DateAggregationCte {
 
 	public static final String ROWS_LEFT_TABLE_NAME = "rows_left";
 	public static final String ROWS_RIGHT_TABLE_NAME = "rows_right";
 
 	private final DateAggregationCteStep cteStep;
-
-	public InvertCte(DateAggregationCteStep cteStep) {
-		this.cteStep = cteStep;
-	}
 
 	@Override
 	protected QueryStep convertStep(DateAggregationContext context, String predecessor, QueryStep previous) {

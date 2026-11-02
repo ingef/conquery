@@ -3,6 +3,7 @@ package com.bakdata.conquery.sql.mapping;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.RequiredArgsConstructor;
 import org.jooq.CreateTableElementListStep;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -13,13 +14,10 @@ import org.jooq.SQLDialect;
 import org.jooq.exception.DataAccessException;
 
 /** Creates and populates the physical lookup table used to resolve concept element IDs. */
+@RequiredArgsConstructor
 public final class ConceptIdMappingTableManager {
 
 	private final DSLContext dslContext;
-
-	public ConceptIdMappingTableManager(DSLContext dslContext) {
-		this.dslContext = dslContext;
-	}
 
 	public void recreate(ConceptIdMappingTable mapping) {
 		delete(mapping.tableName());

@@ -20,15 +20,13 @@ import com.bakdata.conquery.sql.model.form.ResolutionAndAlignment;
 import com.bakdata.conquery.sql.model.form.ResolvedFormMode;
 import com.bakdata.conquery.sql.model.form.ResolvedFormQuery;
 import com.bakdata.conquery.sql.model.range.DateRange;
+import lombok.RequiredArgsConstructor;
 
 /** Resolves initialized backend form DTOs into the connector-owned form model. */
+@RequiredArgsConstructor
 public final class ResolvedFormMapper {
 
 	private final ResolvedQueryMapper queryMapper;
-
-	public ResolvedFormMapper(ResolvedQueryMapper queryMapper) {
-		this.queryMapper = queryMapper;
-	}
 
 	public ResolvedFormQuery map(AbsoluteFormQuery form) {
 		return create(

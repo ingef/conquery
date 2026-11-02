@@ -11,21 +11,16 @@ import com.bakdata.conquery.sql.model.range.SubstringRange;
 import com.bakdata.conquery.sql.translate.conversion.Converter;
 import com.bakdata.conquery.sql.translate.conversion.select.DateDistanceSqlAggregator;
 import com.bakdata.conquery.sql.translate.ir.SchemaSql;
-import com.bakdata.conquery.sql.translate.ir.condition.FlagCondition;
-import com.bakdata.conquery.sql.translate.ir.condition.InclusiveRangeCondition;
-import com.bakdata.conquery.sql.translate.ir.condition.StringValuesCondition;
-import com.bakdata.conquery.sql.translate.ir.condition.WhereClauses;
-import com.bakdata.conquery.sql.translate.ir.condition.WhereCondition;
+import com.bakdata.conquery.sql.translate.ir.condition.*;
 import com.bakdata.conquery.sql.translate.query.concept.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.translate.query.concept.SqlFilters;
+import lombok.experimental.UtilityClass;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 /** Built-in resolved filters that operate directly on connector columns. */
-final class BuiltInColumnFilterConverters {
-
-	private BuiltInColumnFilterConverters() {
-	}
+@UtilityClass
+class BuiltInColumnFilterConverters {
 
 	static List<Converter<? extends ResolvedFilter, SqlFilters, FilterConversionContext>> create() {
 		return List.of(

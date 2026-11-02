@@ -10,7 +10,9 @@ import com.bakdata.conquery.sql.translate.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.translate.ir.select.SingleColumnSqlSelect;
 import com.bakdata.conquery.sql.translate.query.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.translate.query.concept.ConnectorSqlSelects;
+import lombok.experimental.UtilityClass;
 
+@UtilityClass
 public class ClickhouseDistinctSelectConverter {
 
 

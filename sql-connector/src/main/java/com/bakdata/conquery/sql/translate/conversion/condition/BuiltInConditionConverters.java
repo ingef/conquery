@@ -10,13 +10,12 @@ import com.bakdata.conquery.sql.translate.ir.SchemaSql;
 import com.bakdata.conquery.sql.translate.ir.condition.ConditionWrappingWhereCondition;
 import com.bakdata.conquery.sql.translate.ir.condition.StringValuesCondition;
 import com.bakdata.conquery.sql.translate.ir.condition.WhereCondition;
+import lombok.experimental.UtilityClass;
 import org.jooq.Field;
 
 /** Built-in mappings from resolved condition values to translate condition IR. */
-final class BuiltInConditionConverters {
-
-	private BuiltInConditionConverters() {
-	}
+@UtilityClass
+class BuiltInConditionConverters {
 
 	static List<Converter<? extends ResolvedCondition, WhereCondition, ConditionConversionContext>> create() {
 		return List.of(

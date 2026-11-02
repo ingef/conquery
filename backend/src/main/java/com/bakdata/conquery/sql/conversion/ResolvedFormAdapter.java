@@ -12,8 +12,10 @@ import com.bakdata.conquery.sql.translate.FormSqlTranslator;
 import com.bakdata.conquery.sql.translate.TranslatedQuery;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.validation.ResolvedModelValidation;
+import lombok.RequiredArgsConstructor;
 
 /** Backend boundary for resolved form compilation. */
+@RequiredArgsConstructor
 public final class ResolvedFormAdapter {
 
 	private final ResolvedFormMapper mapper;

@@ -14,12 +14,11 @@ import com.bakdata.conquery.sql.translate.query.concept.CommonAggregationSelect;
 import com.bakdata.conquery.sql.translate.query.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.translate.query.concept.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.translate.query.concept.SqlFilters;
+import lombok.experimental.UtilityClass;
 import org.jooq.Field;
 
-final class BuiltInAggregationFilterConverters {
-
-	private BuiltInAggregationFilterConverters() {
-	}
+@UtilityClass
+class BuiltInAggregationFilterConverters {
 
 	static List<Converter<? extends ResolvedFilter, SqlFilters, FilterConversionContext>> create(
 			ResolvedAggregationConverter aggregationConverter
