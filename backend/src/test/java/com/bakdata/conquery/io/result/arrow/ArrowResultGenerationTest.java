@@ -5,6 +5,7 @@ import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.renderToStream;
 import static com.bakdata.conquery.io.result.arrow.ArrowUtil.ROOT_ALLOCATOR;
 import static com.bakdata.conquery.io.result.arrow.ArrowUtil.generateFields;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -37,6 +38,7 @@ import com.bakdata.conquery.models.query.resultinfo.printers.ArrowResultPrinters
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.arrow.memory.RootAllocator;
 import org.apache.arrow.vector.FieldVector;
 import org.apache.arrow.vector.VectorSchemaRoot;
 import org.apache.arrow.vector.dictionary.DictionaryProvider;
@@ -256,6 +258,56 @@ public class ArrowResultGenerationTest {
 		assertThat(computed).isNotBlank();
 		assertThat(computed).isEqualTo(generateExpectedTSV(results, mquery.collectResultInfos()));
 
+	}
+
+	@Test
+	void releaseAllocatorAfterSuccessfulWrite() throws IOException {
+		try (RootAllocator allocator = new RootAllocator()) {
+			ByteArrayOutputStream output = new ByteArrayOutputStream();
+			ManagedQuery query = getTestQuery();
+			PrintSettings settings = new PrintSettings(
+					false,
+					Locale.ROOT,
+					CONFIG,
+					result -> EntityPrintId.from(result.getEntityId(), result.getEntityId()),
+					null
+			);
+
+			renderToStream(
+					root -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
+					settings,
+					new ArrowConfig(BATCH_SIZE),
+					getIdFields(),
+					query.collectResultInfos(),
+					query.streamResults(OptionalLong.empty()),
+					new ArrowResultPrinters(),
+					allocator
+			);
+
+			assertThat(allocator.getAllocatedMemory()).isZero();
+		}
+	}
+
+	@Test
+	void releaseAllocatorWhenWriterCreationFails() {
+		try (RootAllocator allocator = new RootAllocator()) {
+			ManagedQuery query = getTestQuery();
+
+			assertThatThrownBy(() -> renderToStream(
+					root -> {
+						throw new IllegalStateException("writer creation failed");
+					},
+					PRINT_SETTINGS,
+					new ArrowConfig(BATCH_SIZE),
+					getIdFields(),
+					query.collectResultInfos(),
+					query.streamResults(OptionalLong.empty()),
+					new ArrowResultPrinters(),
+					allocator
+			)).isInstanceOf(IllegalStateException.class);
+
+			assertThat(allocator.getAllocatedMemory()).isZero();
+		}
 	}
 
 }

@@ -21,6 +21,7 @@ import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.util.Preconditions;
 import org.apache.arrow.vector.BitVector;
 import org.apache.arrow.vector.DateDayVector;
@@ -49,23 +50,32 @@ public class ArrowRenderer {
 			List<ResultInfo> resultInfo,
 			Stream<EntityResult> results,
 			PrinterFactory printerFactory) throws IOException {
+		renderToStream(writerProducer, printSettings, arrowConfig, idHeaders, resultInfo, results, printerFactory, ROOT_ALLOCATOR);
+	}
+
+	static void renderToStream(
+			Function<VectorSchemaRoot, ArrowWriter> writerProducer,
+			PrintSettings printSettings,
+			ArrowConfig arrowConfig,
+			List<ResultInfo> idHeaders,
+			List<ResultInfo> resultInfo,
+			Stream<EntityResult> results,
+			PrinterFactory printerFactory,
+			BufferAllocator parentAllocator) throws IOException {
 
 		final List<Field> fields = ArrowUtil.generateFields(idHeaders, resultInfo, new UniqueNamer(printSettings), printSettings);
-		final VectorSchemaRoot root = VectorSchemaRoot.create(new Schema(fields, null), ROOT_ALLOCATOR);
+		try (BufferAllocator allocator = parentAllocator.newChildAllocator("result-export", 0, parentAllocator.getLimit());
+			 VectorSchemaRoot root = VectorSchemaRoot.create(new Schema(fields, null), allocator);
+			 ArrowWriter writer = writerProducer.apply(root)) {
+			// Build separate pipelines for id and value, as they have different sources but the same target
+			final RowConsumer[] idWriters = generateWriterPipeline(root, 0, idHeaders.size(), idHeaders);
+			final RowConsumer[] valueWriter = generateWriterPipeline(root, idHeaders.size(), resultInfo.size(), resultInfo);
 
-		// Build separate pipelines for id and value, as they have different sources but the same target
-		final RowConsumer[] idWriters = generateWriterPipeline(root, 0, idHeaders.size(), idHeaders);
-		final RowConsumer[] valueWriter = generateWriterPipeline(root, idHeaders.size(), resultInfo.size(), resultInfo);
+			final List<Printer> idPrinters = idHeaders.stream().map(info -> info.createPrinter(printerFactory, printSettings)).toList();
+			final List<Printer> resultPrinters = resultInfo.stream().map(info -> info.createPrinter(printerFactory, printSettings)).toList();
 
-		final List<Printer> idPrinters = idHeaders.stream().map(info -> info.createPrinter(printerFactory, printSettings)).toList();
-		final List<Printer> resultPrinters = resultInfo.stream().map(info -> info.createPrinter(printerFactory, printSettings)).toList();
-
-
-		// Write the data
-		try (ArrowWriter writer = writerProducer.apply(root)) {
 			write(writer, root, idWriters, valueWriter, printSettings.getIdMapper(), idPrinters, resultPrinters, results, arrowConfig.getBatchSize());
 		}
-
 	}
 
 
