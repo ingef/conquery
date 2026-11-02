@@ -3,7 +3,6 @@ package com.bakdata.conquery.io.result.csv;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
@@ -17,7 +16,6 @@ import com.bakdata.conquery.models.query.results.EntityResult;
 import com.univocity.parsers.csv.CsvWriter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -41,12 +39,10 @@ public class CsvRenderer {
 			PrinterFactory printerFactory) {
 		final Printer[] printers = infos.stream().map(info -> info.createPrinter(printerFactory, printSettings)).toArray(Printer[]::new);
 
-		results.map(result -> Pair.of(cfg.getIdMapper().map(result), result))
-			   .sorted(Map.Entry.comparingByKey())
-			   .forEach(res -> res
-					   .getValue()
-					   .streamValues()
-					   .forEach(result -> printLine(res.getKey(), printers, result)));
+		results.forEach(result -> {
+			final EntityPrintId entityPrintId = cfg.getIdMapper().map(result);
+			result.streamValues().forEach(values -> printLine(entityPrintId, printers, values));
+		});
 	}
 
 
