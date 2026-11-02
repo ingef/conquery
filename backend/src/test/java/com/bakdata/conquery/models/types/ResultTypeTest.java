@@ -19,9 +19,11 @@ import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ExternalResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.printers.ExcelResultPrinters;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.query.resultinfo.printers.StringResultPrinters;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -138,5 +140,26 @@ public class ResultTypeTest {
 		final Object copy = Jackson.BINARY_MAPPER.readValue(bytes, Object.class);
 
 		assertThat(printer.apply(copy)).isEqualTo(expected);
+	}
+
+	@Test
+	void useNativeExcelPrintersOnlyForScalarValues() {
+		PrinterFactory printers = new ExcelResultPrinters();
+
+		assertThat(printers.printerFor(ResultType.Primitive.BOOLEAN, PRETTY).apply(true)).isEqualTo(true);
+		assertThat(printers.printerFor(new ResultType.ListT<>(ResultType.Primitive.BOOLEAN), PRETTY).apply(List.of(true, false)))
+				.isEqualTo("Yes ; No");
+		assertThat(printers.printerFor(new ResultType.ListT<>(new ResultType.ListT<>(ResultType.Primitive.BOOLEAN)), PRETTY)
+					   .apply(List.of(List.of(true, false), List.of(false))))
+				.isEqualTo("Yes\\ ; No ; No");
+	}
+
+	@Test
+	void preserveCustomListElementPrinters() {
+		PrinterFactory printers = new ExcelResultPrinters();
+		Printer<Integer> mappingPrinter = value -> "mapped-" + value;
+
+		assertThat(printers.getListPrinter(mappingPrinter, PRETTY).apply(List.of(1, 2)))
+				.isEqualTo("mapped-1 ; mapped-2");
 	}
 }

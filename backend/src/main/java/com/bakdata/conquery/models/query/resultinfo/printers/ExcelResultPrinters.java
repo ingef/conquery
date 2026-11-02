@@ -14,27 +14,15 @@ public class ExcelResultPrinters extends StringResultPrinters {
 
 	public static final String NEGATIVE_INF = "-∞";
 	public static final String POSITIVE_INF = "+∞";
-	private final PrinterFactory partialDelegate = new StringResultPrinters(NEGATIVE_INF, POSITIVE_INF);
+	private static final PrinterFactory LIST_ELEMENT_PRINTERS = new StringResultPrinters(NEGATIVE_INF, POSITIVE_INF);
 
 	public ExcelResultPrinters() {
 		super(NEGATIVE_INF, POSITIVE_INF);
 	}
 
-	public Printer<?> printerFor(ResultType type, PrintSettings printSettings) {
-		if (type instanceof ResultType.ListT<?> listT) {
-			final Printer elementPrinter = partialDelegate.printerFor(listT.getElementType(), printSettings);
-			return getListPrinter(elementPrinter, printSettings);
-		}
-
-		return switch (((ResultType.Primitive) type)) {
-			case BOOLEAN -> getBooleanPrinter(printSettings);
-			case INTEGER -> getIntegerPrinter(printSettings);
-			case NUMERIC -> getNumericPrinter(printSettings);
-			case DATE -> getDatePrinter(printSettings);
-			case DATE_RANGE -> getDateRangePrinter(printSettings);
-			case STRING -> getStringPrinter(printSettings);
-			case MONEY -> getMoneyPrinter(printSettings);
-		};
+	@Override
+	protected Printer<?> printerForListElement(ResultType elementType, PrintSettings printSettings) {
+		return LIST_ELEMENT_PRINTERS.printerFor(elementType, printSettings);
 	}
 
 	@Override
