@@ -24,7 +24,7 @@ import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.model.schema.ResolvedConnector;
 import com.bakdata.conquery.sql.model.schema.ResolvedValidityDate;
 import com.bakdata.conquery.sql.model.schema.SqlTable;
-import com.bakdata.conquery.sql.validation.ResolvedQueryValidation;
+import com.bakdata.conquery.sql.validation.ResolvedModelValidation;
 import org.junit.jupiter.api.Test;
 
 class ResolvedQueryTest {
@@ -58,7 +58,7 @@ class ResolvedQueryTest {
 		);
 
 		assertValid(query);
-		new ResolvedQueryValidation(ValidationTestSupport.VALIDATOR).validate(query);
+		new ResolvedModelValidation(ValidationTestSupport.VALIDATOR).validate(query);
 		assertEquals(concept, query.root());
 	}
 
@@ -138,7 +138,7 @@ class ResolvedQueryTest {
 
 		assertThrows(
 				ConstraintViolationException.class,
-				() -> new ResolvedQueryValidation(ValidationTestSupport.VALIDATOR).validate(query)
+				() -> new ResolvedModelValidation(ValidationTestSupport.VALIDATOR).validate(query)
 		);
 	}
 

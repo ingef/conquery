@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
 
+import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
+import com.bakdata.conquery.sql.model.operation.ResolvedSelect;
 import com.bakdata.conquery.sql.translate.conversion.ConversionDispatcher;
 import com.bakdata.conquery.sql.translate.conversion.Converter;
 import com.bakdata.conquery.sql.translate.conversion.aggregation.AggregationConversionContext;
@@ -15,8 +17,6 @@ import com.bakdata.conquery.sql.translate.query.concept.CommonAggregationSelect;
 import com.bakdata.conquery.sql.translate.query.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.translate.query.concept.ConceptSqlSelects;
 import com.bakdata.conquery.sql.translate.query.concept.ConnectorSqlSelects;
-import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
-import com.bakdata.conquery.sql.model.operation.ResolvedSelect;
 import org.jooq.Field;
 
 /** Dispatches resolved output operations to their SQL helpers. */

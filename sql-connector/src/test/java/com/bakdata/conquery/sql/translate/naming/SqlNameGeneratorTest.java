@@ -8,8 +8,6 @@ import java.util.Optional;
 
 import com.bakdata.conquery.models.datasets.ColumnType;
 import com.bakdata.conquery.models.query.DateAggregationAction;
-import com.bakdata.conquery.sql.translate.ir.CteStep;
-import com.bakdata.conquery.sql.translate.ir.JoinMode;
 import com.bakdata.conquery.sql.model.node.ConceptNode;
 import com.bakdata.conquery.sql.model.operation.ResolvedFilter;
 import com.bakdata.conquery.sql.model.operation.ResolvedSelect;
@@ -17,6 +15,8 @@ import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.model.schema.ResolvedConnector;
 import com.bakdata.conquery.sql.model.schema.ResolvedValidityDate;
 import com.bakdata.conquery.sql.model.schema.SqlTable;
+import com.bakdata.conquery.sql.translate.ir.CteStep;
+import com.bakdata.conquery.sql.translate.ir.JoinMode;
 import org.junit.jupiter.api.Test;
 
 class SqlNameGeneratorTest {

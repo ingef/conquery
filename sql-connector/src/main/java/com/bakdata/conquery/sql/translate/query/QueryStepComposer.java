@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.query.DateAggregationAction;
+import com.bakdata.conquery.sql.model.schema.EntitySchema;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.translate.ir.JoinMode;
 import com.bakdata.conquery.sql.translate.ir.QueryStep;
@@ -20,9 +21,8 @@ import com.bakdata.conquery.sql.translate.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.translate.ir.select.SqlSelect;
 import com.bakdata.conquery.sql.translate.naming.SqlNameGenerator;
-import com.bakdata.conquery.sql.translate.query.aggregation.DateAggregationTranslator;
 import com.bakdata.conquery.sql.translate.query.aggregation.DateAggregationDates;
-import com.bakdata.conquery.sql.model.schema.EntitySchema;
+import com.bakdata.conquery.sql.translate.query.aggregation.DateAggregationTranslator;
 import lombok.experimental.UtilityClass;
 import org.jooq.Condition;
 import org.jooq.Field;

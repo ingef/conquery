@@ -21,14 +21,14 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
-import com.bakdata.conquery.sql.translate.ir.SharedAliases;
-import com.bakdata.conquery.sql.translate.ir.SqlIdColumns;
-import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.model.form.FormCalendarUnit;
 import com.bakdata.conquery.sql.model.form.FormIndexPlacement;
 import com.bakdata.conquery.sql.model.form.FormIndexSelector;
 import com.bakdata.conquery.sql.model.form.ResolutionAndAlignment;
+import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
+import com.bakdata.conquery.sql.translate.ir.SharedAliases;
+import com.bakdata.conquery.sql.translate.ir.SqlIdColumns;
+import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Record;

@@ -4,10 +4,10 @@ import static org.jooq.impl.DSL.*;
 
 import java.util.Optional;
 
-import com.bakdata.conquery.sql.translate.ir.select.FieldWrapper;
-import com.bakdata.conquery.sql.translate.ir.select.SingleColumnSqlSelect;
 import com.bakdata.conquery.sql.model.range.SubstringRange;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
+import com.bakdata.conquery.sql.translate.ir.select.FieldWrapper;
+import com.bakdata.conquery.sql.translate.ir.select.SingleColumnSqlSelect;
 import lombok.experimental.UtilityClass;
 import org.jooq.Field;
 

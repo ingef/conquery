@@ -3,12 +3,12 @@ package com.bakdata.conquery.sql.translate.query;
 import java.util.List;
 
 import com.bakdata.conquery.models.query.DateAggregationAction;
+import com.bakdata.conquery.sql.model.schema.EntitySchema;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.translate.ir.JoinMode;
 import com.bakdata.conquery.sql.translate.ir.QueryStep;
 import com.bakdata.conquery.sql.translate.ir.select.ExistsSqlSelect;
 import com.bakdata.conquery.sql.translate.naming.SqlNameGenerator;
-import com.bakdata.conquery.sql.model.schema.EntitySchema;
 import lombok.experimental.UtilityClass;
 
 /** Composes compiled child steps for a logical conjunction or disjunction. */

@@ -8,23 +8,23 @@ import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.sql.translate.ColumnRole;
-import com.bakdata.conquery.sql.translate.TranslatedQuery;
-import com.bakdata.conquery.sql.translate.SqlTranslator;
-import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
 import com.bakdata.conquery.sql.model.ResolvedQuery;
-import com.bakdata.conquery.sql.validation.ResolvedQueryValidation;
+import com.bakdata.conquery.sql.translate.ColumnRole;
+import com.bakdata.conquery.sql.translate.SqlTranslator;
+import com.bakdata.conquery.sql.translate.TranslatedQuery;
+import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
+import com.bakdata.conquery.sql.validation.ResolvedModelValidation;
 
 /** Maps initialized backend queries, validates the resolved input, and adapts translate output to the backend contract. */
 public final class ResolvedQueryAdapter {
 
-	private final ResolvedQueryValidation validation;
+	private final ResolvedModelValidation validation;
 	private final SqlTranslator translator;
 	private final ResolvedQueryMapper mapper;
 
 	public ResolvedQueryAdapter(Validator validator, SqlTranslator translator, ResolvedQueryMapper mapper) {
-		this.validation = new ResolvedQueryValidation(validator);
+		this.validation = new ResolvedModelValidation(validator);
 		this.translator = translator;
 		this.mapper = mapper;
 	}

@@ -1,5 +1,6 @@
 package com.bakdata.conquery.sql.translate.conversion.select;
 
+import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.translate.ir.select.ExtractingSqlSelect;
@@ -7,7 +8,6 @@ import com.bakdata.conquery.sql.translate.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.translate.query.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.translate.query.concept.ConceptSqlSelects;
 import com.bakdata.conquery.sql.translate.query.concept.ConnectorSqlSelects;
-import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
 
 
 public class EventDateUnionSelectConverter {

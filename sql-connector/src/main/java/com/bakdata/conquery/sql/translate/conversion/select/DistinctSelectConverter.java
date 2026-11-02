@@ -3,6 +3,7 @@ package com.bakdata.conquery.sql.translate.conversion.select;
 import java.util.List;
 import java.util.Optional;
 
+import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.translate.ir.CteStep;
 import com.bakdata.conquery.sql.translate.ir.QueryStep;
@@ -13,7 +14,6 @@ import com.bakdata.conquery.sql.translate.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.translate.ir.select.SingleColumnSqlSelect;
 import com.bakdata.conquery.sql.translate.query.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.translate.query.concept.ConnectorSqlSelects;
-import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Field;

@@ -7,14 +7,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.sql.model.form.FormResolution;
+import com.bakdata.conquery.sql.model.form.ResolutionAndAlignment;
 import com.bakdata.conquery.sql.translate.ir.QueryStep;
 import com.bakdata.conquery.sql.translate.ir.Selects;
 import com.bakdata.conquery.sql.translate.ir.SharedAliases;
 import com.bakdata.conquery.sql.translate.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.translate.ir.select.FieldWrapper;
-import com.bakdata.conquery.sql.model.form.FormResolution;
-import com.bakdata.conquery.sql.model.form.ResolutionAndAlignment;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
 import org.jooq.Field;

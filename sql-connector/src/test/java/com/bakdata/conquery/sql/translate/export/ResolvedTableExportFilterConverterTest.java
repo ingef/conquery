@@ -7,12 +7,12 @@ import java.util.List;
 import java.util.Optional;
 
 import com.bakdata.conquery.models.datasets.ColumnType;
-import com.bakdata.conquery.sql.translate.dialect.hana.HanaTranslatorDialect;
 import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
 import com.bakdata.conquery.sql.model.operation.BuiltInFilters;
 import com.bakdata.conquery.sql.model.range.NumberRange;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.model.schema.SqlTable;
+import com.bakdata.conquery.sql.translate.dialect.hana.HanaTranslatorDialect;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Test;

@@ -3,13 +3,13 @@ package com.bakdata.conquery.sql.translate.conversion.aggregation;
 import java.util.List;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
+import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.translate.ir.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.translate.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.translate.ir.select.SingleColumnSqlSelect;
 import com.bakdata.conquery.sql.translate.query.concept.CommonAggregationSelect;
 import com.bakdata.conquery.sql.translate.query.concept.ConceptCteStep;
-import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
-import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 

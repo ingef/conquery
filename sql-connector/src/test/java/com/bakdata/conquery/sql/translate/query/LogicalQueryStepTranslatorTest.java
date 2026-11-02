@@ -10,15 +10,15 @@ import java.util.List;
 
 import com.bakdata.conquery.models.datasets.ColumnType;
 import com.bakdata.conquery.models.query.DateAggregationAction;
+import com.bakdata.conquery.sql.model.schema.EntitySchema;
+import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
+import com.bakdata.conquery.sql.model.schema.SqlTable;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.translate.ir.JoinMode;
 import com.bakdata.conquery.sql.translate.ir.QueryStep;
 import com.bakdata.conquery.sql.translate.ir.Selects;
 import com.bakdata.conquery.sql.translate.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.translate.naming.SqlNameGenerator;
-import com.bakdata.conquery.sql.model.schema.EntitySchema;
-import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
-import com.bakdata.conquery.sql.model.schema.SqlTable;
 import org.jooq.Field;
 import org.junit.jupiter.api.Test;
 

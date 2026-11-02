@@ -7,8 +7,8 @@ import com.bakdata.conquery.apiv1.query.TableExportQuery;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
 import com.bakdata.conquery.models.forms.managed.EntityDateQuery;
 import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
-import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
+import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
