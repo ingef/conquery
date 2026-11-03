@@ -5,7 +5,9 @@ import java.net.URI;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -23,12 +25,14 @@ import com.bakdata.conquery.io.external.form.ExternalFormMixin;
 import com.bakdata.conquery.io.external.form.FormBackendVersion;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
 import com.bakdata.conquery.models.config.auth.AuthenticationClientFilterProvider;
 import com.bakdata.conquery.models.config.auth.MultiInstancePlugin;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProvider;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormFrontendConfigInformation;
 import com.bakdata.conquery.util.VersionInfo;
+import com.bakdata.conquery.util.validation.ValidConqueryPermission;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -83,6 +87,10 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 
 	@NotNull
 	private URL conqueryApiUrl;
+
+	@Valid
+	@NotNull
+	private List<@ValidConqueryPermission String> serviceUserPermissions = Collections.emptyList();
 
 	@Valid
 	private AuthenticationClientFilterProvider authentication;
@@ -224,15 +232,16 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 
 	public User createServiceUser(User originalUser, Dataset dataset) {
 		log.debug("Creating service user and calculating scopes per dataset");
-		// We create a service user with elevated permissions (allow downloads, which a form backend relies on) so we don't
-		// have to give the permission to the actual user. The service user will have a snapshot of the permissions of
-		// the actual user and download permissions.
+		// We create a service user with the permissions required by this form backend, so we don't have to give them to the
+		// actual user. The service user will have a snapshot of the permissions of the actual user and the configured
+		// additional permissions.
 		final User
 				serviceUser =
 				managerNode.getAuthController().flatCopyUser(originalUser, String.format("%s_%s", getClass().getSimpleName().toLowerCase(), getId()));
 
-		// The user is able to read the dataset, ensure that the service user can download results
 		serviceUser.addPermission(dataset.createPermission(Ability.DOWNLOAD.asSet()));
+		serviceUser.addPermissions(serviceUserPermissions.stream().map(WildcardPermission::new).collect(Collectors.toSet()));
+
 		return serviceUser;
 	}
 

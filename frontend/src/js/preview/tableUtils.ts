@@ -1,10 +1,10 @@
 import type { Vector } from "apache-arrow";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { useSelector } from "react-redux";
-import type { CurrencyConfigT, GetQueryResponseDoneT } from "../api/types";
-import type { StateT } from "../app/reducers";
-import { currencyFromSymbol, NUMBER_TYPES } from "./util";
+import type { GetQueryResponseDoneT } from "../api/types";
+import { currencyFractionDigits } from "../common/helpers/currency";
+import { useCurrency, useMoneyFormatter } from "../common/useMoneyFormatter";
+import { NUMBER_TYPES } from "./util";
 
 type CellValue = string | Vector | null;
 
@@ -82,14 +82,11 @@ function getDateRangeRenderFunction(): RenderFunction {
   };
 }
 
+// arrow money values are integers in the currency's minor unit
 function getMoneyRenderFunction(
-  currencyUnit: CurrencyConfigT["unit"],
+  currencyFormatter: Intl.NumberFormat,
+  fractionDigits: number,
 ): RenderFunction {
-  const currencyFormatter = new Intl.NumberFormat(navigator.language, {
-    style: "currency",
-    currency: currencyFromSymbol(currencyUnit),
-  });
-
   return (value) => {
     if (!value) {
       return "";
@@ -101,9 +98,7 @@ function getMoneyRenderFunction(
       return "";
     }
 
-    return currencyFormatter.format(
-      number / 100 /* Conquery MONEY is cent based */,
-    );
+    return currencyFormatter.format(number / 10 ** fractionDigits);
   };
 }
 
@@ -126,9 +121,8 @@ function getDefaultRenderFunction(): RenderFunction {
 
 export function useCustomTableRenderers(queryData: GetQueryResponseDoneT) {
   const { t } = useTranslation();
-  const currencyConfig = useSelector<StateT, CurrencyConfigT>(
-    (state) => state.startup.config.currency,
-  );
+  const moneyFormatter = useMoneyFormatter();
+  const fractionDigits = currencyFractionDigits(useCurrency());
 
   const getRenderFunction = useCallback(
     (cellType: string): RenderFunction => {
@@ -147,14 +141,14 @@ export function useCustomTableRenderers(queryData: GetQueryResponseDoneT) {
       } else if (cellType === "DATE_RANGE") {
         return getDateRangeRenderFunction();
       } else if (cellType === "MONEY") {
-        return getMoneyRenderFunction(currencyConfig.unit);
+        return getMoneyRenderFunction(moneyFormatter, fractionDigits);
       } else if (cellType === "BOOLEAN") {
         return getBooleanRenderFunction(t("common.true"), t("common.false"));
       }
 
       return getDefaultRenderFunction();
     },
-    [currencyConfig.unit, t],
+    [moneyFormatter, fractionDigits, t],
   );
 
   const getRenderFunctionByFieldName = useCallback(

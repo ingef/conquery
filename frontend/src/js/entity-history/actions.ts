@@ -35,6 +35,7 @@ import { useDatasetId } from "../dataset/selectors";
 import { loadCSV, parseCSVWithHeaderToObj } from "../file/csv";
 import { setMessage } from "../snack-message/actions";
 
+import { collectEntityIds } from "./entityIds";
 import type { EntityEvent, EntityId } from "./reducer";
 import { isDateColumn, isSourceColumn } from "./timeline/util/util";
 
@@ -114,22 +115,6 @@ export const loadHistoryData = createAsyncAction(
   ErrorObject
 >();
 
-// HARD-CODED values that make sense with our particular data.
-// TODO: Make this configurable / get a preferred id kind list from backend
-const PREFERRED_ID_KINDS = ["EGK", "PID"];
-
-function getPreferredIdColumns(columns: ColumnDescription[]) {
-  const findColumnIdxWithIdKind = (kind: string) =>
-    columns.findIndex((col) =>
-      col.semantics.some((s) => s.type === "ID" && s.kind === kind),
-    );
-
-  return PREFERRED_ID_KINDS.map((kind) => ({
-    columnIdx: findColumnIdxWithIdKind(kind),
-    idKind: kind,
-  }));
-}
-
 async function onLoadHistoryData(url: string, columns: ColumnDescription[]) {
   try {
     const result = await loadCSV(url);
@@ -151,6 +136,9 @@ async function onLoadHistoryData(url: string, columns: ColumnDescription[]) {
 export function useNewHistorySession() {
   const dispatch = useDispatch();
   const { updateHistorySession } = useUpdateHistorySession();
+  const prioritizedIdColumns = useSelector<StateT, string[]>(
+    (state) => state.entityHistory.defaultParams.prioritizedIdColumns,
+  );
 
   return async (url: string, columns: ColumnDescription[], label: string) => {
     dispatch(loadHistoryData.request());
@@ -164,37 +152,11 @@ export function useNewHistorySession() {
       return;
     }
 
-    const preferredIdColumns = getPreferredIdColumns(columns);
-    if (preferredIdColumns.length === 0) {
-      dispatch(loadHistoryData.failure(new Error("No valid ID columns found")));
-      return;
-    }
-
-    const distinctEntityIdsBarrier = new Set<string>();
-    const entityIds: EntityId[] = [];
-
-    for (const row of result.csv.slice(1)) {
-      // some id-cols might be empty, search for defined values
-      const col = preferredIdColumns.find((col) => exists(row[col.columnIdx]));
-
-      if (!col) {
-        continue;
-      }
-
-      const kind = col.idKind;
-      const id = row[col.columnIdx];
-
-      // Add any id just once, with how we select cols, this is likely to also ensure distinctness of entities, but not guaranteed
-      if (distinctEntityIdsBarrier.has(kind + id)) {
-        continue;
-      }
-
-      distinctEntityIdsBarrier.add(kind + id);
-      entityIds.push({
-        id: id,
-        kind: kind,
-      });
-    }
+    const entityIds = collectEntityIds(
+      result.csv.slice(1),
+      columns,
+      prioritizedIdColumns,
+    );
 
     if (entityIds.length === 0) {
       dispatch(loadHistoryData.failure(new Error("No entity IDs found")));

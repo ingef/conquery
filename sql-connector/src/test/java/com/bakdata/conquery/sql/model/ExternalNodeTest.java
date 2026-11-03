@@ -3,7 +3,6 @@ package com.bakdata.conquery.sql.model;
 import static com.bakdata.conquery.sql.model.ValidationTestSupport.assertInvalid;
 import static com.bakdata.conquery.sql.model.ValidationTestSupport.assertValid;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -43,7 +42,7 @@ class ExternalNodeTest {
 		columnValues.add("B");
 		values.put("other", List.of("value"));
 
-		assertEquals(Map.of("group", List.of("A", "B")), entity.values());
+		assertEquals(Map.of("group", List.of("A", "B"), "other", List.of("value")), entity.values());
 		// This test tested the defensive copy before. We made an exception for now
 //		assertThrows(UnsupportedOperationException.class, () -> entity.values().put("other", List.of()));
 //		assertThrows(UnsupportedOperationException.class, () -> entity.values().get("group").add("B"));

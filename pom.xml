@@ -19,7 +19,6 @@
     <properties>
         <java.required>21</java.required>
         <jooq.version>3.20.2</jooq.version>
-        <lombok.version>1.18.36</lombok.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>${java.required}</maven.compiler.source>
         <maven.compiler.target>${java.required}</maven.compiler.target>
@@ -36,6 +35,7 @@
         <module>backend</module>
         <module>executable</module>
         <module>autodoc</module>
+        <module>news-service</module>
     </modules>
 
     <dependencyManagement>
@@ -46,6 +46,12 @@
                 <version>2.0.3</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>1.18.36</version>
+                <scope>provided</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>

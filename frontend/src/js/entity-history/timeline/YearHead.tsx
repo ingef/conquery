@@ -31,10 +31,7 @@ const stickyWrap = tv({
 });
 
 const infoGrid = tv({
-  base: [
-    "grid grid-cols-[auto_minmax(min-content,25px)]",
-    "gap-x-[10px] gap-y-0",
-  ],
+  base: ["grid grid-cols-[minmax(0,1fr)_auto]", "gap-x-[10px] gap-y-0"],
 });
 
 const conceptRow = tv({
@@ -42,11 +39,7 @@ const conceptRow = tv({
 });
 
 // named valueCell: `value` is shadowed by destructured data entries below
-const valueCell = tv({
-  base: ["justify-self-end", "w-full", "text-right"],
-});
-
-const labelText = tv({ base: "max-w-full" });
+const valueCell = tv({ base: ["text-right", "whitespace-nowrap"] });
 
 type YearValue = TimeStratifiedInfo["years"][number]["values"][string];
 type Column = TimeStratifiedInfo["columns"][number];
@@ -93,8 +86,8 @@ const ConceptValues = ({
 
   return (
     <>
-      <div className={labelText()} style={{ gridColumn: "span 2" }}>
-        <C2 truncate>{label}</C2>
+      <div className="col-span-2">
+        <C2>{label}</C2>
       </div>
       <div className={conceptRow()}>
         {concepts.map((concept) => (
@@ -167,10 +160,8 @@ const TimeStratifiedInfos = ({
 
                 return (
                   <Fragment key={label}>
-                    <div className={labelText()}>
-                      <C2 truncate>{label}</C2>
-                    </div>
-                    <div className={valueCell()} title={String(valueFormatted)}>
+                    <C2>{label}</C2>
+                    <div className={valueCell()}>
                       <C2 as="span">{valueFormatted}</C2>
                     </div>
                   </Fragment>

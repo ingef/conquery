@@ -70,10 +70,6 @@ const pieceOfInfo = tv({
   ],
 });
 
-const matchingStats = tv({
-  base: ["grid grid-cols-[auto_1fr]", "gap-3", "items-center"],
-});
-
 const HighlightedText = ({
   text,
   words = [],
@@ -163,7 +159,6 @@ const InfoPane = () => {
       <InfoPaneHeader />
       <div className={content()}>
         <MatchingStats
-          className={matchingStats()}
           matchingEntries={matchingEntries}
           matchingEntities={matchingEntities}
           dateRange={dateRange}

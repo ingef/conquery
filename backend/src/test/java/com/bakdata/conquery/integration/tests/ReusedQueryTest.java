@@ -52,8 +52,6 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 		return Set.of(StandaloneSupport.Mode.WORKER, StandaloneSupport.Mode.SQL);
 	}
 
-
-
 	@Override
 	public void execute(String name, TestConquery testConquery) throws Exception {
 
@@ -108,6 +106,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 			assertThat(status.getStatus()).isIn(ExecutionState.RUNNING, ExecutionState.DONE);
 
+			conquery.waitUntilWorkDone();
 		}
 
 		// Reuse in SecondaryId
@@ -268,6 +267,10 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 				IntegrationUtils.assertQueryResult(conquery, reused, null, 0L, ExecutionState.FAILED, conquery.getTestUser(), 500);
 			}
+
+			// The last test fast fails the execution from any shard, but we need to wait until all shard reported
+			// otherwise the instance and namespace is in shutdown while messages come in causing the job manager to System.exit the test and failing the whole test execution.
+			conquery.waitUntilWorkDone();
 		}
 	}
 

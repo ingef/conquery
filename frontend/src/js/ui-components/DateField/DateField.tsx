@@ -1,5 +1,6 @@
 import { CalendarIcon } from "lucide-react";
 import { type Ref, useRef } from "react";
+import { useObjectRef } from "react-aria";
 import {
   TextField as RacTextField,
   type TextFieldProps as RacTextFieldProps,
@@ -7,7 +8,6 @@ import {
 import ReactDatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useTranslation } from "react-i18next";
-import { mergeRefs } from "react-merge-refs";
 import { tv } from "tailwind-variants";
 
 import { formatDate, parseDate } from "../../common/helpers/dateHelper";
@@ -71,7 +71,7 @@ export const DateField = ({
   ...props
 }: DateFieldProps) => {
   const { t } = useTranslation();
-  const datePickerRef = useRef<ReactDatePicker>(null);
+  const datePickerRef = useObjectRef(ref);
   const inputRef = useRef<HTMLInputElement>(null);
 
   return (
@@ -132,7 +132,7 @@ export const DateField = ({
               }
             />
             <ReactDatePicker
-              ref={mergeRefs([datePickerRef, ref])}
+              ref={datePickerRef}
               portalId="datepicker-portal"
               selected={value ? parseDate(value, dateFormat) : new Date()}
               onChange={(val: Date | null) => {
