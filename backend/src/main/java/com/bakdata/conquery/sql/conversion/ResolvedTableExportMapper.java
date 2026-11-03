@@ -13,7 +13,7 @@ import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
-import com.bakdata.conquery.sql.conversion.model.EntitySchemaAdapter;
+import com.bakdata.conquery.sql.conversion.model.ModelMapper;
 import com.bakdata.conquery.sql.model.ResolvedQuerySource;
 import com.bakdata.conquery.sql.model.export.ResolvedExportTable;
 import com.bakdata.conquery.sql.model.export.ResolvedTableExportQuery;
@@ -49,7 +49,7 @@ public final class ResolvedTableExportMapper {
 	private ResolvedExportTable table(CQConcept concept, CQTable table, Map<ColumnId, Integer> positions,
 			LocalDate endDate) {
 		com.bakdata.conquery.models.datasets.concepts.Connector connector = table.getConnector().resolve();
-		SqlTable sqlTable = EntitySchemaAdapter.from(connector.getResolvedTable());
+		SqlTable sqlTable = ModelMapper.map(connector.getResolvedTable());
 		org.jooq.Field<String> primary = TablePrimaryColumnUtil.findPrimaryColumn(
 				connector.getResolvedTable(), defaultPrimaryColumn);
 		ResolvedColumn primaryId = new ResolvedColumn(sqlTable.logicalId() + ".primary-id", sqlTable,
@@ -59,7 +59,7 @@ public final class ResolvedTableExportMapper {
 		for (Column column : connector.getResolvedTable().getColumns()) {
 			Integer position = positions.get(column.getId());
 			if (position != null) {
-				output.set(position - 1, Optional.of(EntitySchemaAdapter.from(column)));
+				output.set(position - 1, Optional.of(ModelMapper.map(column)));
 			}
 		}
 		return new ResolvedExportTable(

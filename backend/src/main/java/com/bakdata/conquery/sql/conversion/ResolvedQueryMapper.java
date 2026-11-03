@@ -38,7 +38,7 @@ import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptIdMapping;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.conversion.model.EntitySchemaAdapter;
+import com.bakdata.conquery.sql.conversion.model.ModelMapper;
 import com.bakdata.conquery.sql.mapping.ConceptIdMappingSelection;
 import com.bakdata.conquery.sql.model.ResolvedQuery;
 import com.bakdata.conquery.sql.model.node.AllEntitiesNode;
@@ -77,7 +77,7 @@ public final class ResolvedQueryMapper {
 	) {
 		NodeContext context = new NodeContext(secondaryId, Optional.empty());
 		return new ResolvedQuery(
-				EntitySchemaAdapter.from(idColumns),
+				ModelMapper.map(idColumns),
 				mapNode(query.getRoot(), context),
 				query.getResolvedDateAggregationMode() != DateAggregationMode.NONE,
 				ResolvedOperationAdapter.resultColumns(resultInfos)
@@ -120,7 +120,7 @@ public final class ResolvedQueryMapper {
 		List<Connector> connectors = query.getTables().stream().map(table -> table.getConnector().resolve()).toList();
 		List<ResolvedColumn> conceptColumns = connectors.stream()
 				.map(Connector::getColumn).filter(java.util.Objects::nonNull)
-				.map(id -> EntitySchemaAdapter.from(id.resolve())).toList();
+				.map(id -> ModelMapper.map(id.resolve())).toList();
 		LocalDate endDate = context.dateRestriction().flatMap(DateRange::endInclusive).orElseGet(() -> LocalDate.now(clock));
 		List<ResolvedSelect> conceptSelects = query.getSelects().stream().map(SelectId::resolve)
 				.map(select -> ResolvedOperationAdapter.select(select, conceptColumns, endDate)).toList();
@@ -150,7 +150,7 @@ public final class ResolvedQueryMapper {
 			NodeContext context
 	) {
 		Connector connector = table.getConnector().resolve();
-		SqlTable sqlTable = EntitySchemaAdapter.from(connector.getResolvedTable());
+		SqlTable sqlTable = ModelMapper.map(connector.getResolvedTable());
 		org.jooq.Field<String> primary = TablePrimaryColumnUtil.findPrimaryColumn(connector.getResolvedTable(), defaultPrimaryColumn);
 		ResolvedColumn primaryId = new ResolvedColumn(
 				sqlTable.logicalId() + ".primary-id", sqlTable, primary.getName(),
@@ -159,10 +159,10 @@ public final class ResolvedQueryMapper {
 		if (!query.isExcludeFromSecondaryId() && context.secondaryId().isPresent()
 				&& table.hasSelectedSecondaryId(context.secondaryId().orElseThrow().getId())) {
 			Column column = connector.getResolvedTable().findSecondaryIdColumn(context.secondaryId().orElseThrow().getId());
-			secondaryId = Optional.of(EntitySchemaAdapter.from(column));
+			secondaryId = Optional.of(ModelMapper.map(column));
 		}
 		Optional<ResolvedColumn> connectorColumn = Optional.ofNullable(connector.getColumn())
-				.map(id -> EntitySchemaAdapter.from(id.resolve()));
+				.map(id -> ModelMapper.map(id.resolve()));
 		List<ResolvedCondition> conditions = new ArrayList<>();
 		if (connector.getCondition() != null) {
 			conditions.add(ResolvedOperationAdapter.condition(connector.getCondition(), sqlTable, connectorColumn));
@@ -186,11 +186,11 @@ public final class ResolvedQueryMapper {
 			return new ResolvedValidityDate.None();
 		}
 		if (validityDate.isSingleColumnDaterange()) {
-			return new ResolvedValidityDate.Point(EntitySchemaAdapter.from(validityDate.getColumn().resolve()));
+			return new ResolvedValidityDate.Point(ModelMapper.map(validityDate.getColumn().resolve()));
 		}
 		return new ResolvedValidityDate.Range(
-				EntitySchemaAdapter.from(validityDate.getStartColumn().resolve()),
-				EntitySchemaAdapter.from(validityDate.getEndColumn().resolve()));
+				ModelMapper.map(validityDate.getStartColumn().resolve()),
+				ModelMapper.map(validityDate.getEndColumn().resolve()));
 	}
 
 	private static ExternalNode external(CQExternal external) {

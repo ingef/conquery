@@ -11,7 +11,10 @@ import jakarta.validation.constraints.NotNull;
 import com.bakdata.conquery.sql.model.internal.ModelNormalization;
 import com.bakdata.conquery.sql.model.range.DateRange;
 
-/** One resolved external entity together with its validity ranges and ordered result values. */
+/**
+ * One resolved external entity together with its validity ranges and ordered result values.
+ * @implSpec this model is an exception because {@code values} is not defensively copied, due to its possible size.
+ */
 public record ExternalEntity(
 		@NotBlank String entityId,
 		@NotNull List<@NotNull @Valid DateRange> validityDates,
@@ -20,15 +23,6 @@ public record ExternalEntity(
 
 	public ExternalEntity {
 		validityDates = ModelNormalization.immutableCopy(validityDates);
-		values = deepImmutableCopy(values);
 	}
 
-	private static Map<String, List<String>> deepImmutableCopy(Map<String, List<String>> values) {
-		if (values == null) {
-			return null;
-		}
-		Map<String, List<String>> copy = new LinkedHashMap<>();
-		values.forEach((column, columnValues) -> copy.put(column, ModelNormalization.immutableCopy(columnValues)));
-		return Collections.unmodifiableMap(copy);
-	}
 }

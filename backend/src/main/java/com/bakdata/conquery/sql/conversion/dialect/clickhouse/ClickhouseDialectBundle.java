@@ -15,13 +15,8 @@ import org.jooq.SQLDialect;
 @Slf4j
 public class ClickhouseDialectBundle implements DialectBundle {
 
-	private final SqlFunctionProvider functionProvider;
-	private final TranslatorDialect translatorDialect;
-
-	public ClickhouseDialectBundle() {
-		this.functionProvider = new ClickhouseFunctionProvider();
-		this.translatorDialect = new ClickhouseTranslatorDialect();
-	}
+	private final SqlFunctionProvider functionProvider = new ClickhouseFunctionProvider();
+	private final TranslatorDialect translatorDialect = new ClickhouseTranslatorDialect();
 
 	@Override
 	public Dialect getDialect() {

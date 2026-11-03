@@ -48,7 +48,7 @@ import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.M
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.SumSelect;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
-import com.bakdata.conquery.sql.conversion.model.EntitySchemaAdapter;
+import com.bakdata.conquery.sql.conversion.model.ModelMapper;
 import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
 import com.bakdata.conquery.sql.model.operation.BuiltInConditions;
 import com.bakdata.conquery.sql.model.operation.BuiltInFilters;
@@ -79,15 +79,15 @@ public class ResolvedOperationAdapter {
 			case LastValueSelect value -> values(value, BuiltInSelects.ValueOperation.LAST);
 			case RandomValueSelect value -> values(value, BuiltInSelects.ValueOperation.RANDOM);
 			case CountSelect value -> aggregation(value.getName(), count(value.getColumn().resolve(), value.isDistinct()));
-			case CountQuartersSelect value -> aggregation(value.getName(), new BuiltInAggregations.CountQuarters(EntitySchemaAdapter.from(value)));
+			case CountQuartersSelect value -> aggregation(value.getName(), new BuiltInAggregations.CountQuarters(ModelMapper.map(value)));
 			case DurationSumSelect value -> aggregation(value.getName(), new BuiltInAggregations.DurationSum(
-					EntitySchemaAdapter.from(value), List.of()));
+					ModelMapper.map(value), List.of()));
 			case SumSelect value -> aggregation(value.getName(), sum(
 					value.getColumn().resolve(), value.getSubtractColumn(), value.getDistinctByColumn()));
 			case FlagSelect value -> aggregation(value.getName(), flags(value.getFlags()));
 			case DateDistanceSelect value -> new BuiltInSelects.DateDistance(
-					value.getName(), EntitySchemaAdapter.from(value.getColumn().resolve()), value.getTimeUnit(), endDate);
-			case DateUnionSelect value -> new BuiltInSelects.DateUnion(value.getName(), EntitySchemaAdapter.from(value));
+					value.getName(), ModelMapper.map(value.getColumn().resolve()), value.getTimeUnit(), endDate);
+			case DateUnionSelect value -> new BuiltInSelects.DateUnion(value.getName(), ModelMapper.map(value));
 			default -> throw new UnsupportedOperationException("SQL resolved select is not implemented for " + select.getClass());
 		};
 	}
@@ -97,21 +97,21 @@ public class ResolvedOperationAdapter {
 		Object value = filterValue.readValue();
 		return switch (filter) {
 			case SelectFilter<?> selectFilter -> new BuiltInFilters.StringValues(
-					filter.getName(), EntitySchemaAdapter.from(selectFilter.getColumn().resolve()), stringValues(value),
+					filter.getName(), ModelMapper.map(selectFilter.getColumn().resolve()), stringValues(value),
 					substring(selectFilter.getSubstringRange()));
 			case NumberFilter<?> numberFilter -> new BuiltInFilters.NumericColumnRange(
-					filter.getName(), EntitySchemaAdapter.from(numberFilter.getColumn().resolve()), numberRange((IRange<?, ?>) value));
+					filter.getName(), ModelMapper.map(numberFilter.getColumn().resolve()), numberRange((IRange<?, ?>) value));
 			case CountFilter countFilter -> aggregationFilter(filter.getName(),
 					count(countFilter.getColumn().resolve(), countFilter.isDistinct()), value);
 			case CountQuartersFilter quartersFilter -> aggregationFilter(filter.getName(),
-					new BuiltInAggregations.CountQuarters(EntitySchemaAdapter.from(quartersFilter)), value);
+					new BuiltInAggregations.CountQuarters(ModelMapper.map(quartersFilter)), value);
 			case DurationSumFilter durationFilter -> aggregationFilter(filter.getName(),
-					new BuiltInAggregations.DurationSum(EntitySchemaAdapter.from(durationFilter), List.of()), value);
+					new BuiltInAggregations.DurationSum(ModelMapper.map(durationFilter), List.of()), value);
 			case SumFilter<?> sumFilter -> aggregationFilter(filter.getName(),
 					sum(sumFilter.getColumn().resolve(), sumFilter.getSubtractColumn(), sumFilter.getDistinctByColumn()), value);
 			case FlagFilter flagFilter -> new BuiltInFilters.Flags(filter.getName(), flags(flagFilter.getFlags()), (Set<String>) value);
 			case DateDistanceFilter distanceFilter -> new BuiltInFilters.DateDistanceRange(
-					filter.getName(), EntitySchemaAdapter.from(distanceFilter.getColumn().resolve()), distanceFilter.getTimeUnit(),
+					filter.getName(), ModelMapper.map(distanceFilter.getColumn().resolve()), distanceFilter.getTimeUnit(),
 					endDate, numberRange((IRange<?, ?>) value));
 			default -> throw new UnsupportedOperationException("SQL resolved filter is not implemented for " + filter.getClass());
 		};
@@ -148,7 +148,7 @@ public class ResolvedOperationAdapter {
 	}
 
 	private static BuiltInSelects.Values values(MappableSingleColumnSelect select, BuiltInSelects.ValueOperation operation) {
-		return new BuiltInSelects.Values(select.getName(), EntitySchemaAdapter.from(select.getColumn().resolve()), operation,
+		return new BuiltInSelects.Values(select.getName(), ModelMapper.map(select.getColumn().resolve()), operation,
 				substring(select.getSubstringRange()));
 	}
 
@@ -160,7 +160,7 @@ public class ResolvedOperationAdapter {
 	}
 
 	private static BuiltInAggregations.Count count(com.bakdata.conquery.models.datasets.Column column, boolean distinct) {
-		ResolvedColumn resolved = EntitySchemaAdapter.from(column);
+		ResolvedColumn resolved = ModelMapper.map(column);
 		return new BuiltInAggregations.Count(resolved, distinct ? List.of(resolved) : List.of());
 	}
 
@@ -169,19 +169,19 @@ public class ResolvedOperationAdapter {
 			com.bakdata.conquery.models.identifiable.ids.specific.ColumnId subtract,
 			List<com.bakdata.conquery.models.identifiable.ids.specific.ColumnId> distinctBy
 	) {
-		return new BuiltInAggregations.Sum(EntitySchemaAdapter.from(column),
-				Optional.ofNullable(subtract).map(id -> EntitySchemaAdapter.from(id.resolve())), columns(distinctBy));
+		return new BuiltInAggregations.Sum(ModelMapper.map(column),
+				Optional.ofNullable(subtract).map(id -> ModelMapper.map(id.resolve())), columns(distinctBy));
 	}
 
 	private static BuiltInAggregations.Flags flags(Map<String, com.bakdata.conquery.models.identifiable.ids.specific.ColumnId> flags) {
 		Map<String, ResolvedColumn> resolved = new LinkedHashMap<>();
-		flags.forEach((name, column) -> resolved.put(name, EntitySchemaAdapter.from(column.resolve())));
+		flags.forEach((name, column) -> resolved.put(name, ModelMapper.map(column.resolve())));
 		return new BuiltInAggregations.Flags(resolved);
 	}
 
 	private static List<ResolvedColumn> columns(List<com.bakdata.conquery.models.identifiable.ids.specific.ColumnId> columns) {
 		return Optional.ofNullable(columns).orElseGet(List::of).stream()
-				.map(id -> EntitySchemaAdapter.from(id.resolve())).toList();
+				.map(id -> ModelMapper.map(id.resolve())).toList();
 	}
 
 	private static Set<String> stringValues(Object value) {

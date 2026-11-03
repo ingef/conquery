@@ -103,7 +103,7 @@ public class ConceptIdMappingResolver {
 		}
 		return resolvedMappings.entrySet().stream().map(entry -> {
 			List<Field<?>> values = new ArrayList<>(entry.getKey().size() + 1);
-			values.add(DSL.val(entry.getValue().localId()));
+			values.add(DSL.inline(entry.getValue().localId()));
 			values.addAll(entry.getKey());
 			return DSL.row(values);
 		}).toList();
