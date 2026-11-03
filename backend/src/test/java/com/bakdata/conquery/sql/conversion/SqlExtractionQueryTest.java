@@ -18,20 +18,20 @@ import jakarta.validation.Validation;
 
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
-import com.bakdata.conquery.models.datasets.ColumnType;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.sql.translate.ColumnRole;
-import com.bakdata.conquery.sql.translate.TranslatedColumn;
-import com.bakdata.conquery.sql.translate.TranslatedQuery;
-import com.bakdata.conquery.sql.translate.dialect.hana.HanaTranslatorDialect;
 import com.bakdata.conquery.sql.model.ResolvedQuery;
 import com.bakdata.conquery.sql.model.node.AllEntitiesNode;
 import com.bakdata.conquery.sql.model.result.ResultType;
 import com.bakdata.conquery.sql.model.schema.EntitySchema;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.model.schema.SqlTable;
+import com.bakdata.conquery.sql.translate.ColumnRole;
+import com.bakdata.conquery.sql.translate.TranslatedColumn;
+import com.bakdata.conquery.sql.translate.TranslatedQuery;
+import com.bakdata.conquery.sql.translate.dialect.hana.HanaTranslatorDialect;
 import org.junit.jupiter.api.Test;
 
 class SqlExtractionQueryTest {
@@ -70,7 +70,7 @@ class SqlExtractionQueryTest {
 		SqlTable entities = SqlTable.of("entities", "entities");
 		ResolvedQuery invalid = new ResolvedQuery(
 				new EntitySchema(new ResolvedColumn(
-						"entity-id", entities, "id", ColumnType.INTEGER, false
+						"entity-id", entities, "id", MajorTypeId.INTEGER, false
 				)),
 				new AllEntitiesNode(),
 				false,
@@ -147,7 +147,7 @@ class SqlExtractionQueryTest {
 		SqlTable entities = SqlTable.of("entities", "entities");
 		return new ResolvedQuery(
 				new EntitySchema(new ResolvedColumn(
-						"entity-id", entities, "id", ColumnType.STRING, false
+						"entity-id", entities, "id", MajorTypeId.STRING, false
 				)),
 				new AllEntitiesNode(),
 				false,

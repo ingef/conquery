@@ -8,8 +8,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import com.bakdata.conquery.apiv1.query.CQYes;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
+import com.bakdata.conquery.apiv1.query.CQYes;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
@@ -18,8 +18,8 @@ import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
 import com.bakdata.conquery.models.forms.managed.EntityDateQuery;
 import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
 import com.bakdata.conquery.models.query.DateAggregationMode;
-import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
+import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import org.junit.jupiter.api.Test;
 
 class SqlConverterTest {

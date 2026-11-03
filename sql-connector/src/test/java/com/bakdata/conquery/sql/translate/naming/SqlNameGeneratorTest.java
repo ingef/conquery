@@ -6,10 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.List;
 import java.util.Optional;
 
-import com.bakdata.conquery.models.datasets.ColumnType;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.models.query.DateAggregationAction;
-import com.bakdata.conquery.sql.translate.ir.CteStep;
-import com.bakdata.conquery.sql.translate.ir.JoinMode;
 import com.bakdata.conquery.sql.model.node.ConceptNode;
 import com.bakdata.conquery.sql.model.operation.ResolvedFilter;
 import com.bakdata.conquery.sql.model.operation.ResolvedSelect;
@@ -17,13 +15,15 @@ import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.model.schema.ResolvedConnector;
 import com.bakdata.conquery.sql.model.schema.ResolvedValidityDate;
 import com.bakdata.conquery.sql.model.schema.SqlTable;
+import com.bakdata.conquery.sql.translate.ir.CteStep;
+import com.bakdata.conquery.sql.translate.ir.JoinMode;
 import org.junit.jupiter.api.Test;
 
 class SqlNameGeneratorTest {
 
 	private static final SqlTable EVENTS = SqlTable.of("events", "analytics", "events");
 	private static final ResolvedColumn PRIMARY_ID = new ResolvedColumn(
-			"events.id", EVENTS, "id", ColumnType.STRING, false
+			"events.id", EVENTS, "id", MajorTypeId.STRING, false
 	);
 	private static final ResolvedConnector CONNECTOR = new ResolvedConnector(
 			"Events",

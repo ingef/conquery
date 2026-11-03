@@ -5,11 +5,11 @@ import static com.bakdata.conquery.sql.translate.form.Interval.MONTHS_PER_QUARTE
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
 
+import com.bakdata.conquery.sql.model.form.FormIndexSelector;
 import com.bakdata.conquery.sql.translate.form.Interval;
 import com.bakdata.conquery.sql.translate.form.Offset;
 import com.bakdata.conquery.sql.translate.form.StratificationFunctions;
 import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
-import com.bakdata.conquery.sql.model.form.FormIndexSelector;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Field;

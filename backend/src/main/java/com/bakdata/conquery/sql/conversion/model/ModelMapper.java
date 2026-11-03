@@ -3,7 +3,7 @@ package com.bakdata.conquery.sql.conversion.model;
 import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.ColumnType;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.sql.model.schema.DateColumns;
@@ -15,36 +15,35 @@ import lombok.experimental.UtilityClass;
 /**
  * Converts legacy backend schema objects into the connector's resolved schema model.
  *
- * <p>TODO Remove this adapter once backend query resolution produces resolved connector schema objects directly.</p>
  */
 @UtilityClass
-public class EntitySchemaAdapter {
+public class ModelMapper {
 
-	public static EntitySchema from(IdColumnConfig idColumns) {
+	public static EntitySchema map(IdColumnConfig idColumns) {
 		ColumnConfig primaryId = idColumns.findPrimaryIdColumn();
 		SqlTable entityTable = SqlTable.of(idColumns.getTable(), idColumns.getTable());
 		ResolvedColumn primaryIdColumn = new ResolvedColumn(
 				primaryId.getName(),
 				entityTable,
 				primaryId.getField(),
-				ColumnType.STRING,
+				MajorTypeId.STRING,
 				false
 		);
 		return new EntitySchema(primaryIdColumn);
 	}
 
-	public static SqlTable from(Table table) {
+	public static SqlTable map(Table table) {
 		return SqlTable.of(table.getId().toString(), table.getName());
 	}
 
-	public static ResolvedColumn from(Column column) {
-		return new ResolvedColumn(column.getId().toString(), from(column.getTable()), column.getName(),
-				ColumnType.valueOf(column.getType().name()), true);
+	public static ResolvedColumn map(Column column) {
+		return new ResolvedColumn(column.getId().toString(), map(column.getTable()), column.getName(),
+				MajorTypeId.valueOf(column.getType().name()), true);
 	}
 
-	public static DateColumns from(DaterangeSelectOrFilter dates) {
+	public static DateColumns map(DaterangeSelectOrFilter dates) {
 		return dates.isSingleColumnDaterange()
-				? new DateColumns.Single(from(dates.getColumn().resolve()))
-				: new DateColumns.Pair(from(dates.getStartColumn().resolve()), from(dates.getEndColumn().resolve()));
+				? new DateColumns.Single(map(dates.getColumn().resolve()))
+				: new DateColumns.Pair(map(dates.getStartColumn().resolve()), map(dates.getEndColumn().resolve()));
 	}
 }

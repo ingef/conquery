@@ -10,7 +10,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
-import com.bakdata.conquery.models.datasets.ColumnType;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.sql.model.internal.ModelNormalization;
 import com.bakdata.conquery.sql.model.range.SubstringRange;
 import com.bakdata.conquery.sql.model.schema.DateColumns;
@@ -44,7 +44,7 @@ public final class BuiltInSelects {
 
 		@AssertTrue(message = "substring requires a STRING column")
 		public boolean isSubstringOnStringColumn() {
-			return column == null || substring == null || substring.isEmpty() || column.type() == ColumnType.STRING;
+			return column == null || substring == null || substring.isEmpty() || column.type() == MajorTypeId.STRING;
 		}
 	}
 
@@ -57,7 +57,7 @@ public final class BuiltInSelects {
 	/** Selects the distance to an end date that was frozen while resolving the query. */
 	public record DateDistance(
 			@NotBlank String name,
-			@NotNull @Valid @AllowedColumnTypes({ColumnType.DATE, ColumnType.DATE_RANGE}) ResolvedColumn column,
+			@NotNull @Valid @AllowedColumnTypes({MajorTypeId.DATE, MajorTypeId.DATE_RANGE}) ResolvedColumn column,
 			@NotNull ChronoUnit unit,
 			@NotNull LocalDate endDate
 	) implements ResolvedSelect {

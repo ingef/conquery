@@ -6,15 +6,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.sql.Date;
 
-import com.bakdata.conquery.models.datasets.ColumnType;
-import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
-import com.bakdata.conquery.sql.translate.ir.QueryStep;
-import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
-import com.bakdata.conquery.sql.translate.naming.SqlNameGenerator;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.sql.model.node.AllEntitiesNode;
 import com.bakdata.conquery.sql.model.schema.EntitySchema;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.model.schema.SqlTable;
+import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
+import com.bakdata.conquery.sql.translate.ir.QueryStep;
+import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
+import com.bakdata.conquery.sql.translate.naming.SqlNameGenerator;
 import org.jooq.Field;
 import org.junit.jupiter.api.Test;
 
@@ -22,7 +22,7 @@ class AllEntitiesQueryStepTranslatorTest {
 
 	private static final SqlTable ENTITIES = SqlTable.of("entities", "catalog", "entities");
 	private static final EntitySchema ENTITY_SCHEMA = new EntitySchema(
-			new ResolvedColumn("entity-id", ENTITIES, "person_id", ColumnType.STRING, false)
+			new ResolvedColumn("entity-id", ENTITIES, "person_id", MajorTypeId.STRING, false)
 	);
 
 	@Test

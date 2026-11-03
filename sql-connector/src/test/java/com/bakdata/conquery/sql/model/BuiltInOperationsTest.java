@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import com.bakdata.conquery.models.datasets.ColumnType;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
 import com.bakdata.conquery.sql.model.operation.BuiltInConditions;
 import com.bakdata.conquery.sql.model.operation.BuiltInFilters;
@@ -35,12 +35,12 @@ class BuiltInOperationsTest {
 
 	private static final SqlTable EVENTS = SqlTable.of("events", "analytics", "events");
 	private static final SqlTable OTHER_EVENTS = SqlTable.of("other-events", "analytics", "other_events");
-	private static final ResolvedColumn CODE = column("code", ColumnType.STRING);
-	private static final ResolvedColumn AMOUNT = column("amount", ColumnType.DECIMAL);
-	private static final ResolvedColumn START = column("start_date", ColumnType.DATE);
-	private static final ResolvedColumn END = column("end_date", ColumnType.DATE);
-	private static final ResolvedColumn FLAG_A = column("flag_a", ColumnType.BOOLEAN);
-	private static final ResolvedColumn FLAG_B = column("flag_b", ColumnType.BOOLEAN);
+	private static final ResolvedColumn CODE = column("code", MajorTypeId.STRING);
+	private static final ResolvedColumn AMOUNT = column("amount", MajorTypeId.DECIMAL);
+	private static final ResolvedColumn START = column("start_date", MajorTypeId.DATE);
+	private static final ResolvedColumn END = column("end_date", MajorTypeId.DATE);
+	private static final ResolvedColumn FLAG_A = column("flag_a", MajorTypeId.BOOLEAN);
+	private static final ResolvedColumn FLAG_B = column("flag_b", MajorTypeId.BOOLEAN);
 
 	@Test
 	void shouldRepresentStandardFiltersWithResolvedInputs() {
@@ -129,12 +129,12 @@ class BuiltInOperationsTest {
 	@Test
 	void shouldRejectColumnsFromDifferentTablesInOneOperation() {
 		ResolvedColumn otherColumn = new ResolvedColumn(
-				"other.code", OTHER_EVENTS, "code", ColumnType.STRING, true
+				"other.code", OTHER_EVENTS, "code", MajorTypeId.STRING, true
 		);
 
 		assertInvalid(new BuiltInAggregations.Count(CODE, List.of(otherColumn)));
 		assertInvalid(new DateColumns.Pair(START, new ResolvedColumn(
-						"other.end", OTHER_EVENTS, "end_date", ColumnType.DATE, true
+						"other.end", OTHER_EVENTS, "end_date", MajorTypeId.DATE, true
 		)));
 	}
 
@@ -167,7 +167,7 @@ class BuiltInOperationsTest {
 		assertInvalid(new BuiltInConditions.PrefixRange(CODE, "100", "20"));
 	}
 
-	private static ResolvedColumn column(String name, ColumnType type) {
+	private static ResolvedColumn column(String name, MajorTypeId type) {
 		return new ResolvedColumn("events." + name, EVENTS, name, type, true);
 	}
 }

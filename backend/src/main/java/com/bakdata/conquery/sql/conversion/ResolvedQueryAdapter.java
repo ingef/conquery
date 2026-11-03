@@ -8,12 +8,12 @@ import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.sql.translate.ColumnRole;
-import com.bakdata.conquery.sql.translate.TranslatedQuery;
-import com.bakdata.conquery.sql.translate.SqlTranslator;
-import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
 import com.bakdata.conquery.sql.model.ResolvedQuery;
+import com.bakdata.conquery.sql.translate.ColumnRole;
+import com.bakdata.conquery.sql.translate.SqlTranslator;
+import com.bakdata.conquery.sql.translate.TranslatedQuery;
+import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.validation.ResolvedQueryValidation;
 
 /** Maps initialized backend queries, validates the resolved input, and adapts translate output to the backend contract. */

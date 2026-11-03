@@ -5,7 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-import com.bakdata.conquery.models.events.MajorTypeId;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Data;

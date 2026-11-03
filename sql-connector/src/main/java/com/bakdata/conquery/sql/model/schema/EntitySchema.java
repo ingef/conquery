@@ -3,12 +3,12 @@ package com.bakdata.conquery.sql.model.schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
-import com.bakdata.conquery.models.datasets.ColumnType;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.sql.validation.AllowedColumnTypes;
 
 /** Physical source used to enumerate all entities, for example when compiling a root-level negation. */
 public record EntitySchema(
-		@NotNull @Valid @AllowedColumnTypes(ColumnType.STRING) ResolvedColumn primaryId
+		@NotNull @Valid @AllowedColumnTypes(MajorTypeId.STRING) ResolvedColumn primaryId
 ) {
 
 	/** Physical table containing all entities. */

@@ -1,10 +1,10 @@
 package com.bakdata.conquery.sql.conversion;
 
 import com.bakdata.conquery.apiv1.query.TableExportQuery;
-import com.bakdata.conquery.sql.translate.TranslatedQuery;
-import com.bakdata.conquery.sql.translate.TableExportSqlTranslator;
-import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
+import com.bakdata.conquery.sql.translate.TableExportSqlTranslator;
+import com.bakdata.conquery.sql.translate.TranslatedQuery;
+import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import lombok.RequiredArgsConstructor;
 
 /** Backend boundary for resolved row-level table exports. */

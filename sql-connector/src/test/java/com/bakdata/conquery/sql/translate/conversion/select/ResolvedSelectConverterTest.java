@@ -10,13 +10,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
-import com.bakdata.conquery.models.datasets.ColumnType;
-import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
-import com.bakdata.conquery.sql.translate.ir.SqlIdColumns;
-import com.bakdata.conquery.sql.translate.ir.SqlTables;
-import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
-import com.bakdata.conquery.sql.translate.naming.SqlNameGenerator;
-import com.bakdata.conquery.sql.translate.query.concept.ConceptCteStep;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
 import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
 import com.bakdata.conquery.sql.model.operation.ResolvedSelect;
@@ -24,6 +18,12 @@ import com.bakdata.conquery.sql.model.range.SubstringRange;
 import com.bakdata.conquery.sql.model.schema.DateColumns;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.model.schema.SqlTable;
+import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
+import com.bakdata.conquery.sql.translate.ir.SqlIdColumns;
+import com.bakdata.conquery.sql.translate.ir.SqlTables;
+import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
+import com.bakdata.conquery.sql.translate.naming.SqlNameGenerator;
+import com.bakdata.conquery.sql.translate.query.concept.ConceptCteStep;
 import org.jooq.Field;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Test;
 
 class ResolvedSelectConverterTest {
 
-	private static final ResolvedColumn VALUE = new ResolvedColumn("events.value", SqlTable.of("events", "events"), "value", ColumnType.STRING, true);
+	private static final ResolvedColumn VALUE = new ResolvedColumn("events.value", SqlTable.of("events", "events"), "value", MajorTypeId.STRING, true);
 	private final ResolvedSelectConverter converter = new ResolvedSelectConverter();
 
 	@Test
@@ -131,7 +131,7 @@ class ResolvedSelectConverterTest {
 
 	@Test
 	void shouldDispatchDateUnionToIntervalPacking() {
-		var date = new ResolvedColumn("events.date", VALUE.table(), "date", ColumnType.DATE, true);
+		var date = new ResolvedColumn("events.date", VALUE.table(), "date", MajorTypeId.DATE, true);
 		var result = converter.convert(new BuiltInSelects.DateUnion("value", new DateColumns.Single(date)), context());
 		assertEquals("value-interval_packing_selects", result.getAdditionalPredecessor().orElseThrow().getCteName());
 		assertEquals(2, result.getPreprocessingSelects().size());
@@ -152,7 +152,7 @@ class ResolvedSelectConverterTest {
 
 	@Test
 	void shouldCompileFlagsThroughAggregation() {
-		var flag = new ResolvedColumn("events.flag", VALUE.table(), "flag", ColumnType.BOOLEAN, true);
+		var flag = new ResolvedColumn("events.flag", VALUE.table(), "flag", MajorTypeId.BOOLEAN, true);
 		var result = converter.convert(new BuiltInSelects.Aggregation("value", new BuiltInAggregations.Flags(Map.of("A", flag))), context());
 		assertEquals(1, result.getAggregationSelects().size());
 		assertTrue(render(result.getAggregationSelects().getFirst().toFields().getFirst()).contains("then 'a'"));
@@ -160,7 +160,7 @@ class ResolvedSelectConverterTest {
 
 	@Test
 	void shouldCompileDateDistanceMinimum() {
-		var date = new ResolvedColumn("events.date", VALUE.table(), "date", ColumnType.DATE, true);
+		var date = new ResolvedColumn("events.date", VALUE.table(), "date", MajorTypeId.DATE, true);
 		var result = converter.convert(new BuiltInSelects.DateDistance("value", date, ChronoUnit.YEARS, LocalDate.of(2020, 6, 15)), context());
 		assertEquals("min(\"preprocessing\".\"value\") as \"value\"", render(result.getAggregationSelects().getFirst().toFields().getFirst()));
 	}
@@ -168,7 +168,7 @@ class ResolvedSelectConverterTest {
 	@Test
 	void shouldUseInclusiveStratificationEndForDateDistance() {
 		var base = context();
-		var date = new ResolvedColumn("events.date", VALUE.table(), "date", ColumnType.DATE, true);
+		var date = new ResolvedColumn("events.date", VALUE.table(), "date", MajorTypeId.DATE, true);
 		var stratificationDate = ColumnDateRange.of(
 				DSL.field(DSL.name("window", "start"), Date.class),
 				DSL.field(DSL.name("window", "end"), Date.class)
@@ -221,7 +221,7 @@ class ResolvedSelectConverterTest {
 
 	@Test
 	void shouldNotAggregateDistinctSumPredecessorAgain() {
-		var amount = new ResolvedColumn("events.amount", VALUE.table(), "amount", ColumnType.INTEGER, true);
+		var amount = new ResolvedColumn("events.amount", VALUE.table(), "amount", MajorTypeId.INTEGER, true);
 		var result = converter.convert(new BuiltInSelects.Aggregation("value", new BuiltInAggregations.Sum(amount, Optional.empty(), List.of(VALUE))), context());
 		assertTrue(result.getAdditionalPredecessor().isPresent());
 		assertTrue(result.getAggregationSelects().isEmpty());

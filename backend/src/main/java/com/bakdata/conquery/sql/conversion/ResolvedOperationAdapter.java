@@ -11,6 +11,7 @@ import java.util.Set;
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.models.datasets.concepts.conditions.AndCondition;
 import com.bakdata.conquery.models.datasets.concepts.conditions.CTCondition;
 import com.bakdata.conquery.models.datasets.concepts.conditions.ColumnEqualCondition;
@@ -202,7 +203,7 @@ public class ResolvedOperationAdapter {
 
 	private static ResolvedColumn stringColumn(SqlTable table, String physicalName) {
 		return new ResolvedColumn(table.logicalId() + "." + physicalName, table, physicalName,
-				com.bakdata.conquery.models.datasets.ColumnType.STRING, true);
+				MajorTypeId.STRING, true);
 	}
 
 	private static com.bakdata.conquery.sql.model.result.ResultType resultType(ResultType type) {

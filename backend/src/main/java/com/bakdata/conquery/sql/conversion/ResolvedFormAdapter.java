@@ -3,10 +3,10 @@ package com.bakdata.conquery.sql.conversion;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
 import com.bakdata.conquery.models.forms.managed.EntityDateQuery;
 import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
-import com.bakdata.conquery.sql.translate.TranslatedQuery;
-import com.bakdata.conquery.sql.translate.FormSqlTranslator;
-import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
+import com.bakdata.conquery.sql.translate.FormSqlTranslator;
+import com.bakdata.conquery.sql.translate.TranslatedQuery;
+import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import lombok.RequiredArgsConstructor;
 
 /** Backend boundary for resolved form compilation. */

@@ -9,9 +9,8 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Function;
 
-import com.bakdata.conquery.models.datasets.ColumnType;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.models.query.DateAggregationAction;
-import com.bakdata.conquery.sql.translate.dialect.hana.HanaTranslatorDialect;
 import com.bakdata.conquery.sql.model.ResolvedQuery;
 import com.bakdata.conquery.sql.model.ResolvedQuerySource;
 import com.bakdata.conquery.sql.model.form.FormAlignment;
@@ -35,6 +34,7 @@ import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.model.schema.ResolvedConnector;
 import com.bakdata.conquery.sql.model.schema.ResolvedValidityDate;
 import com.bakdata.conquery.sql.model.schema.SqlTable;
+import com.bakdata.conquery.sql.translate.dialect.hana.HanaTranslatorDialect;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Test;
@@ -43,7 +43,7 @@ class FormSqlTranslatorTest {
 
 	private static final SqlTable ENTITIES = SqlTable.of("entities", "catalog", "entities");
 	private static final ResolvedColumn ENTITY_ID = new ResolvedColumn(
-			"entity-id", ENTITIES, "person_id", ColumnType.STRING, false);
+			"entity-id", ENTITIES, "person_id", MajorTypeId.STRING, false);
 	private static final EntitySchema ENTITY_SCHEMA = new EntitySchema(ENTITY_ID);
 
 	@Test
@@ -142,7 +142,7 @@ class FormSqlTranslatorTest {
 				"age",
 				table -> new BuiltInSelects.DateDistance(
 						"age",
-						new ResolvedColumn("events.birth-date", table, "birth_date", ColumnType.DATE, true),
+						new ResolvedColumn("events.birth-date", table, "birth_date", MajorTypeId.DATE, true),
 						ChronoUnit.YEARS,
 						LocalDate.of(2023, 3, 28)
 				),
@@ -160,7 +160,7 @@ class FormSqlTranslatorTest {
 				"first-value",
 				table -> new BuiltInSelects.Values(
 						"first-value",
-						new ResolvedColumn("events.value", table, "value", ColumnType.STRING, true),
+						new ResolvedColumn("events.value", table, "value", MajorTypeId.STRING, true),
 						BuiltInSelects.ValueOperation.FIRST,
 						Optional.empty()
 				),
@@ -207,10 +207,10 @@ class FormSqlTranslatorTest {
 		ResolvedConnector connector = new ResolvedConnector(
 				"claims",
 				events,
-				new ResolvedColumn("events.entity-id", events, "person_id", ColumnType.STRING, false),
+				new ResolvedColumn("events.entity-id", events, "person_id", MajorTypeId.STRING, false),
 				Optional.empty(),
 				new ResolvedValidityDate.Point(new ResolvedColumn(
-						"events.date", events, "event_date", ColumnType.DATE, true)),
+						"events.date", events, "event_date", MajorTypeId.DATE, true)),
 				List.of(),
 				List.of(selectFactory.apply(events)),
 				List.of()
@@ -228,10 +228,10 @@ class FormSqlTranslatorTest {
 		ResolvedConnector connector = new ResolvedConnector(
 				"claims",
 				events,
-				new ResolvedColumn("events.entity-id", events, "person_id", ColumnType.STRING, false),
+				new ResolvedColumn("events.entity-id", events, "person_id", MajorTypeId.STRING, false),
 				Optional.empty(),
 				new ResolvedValidityDate.Point(new ResolvedColumn(
-						"events.date", events, "event_date", ColumnType.DATE, true)),
+						"events.date", events, "event_date", MajorTypeId.DATE, true)),
 				List.of(),
 				List.of(),
 				List.of()

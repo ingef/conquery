@@ -5,7 +5,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
 
-import com.bakdata.conquery.models.datasets.ColumnType;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.sql.validation.AllowedColumnTypes;
 
 /** Physical representation of event validity for a connector. */
@@ -15,13 +15,13 @@ public sealed interface ResolvedValidityDate permits ResolvedValidityDate.None, 
 	}
 
 	record Point(
-			@NotNull @Valid @AllowedColumnTypes(ColumnType.DATE) ResolvedColumn column
+			@NotNull @Valid @AllowedColumnTypes(MajorTypeId.DATE) ResolvedColumn column
 	) implements ResolvedValidityDate {
 	}
 
 	record Range(
-			@NotNull @Valid @AllowedColumnTypes(ColumnType.DATE) ResolvedColumn start,
-			@NotNull @Valid @AllowedColumnTypes(ColumnType.DATE) ResolvedColumn end
+			@NotNull @Valid @AllowedColumnTypes(MajorTypeId.DATE) ResolvedColumn start,
+			@NotNull @Valid @AllowedColumnTypes(MajorTypeId.DATE) ResolvedColumn end
 	) implements ResolvedValidityDate {
 
 		@AssertTrue(message = "validity-date columns must belong to the same table")

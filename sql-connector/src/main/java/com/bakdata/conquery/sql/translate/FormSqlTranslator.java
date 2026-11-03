@@ -1,6 +1,5 @@
 package com.bakdata.conquery.sql.translate;
 
-import static org.jooq.impl.DSL.falseCondition;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.inline;
 import static org.jooq.impl.DSL.name;
@@ -11,6 +10,9 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.query.DateAggregationAction;
+import com.bakdata.conquery.sql.model.form.FormResolution;
+import com.bakdata.conquery.sql.model.form.ResolvedFormMode;
+import com.bakdata.conquery.sql.model.form.ResolvedFormQuery;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.translate.form.FormCteStep;
 import com.bakdata.conquery.sql.translate.form.StratificationTableFactory;
@@ -27,9 +29,6 @@ import com.bakdata.conquery.sql.translate.query.QueryStepComposer;
 import com.bakdata.conquery.sql.translate.query.QueryStepJoiner;
 import com.bakdata.conquery.sql.translate.query.ResolvedQueryStepTranslator;
 import com.bakdata.conquery.sql.translate.rendering.QueryStepRenderer;
-import com.bakdata.conquery.sql.model.form.FormResolution;
-import com.bakdata.conquery.sql.model.form.ResolvedFormMode;
-import com.bakdata.conquery.sql.model.form.ResolvedFormQuery;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;

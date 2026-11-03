@@ -13,7 +13,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
-import com.bakdata.conquery.models.datasets.ColumnType;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
+import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
+import com.bakdata.conquery.sql.model.schema.DateColumns;
+import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
+import com.bakdata.conquery.sql.model.schema.SqlTable;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.translate.ir.QueryStep;
 import com.bakdata.conquery.sql.translate.ir.SqlIdColumns;
@@ -21,10 +25,6 @@ import com.bakdata.conquery.sql.translate.ir.SqlTables;
 import com.bakdata.conquery.sql.translate.naming.SqlNameGenerator;
 import com.bakdata.conquery.sql.translate.query.concept.CommonAggregationSelect;
 import com.bakdata.conquery.sql.translate.query.concept.ConceptCteStep;
-import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
-import com.bakdata.conquery.sql.model.schema.DateColumns;
-import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
-import com.bakdata.conquery.sql.model.schema.SqlTable;
 import org.jooq.Field;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
@@ -33,12 +33,12 @@ import org.junit.jupiter.api.Test;
 class ResolvedAggregationConverterTest {
 
 	private static final SqlTable TABLE = SqlTable.of("events", "analytics", "events");
-	private static final ResolvedColumn VALUE = column("value", ColumnType.STRING);
-	private static final ResolvedColumn PERSON = column("person_id", ColumnType.STRING);
-	private static final ResolvedColumn AMOUNT = column("amount", ColumnType.DECIMAL);
-	private static final ResolvedColumn DISCOUNT = column("discount", ColumnType.DECIMAL);
-	private static final ResolvedColumn START = column("start_date", ColumnType.DATE);
-	private static final ResolvedColumn END = column("end_date", ColumnType.DATE);
+	private static final ResolvedColumn VALUE = column("value", MajorTypeId.STRING);
+	private static final ResolvedColumn PERSON = column("person_id", MajorTypeId.STRING);
+	private static final ResolvedColumn AMOUNT = column("amount", MajorTypeId.DECIMAL);
+	private static final ResolvedColumn DISCOUNT = column("discount", MajorTypeId.DECIMAL);
+	private static final ResolvedColumn START = column("start_date", MajorTypeId.DATE);
+	private static final ResolvedColumn END = column("end_date", MajorTypeId.DATE);
 	private static final SqlTables TABLES = new SqlTables(
 			"events",
 			Map.of(ConceptCteStep.PREPROCESSING, "preprocessing"),
@@ -142,11 +142,11 @@ class ResolvedAggregationConverterTest {
 
 	@Test
 	void shouldPreserveNumericInputTypes() {
-		Map<ColumnType, Class<?>> types = Map.of(
-				ColumnType.INTEGER, Integer.class,
-				ColumnType.REAL, Double.class,
-				ColumnType.DECIMAL, Double.class,
-				ColumnType.MONEY, java.math.BigDecimal.class
+		Map<MajorTypeId, Class<?>> types = Map.of(
+				MajorTypeId.INTEGER, Integer.class,
+				MajorTypeId.REAL, Double.class,
+				MajorTypeId.DECIMAL, Double.class,
+				MajorTypeId.MONEY, java.math.BigDecimal.class
 		);
 		for (var entry : types.entrySet()) {
 			ResolvedColumn amount = column("amount", entry.getKey());
@@ -213,7 +213,7 @@ class ResolvedAggregationConverterTest {
 	@Test
 	void shouldRequireDialectSupportForPhysicalRangeColumns() {
 		assertThrows(UnsupportedOperationException.class, () -> converter.convert(
-				new BuiltInAggregations.DurationSum(new DateColumns.Single(column("range", ColumnType.DATE_RANGE)), List.of()), CONTEXT
+				new BuiltInAggregations.DurationSum(new DateColumns.Single(column("range", MajorTypeId.DATE_RANGE)), List.of()), CONTEXT
 		));
 	}
 
@@ -221,7 +221,7 @@ class ResolvedAggregationConverterTest {
 		return DSL.using(SQLDialect.POSTGRES).renderInlined(DSL.select(field)).substring("select ".length()).toLowerCase(Locale.ROOT);
 	}
 
-	private static ResolvedColumn column(String name, ColumnType type) {
+	private static ResolvedColumn column(String name, MajorTypeId type) {
 		return new ResolvedColumn("events." + name, TABLE, name, type, true);
 	}
 

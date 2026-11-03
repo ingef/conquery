@@ -9,11 +9,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import com.bakdata.conquery.models.datasets.ColumnType;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.models.query.DateAggregationAction;
-import com.bakdata.conquery.sql.translate.dialect.hana.HanaTranslatorDialect;
-import com.bakdata.conquery.sql.translate.naming.SqlNameGenerator;
-import com.bakdata.conquery.sql.translate.query.ResolvedQueryStepTranslator;
 import com.bakdata.conquery.sql.mapping.ConceptIdMappingSelection;
 import com.bakdata.conquery.sql.mapping.ConceptIdMappingSource;
 import com.bakdata.conquery.sql.mapping.ConceptIdMappingTable;
@@ -33,6 +30,9 @@ import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.model.schema.ResolvedConnector;
 import com.bakdata.conquery.sql.model.schema.ResolvedValidityDate;
 import com.bakdata.conquery.sql.model.schema.SqlTable;
+import com.bakdata.conquery.sql.translate.dialect.hana.HanaTranslatorDialect;
+import com.bakdata.conquery.sql.translate.naming.SqlNameGenerator;
+import com.bakdata.conquery.sql.translate.query.ResolvedQueryStepTranslator;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
@@ -42,7 +42,7 @@ class DefaultSqlTranslatorTest {
 
 	private static final SqlTable ENTITIES = SqlTable.of("entities", "catalog", "entities");
 	private static final ResolvedColumn ENTITY_ID = new ResolvedColumn(
-			"entity-id", ENTITIES, "person_id", ColumnType.STRING, false
+			"entity-id", ENTITIES, "person_id", MajorTypeId.STRING, false
 	);
 
 	@Test
@@ -69,7 +69,7 @@ class DefaultSqlTranslatorTest {
 		ResolvedConnector connector = new ResolvedConnector(
 				"claims",
 				events,
-				new ResolvedColumn("events.entity-id", events, "person_id", ColumnType.STRING, false),
+				new ResolvedColumn("events.entity-id", events, "person_id", MajorTypeId.STRING, false),
 				Optional.empty(),
 				new ResolvedValidityDate.None(),
 				List.of(),
@@ -100,7 +100,7 @@ class DefaultSqlTranslatorTest {
 	void shouldApplyConceptSelectionAndResolveConceptIdsInTheConnector() {
 		SqlTable events = SqlTable.of("events", "catalog", "events");
 		ResolvedColumn conceptColumn = new ResolvedColumn(
-				"events.diagnosis", events, "diagnosis", ColumnType.STRING, true
+				"events.diagnosis", events, "diagnosis", MajorTypeId.STRING, true
 		);
 		ConceptIdMappingSource mappingSource = new ConceptIdMappingSource(
 				new ConceptIdMappingTable(
@@ -113,7 +113,7 @@ class DefaultSqlTranslatorTest {
 		ResolvedConnector connector = new ResolvedConnector(
 				"claims",
 				events,
-				new ResolvedColumn("events.entity-id", events, "person_id", ColumnType.STRING, false),
+				new ResolvedColumn("events.entity-id", events, "person_id", MajorTypeId.STRING, false),
 				Optional.empty(),
 				new ResolvedValidityDate.None(),
 				List.of(),
@@ -149,11 +149,11 @@ class DefaultSqlTranslatorTest {
 	void shouldExposeASecondaryIdAsTheFirstResultColumn() {
 		SqlTable events = SqlTable.of("events", "catalog", "events");
 		ResolvedColumn secondaryId = new ResolvedColumn(
-				"events.insurance-id", events, "insurance_id", ColumnType.STRING, false
+				"events.insurance-id", events, "insurance_id", MajorTypeId.STRING, false
 		);
 		ResolvedConnector connector = new ResolvedConnector(
 				"claims", events,
-				new ResolvedColumn("events.entity-id", events, "person_id", ColumnType.STRING, false),
+				new ResolvedColumn("events.entity-id", events, "person_id", MajorTypeId.STRING, false),
 				Optional.of(secondaryId), new ResolvedValidityDate.None(), List.of(), List.of(), List.of()
 		);
 		ResolvedQuery query = new ResolvedQuery(
@@ -222,19 +222,19 @@ class DefaultSqlTranslatorTest {
 		SqlTable prescriptions = SqlTable.of("prescriptions", "catalog", "prescriptions");
 		ResolvedConnector first = new ResolvedConnector(
 				"claims", claims,
-				new ResolvedColumn("claims.entity-id", claims, "person_id", ColumnType.STRING, false),
+				new ResolvedColumn("claims.entity-id", claims, "person_id", MajorTypeId.STRING, false),
 				Optional.empty(),
 				new ResolvedValidityDate.Point(new ResolvedColumn(
-						"claims.date", claims, "event_date", ColumnType.DATE, true
+						"claims.date", claims, "event_date", MajorTypeId.DATE, true
 				)),
 				List.of(), List.of(), List.of()
 		);
 		ResolvedConnector second = new ResolvedConnector(
 				"prescriptions", prescriptions,
-				new ResolvedColumn("prescriptions.entity-id", prescriptions, "person_id", ColumnType.STRING, false),
+				new ResolvedColumn("prescriptions.entity-id", prescriptions, "person_id", MajorTypeId.STRING, false),
 				Optional.empty(),
 				new ResolvedValidityDate.Point(new ResolvedColumn(
-						"prescriptions.date", prescriptions, "event_date", ColumnType.DATE, true
+						"prescriptions.date", prescriptions, "event_date", MajorTypeId.DATE, true
 				)),
 				List.of(), List.of(), List.of()
 		);
@@ -309,10 +309,10 @@ class DefaultSqlTranslatorTest {
 		return new ResolvedConnector(
 				logicalId,
 				table,
-				new ResolvedColumn(logicalId + ".entity-id", table, "person_id", ColumnType.STRING, false),
+				new ResolvedColumn(logicalId + ".entity-id", table, "person_id", MajorTypeId.STRING, false),
 				Optional.empty(),
 				new ResolvedValidityDate.Point(new ResolvedColumn(
-						logicalId + ".date", table, "event_date", ColumnType.DATE, true
+						logicalId + ".date", table, "event_date", MajorTypeId.DATE, true
 				)),
 				List.of(),
 				List.of(),

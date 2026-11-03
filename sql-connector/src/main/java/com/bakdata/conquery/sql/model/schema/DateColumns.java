@@ -6,7 +6,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
 
-import com.bakdata.conquery.models.datasets.ColumnType;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.sql.validation.AllowedColumnTypes;
 
 /** Resolved physical representation of a date or date range used by an operation. */
@@ -15,7 +15,7 @@ public sealed interface DateColumns permits DateColumns.Single, DateColumns.Pair
 	List<ResolvedColumn> columns();
 
 	record Single(
-			@NotNull @Valid @AllowedColumnTypes({ColumnType.DATE, ColumnType.DATE_RANGE}) ResolvedColumn column
+			@NotNull @Valid @AllowedColumnTypes({MajorTypeId.DATE, MajorTypeId.DATE_RANGE}) ResolvedColumn column
 	) implements DateColumns {
 
 		@Override
@@ -25,8 +25,8 @@ public sealed interface DateColumns permits DateColumns.Single, DateColumns.Pair
 	}
 
 	record Pair(
-			@NotNull @Valid @AllowedColumnTypes(ColumnType.DATE) ResolvedColumn start,
-			@NotNull @Valid @AllowedColumnTypes(ColumnType.DATE) ResolvedColumn end
+			@NotNull @Valid @AllowedColumnTypes(MajorTypeId.DATE) ResolvedColumn start,
+			@NotNull @Valid @AllowedColumnTypes(MajorTypeId.DATE) ResolvedColumn end
 	) implements DateColumns {
 
 		@Override

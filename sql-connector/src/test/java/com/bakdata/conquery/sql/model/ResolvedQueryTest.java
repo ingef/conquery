@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 import jakarta.validation.ConstraintViolationException;
 
-import com.bakdata.conquery.models.datasets.ColumnType;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.models.query.DateAggregationAction;
 import com.bakdata.conquery.sql.model.node.AndNode;
 import com.bakdata.conquery.sql.model.node.ConceptNode;
@@ -31,7 +31,7 @@ class ResolvedQueryTest {
 
 	private static final SqlTable EVENTS = SqlTable.of("dataset.events", "analytics", "events");
 	private static final ResolvedColumn ENTITY_ID = new ResolvedColumn(
-			"dataset.events.entity_id", EVENTS, "entity_id", ColumnType.STRING, false
+			"dataset.events.entity_id", EVENTS, "entity_id", MajorTypeId.STRING, false
 	);
 
 	@Test
@@ -78,7 +78,7 @@ class ResolvedQueryTest {
 	void shouldRejectColumnsFromAnotherConnectorTable() {
 		SqlTable otherTable = SqlTable.of("dataset.other", "analytics", "other");
 		ResolvedColumn otherId = new ResolvedColumn(
-				"dataset.other.entity_id", otherTable, "entity_id", ColumnType.STRING, false
+				"dataset.other.entity_id", otherTable, "entity_id", MajorTypeId.STRING, false
 		);
 
 		ResolvedConnector connector = new ResolvedConnector(
@@ -98,7 +98,7 @@ class ResolvedQueryTest {
 	@Test
 	void shouldRejectNonStringEntityIds() {
 		ResolvedColumn numericId = new ResolvedColumn(
-				"dataset.events.numeric_id", EVENTS, "numeric_id", ColumnType.INTEGER, false
+				"dataset.events.numeric_id", EVENTS, "numeric_id", MajorTypeId.INTEGER, false
 		);
 
 		assertInvalid(new EntitySchema(numericId));
@@ -174,7 +174,7 @@ class ResolvedQueryTest {
 	}
 
 	private static ResolvedConnector connector(String logicalId, SqlTable table) {
-		ResolvedColumn id = new ResolvedColumn(logicalId + ".id", table, "entity_id", ColumnType.STRING, false);
+		ResolvedColumn id = new ResolvedColumn(logicalId + ".id", table, "entity_id", MajorTypeId.STRING, false);
 		return new ResolvedConnector(
 				logicalId, table, id, Optional.empty(), new ResolvedValidityDate.None(),
 				List.of(), List.of(), List.of()
@@ -182,6 +182,6 @@ class ResolvedQueryTest {
 	}
 
 	private static ResolvedColumn dateColumn(String name) {
-		return new ResolvedColumn("dataset.events." + name, EVENTS, name, ColumnType.DATE, true);
+		return new ResolvedColumn("dataset.events." + name, EVENTS, name, MajorTypeId.DATE, true);
 	}
 }

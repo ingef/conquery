@@ -11,7 +11,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
-import com.bakdata.conquery.models.datasets.ColumnType;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.sql.model.internal.ModelNormalization;
 import com.bakdata.conquery.sql.model.schema.DateColumns;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
@@ -56,10 +56,10 @@ public final class BuiltInAggregations {
 	}
 
 	public record Sum(
-			@NotNull @Valid @AllowedColumnTypes({ColumnType.INTEGER, ColumnType.REAL, ColumnType.DECIMAL, ColumnType.MONEY})
+			@NotNull @Valid @AllowedColumnTypes({MajorTypeId.INTEGER, MajorTypeId.REAL, MajorTypeId.DECIMAL, MajorTypeId.MONEY})
 			ResolvedColumn column,
 			@NotNull Optional<@Valid @AllowedColumnTypes({
-					ColumnType.INTEGER, ColumnType.REAL, ColumnType.DECIMAL, ColumnType.MONEY
+					MajorTypeId.INTEGER, MajorTypeId.REAL, MajorTypeId.DECIMAL, MajorTypeId.MONEY
 			}) ResolvedColumn> subtractColumn,
 			@NotNull List<@NotNull @Valid ResolvedColumn> distinctBy
 	) implements ResolvedAggregation {
@@ -86,7 +86,7 @@ public final class BuiltInAggregations {
 	}
 
 	public record Flags(
-			@NotEmpty Map<@NotBlank String, @NotNull @Valid @AllowedColumnTypes(ColumnType.BOOLEAN) ResolvedColumn> columns
+			@NotEmpty Map<@NotBlank String, @NotNull @Valid @AllowedColumnTypes(MajorTypeId.BOOLEAN) ResolvedColumn> columns
 	) implements ResolvedAggregation {
 
 		public Flags {

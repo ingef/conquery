@@ -25,6 +25,7 @@ import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
@@ -154,7 +155,7 @@ public final class ResolvedQueryMapper {
 		org.jooq.Field<String> primary = TablePrimaryColumnUtil.findPrimaryColumn(connector.getResolvedTable(), defaultPrimaryColumn);
 		ResolvedColumn primaryId = new ResolvedColumn(
 				sqlTable.logicalId() + ".primary-id", sqlTable, primary.getName(),
-				com.bakdata.conquery.models.datasets.ColumnType.STRING, false);
+				MajorTypeId.STRING, false);
 		Optional<ResolvedColumn> secondaryId = Optional.empty();
 		if (!query.isExcludeFromSecondaryId() && context.secondaryId().isPresent()
 				&& table.hasSelectedSecondaryId(context.secondaryId().orElseThrow().getId())) {

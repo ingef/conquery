@@ -10,7 +10,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
-import com.bakdata.conquery.models.datasets.ColumnType;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.sql.model.internal.ModelNormalization;
 import com.bakdata.conquery.sql.model.range.NumberRange;
 import com.bakdata.conquery.sql.model.range.SubstringRange;
@@ -24,7 +24,7 @@ public final class BuiltInFilters {
 
 	public record StringValues(
 			@NotBlank String name,
-			@NotNull @Valid @AllowedColumnTypes(ColumnType.STRING) ResolvedColumn column,
+			@NotNull @Valid @AllowedColumnTypes(MajorTypeId.STRING) ResolvedColumn column,
 			@NotEmpty Set<@NotNull String> values,
 			@NotNull Optional<@Valid SubstringRange> substring
 	) implements ResolvedFilter {
@@ -40,7 +40,7 @@ public final class BuiltInFilters {
 
 	public record NumericColumnRange(
 			@NotBlank String name,
-			@NotNull @Valid @AllowedColumnTypes({ColumnType.INTEGER, ColumnType.REAL, ColumnType.DECIMAL, ColumnType.MONEY})
+			@NotNull @Valid @AllowedColumnTypes({MajorTypeId.INTEGER, MajorTypeId.REAL, MajorTypeId.DECIMAL, MajorTypeId.MONEY})
 			ResolvedColumn column,
 			@NotNull @Valid NumberRange range
 	) implements ResolvedFilter {
@@ -56,7 +56,7 @@ public final class BuiltInFilters {
 	/** Filters by distance to an end date that was frozen while resolving the query. */
 	public record DateDistanceRange(
 			@NotBlank String name,
-			@NotNull @Valid @AllowedColumnTypes(ColumnType.DATE) ResolvedColumn column,
+			@NotNull @Valid @AllowedColumnTypes(MajorTypeId.DATE) ResolvedColumn column,
 			@NotNull ChronoUnit unit,
 			@NotNull LocalDate endDate,
 			@NotNull @Valid NumberRange range

@@ -5,7 +5,10 @@ import java.sql.Date;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
-import com.bakdata.conquery.models.datasets.ColumnType;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
+import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
+import com.bakdata.conquery.sql.model.schema.DateColumns;
+import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.translate.ir.QueryStep;
 import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
@@ -14,11 +17,8 @@ import com.bakdata.conquery.sql.translate.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.translate.ir.select.SingleColumnSqlSelect;
 import com.bakdata.conquery.sql.translate.query.concept.CommonAggregationSelect;
 import com.bakdata.conquery.sql.translate.query.concept.ConceptCteStep;
-import com.bakdata.conquery.sql.translate.query.interval.IntervalPackingSelectTranslator;
 import com.bakdata.conquery.sql.translate.query.interval.IntervalPackingSelectPreparation;
-import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
-import com.bakdata.conquery.sql.model.schema.DateColumns;
-import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
+import com.bakdata.conquery.sql.translate.query.interval.IntervalPackingSelectTranslator;
 import lombok.experimental.UtilityClass;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
@@ -84,7 +84,7 @@ final class DateAggregationConverters {
 	}
 
 	static ColumnDateRange dateRange(DateColumns dates, AggregationConversionContext context) {
-		if (dates instanceof DateColumns.Single single && single.column().type() == ColumnType.DATE_RANGE) {
+		if (dates instanceof DateColumns.Single single && single.column().type() == MajorTypeId.DATE_RANGE) {
 			return context.dialect().dateRangeColumn(DSL.field(DSL.name(context.tables().getRootTable(), single.column().physicalName())));
 		}
 		ColumnDateRange inclusive = inclusiveDates(dates, context);
@@ -95,7 +95,7 @@ final class DateAggregationConverters {
 		return switch (dates) {
 			case DateColumns.Pair pair -> ColumnDateRange.of(dateField(pair.start(), context), dateField(pair.end(), context));
 			case DateColumns.Single single -> {
-				if (single.column().type() == ColumnType.DATE_RANGE) {
+				if (single.column().type() == MajorTypeId.DATE_RANGE) {
 					ColumnDateRange range = dateRange(dates, context);
 					yield ColumnDateRange.of(range.getStart(), context.dialect().addDays(range.getEnd(), DSL.inline(-1)));
 				}

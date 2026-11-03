@@ -18,7 +18,16 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import com.bakdata.conquery.models.datasets.ColumnType;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
+import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
+import com.bakdata.conquery.sql.model.operation.BuiltInFilters;
+import com.bakdata.conquery.sql.model.operation.ResolvedAggregation;
+import com.bakdata.conquery.sql.model.operation.ResolvedFilter;
+import com.bakdata.conquery.sql.model.range.NumberRange;
+import com.bakdata.conquery.sql.model.range.SubstringRange;
+import com.bakdata.conquery.sql.model.schema.DateColumns;
+import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
+import com.bakdata.conquery.sql.model.schema.SqlTable;
 import com.bakdata.conquery.sql.translate.conversion.Converter;
 import com.bakdata.conquery.sql.translate.conversion.aggregation.AggregationConversionContext;
 import com.bakdata.conquery.sql.translate.conversion.aggregation.ResolvedAggregationConverter;
@@ -36,15 +45,6 @@ import com.bakdata.conquery.sql.translate.query.concept.CommonAggregationSelect;
 import com.bakdata.conquery.sql.translate.query.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.translate.query.concept.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.translate.query.concept.SqlFilters;
-import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
-import com.bakdata.conquery.sql.model.operation.BuiltInFilters;
-import com.bakdata.conquery.sql.model.operation.ResolvedAggregation;
-import com.bakdata.conquery.sql.model.operation.ResolvedFilter;
-import com.bakdata.conquery.sql.model.range.NumberRange;
-import com.bakdata.conquery.sql.model.range.SubstringRange;
-import com.bakdata.conquery.sql.model.schema.DateColumns;
-import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
-import com.bakdata.conquery.sql.model.schema.SqlTable;
 import org.jooq.Field;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
@@ -54,19 +54,19 @@ class ResolvedFilterConverterTest {
 
 	private static final SqlTable TABLE = SqlTable.of("events", "analytics", "events");
 	private static final ResolvedColumn STRING_COLUMN = new ResolvedColumn(
-			"code", TABLE, "event_code", ColumnType.STRING, true
+			"code", TABLE, "event_code", MajorTypeId.STRING, true
 	);
 	private static final ResolvedColumn NUMBER_COLUMN = new ResolvedColumn(
-			"score", TABLE, "score", ColumnType.DECIMAL, true
+			"score", TABLE, "score", MajorTypeId.DECIMAL, true
 	);
 	private static final ResolvedColumn DATE_COLUMN = new ResolvedColumn(
-			"start", TABLE, "start_date", ColumnType.DATE, true
+			"start", TABLE, "start_date", MajorTypeId.DATE, true
 	);
 	private static final ResolvedColumn FLAG_A = new ResolvedColumn(
-			"flag-a", TABLE, "flag_a", ColumnType.BOOLEAN, false
+			"flag-a", TABLE, "flag_a", MajorTypeId.BOOLEAN, false
 	);
 	private static final ResolvedColumn FLAG_B = new ResolvedColumn(
-			"flag-b", TABLE, "flag_b", ColumnType.BOOLEAN, false
+			"flag-b", TABLE, "flag_b", MajorTypeId.BOOLEAN, false
 	);
 	private final FilterConversionContext CONTEXT = new FilterConversionContext(
 			new TestDialect(),

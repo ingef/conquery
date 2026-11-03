@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
 
-import com.bakdata.conquery.models.datasets.ColumnType;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.sql.model.ResolvedQuery;
 import com.bakdata.conquery.sql.model.ResolvedQuerySource;
 import com.bakdata.conquery.sql.model.node.AllEntitiesNode;
@@ -104,6 +104,6 @@ class ResolvedQuerySourceStepTranslatorTest {
 
 	private static EntitySchema schema() {
 		SqlTable table = SqlTable.of("entities", "catalog", "entities");
-		return new EntitySchema(new ResolvedColumn("entity-id", table, "person_id", ColumnType.STRING, false));
+		return new EntitySchema(new ResolvedColumn("entity-id", table, "person_id", MajorTypeId.STRING, false));
 	}
 }

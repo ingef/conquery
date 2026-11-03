@@ -4,12 +4,12 @@ import java.util.EnumSet;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
-import com.bakdata.conquery.models.datasets.ColumnType;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 
 public final class AllowedColumnTypesValidator implements ConstraintValidator<AllowedColumnTypes, ResolvedColumn> {
 
-	private EnumSet<ColumnType> allowedTypes;
+	private EnumSet<MajorTypeId> allowedTypes;
 
 	@Override
 	public void initialize(AllowedColumnTypes constraint) {

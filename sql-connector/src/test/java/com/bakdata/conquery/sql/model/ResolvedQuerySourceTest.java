@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.bakdata.conquery.models.datasets.ColumnType;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.sql.model.node.AllEntitiesNode;
 import com.bakdata.conquery.sql.model.schema.EntitySchema;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
@@ -51,7 +51,7 @@ class ResolvedQuerySourceTest {
 	private static EntitySchema schema(String tableName) {
 		SqlTable table = SqlTable.of(tableName, tableName);
 		return new EntitySchema(new ResolvedColumn(
-				tableName + ".id", table, "id", ColumnType.STRING, false
+				tableName + ".id", table, "id", MajorTypeId.STRING, false
 		));
 	}
 }

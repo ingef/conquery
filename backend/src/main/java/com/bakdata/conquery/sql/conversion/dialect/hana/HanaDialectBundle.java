@@ -2,15 +2,15 @@ package com.bakdata.conquery.sql.conversion.dialect.hana;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.Dialect;
-import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
-import com.bakdata.conquery.sql.translate.dialect.hana.HanaTranslatorDialect;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.execution.DefaultResultSetProcessor;
 import com.bakdata.conquery.sql.execution.HanaSqlCDateSetParser;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.bakdata.conquery.sql.execution.SqlCDateSetParser;
+import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
+import com.bakdata.conquery.sql.translate.dialect.hana.HanaTranslatorDialect;
 import org.jooq.Field;
 import org.jooq.SQLDialect;
 

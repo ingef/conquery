@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
+import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.translate.ir.CteStep;
 import com.bakdata.conquery.sql.translate.ir.QueryStep;
 import com.bakdata.conquery.sql.translate.ir.Selects;
@@ -13,8 +15,6 @@ import com.bakdata.conquery.sql.translate.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.translate.ir.select.SingleColumnSqlSelect;
 import com.bakdata.conquery.sql.translate.query.concept.CommonAggregationSelect;
 import com.bakdata.conquery.sql.translate.query.concept.ConceptCteStep;
-import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
-import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import lombok.experimental.UtilityClass;
 import org.jooq.Field;
 import org.jooq.impl.DSL;

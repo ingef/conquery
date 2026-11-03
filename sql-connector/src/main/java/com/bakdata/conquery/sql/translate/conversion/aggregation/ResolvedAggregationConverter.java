@@ -3,10 +3,10 @@ package com.bakdata.conquery.sql.translate.conversion.aggregation;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.bakdata.conquery.sql.model.operation.ResolvedAggregation;
 import com.bakdata.conquery.sql.translate.conversion.ConversionDispatcher;
 import com.bakdata.conquery.sql.translate.conversion.Converter;
 import com.bakdata.conquery.sql.translate.query.concept.CommonAggregationSelect;
-import com.bakdata.conquery.sql.model.operation.ResolvedAggregation;
 
 /** Converts resolved aggregation-model values into connector aggregation IR. */
 public final class ResolvedAggregationConverter {

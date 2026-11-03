@@ -11,15 +11,15 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 
-import com.bakdata.conquery.models.datasets.ColumnType;
-import com.bakdata.conquery.sql.translate.conversion.Converter;
-import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
-import com.bakdata.conquery.sql.translate.ir.condition.ConditionWrappingWhereCondition;
-import com.bakdata.conquery.sql.translate.ir.condition.WhereCondition;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.sql.model.operation.BuiltInConditions;
 import com.bakdata.conquery.sql.model.operation.ResolvedCondition;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.model.schema.SqlTable;
+import com.bakdata.conquery.sql.translate.conversion.Converter;
+import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
+import com.bakdata.conquery.sql.translate.ir.condition.ConditionWrappingWhereCondition;
+import com.bakdata.conquery.sql.translate.ir.condition.WhereCondition;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.SQLDialect;
@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test;
 class ResolvedConditionConverterTest {
 
 	private static final SqlTable TABLE = SqlTable.of("events", "analytics", "events");
-	private static final ResolvedColumn COLUMN = new ResolvedColumn("code", TABLE, "event_code", ColumnType.STRING, true);
+	private static final ResolvedColumn COLUMN = new ResolvedColumn("code", TABLE, "event_code", MajorTypeId.STRING, true);
 	private static final TranslatorDialect DIALECT = new TestDialect();
 
 	private final ResolvedConditionConverter converter = new ResolvedConditionConverter();

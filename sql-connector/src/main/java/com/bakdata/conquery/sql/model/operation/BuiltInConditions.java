@@ -8,7 +8,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
-import com.bakdata.conquery.models.datasets.ColumnType;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.sql.model.internal.ModelNormalization;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.validation.AllowedColumnTypes;
@@ -31,7 +31,7 @@ public final class BuiltInConditions {
 	}
 
 	public record StringValues(
-			@NotNull @Valid @AllowedColumnTypes(ColumnType.STRING) ResolvedColumn column,
+			@NotNull @Valid @AllowedColumnTypes(MajorTypeId.STRING) ResolvedColumn column,
 			@NotEmpty Set<@NotNull String> values
 	) implements ResolvedCondition {
 
@@ -44,7 +44,7 @@ public final class BuiltInConditions {
 	}
 
 	public record Prefixes(
-			@NotNull @Valid @AllowedColumnTypes(ColumnType.STRING) ResolvedColumn column,
+			@NotNull @Valid @AllowedColumnTypes(MajorTypeId.STRING) ResolvedColumn column,
 			@NotEmpty List<@NotBlank String> prefixes
 	) implements ResolvedCondition {
 
@@ -59,7 +59,7 @@ public final class BuiltInConditions {
 	 */
 	@Deprecated
 	public record PrefixRange(
-			@NotNull @Valid @AllowedColumnTypes(ColumnType.STRING) ResolvedColumn column,
+			@NotNull @Valid @AllowedColumnTypes(MajorTypeId.STRING) ResolvedColumn column,
 			@NotBlank String minimum,
 			@NotBlank String maximum
 	) implements ResolvedCondition {

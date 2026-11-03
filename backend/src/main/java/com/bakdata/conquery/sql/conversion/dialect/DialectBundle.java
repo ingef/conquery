@@ -2,9 +2,9 @@ package com.bakdata.conquery.sql.conversion.dialect;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.Dialect;
-import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
+import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import org.jooq.Field;
 import org.jooq.SQLDialect;
 

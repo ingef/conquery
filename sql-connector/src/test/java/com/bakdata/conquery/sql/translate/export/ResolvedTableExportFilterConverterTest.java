@@ -6,13 +6,13 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-import com.bakdata.conquery.models.datasets.ColumnType;
-import com.bakdata.conquery.sql.translate.dialect.hana.HanaTranslatorDialect;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
 import com.bakdata.conquery.sql.model.operation.BuiltInFilters;
 import com.bakdata.conquery.sql.model.range.NumberRange;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.model.schema.SqlTable;
+import com.bakdata.conquery.sql.translate.dialect.hana.HanaTranslatorDialect;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Test;
@@ -21,9 +21,9 @@ class ResolvedTableExportFilterConverterTest {
 
 	private static final SqlTable TABLE = SqlTable.of("table", "events");
 	private static final ResolvedColumn VALUE = new ResolvedColumn(
-			"value", TABLE, "value", ColumnType.DECIMAL, true);
+			"value", TABLE, "value", MajorTypeId.DECIMAL, true);
 	private static final ResolvedColumn SUBTRACT = new ResolvedColumn(
-			"subtract", TABLE, "subtract", ColumnType.DECIMAL, true);
+			"subtract", TABLE, "subtract", MajorTypeId.DECIMAL, true);
 	private static final NumberRange RANGE = new NumberRange(
 			Optional.of(BigDecimal.ONE), Optional.of(BigDecimal.TEN));
 	private final ResolvedTableExportFilterConverter converter = new ResolvedTableExportFilterConverter();

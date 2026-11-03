@@ -12,6 +12,8 @@ import com.bakdata.conquery.apiv1.query.TableExportQuery;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
+import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.sql.conversion.model.ModelMapper;
 import com.bakdata.conquery.sql.model.ResolvedQuerySource;
@@ -48,12 +50,12 @@ public final class ResolvedTableExportMapper {
 
 	private ResolvedExportTable table(CQConcept concept, CQTable table, Map<ColumnId, Integer> positions,
 			LocalDate endDate) {
-		com.bakdata.conquery.models.datasets.concepts.Connector connector = table.getConnector().resolve();
+		Connector connector = table.getConnector().resolve();
 		SqlTable sqlTable = ModelMapper.map(connector.getResolvedTable());
 		org.jooq.Field<String> primary = TablePrimaryColumnUtil.findPrimaryColumn(
 				connector.getResolvedTable(), defaultPrimaryColumn);
 		ResolvedColumn primaryId = new ResolvedColumn(sqlTable.logicalId() + ".primary-id", sqlTable,
-				primary.getName(), com.bakdata.conquery.models.datasets.ColumnType.STRING, false);
+				primary.getName(), MajorTypeId.STRING, false);
 		int width = TableExportQuery.calculateWidth(positions) - 1;
 		List<Optional<ResolvedColumn>> output = new ArrayList<>(java.util.Collections.nCopies(width, Optional.empty()));
 		for (Column column : connector.getResolvedTable().getColumns()) {

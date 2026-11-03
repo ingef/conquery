@@ -9,8 +9,8 @@ import java.sql.Date;
 import java.time.LocalDate;
 import java.util.Locale;
 
-import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.model.range.DateRange;
+import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import org.jooq.Field;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
