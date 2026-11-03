@@ -28,7 +28,8 @@ public final class ResolvedQueryStepTranslator {
 			SqlNameGenerator names,
 			Optional<QueryStep> stratificationTable
 	) {
-		TranslatedQuerySteps compiled = translateNode(query.root(), query, dialect, names, false, Optional.empty(), stratificationTable);
+		TranslatedQuerySteps compiled = translateNode(
+				query.root(), query, dialect, names, false, Optional.empty(), stratificationTable);
 		if (!compiled.step().isNegate()) {
 			return compiled;
 		}
@@ -56,14 +57,17 @@ public final class ResolvedQueryStepTranslator {
 	) {
 		return switch (node) {
 			case AllEntitiesNode all -> new TranslatedQuerySteps(
-					AllEntitiesQueryStepTranslator.translate(all, query.entitySchema(), dialect).toBuilder().negate(negate).build(), Optional.empty());
+					AllEntitiesQueryStepTranslator.translate(all, query.entitySchema(), dialect,
+						names.reusableStepName("all_ids")).toBuilder().negate(negate).build(), Optional.empty());
 			case ExternalNode external -> {
-				ExternalQuerySteps steps = ExternalQueryStepTranslator.translate(external, negate, restriction, dialect);
+				ExternalQuerySteps steps = ExternalQueryStepTranslator.translate(
+						external, negate, restriction, dialect, names);
 				yield new TranslatedQuerySteps(steps.entities(), steps.values());
 			}
 			case DateRestrictionNode restricted -> translateNode(
 					restricted.child(), query, dialect, names, negate, Optional.of(restricted.dateRange()), stratificationTable);
-			case NegationNode negation -> translateNode(negation.child(), query, dialect, names, true, restriction, stratificationTable);
+			case NegationNode negation -> translateNode(
+					negation.child(), query, dialect, names, true, restriction, stratificationTable);
 			case AndNode and -> translateLogical(and.children(), JoinMode.INNER, and.dateAction(), and.createExists(),
 					query, dialect, names, negate, restriction, stratificationTable);
 			case OrNode or -> translateLogical(or.children(), JoinMode.FULL_OUTER, or.dateAction(), or.createExists(),
@@ -87,7 +91,8 @@ public final class ResolvedQueryStepTranslator {
 			Optional<QueryStep> stratificationTable
 	) {
 		List<TranslatedQuerySteps> compiled = children.stream()
-				.map(child -> translateNode(child, query, dialect, names, negate, restriction, stratificationTable)).toList();
+				.map(child -> translateNode(
+						child, query, dialect, names, negate, restriction, stratificationTable)).toList();
 		QueryStep step = LogicalQueryStepTranslator.translate(compiled.stream().map(TranslatedQuerySteps::step).toList(),
 				mode, action, createExists, query.entitySchema(), dialect, names);
 		Optional<QueryStep> external = compiled.stream().flatMap(value -> value.externalValues().stream())

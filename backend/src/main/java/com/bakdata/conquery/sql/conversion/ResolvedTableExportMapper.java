@@ -8,14 +8,13 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
-import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.TableExportQuery;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
-import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.conversion.model.EntitySchemaAdapter;
+import com.bakdata.conquery.sql.model.ResolvedQuerySource;
 import com.bakdata.conquery.sql.model.export.ResolvedExportTable;
 import com.bakdata.conquery.sql.model.export.ResolvedTableExportQuery;
 import com.bakdata.conquery.sql.model.range.DateRange;
@@ -28,14 +27,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public final class ResolvedTableExportMapper {
 
-	private final ResolvedQueryMapper queryMapper;
 	private final Clock clock;
 	private final String defaultPrimaryColumn;
 
-	public ResolvedTableExportQuery map(TableExportQuery query, TranslatorDialect dialect) {
-		if (!(query.getQuery() instanceof ConceptQuery prerequisite)) {
-			throw new UnsupportedOperationException("Resolved table exports currently require a concept-query prerequisite");
-		}
+	public ResolvedTableExportQuery map(TableExportQuery query, ResolvedQuerySource prerequisite) {
 		DateRange restriction = new DateRange(Optional.ofNullable(query.getDateRange().getMin()),
 				Optional.ofNullable(query.getDateRange().getMax()));
 		LocalDate endDate = restriction.endInclusive().orElseGet(() -> LocalDate.now(clock));
@@ -44,7 +39,7 @@ public final class ResolvedTableExportMapper {
 						concept, table, query.getPositions(), endDate)))
 				.toList();
 		return new ResolvedTableExportQuery(
-				queryMapper.map(prerequisite, Optional.empty(), prerequisite.getResultInfos()),
+				prerequisite,
 				restriction,
 				tables,
 				ResolvedOperationAdapter.resultColumns(query.getResultInfos())

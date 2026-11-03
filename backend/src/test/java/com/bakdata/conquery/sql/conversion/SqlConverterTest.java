@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.bakdata.conquery.apiv1.query.CQYes;
+import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
@@ -93,6 +94,13 @@ class SqlConverterTest {
 		QueryDescription query = mock(QueryDescription.class);
 
 		assertThrows(UnsupportedOperationException.class, () -> converter.convert(query));
+
+		verifyNoInteractions(adapter, tableExportAdapter, formAdapter);
+	}
+
+	@Test
+	void shouldKeepStandaloneArrayQueriesUnsupported() {
+		assertThrows(UnsupportedOperationException.class, () -> converter.convert(mock(ArrayConceptQuery.class)));
 
 		verifyNoInteractions(adapter, tableExportAdapter, formAdapter);
 	}

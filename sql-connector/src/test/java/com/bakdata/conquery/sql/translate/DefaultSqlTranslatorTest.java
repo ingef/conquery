@@ -184,7 +184,7 @@ class DefaultSqlTranslatorTest {
 		TranslatedQuery compiled = new DefaultSqlTranslator(DSL.using(SQLDialect.DEFAULT))
 				.translate(query, new HanaTranslatorDialect());
 
-		assertTrue(compiled.sql().contains("all_ids_negated"));
+		assertTrue(compiled.sql().contains("all_ids-source-1_negated"));
 	}
 
 	@Test
@@ -209,7 +209,7 @@ class DefaultSqlTranslatorTest {
 		TranslatedQuery compiled = new DefaultSqlTranslator(DSL.using(SQLDialect.DEFAULT))
 				.translate(query, new HanaTranslatorDialect());
 
-		assertTrue(compiled.sql().contains("external_extra"));
+		assertTrue(compiled.sql().contains("external_extra-source-3"));
 		assertEquals(List.of("primary_id", "second_value", "first_value"),
 				compiled.columns().stream().map(TranslatedColumn::sqlAlias).toList());
 		assertEquals(List.of("entity-id", "second", "first"),

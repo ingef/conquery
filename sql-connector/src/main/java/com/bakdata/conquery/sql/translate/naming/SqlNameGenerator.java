@@ -30,6 +30,17 @@ public class SqlNameGenerator {
 	private int conceptCount;
 	private int andCount;
 	private int orCount;
+	private int reusableStepCount;
+
+	/** Creates a unique, length-constrained name for a reusable query-source step. */
+	public String reusableStepName(String baseName) {
+		String suffix = "-source-%d".formatted(++reusableStepCount);
+		int baseLength = Math.max(0, nameMaxLength - suffix.length());
+		String truncatedBase = baseName.length() > baseLength
+				? baseName.substring(baseName.length() - baseLength)
+				: baseName;
+		return truncatedBase + suffix;
+	}
 
 	public String cteStepName(CteStep cteStep, String nodeLabel) {
 		return ensureValidLength(cteStep.cteName(nodeLabel));
@@ -43,11 +54,6 @@ public class SqlNameGenerator {
 		return operationName(filter.name());
 	}
 
-	/** TODO Remove this legacy-backend bridge once backend converters consume resolved operations. */
-	public String legacyOperationName(String operationName) {
-		return operationName(operationName);
-	}
-
 	private String operationName(String operationName) {
 		int operationCount = operationCountMap.merge(operationName, 1, Integer::sum);
 		String normalizedName = lowerAndReplaceWhitespace(operationName);
@@ -56,11 +62,6 @@ public class SqlNameGenerator {
 
 	public String conceptName(ConceptNode concept) {
 		return conceptName(concept.logicalId());
-	}
-
-	/** TODO Remove this legacy-backend bridge once backend converters consume resolved query nodes. */
-	public String legacyConceptName(String conceptName) {
-		return conceptName(conceptName);
 	}
 
 	private String conceptName(String conceptLabel) {

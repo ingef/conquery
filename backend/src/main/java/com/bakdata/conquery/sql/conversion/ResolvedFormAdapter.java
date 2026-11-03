@@ -13,19 +13,19 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public final class ResolvedFormAdapter {
 
-	private final ResolvedFormMapper mapper;
+	private final ResolvedQuerySourceMapper mapper;
 	private final FormSqlTranslator translator;
 
 	public SqlQuery translate(AbsoluteFormQuery query, TranslatorDialect dialect) {
-		return adapt(translator.translate(mapper.map(query), dialect), query);
+		return adapt(translator.translate(mapper.mapForm(query), dialect), query);
 	}
 
 	public SqlQuery translate(RelativeFormQuery query, TranslatorDialect dialect) {
-		return adapt(translator.translate(mapper.map(query), dialect), query);
+		return adapt(translator.translate(mapper.mapForm(query), dialect), query);
 	}
 
 	public SqlQuery translate(EntityDateQuery query, TranslatorDialect dialect) {
-		return adapt(translator.translate(mapper.map(query), dialect), query);
+		return adapt(translator.translate(mapper.mapForm(query), dialect), query);
 	}
 
 	private static SqlQuery adapt(TranslatedQuery compiled, com.bakdata.conquery.apiv1.query.Query query) {

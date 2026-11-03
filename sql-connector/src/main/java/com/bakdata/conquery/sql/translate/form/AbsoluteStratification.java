@@ -13,6 +13,7 @@ import com.bakdata.conquery.sql.translate.ir.SharedAliases;
 import com.bakdata.conquery.sql.translate.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.translate.ir.select.FieldWrapper;
+import com.bakdata.conquery.sql.translate.naming.SqlNameGenerator;
 import com.bakdata.conquery.sql.model.form.FormResolution;
 import com.bakdata.conquery.sql.model.form.ResolutionAndAlignment;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,7 @@ class AbsoluteStratification {
 
 	private final QueryStep baseStep;
 	private final StratificationFunctions stratificationFunctions;
+	private final SqlNameGenerator names;
 
 	public QueryStep createStratificationTable(List<ResolutionAndAlignment> resolutionAndAlignments, boolean negate) {
 
@@ -36,11 +38,12 @@ class AbsoluteStratification {
 		QueryStep indexStartStep = createIndexStartStep();
 
 		List<QueryStep> resolutionTables = resolutionAndAlignments.stream()
-														.map(resolutionAndAlignment -> createResolutionTable(indexStartStep, resolutionAndAlignment))
+												.map(resolutionAndAlignment -> createResolutionTable(
+														indexStartStep, intSeriesStep, resolutionAndAlignment))
 														.toList();
 
 		List<QueryStep> predecessors = List.of(baseStep, intSeriesStep, indexStartStep);
-		return StratificationTableFactory.unionResolutionTables(resolutionTables, predecessors, negate);
+		return StratificationTableFactory.unionResolutionTables(resolutionTables, predecessors, negate, names);
 	}
 
 	private QueryStep createIntSeriesStep() {
@@ -59,7 +62,7 @@ class AbsoluteStratification {
 		Table<Record> seriesTable = stratificationFunctions.generateIntSeries(INDEX_START, INDEX_END).asTable(SharedAliases.INDEX.getAlias());
 
 		return QueryStep.builder()
-						.cteName(FormCteStep.INT_SERIES.getSuffix())
+						.cteName(names.reusableStepName(FormCteStep.INT_SERIES.getSuffix()))
 						.selects(selects)
 						.fromTable(seriesTable)
 						.build();
@@ -98,16 +101,20 @@ class AbsoluteStratification {
 								 .build();
 
 		return QueryStep.builder()
-						.cteName(FormCteStep.INDEX_START.getSuffix())
+						.cteName(names.reusableStepName(FormCteStep.INDEX_START.getSuffix()))
 						.selects(selects)
 						.fromTable(QueryStep.toTableLike(baseStep.getCteName()))
 						.build();
 	}
 
-	private QueryStep createResolutionTable(QueryStep indexStartStep, ResolutionAndAlignment resolutionAndAlignment) {
+	private QueryStep createResolutionTable(
+			QueryStep indexStartStep,
+			QueryStep intSeriesStep,
+			ResolutionAndAlignment resolutionAndAlignment
+	) {
 		return switch (resolutionAndAlignment.resolution()) {
 			case COMPLETE -> createCompleteTable();
-			case YEARS, QUARTERS, DAYS -> createIntervalTable(indexStartStep, resolutionAndAlignment);
+			case YEARS, QUARTERS, DAYS -> createIntervalTable(indexStartStep, intSeriesStep, resolutionAndAlignment);
 		};
 	}
 
@@ -128,13 +135,17 @@ class AbsoluteStratification {
 								 .build();
 
 		return QueryStep.builder()
-						.cteName(FormCteStep.COMPLETE.getSuffix())
+						.cteName(names.reusableStepName(FormCteStep.COMPLETE.getSuffix()))
 						.selects(selects)
 						.fromTable(QueryStep.toTableLike(baseStep.getCteName()))
 						.build();
 	}
 
-	private QueryStep createIntervalTable(QueryStep indexStartStep, ResolutionAndAlignment resolutionAndAlignment) {
+	private QueryStep createIntervalTable(
+			QueryStep indexStartStep,
+			QueryStep intSeriesStep,
+			ResolutionAndAlignment resolutionAndAlignment
+	) {
 
 		QueryStep countsCte = createCountsCte(indexStartStep, resolutionAndAlignment);
 		if (countsCte.getSelects().getStratificationDate().isEmpty()) {
@@ -158,10 +169,11 @@ class AbsoluteStratification {
 		Condition stopOnMaxResolutionWindowCount = stratificationFunctions.stopOnMaxResolutionWindowCount(resolutionAndAlignment);
 
 		return QueryStep.builder()
-						.cteName(FormCteStep.stratificationCte(resolutionAndAlignment.resolution()).getSuffix())
+						.cteName(names.reusableStepName(
+								FormCteStep.stratificationCte(resolutionAndAlignment.resolution()).getSuffix()))
 						.selects(selects)
 						.fromTable(QueryStep.toTableLike(countsCte.getCteName()))
-						.fromTable(QueryStep.toTableLike(FormCteStep.INT_SERIES.getSuffix()))
+						.fromTable(QueryStep.toTableLike(intSeriesStep.getCteName()))
 						.conditions(List.of(stopOnMaxResolutionWindowCount))
 						.predecessor(countsCte)
 						.build();
@@ -184,7 +196,8 @@ class AbsoluteStratification {
 										   .build();
 
 		return QueryStep.builder()
-						.cteName(FormCteStep.countsCte(resolutionAndAlignment.resolution()).getSuffix())
+						.cteName(names.reusableStepName(
+								FormCteStep.countsCte(resolutionAndAlignment.resolution()).getSuffix()))
 						.selects(selects)
 						.fromTable(QueryStep.toTableLike(indexStartStep.getCteName()))
 						.build();

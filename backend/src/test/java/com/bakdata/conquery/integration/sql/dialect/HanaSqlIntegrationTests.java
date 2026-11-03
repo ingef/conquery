@@ -175,11 +175,11 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 	@Getter
 	private static class RemoteHanaContextProvider implements TestContextProvider {
 
-		private final static String PORT = Objects.requireNonNullElse(System.getenv("CONQUERY_SQL_PORT"), "39041");
-		private final static String HOST = System.getenv("CONQUERY_SQL_DB");
+		private final static String PORT = Objects.requireNonNullElse(System.getenv("CONQUERY_SQL_HANA_PORT"), "39041");
+		private final static String HOST = Objects.requireNonNullElse(System.getenv("CONQUERY_SQL_HANA_HOST"), "localhost");
 		private final static String CONNECTION_URL = "jdbc:sap://%s:%s/databaseName=HXE&encrypt=true&validateCertificate=false".formatted(HOST, PORT);
-		private final static String USERNAME = Objects.requireNonNullElse(System.getenv("CONQUERY_SQL_USER"), "SYSTEM");
-		private final static String PASSWORD = System.getenv("CONQUERY_SQL_PASSWORD");
+		private final static String USERNAME = Objects.requireNonNullElse(System.getenv("CONQUERY_SQL_HANA_USER"), "SYSTEM");
+		private final static String PASSWORD = Objects.requireNonNullElse(System.getenv("CONQUERY_SQL_HANA_PASSWORD"), "HXEHana1");
 		private final DatabaseConnectionConfig databaseConfig;
 		private final TestSqlConnectorConfig sqlConnectorConfig;
 

@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
 import com.bakdata.conquery.models.forms.managed.EntityDateQuery;
 import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
 import com.bakdata.conquery.sql.model.ResolvedQuery;
+import com.bakdata.conquery.sql.model.ResolvedQuerySource;
 import com.bakdata.conquery.sql.model.form.FormAlignment;
 import com.bakdata.conquery.sql.model.form.FormCalendarUnit;
 import com.bakdata.conquery.sql.model.form.FormIndexPlacement;
@@ -28,9 +29,9 @@ public final class ResolvedFormMapper {
 
 	private final ResolvedQueryMapper queryMapper;
 
-	public ResolvedFormQuery map(AbsoluteFormQuery form) {
+	public ResolvedFormQuery map(AbsoluteFormQuery form, ResolvedQuerySource prerequisite) {
 		return create(
-				form.getQuery(),
+				prerequisite,
 				form.getFeatures().getChildQueries(),
 				new ResolvedFormMode.Absolute(
 						new DateRange(Optional.ofNullable(form.getDateRange().getMin()),
@@ -40,7 +41,7 @@ public final class ResolvedFormMapper {
 		);
 	}
 
-	public ResolvedFormQuery map(RelativeFormQuery form) {
+	public ResolvedFormQuery map(RelativeFormQuery form, ResolvedQuerySource prerequisite) {
 		RelativeFormSettings settings = new RelativeFormSettings(
 				FormIndexSelector.valueOf(form.getIndexSelector().name()),
 				FormIndexPlacement.valueOf(form.getIndexPlacement().name()),
@@ -49,29 +50,28 @@ public final class ResolvedFormMapper {
 				FormCalendarUnit.valueOf(form.getTimeUnit().name()),
 				resolutions(form.getResolutionsAndAlignmentMap())
 		);
-		return create(form.getQuery(), form.getFeatures().getChildQueries(),
+		return create(prerequisite, form.getFeatures().getChildQueries(),
 				new ResolvedFormMode.Relative(settings), form.getResultInfos());
 	}
 
-	public ResolvedFormQuery map(EntityDateQuery form) {
+	public ResolvedFormQuery map(EntityDateQuery form, ResolvedQuerySource prerequisite) {
 		Optional<DateRange> bounds = Optional.ofNullable(form.getDateRange()).map(ResolvedFormMapper::dateRange);
-		return create(form.getQuery(), form.getFeatures().getChildQueries(),
+		return create(prerequisite, form.getFeatures().getChildQueries(),
 				new ResolvedFormMode.EntityDate(bounds, resolutions(form.getResolutionsAndAlignments())),
 				form.getResultInfos());
 	}
 
 	private ResolvedFormQuery create(
-			com.bakdata.conquery.apiv1.query.Query prerequisite,
+			ResolvedQuerySource prerequisite,
 			List<ConceptQuery> featureQueries,
 			ResolvedFormMode mode,
 			List<com.bakdata.conquery.models.query.resultinfo.ResultInfo> resultInfos
 	) {
-		ResolvedQuery resolvedPrerequisite = queryMapper.map(prerequisite, List.of());
 		List<ResolvedQuery> features = featureQueries.stream()
 				.map(feature -> queryMapper.map(feature, Optional.empty(), feature.getResultInfos()))
 				.toList();
 		return new ResolvedFormQuery(
-				resolvedPrerequisite,
+				prerequisite,
 				features,
 				mode,
 				ResolvedOperationAdapter.resultColumns(resultInfos)

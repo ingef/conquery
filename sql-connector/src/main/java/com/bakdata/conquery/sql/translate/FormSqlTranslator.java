@@ -37,12 +37,12 @@ import org.jooq.Record;
 import org.jooq.Select;
 import org.jooq.TableLike;
 import org.jooq.conf.ParamType;
+import org.jooq.impl.DSL;
 
 /** Compiles fully resolved absolute, relative, and entity-date forms. */
 public final class FormSqlTranslator {
 
 	private final QueryStepRenderer renderer;
-	private final ResolvedQueryStepTranslator translator = new ResolvedQueryStepTranslator();
 
 	public FormSqlTranslator(DSLContext dslContext) {
 		this.renderer = new QueryStepRenderer(dslContext);
@@ -50,10 +50,23 @@ public final class FormSqlTranslator {
 
 	public TranslatedQuery translate(ResolvedFormQuery query, TranslatorDialect dialect) {
 		SqlNameGenerator names = new SqlNameGenerator(dialect.getNameMaxLength());
-		QueryStep prerequisiteRoot = translator.translate(
-				query.prerequisite(), dialect, names, Optional.empty()).step();
-		QueryStep formBase = createFormBase(prerequisiteRoot, query.mode(), dialect);
-		StratificationTableFactory tableFactory = new StratificationTableFactory(formBase, dialect);
+		QueryStep finalStep = translateStep(query, dialect, names, new ResolvedQuerySourceStepTranslator(), false);
+		Select<Record> rendered = renderer.toSelectQuery(finalStep, dialect);
+		return new TranslatedQuery(rendered.getSQL(ParamType.INLINED), TranslatedColumnUtil.create(
+				query.prerequisite().entitySchema(), query.resultColumns(), rendered.getSelect()));
+	}
+
+	static QueryStep translateStep(
+			ResolvedFormQuery query,
+			TranslatorDialect dialect,
+			SqlNameGenerator names,
+			ResolvedQuerySourceStepTranslator sourceTranslator,
+			boolean reusable
+	) {
+		QueryStep prerequisiteRoot = sourceTranslator.translate(query.prerequisite(), dialect, names);
+		ResolvedQueryStepTranslator translator = new ResolvedQueryStepTranslator();
+		QueryStep formBase = createFormBase(prerequisiteRoot, query.mode(), dialect, names);
+		StratificationTableFactory tableFactory = new StratificationTableFactory(formBase, dialect, names);
 		QueryStep stratification = switch (query.mode()) {
 			case ResolvedFormMode.Absolute absolute -> tableFactory.createAbsoluteStratificationTable(absolute.resolutions(), false);
 			case ResolvedFormMode.Relative relative -> tableFactory.createRelativeStratificationTable(relative.settings(), false);
@@ -74,25 +87,29 @@ public final class FormSqlTranslator {
 				dialect,
 				names
 		);
-		QueryStep finalStep = createFinalStep(query.mode(), stratification, joinedFeatures);
-		Select<Record> rendered = renderer.toSelectQuery(finalStep, dialect);
-		return new TranslatedQuery(rendered.getSQL(ParamType.INLINED), TranslatedColumnUtil.create(
-				query.prerequisite().entitySchema(), query.resultColumns(), rendered.getSelect()));
+		return createFinalStep(
+				query.mode(), stratification, joinedFeatures, names.reusableStepName("form_result"), reusable);
 	}
 
-	private static QueryStep createFormBase(QueryStep prerequisite, ResolvedFormMode mode, TranslatorDialect dialect) {
+	private static QueryStep createFormBase(
+			QueryStep prerequisite,
+			ResolvedFormMode mode,
+			TranslatorDialect dialect,
+			SqlNameGenerator names
+	) {
 		return switch (mode) {
-			case ResolvedFormMode.Absolute absolute -> createAbsoluteBase(prerequisite, absolute, dialect);
-			case ResolvedFormMode.Relative ignored -> extractIdsAndValidity(prerequisite, dialect);
+			case ResolvedFormMode.Absolute absolute -> createAbsoluteBase(prerequisite, absolute, dialect, names);
+			case ResolvedFormMode.Relative ignored -> extractIdsAndValidity(prerequisite, dialect, names);
 			case ResolvedFormMode.EntityDate entityDate -> createEntityDateBase(
-					extractIdsAndValidity(prerequisite, dialect), entityDate, dialect);
+					extractIdsAndValidity(prerequisite, dialect, names), entityDate, dialect, names);
 		};
 	}
 
 	private static QueryStep createAbsoluteBase(
 			QueryStep prerequisite,
 			ResolvedFormMode.Absolute form,
-			TranslatorDialect dialect
+			TranslatorDialect dialect,
+			SqlNameGenerator names
 	) {
 		Selects prerequisiteSelects = prerequisite.getQualifiedSelects();
 		ColumnDateRange bounds = dialect.dateRangeLiteral(form.bounds())
@@ -102,7 +119,7 @@ public final class FormSqlTranslator {
 				.stratificationDate(Optional.of(bounds))
 				.build();
 		return QueryStep.builder()
-				.cteName(FormCteStep.EXTRACT_IDS.getSuffix())
+				.cteName(names.reusableStepName(FormCteStep.EXTRACT_IDS.getSuffix()))
 				.selects(selects)
 				.fromTable(QueryStep.toTableLike(prerequisite.getCteName()))
 				.groupBy(selects.getIds().toFields())
@@ -110,20 +127,26 @@ public final class FormSqlTranslator {
 				.build();
 	}
 
-	private static QueryStep extractIdsAndValidity(QueryStep prerequisite, TranslatorDialect dialect) {
+	private static QueryStep extractIdsAndValidity(
+			QueryStep prerequisite,
+			TranslatorDialect dialect,
+			SqlNameGenerator names
+	) {
 		Selects prerequisiteSelects = prerequisite.getQualifiedSelects();
-		Optional<ColumnDateRange> validity = prerequisiteSelects.getValidityDate();
+		String cteName = names.reusableStepName(FormCteStep.EXTRACT_IDS.getSuffix());
+		Optional<ColumnDateRange> sourceValidity = Optional.of(
+				prerequisiteSelects.getValidityDate().orElseGet(dialect::emptyDateRange));
 		Selects selects = Selects.builder()
 				.ids(new SqlIdColumns(prerequisiteSelects.getIds().getPrimaryColumn()))
-				.validityDate(validity)
+				.validityDate(sourceValidity.map(validity -> validity.asValidityDateRange(cteName)))
 				.build();
 		List<Field<?>> groupBy = Stream.concat(
 				Stream.of(prerequisiteSelects.getIds().getPrimaryColumn()),
-				validity.stream().flatMap(range -> range.toFields().stream())
+				sourceValidity.stream().flatMap(range -> range.toFields().stream())
 		).toList();
-		Condition nonEmpty = validity.map(dialect::isNotEmptyDateRange).orElseGet(() -> falseCondition());
+		Condition nonEmpty = sourceValidity.map(dialect::isNotEmptyDateRange).orElseGet(DSL::falseCondition);
 		return QueryStep.builder()
-				.cteName(FormCteStep.EXTRACT_IDS.getSuffix())
+				.cteName(cteName)
 				.selects(selects)
 				.fromTable(QueryStep.toTableLike(prerequisite.getCteName()))
 				.conditions(List.of(nonEmpty))
@@ -135,12 +158,14 @@ public final class FormSqlTranslator {
 	private static QueryStep createEntityDateBase(
 			QueryStep prerequisite,
 			ResolvedFormMode.EntityDate form,
-			TranslatorDialect dialect
+			TranslatorDialect dialect,
+			SqlNameGenerator names
 	) {
 		ColumnDateRange validity = prerequisite.getSelects().getValidityDate()
 				.orElseThrow(() -> new IllegalArgumentException("Entity-date forms require a validity date"));
 		QueryStep unnested = dialect.supportsSingleColumnRanges()
-				? dialect.unnestDateRange(validity, prerequisite, FormCteStep.UNNEST_ENTITY_DATE_CTE.getSuffix())
+				? dialect.unnestDateRange(validity, prerequisite,
+					names.reusableStepName(FormCteStep.UNNEST_ENTITY_DATE_CTE.getSuffix()))
 				: prerequisite;
 		Selects unnestedSelects = unnested.getQualifiedSelects();
 		ColumnDateRange entityDate = unnestedSelects.getValidityDate().orElseThrow();
@@ -157,7 +182,7 @@ public final class FormSqlTranslator {
 				? List.of(prerequisite)
 				: List.of(prerequisite, unnested);
 		return QueryStep.builder()
-				.cteName(FormCteStep.OVERWRITE_BOUNDS.getSuffix())
+				.cteName(names.reusableStepName(FormCteStep.OVERWRITE_BOUNDS.getSuffix()))
 				.selects(selects)
 				.fromTable(QueryStep.toTableLike(unnested.getCteName()))
 				.predecessors(predecessors)
@@ -167,7 +192,9 @@ public final class FormSqlTranslator {
 	private static QueryStep createFinalStep(
 			ResolvedFormMode mode,
 			QueryStep stratification,
-			QueryStep joinedFeatures
+			QueryStep joinedFeatures,
+			String cteName,
+			boolean reusable
 	) {
 		if (stratification.getSelects().getStratificationDate().isEmpty()
 				|| joinedFeatures.getSelects().getStratificationDate().isEmpty()) {
@@ -175,6 +202,22 @@ public final class FormSqlTranslator {
 		}
 		Selects featureSelects = joinedFeatures.getQualifiedSelects();
 		Selects stratificationSelects = stratification.getQualifiedSelects();
+		List<QueryStep> inputs = List.of(stratification, joinedFeatures);
+		TableLike<Record> joined = QueryStepJoiner.join(inputs, JoinMode.LEFT);
+		if (reusable) {
+			Selects selects = Selects.builder()
+					.ids(new SqlIdColumns(stratificationSelects.getIds().getPrimaryColumn()))
+					.validityDate(featureSelects.getValidityDate()
+							.map(validity -> validity.asValidityDateRange(cteName)))
+					.build();
+			return QueryStep.builder()
+					.cteName(cteName)
+					.selects(selects)
+					.fromTable(joined)
+					.selectDistinct(true)
+					.predecessors(inputs)
+					.build();
+		}
 		Selects.SelectsBuilder selects = Selects.builder()
 				.ids(stratificationSelects.getIds().forFinalSelect(FormResolution.COMPLETE.name()))
 				.validityDate(featureSelects.getValidityDate())
@@ -187,10 +230,8 @@ public final class FormSqlTranslator {
 			selects.sqlSelect(new FieldWrapper<>(scope));
 		}
 		selects.sqlSelects(featureSelects.getSqlSelects());
-		List<QueryStep> inputs = List.of(stratification, joinedFeatures);
-		TableLike<Record> joined = QueryStepJoiner.join(inputs, JoinMode.LEFT);
 		return QueryStep.builder()
-				.cteName(null)
+				.cteName(cteName)
 				.projectionMode(ProjectionMode.AGGREGATED)
 				.selects(selects.build())
 				.fromTable(joined)

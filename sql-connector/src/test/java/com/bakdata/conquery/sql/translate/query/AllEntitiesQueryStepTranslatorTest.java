@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.datasets.ColumnType;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.translate.ir.QueryStep;
 import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
+import com.bakdata.conquery.sql.translate.naming.SqlNameGenerator;
 import com.bakdata.conquery.sql.model.node.AllEntitiesNode;
 import com.bakdata.conquery.sql.model.schema.EntitySchema;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
@@ -26,21 +27,23 @@ class AllEntitiesQueryStepTranslatorTest {
 
 	@Test
 	void shouldCompileResolvedEntitySchema() {
+		String cteName = new SqlNameGenerator(128).reusableStepName("all_ids");
 		QueryStep step = AllEntitiesQueryStepTranslator.translate(
 				new AllEntitiesNode(),
 				ENTITY_SCHEMA,
-				new TestDialect()
+				new TestDialect(),
+				cteName
 		);
 
-		assertEquals("all_ids", step.getCteName());
+		assertEquals("all_ids-source-1", step.getCteName());
 		assertEquals(
 				name("catalog", "entities", "person_id"),
 				step.getSelects().getIds().getPrimaryColumn().getQualifiedName()
 		);
 		assertEquals(name("catalog", "entities"), step.getFromTables().getFirst().asTable().getQualifiedName());
 		ColumnDateRange validityDate = step.getSelects().getValidityDate().orElseThrow();
-		assertEquals("all_ids_validity_date_start", validityDate.getStart().getName());
-		assertEquals("all_ids_validity_date_end", validityDate.getEnd().getName());
+		assertEquals("all_ids-source-1_validity_date_start", validityDate.getStart().getName());
+		assertEquals("all_ids-source-1_validity_date_end", validityDate.getEnd().getName());
 	}
 
 	private static final class TestDialect implements TranslatorDialect {

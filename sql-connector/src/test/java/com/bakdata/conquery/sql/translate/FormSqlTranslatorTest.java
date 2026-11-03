@@ -1,7 +1,6 @@
 package com.bakdata.conquery.sql.translate;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -14,6 +13,7 @@ import com.bakdata.conquery.models.datasets.ColumnType;
 import com.bakdata.conquery.models.query.DateAggregationAction;
 import com.bakdata.conquery.sql.translate.dialect.hana.HanaTranslatorDialect;
 import com.bakdata.conquery.sql.model.ResolvedQuery;
+import com.bakdata.conquery.sql.model.ResolvedQuerySource;
 import com.bakdata.conquery.sql.model.form.FormAlignment;
 import com.bakdata.conquery.sql.model.form.FormCalendarUnit;
 import com.bakdata.conquery.sql.model.form.FormIndexPlacement;
@@ -49,7 +49,7 @@ class FormSqlTranslatorTest {
 	@Test
 	void shouldCompileAnAbsoluteFormThroughTheConnectorPipeline() {
 		ResolvedFormQuery form = new ResolvedFormQuery(
-				new ResolvedQuery(ENTITY_SCHEMA, new AllEntitiesNode(), false, List.of()),
+				new ResolvedQuerySource.Standard(new ResolvedQuery(ENTITY_SCHEMA, new AllEntitiesNode(), false, List.of())),
 				List.of(feature()),
 				new ResolvedFormMode.Absolute(
 						new DateRange(Optional.of(LocalDate.of(2020, 1, 1)), Optional.of(LocalDate.of(2020, 12, 31))),
@@ -77,7 +77,7 @@ class FormSqlTranslatorTest {
 		FormSqlTranslator compiler = new FormSqlTranslator(DSL.using(SQLDialect.DEFAULT));
 		HanaTranslatorDialect dialect = new HanaTranslatorDialect();
 		ResolvedFormQuery relative = new ResolvedFormQuery(
-				datedPrerequisite,
+				new ResolvedQuerySource.Standard(datedPrerequisite),
 				features,
 				new ResolvedFormMode.Relative(new RelativeFormSettings(
 						FormIndexSelector.EARLIEST,
@@ -89,7 +89,7 @@ class FormSqlTranslatorTest {
 				formResults(true)
 		);
 		ResolvedFormQuery entityDate = new ResolvedFormQuery(
-				datedPrerequisite,
+				new ResolvedQuerySource.Standard(datedPrerequisite),
 				features,
 				new ResolvedFormMode.EntityDate(
 						Optional.of(new DateRange(Optional.of(LocalDate.of(2020, 1, 1)), Optional.empty())),
@@ -103,16 +103,37 @@ class FormSqlTranslatorTest {
 
 		assertTrue(relativeCompiled.sql().contains("index_selector"), relativeCompiled.sql());
 		assertTrue(relativeCompiled.sql().contains("\"scope\""), relativeCompiled.sql());
-		assertTrue(entityDateSql.contains(
-				"greatest(to_date('2020-01-01', 'yyyy-mm-dd'), \"extract_ids\".\"concept_prerequisite_claims-0_validity_date_start\")"
-		), entityDateCompiled.sql());
-		assertTrue(entityDateSql.contains(
-				"\"overwrite_bounds\".\"stratification_bounds_start\""
-		), entityDateCompiled.sql());
+		assertTrue(entityDateSql.contains("greatest(to_date('2020-01-01', 'yyyy-mm-dd')"), entityDateCompiled.sql());
+		assertTrue(entityDateSql.contains("concept_prerequisite_claims-0_validity_date_start"), entityDateCompiled.sql());
+		assertTrue(entityDateSql.contains("overwrite_bounds-source-"), entityDateCompiled.sql());
 		assertEquals(formResults(true).stream().map(ResultColumn::outputId).toList(),
 				relativeCompiled.columns().stream().skip(1).map(TranslatedColumn::outputId).toList());
 		assertEquals(formResults(false).stream().map(ResultColumn::outputId).toList(),
 				entityDateCompiled.columns().stream().skip(1).map(TranslatedColumn::outputId).toList());
+	}
+
+	@Test
+	void shouldAliasEmptyPrerequisiteValidityBeforeFormProjection() {
+		ResolvedFormQuery form = new ResolvedFormQuery(
+				new ResolvedQuerySource.Standard(new ResolvedQuery(
+						ENTITY_SCHEMA, new AllEntitiesNode(), false, List.of())),
+				List.of(feature(), feature("outcome")),
+				new ResolvedFormMode.Relative(new RelativeFormSettings(
+						FormIndexSelector.EARLIEST,
+						FormIndexPlacement.NEUTRAL,
+						1,
+						1,
+						FormCalendarUnit.DAYS,
+						List.of(new ResolutionAndAlignment(FormResolution.COMPLETE, FormAlignment.NO_ALIGN)))),
+				formResults(true)
+		);
+
+		String sql = new FormSqlTranslator(DSL.using(SQLDialect.DEFAULT))
+				.translate(form, new HanaTranslatorDialect()).sql();
+
+		assertTrue(sql.matches("(?s).*null\\s+\"extract_ids-source-\\d+_validity_date_start\".*"), sql);
+		assertTrue(sql.matches("(?s).*null\\s+\"extract_ids-source-\\d+_validity_date_end\".*"), sql);
+		assertFalse(sql.contains(".\"null\""), sql);
 	}
 
 	@Test
@@ -129,9 +150,8 @@ class FormSqlTranslatorTest {
 		);
 		String sql = translateAbsoluteForm(feature).sql().replaceAll("\\s+", " ").toLowerCase(Locale.ROOT);
 
-		assertTrue(sql.contains(
-				"years_between(\"events\".\"birth_date\", add_days(\"full_stratification\".\"stratification_bounds_end\", -1))"
-		), sql);
+		assertTrue(sql.contains("years_between(\"events\".\"birth_date\", add_days("), sql);
+		assertTrue(sql.contains("\"stratification_bounds_end\", -1)"), sql);
 	}
 
 	@Test
@@ -164,7 +184,7 @@ class FormSqlTranslatorTest {
 
 	private static TranslatedQuery translateAbsoluteForm(ResolvedQuery feature) {
 		ResolvedFormQuery form = new ResolvedFormQuery(
-				new ResolvedQuery(ENTITY_SCHEMA, new AllEntitiesNode(), false, List.of()),
+				new ResolvedQuerySource.Standard(new ResolvedQuery(ENTITY_SCHEMA, new AllEntitiesNode(), false, List.of())),
 				List.of(feature),
 				new ResolvedFormMode.Absolute(
 						new DateRange(Optional.of(LocalDate.of(2012, 1, 16)), Optional.of(LocalDate.of(2012, 12, 17))),

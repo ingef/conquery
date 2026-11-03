@@ -18,6 +18,7 @@ import com.bakdata.conquery.sql.translate.ir.SharedAliases;
 import com.bakdata.conquery.sql.translate.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.translate.ir.select.FieldWrapper;
+import com.bakdata.conquery.sql.translate.naming.SqlNameGenerator;
 import com.bakdata.conquery.sql.model.form.FormCalendarUnit;
 import com.bakdata.conquery.sql.model.form.FormResolution;
 import com.bakdata.conquery.sql.model.form.RelativeFormSettings;
@@ -34,6 +35,7 @@ class RelativeStratification {
 	private final QueryStep baseStep;
 	private final StratificationFunctions stratificationFunctions;
 	private final TranslatorDialect dialect;
+	private final SqlNameGenerator names;
 
 	public QueryStep createRelativeStratificationTable(RelativeFormSettings form, boolean negate) {
 
@@ -44,7 +46,7 @@ class RelativeStratification {
 		if (baseStep.getSelects().getValidityDate().isEmpty()) {
 			throw new IllegalArgumentException("Base step must contain a validity date");
 		}
-		String unnestCteName = FormCteStep.UNNEST_DATES.getSuffix();
+		String unnestCteName = names.reusableStepName(FormCteStep.UNNEST_DATES.getSuffix());
 		QueryStep withUnnestedValidityDate = dialect.supportsSingleColumnRanges()
 				? dialect.unnestDateRange(baseStep.getSelects().getValidityDate().get(), baseStep, unnestCteName)
 				: baseStep;
@@ -65,7 +67,7 @@ class RelativeStratification {
 		}
 		predecessors.addAll(List.of(indexSelectorStep, indexStartStep, totalBoundsStep));
 
-		return StratificationTableFactory.unionResolutionTables(tables, predecessors, negate);
+		return StratificationTableFactory.unionResolutionTables(tables, predecessors, negate, names);
 	}
 
 	/**
@@ -85,7 +87,7 @@ class RelativeStratification {
 								 .build();
 
 		return QueryStep.builder()
-						.cteName(FormCteStep.INDEX_SELECTOR.getSuffix())
+						.cteName(names.reusableStepName(FormCteStep.INDEX_SELECTOR.getSuffix()))
 						.selects(selects)
 						.fromTable(QueryStep.toTableLike(prerequisite.getCteName()))
 						.groupBy(predecessorSelects.getIds().toFields())
@@ -109,7 +111,7 @@ class RelativeStratification {
 										   .build();
 
 		return QueryStep.builder()
-						.cteName(FormCteStep.INDEX_START.getSuffix())
+						.cteName(names.reusableStepName(FormCteStep.INDEX_START.getSuffix()))
 						.selects(selects)
 						.fromTable(QueryStep.toTableLike(indexSelectorStep.getCteName()))
 						.build();
@@ -135,7 +137,7 @@ class RelativeStratification {
 										.build();
 
 		return QueryStep.builder()
-						.cteName(FormCteStep.TOTAL_BOUNDS.getSuffix())
+						.cteName(names.reusableStepName(FormCteStep.TOTAL_BOUNDS.getSuffix()))
 						.selects(selects)
 						.fromTable(QueryStep.toTableLike(indexStartStep.getCteName()))
 						.build();
@@ -159,7 +161,7 @@ class RelativeStratification {
 
 		return QueryStep.createUnionAllStep(
 				Stream.concat(Stream.ofNullable(outcomeTable), Stream.ofNullable(featureTable)).toList(),
-				FormCteStep.COMPLETE.getSuffix(),
+				names.reusableStepName(FormCteStep.COMPLETE.getSuffix()),
 				Collections.emptyList(),
 				negate
 		);
@@ -192,7 +194,7 @@ class RelativeStratification {
 
 		return QueryStep.createUnionAllStep(
 				List.of(timeBeforeStep, timeAfterStep),
-				FormCteStep.stratificationCte(resolution).getSuffix(),
+				names.reusableStepName(FormCteStep.stratificationCte(resolution).getSuffix()),
 				Collections.emptyList(),
 				negate
 		);

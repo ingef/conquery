@@ -14,6 +14,7 @@ import java.util.Optional;
 
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.translate.ir.QueryStep;
+import com.bakdata.conquery.sql.translate.naming.SqlNameGenerator;
 import com.bakdata.conquery.sql.model.node.ExternalEntity;
 import com.bakdata.conquery.sql.model.node.ExternalNode;
 import com.bakdata.conquery.sql.model.range.DateRange;
@@ -40,9 +41,10 @@ class ExternalQueryStepTranslatorTest {
 				List.of()
 		);
 
-		ExternalQuerySteps compiled = ExternalQueryStepTranslator.translate(node, true, Optional.empty(), DIALECT);
+		ExternalQuerySteps compiled = ExternalQueryStepTranslator.translate(
+				node, true, Optional.empty(), DIALECT, new SqlNameGenerator(DIALECT.getNameMaxLength()));
 
-		assertEquals("external_ids", compiled.entities().getCteName());
+		assertEquals("external_ids-source-1", compiled.entities().getCteName());
 		assertEquals(2, compiled.entities().getUnion().size());
 		assertTrue(compiled.entities().isNegate());
 		assertTrue(compiled.entities().getSelects().getValidityDate().isPresent());
@@ -59,11 +61,12 @@ class ExternalQueryStepTranslatorTest {
 				List.of("group name")
 		);
 
-		QueryStep values = ExternalQueryStepTranslator.translate(node, false, Optional.empty(), DIALECT)
+		QueryStep values = ExternalQueryStepTranslator.translate(
+				node, false, Optional.empty(), DIALECT, new SqlNameGenerator(DIALECT.getNameMaxLength()))
 				.values()
 				.orElseThrow();
 
-		assertEquals("external_extra", values.getCteName());
+		assertEquals("external_extra-source-2", values.getCteName());
 		assertEquals(1, values.getUnion().size());
 		assertEquals(List.of("group_name"), values.getSelects().explicitSelects().stream().map(Field::getName).toList());
 		assertEquals(List.of("group_name"), values.getUnion().getFirst().getSelects().explicitSelects().stream()
@@ -82,11 +85,12 @@ class ExternalQueryStepTranslatorTest {
 				node,
 				false,
 				Optional.of(DateRange.closed(LocalDate.of(2025, 1, 10), LocalDate.of(2025, 1, 20))),
-				DIALECT
+				DIALECT,
+				new SqlNameGenerator(DIALECT.getNameMaxLength())
 		).entities();
 
-		assertEquals("external_ids_date_restriction", restricted.getCteName());
-		assertEquals(List.of("external_ids"), restricted.getPredecessors().stream().map(QueryStep::getCteName).toList());
+		assertEquals("external_ids_date_restriction-source-2", restricted.getCteName());
+		assertEquals(List.of("external_ids-source-1"), restricted.getPredecessors().stream().map(QueryStep::getCteName).toList());
 		assertEquals(1, restricted.getConditions().size());
 		assertFalse(restricted.isNegate());
 	}

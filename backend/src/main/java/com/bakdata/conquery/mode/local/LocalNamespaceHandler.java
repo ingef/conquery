@@ -20,6 +20,7 @@ import com.bakdata.conquery.sql.conversion.ResolvedFormAdapter;
 import com.bakdata.conquery.sql.conversion.ResolvedFormMapper;
 import com.bakdata.conquery.sql.conversion.ResolvedQueryAdapter;
 import com.bakdata.conquery.sql.conversion.ResolvedQueryMapper;
+import com.bakdata.conquery.sql.conversion.ResolvedQuerySourceMapper;
 import com.bakdata.conquery.sql.conversion.ResolvedTableExportAdapter;
 import com.bakdata.conquery.sql.conversion.ResolvedTableExportMapper;
 import com.bakdata.conquery.sql.conversion.SqlConverter;
@@ -62,11 +63,15 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 					connection.getConnection().getPrimaryColumn());
 			ResolvedQueryAdapter resolvedQueryAdapter = new ResolvedQueryAdapter(
 					environment.getValidator(), new DefaultSqlTranslator(dslContext), resolvedQueryMapper);
+			ResolvedQuerySourceMapper sourceMapper = new ResolvedQuerySourceMapper(
+					resolvedQueryMapper,
+					new ResolvedFormMapper(resolvedQueryMapper),
+					new ResolvedTableExportMapper(clock, connection.getConnection().getPrimaryColumn()));
 			ResolvedTableExportAdapter tableExportAdapter = new ResolvedTableExportAdapter(
-					new ResolvedTableExportMapper(resolvedQueryMapper, clock, connection.getConnection().getPrimaryColumn()),
+					sourceMapper,
 					new TableExportSqlTranslator(dslContext));
 			ResolvedFormAdapter formAdapter = new ResolvedFormAdapter(
-					new ResolvedFormMapper(resolvedQueryMapper), new FormSqlTranslator(dslContext));
+					sourceMapper, new FormSqlTranslator(dslContext));
 			SqlConverter sqlConverter = new SqlConverter(
 					resolvedQueryAdapter, tableExportAdapter, formAdapter, dialectBundle.getTranslatorDialect());
 			ExecutionManager executionManager = new SqlExecutionManager(sqlConverter, sqlExecutionService, metaStorage, datasetRegistry, config);

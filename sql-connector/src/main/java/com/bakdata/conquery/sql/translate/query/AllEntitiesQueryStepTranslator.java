@@ -16,22 +16,21 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public final class AllEntitiesQueryStepTranslator {
 
-	private static final String ALL_ENTITIES_CTE = "all_ids";
-
 	public static QueryStep translate(
 			AllEntitiesNode allEntitiesNode,
 			EntitySchema entitySchema,
-			TranslatorDialect translatorDialect
+			TranslatorDialect translatorDialect,
+			String cteName
 	) {
 		Objects.requireNonNull(allEntitiesNode, "allEntitiesNode");
 		Selects selects = Selects.builder()
 				.ids(new SqlIdColumns(SchemaSql.field(entitySchema.primaryId(), String.class)))
 				.validityDate(Optional.of(
-						translatorDialect.emptyDateRange().asValidityDateRange(ALL_ENTITIES_CTE)
+						translatorDialect.emptyDateRange().asValidityDateRange(cteName)
 				))
 				.build();
 		return QueryStep.builder()
-				.cteName(ALL_ENTITIES_CTE)
+				.cteName(cteName)
 				.selects(selects)
 				.fromTable(SchemaSql.table(entitySchema.table()))
 				.build();

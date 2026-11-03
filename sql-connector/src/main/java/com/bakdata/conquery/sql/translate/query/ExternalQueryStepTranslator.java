@@ -16,6 +16,7 @@ import com.bakdata.conquery.sql.translate.ir.condition.DateRestrictionCondition;
 import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.translate.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.translate.ir.select.SqlSelect;
+import com.bakdata.conquery.sql.translate.naming.SqlNameGenerator;
 import com.bakdata.conquery.sql.model.node.ExternalEntity;
 import com.bakdata.conquery.sql.model.node.ExternalNode;
 import com.bakdata.conquery.sql.model.range.DateRange;
@@ -34,12 +35,16 @@ public final class ExternalQueryStepTranslator {
 			ExternalNode externalNode,
 			boolean negate,
 			Optional<DateRange> dateRestriction,
-			TranslatorDialect translatorDialect
+			TranslatorDialect translatorDialect,
+			SqlNameGenerator names
 	) {
-		QueryStep entities = createEntityStep(externalNode, negate, dateRestriction, translatorDialect);
+		String entitiesName = names.reusableStepName(EXTERNAL_IDS_CTE_NAME);
+		QueryStep entities = createEntityStep(
+				externalNode, negate, dateRestriction, translatorDialect, entitiesName, names);
 		Optional<QueryStep> values = externalNode.valueColumns().isEmpty()
 				? Optional.empty()
-				: Optional.of(createValuesStep(externalNode, negate, translatorDialect));
+				: Optional.of(createValuesStep(externalNode, negate, translatorDialect,
+					names.reusableStepName(EXTERNAL_VALUES_CTE_NAME)));
 		return new ExternalQuerySteps(entities, values);
 	}
 
@@ -47,14 +52,16 @@ public final class ExternalQueryStepTranslator {
 			ExternalNode externalNode,
 			boolean negate,
 			Optional<DateRange> dateRestriction,
-			TranslatorDialect translatorDialect
+			TranslatorDialect translatorDialect,
+			String entitiesName,
+			SqlNameGenerator names
 	) {
 		List<QueryStep> rows = externalNode.entities().stream()
 				.flatMap(entity -> entityRows(entity, translatorDialect).stream())
 				.toList();
 		QueryStep allEntities = QueryStep.createUnionAllStep(
 				rows,
-				EXTERNAL_IDS_CTE_NAME,
+				entitiesName,
 				List.of(),
 				negate
 		);
@@ -71,7 +78,7 @@ public final class ExternalQueryStepTranslator {
 				).condition()))
 				.selects(allEntities.getQualifiedSelects())
 				.fromTable(table(name(allEntities.getCteName())))
-				.cteName(EXTERNAL_IDS_CTE_NAME + "_date_restriction")
+				.cteName(names.reusableStepName(EXTERNAL_IDS_CTE_NAME + "_date_restriction"))
 				.build();
 	}
 
@@ -97,12 +104,13 @@ public final class ExternalQueryStepTranslator {
 	private static QueryStep createValuesStep(
 			ExternalNode externalNode,
 			boolean negate,
-			TranslatorDialect translatorDialect
+			TranslatorDialect translatorDialect,
+			String cteName
 	) {
 		List<QueryStep> rows = externalNode.entities().stream()
 				.map(entity -> valueRow(entity, externalNode.valueColumns(), translatorDialect))
 				.toList();
-		return QueryStep.createUnionAllStep(rows, EXTERNAL_VALUES_CTE_NAME, List.of(), negate);
+		return QueryStep.createUnionAllStep(rows, cteName, List.of(), negate);
 	}
 
 	private static QueryStep valueRow(

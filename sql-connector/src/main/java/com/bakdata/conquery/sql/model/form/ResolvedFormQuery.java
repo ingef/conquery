@@ -3,10 +3,11 @@ package com.bakdata.conquery.sql.model.form;
 import java.util.List;
 
 import com.bakdata.conquery.sql.model.ResolvedQuery;
+import com.bakdata.conquery.sql.model.ResolvedQuerySource;
 import com.bakdata.conquery.sql.model.result.ResultColumn;
 
 public record ResolvedFormQuery(
-		ResolvedQuery prerequisite,
+		ResolvedQuerySource prerequisite,
 		List<ResolvedQuery> features,
 		ResolvedFormMode mode,
 		List<ResultColumn> resultColumns

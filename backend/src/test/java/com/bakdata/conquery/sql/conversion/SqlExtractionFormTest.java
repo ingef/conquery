@@ -30,6 +30,7 @@ import com.bakdata.conquery.models.forms.util.Alignment;
 import com.bakdata.conquery.models.forms.util.CalendarUnit;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.sql.model.ResolvedQuery;
+import com.bakdata.conquery.sql.model.ResolvedQuerySource;
 import com.bakdata.conquery.sql.model.form.FormAlignment;
 import com.bakdata.conquery.sql.model.form.FormCalendarUnit;
 import com.bakdata.conquery.sql.model.form.FormIndexPlacement;
@@ -46,6 +47,7 @@ class SqlExtractionFormTest {
 	private final Query prerequisite = mock(SecondaryIdQuery.class);
 	private final ConceptQuery feature = mock(ConceptQuery.class);
 	private final ResolvedQuery resolvedPrerequisite = mock(ResolvedQuery.class);
+	private final ResolvedQuerySource prerequisiteSource = new ResolvedQuerySource.Standard(resolvedPrerequisite);
 	private final ResolvedQuery resolvedFeature = mock(ResolvedQuery.class);
 	private final ArrayConceptQuery features = mock(ArrayConceptQuery.class);
 	private final ResolvedFormMapper mapper = new ResolvedFormMapper(queryMapper);
@@ -74,8 +76,8 @@ class SqlExtractionFormTest {
 		when(entityDate.getDateRange()).thenReturn(CDateRange.atLeast(LocalDate.of(2021, 1, 1)));
 		when(entityDate.getResolutionsAndAlignments()).thenReturn(List.of(resolution));
 
-		ResolvedFormQuery absoluteResolved = mapper.map(absolute);
-		ResolvedFormQuery entityDateResolved = mapper.map(entityDate);
+		ResolvedFormQuery absoluteResolved = mapper.map(absolute, prerequisiteSource);
+		ResolvedFormQuery entityDateResolved = mapper.map(entityDate, prerequisiteSource);
 
 		ResolvedFormMode.Absolute absoluteMode = assertInstanceOf(
 				ResolvedFormMode.Absolute.class, absoluteResolved.mode());
@@ -87,7 +89,7 @@ class SqlExtractionFormTest {
 				ResolvedFormMode.EntityDate.class, entityDateResolved.mode());
 		assertEquals(Optional.of(LocalDate.of(2021, 1, 1)), entityMode.bounds().orElseThrow().startInclusive());
 		assertEquals(Optional.empty(), entityMode.bounds().orElseThrow().endInclusive());
-		assertSame(resolvedPrerequisite, absoluteResolved.prerequisite());
+		assertSame(prerequisiteSource, absoluteResolved.prerequisite());
 		assertEquals(List.of(resolvedFeature), absoluteResolved.features());
 	}
 
@@ -105,7 +107,7 @@ class SqlExtractionFormTest {
 				ExportForm.ResolutionAndAlignment.of(Resolution.YEARS, Alignment.QUARTER)));
 
 		ResolvedFormMode.Relative mode = assertInstanceOf(
-				ResolvedFormMode.Relative.class, mapper.map(relative).mode());
+				ResolvedFormMode.Relative.class, mapper.map(relative, prerequisiteSource).mode());
 
 		assertEquals(FormIndexSelector.LATEST, mode.settings().indexSelector());
 		assertEquals(FormIndexPlacement.NEUTRAL, mode.settings().indexPlacement());
@@ -114,7 +116,6 @@ class SqlExtractionFormTest {
 		assertEquals(2, mode.settings().timeCountAfter());
 		assertEquals(FormResolution.YEARS, mode.settings().resolutions().getFirst().resolution());
 		assertEquals(FormAlignment.QUARTER, mode.settings().resolutions().getFirst().alignment());
-		verify(queryMapper).map(same(prerequisite), eq(List.of()));
 		verify(queryMapper).map(same(feature), eq(Optional.empty()), eq(List.of()));
 	}
 }

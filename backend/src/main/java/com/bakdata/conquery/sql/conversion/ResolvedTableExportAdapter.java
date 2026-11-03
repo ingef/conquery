@@ -11,11 +11,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public final class ResolvedTableExportAdapter {
 
-	private final ResolvedTableExportMapper mapper;
+	private final ResolvedQuerySourceMapper mapper;
 	private final TableExportSqlTranslator translator;
 
 	public SqlQuery translate(TableExportQuery query, TranslatorDialect dialect) {
-		TranslatedQuery compiled = translator.translate(mapper.map(query, dialect), dialect);
+		TranslatedQuery compiled = translator.translate(mapper.mapTableExport(query), dialect);
 		return SqlQuery.fromCompiled(compiled, query.getResultInfos());
 	}
 }

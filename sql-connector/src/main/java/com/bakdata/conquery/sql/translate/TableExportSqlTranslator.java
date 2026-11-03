@@ -18,7 +18,6 @@ import com.bakdata.conquery.sql.translate.ir.condition.DateRestrictionCondition;
 import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.translate.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.translate.naming.SqlNameGenerator;
-import com.bakdata.conquery.sql.translate.query.ResolvedQueryStepTranslator;
 import com.bakdata.conquery.sql.translate.rendering.QueryStepRenderer;
 import com.bakdata.conquery.sql.model.export.ResolvedExportTable;
 import com.bakdata.conquery.sql.model.export.ResolvedTableExportQuery;
@@ -36,8 +35,6 @@ import org.jooq.conf.ParamType;
 public final class TableExportSqlTranslator {
 
 	private final QueryStepRenderer renderer;
-	private final ResolvedQueryStepTranslator translator = new ResolvedQueryStepTranslator();
-	private final ResolvedTableExportFilterConverter filterConverter = new ResolvedTableExportFilterConverter();
 
 	public TableExportSqlTranslator(DSLContext dslContext) {
 		this.renderer = new QueryStepRenderer(dslContext);
@@ -45,22 +42,35 @@ public final class TableExportSqlTranslator {
 
 	public TranslatedQuery translate(ResolvedTableExportQuery query, TranslatorDialect dialect) {
 		SqlNameGenerator names = new SqlNameGenerator(dialect.getNameMaxLength());
-		QueryStep prerequisite = extractIds(translator.translate(
-				query.prerequisite(), dialect, names, Optional.empty()).step());
-		List<QueryStep> tables = query.tables().stream()
-				.map(table -> translateTable(table, query, prerequisite, dialect, names)).toList();
-		QueryStep union = QueryStep.createUnionAllStep(tables, null, List.of(prerequisite), false);
+		QueryStep union = translateStep(query, dialect, names, new ResolvedQuerySourceStepTranslator(), false);
 		Select<Record> rendered = renderer.toSelectQuery(union, dialect);
 		return new TranslatedQuery(rendered.getSQL(ParamType.INLINED), TranslatedColumnUtil.create(
 				query.prerequisite().entitySchema(), query.resultColumns(), rendered.getSelect()));
 	}
 
-	private static QueryStep extractIds(QueryStep prerequisite) {
+	static QueryStep translateStep(
+			ResolvedTableExportQuery query,
+			TranslatorDialect dialect,
+			SqlNameGenerator names,
+			ResolvedQuerySourceStepTranslator sourceTranslator,
+			boolean reusable
+	) {
+		QueryStep prerequisite = extractIds(
+				sourceTranslator.translate(query.prerequisite(), dialect, names), names);
+		ResolvedTableExportFilterConverter filterConverter = new ResolvedTableExportFilterConverter();
+		List<QueryStep> tables = query.tables().stream()
+				.map(table -> translateTable(
+						table, query, prerequisite, dialect, names, filterConverter, reusable)).toList();
+		return QueryStep.createUnionAllStep(
+				tables, names.reusableStepName("table_export_result"), List.of(prerequisite), false);
+	}
+
+	private static QueryStep extractIds(QueryStep prerequisite, SqlNameGenerator names) {
 		Selects selects = Selects.builder()
 				.ids(new SqlIdColumns(prerequisite.getQualifiedSelects().getIds().getPrimaryColumn()))
 				.build();
 		return QueryStep.builder()
-				.cteName("extract_ids")
+				.cteName(names.reusableStepName("extract_ids"))
 				.selects(selects)
 				.fromTable(QueryStep.toTableLike(prerequisite.getCteName()))
 				.groupBy(selects.getIds().toFields())
@@ -68,10 +78,12 @@ public final class TableExportSqlTranslator {
 				.build();
 	}
 
-	private QueryStep translateTable(ResolvedExportTable value, ResolvedTableExportQuery query,
-									 QueryStep prerequisite, TranslatorDialect dialect, SqlNameGenerator names) {
+	private static QueryStep translateTable(ResolvedExportTable value, ResolvedTableExportQuery query,
+									 QueryStep prerequisite, TranslatorDialect dialect, SqlNameGenerator names,
+									 ResolvedTableExportFilterConverter filterConverter, boolean reusable) {
 		SqlIdColumns ids = new SqlIdColumns(SchemaSql.field(value.primaryId(), String.class));
 		ColumnDateRange validity = validityDate(value.validityDate(), dialect);
+		String cteName = names.legacyConceptConnectorName(value.conceptName(), value.connectorName());
 		List<FieldWrapper<?>> output = new java.util.ArrayList<>();
 		output.add(new FieldWrapper<>(inline(value.source()).as(SharedAliases.SOURCE.getAlias())));
 		for (int index = 1; index < value.outputColumns().size(); index++) {
@@ -82,18 +94,23 @@ public final class TableExportSqlTranslator {
 					.orElseGet(() -> inline(null, Object.class).as("null-" + outputIndex));
 			output.add(new FieldWrapper<>(field));
 		}
-		Selects selects = Selects.builder().ids(ids).validityDate(Optional.of(validity)).sqlSelects(output).build();
+		Selects selects = reusable
+				? Selects.builder()
+					.ids(ids)
+					.validityDate(Optional.of(validity.asValidityDateRange(cteName)))
+					.build()
+				: Selects.builder().ids(ids).validityDate(Optional.of(validity)).sqlSelects(output).build();
 		Table<Record> source = SchemaSql.table(value.table());
 		Table<Record> prerequisiteTable = org.jooq.impl.DSL.table(org.jooq.impl.DSL.name(prerequisite.getCteName()));
 		List<Condition> joins = new java.util.ArrayList<>(ids.join(prerequisite.getQualifiedSelects().getIds()));
 		joins.add(new DateRestrictionCondition(dialect.dateRangeLiteral(query.dateRestriction()), validity).condition());
 		Table<Record> joined = source.innerJoin(prerequisiteTable).on(joins.toArray(Condition[]::new));
 		return QueryStep.builder()
-				.cteName(names.legacyConceptConnectorName(value.conceptName(), value.connectorName()))
+				.cteName(cteName)
 				.selects(selects)
 				.fromTable(joined)
 				.conditions(value.filters().stream().map(filter -> filterConverter.convert(filter, dialect)).toList())
-				.projectionMode(ProjectionMode.INDIVIDUAL)
+				.projectionMode(reusable ? ProjectionMode.INTERMEDIATE : ProjectionMode.INDIVIDUAL)
 				.build();
 	}
 
