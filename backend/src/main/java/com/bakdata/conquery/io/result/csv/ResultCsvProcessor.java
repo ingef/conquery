@@ -5,38 +5,27 @@ import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
-import java.util.OptionalLong;
-import jakarta.inject.Inject;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
 
 import com.bakdata.conquery.io.result.ResultExportContext;
-import com.bakdata.conquery.io.result.ResultExportPreparation;
 import com.bakdata.conquery.io.result.ResultUtil;
-import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.resources.ResourceConstants;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.io.EofException;
 
 @Slf4j
-@RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class ResultCsvProcessor {
 
-	private final ConqueryConfig config;
-
-	public Response createResult(ManagedExecutionId execId, Subject subject, boolean pretty, Charset charset, OptionalLong limit) {
-		log.info("Downloading results for {}", execId);
-
-		final ResultExportContext context = ResultExportPreparation.prepare(subject, execId, pretty, limit, config);
+	public Response createResult(ResultExportContext context, Charset charset, CSVConfig config) {
+		log.info("Downloading results for {}", context.execution().getId());
 
 		final StreamingOutput out = os -> {
 			try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, charset))) {
-				final CsvRenderer renderer = new CsvRenderer(config.getCsv().createWriter(writer), context.printSettings());
+				final CsvRenderer renderer = new CsvRenderer(config.createWriter(writer), context.printSettings());
 				renderer.toCSV(context.idResultInfos(), context.resultInfos(), context.streamResults(), charset);
 			}
 			catch (EofException e) {

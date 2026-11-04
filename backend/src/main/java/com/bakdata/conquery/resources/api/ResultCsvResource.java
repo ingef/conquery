@@ -19,8 +19,11 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
+import com.bakdata.conquery.io.result.ResultExportContext;
+import com.bakdata.conquery.io.result.ResultExportPreparation;
 import com.bakdata.conquery.io.result.csv.ResultCsvProcessor;
 import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.SingleTableResult;
@@ -37,6 +40,7 @@ public class ResultCsvResource {
 	public static final String GET_RESULT_PATH_METHOD = "getAsCsv";
 
 	private final ResultCsvProcessor processor;
+	private final ConqueryConfig conqueryConfig;
 
 	public static <E extends ManagedExecution & SingleTableResult> URL getDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
 		return uriBuilder.path(ResultCsvResource.class)
@@ -60,6 +64,7 @@ public class ResultCsvResource {
 
 		log.info("Result for {} download on dataset {} by subject {} ({}).", executionId, executionId.getDataset(), subject.getId(), subject.getName());
 
-		return processor.createResult(executionId, subject, pretty, determineCharset(userAgent, queryCharset), limit);
+		final ResultExportContext context = ResultExportPreparation.prepare(subject, executionId, pretty, limit, conqueryConfig);
+		return processor.createResult(context, determineCharset(userAgent, queryCharset), conqueryConfig.getCsv());
 	}
 }
