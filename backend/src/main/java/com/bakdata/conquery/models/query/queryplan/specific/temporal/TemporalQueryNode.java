@@ -54,9 +54,6 @@ public class TemporalQueryNode extends QPNode {
 	 */
 	private final ConceptQueryPlan innerCompareQueryPlan;
 
-	private final TemporalSelector compareSelector;
-
-
 	private final List<ConstantValueAggregator<List<Object>>> aggregationResults;
 	private final ConstantValueAggregator<CDateSet> compareDateAggregator = new ConstantValueAggregator<>(null);
 	private final ConstantValueAggregator<CDateSet> indexDateAggregator = new ConstantValueAggregator<>(null);
@@ -150,7 +147,7 @@ public class TemporalQueryNode extends QPNode {
 			}
 
 			final CDateSet outerDates = outerCompareQueryPlan.getDateAggregator().createAggregationResult();
-			final CDateRange[] comparePeriods = compareSelector.sample(outerDates);
+			final CDateRange[] comparePeriods = TemporalSelector.ANY.sample(outerDates);
 
 			final boolean[] compareContained = new boolean[comparePeriods.length];
 			final CDateSet[] compareDates = new CDateSet[comparePeriods.length];
@@ -171,11 +168,11 @@ public class TemporalQueryNode extends QPNode {
 				}
 			}
 
-			boolean satisfies = compareSelector.satisfies(compareContained);
+			boolean satisfies = TemporalSelector.ANY.satisfies(compareContained);
 
 			log.trace("{}:{} => indexPeriod={}, comparePeriods={}, compareContained={} => {}",
 					  getEntity(),
-					  compareSelector,
+					  TemporalSelector.ANY,
 					  indexPeriod,
 					  comparePeriods,
 					  compareContained,
