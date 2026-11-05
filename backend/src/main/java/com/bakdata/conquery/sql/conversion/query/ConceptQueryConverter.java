@@ -62,7 +62,7 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 		QueryStep preFinalStep = contextAfterConversion.getLastConvertedStep();
 		// negation of a single node results in an anti-join with all ids table
 		if (preFinalStep.isNegate()) {
-			preFinalStep = QueryStepJoiner.antiJoinWithAllIdsTable(preFinalStep, contextAfterConversion, CQNegation.determineDateAction(conceptQuery.getDateAggregationMode()));
+			preFinalStep = QueryStepJoiner.antiJoinWithUniverse(preFinalStep, contextAfterConversion, CQNegation.determineDateAction(conceptQuery.getDateAggregationMode()));
 		}
 
 		Selects preFinalSelects = getPreFinalSelects(preFinalStep, contextAfterConversion);
