@@ -1,8 +1,5 @@
 {
   "type": "QUERY_TEST",
-  "sqlSpec": {
-    "isEnabled": false
-  },
   "label": "Temporal Test AND in compare",
   "expectedCsv": "tests/query/TEMPORAL/AND/expected.csv",
   "query": {
