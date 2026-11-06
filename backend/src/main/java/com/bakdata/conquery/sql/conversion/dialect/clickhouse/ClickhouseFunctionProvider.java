@@ -4,6 +4,7 @@ import static org.jooq.impl.DSL.*;
 
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
@@ -105,6 +106,15 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
     @Override
     public <T> Field<T> anyValue(Field<T> field) {
         return DSL.anyValue(field);
+    }
+
+    @Override
+    public Field<?> listAggregation(Field<?> value, List<Field<?>> orderByFields) {
+        List<Field<?>> tupleFields = new ArrayList<>(orderByFields);
+        tupleFields.add(value);
+        Field<?> tuple = function("tuple", Object.class, tupleFields.toArray(Field[]::new));
+        String orderedValues = "arrayMap(x -> x.%d, arraySort(groupArray({0})))".formatted(tupleFields.size());
+        return field(orderedValues, Object[].class, tuple);
     }
 
     private ColumnDateRange toColumnDateRange(ValidityDate validityDate) {

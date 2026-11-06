@@ -18,6 +18,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.CQDateRestrictionConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQExternalConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQNegationConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQOrConverter;
+import com.bakdata.conquery.sql.conversion.cqelement.CQTemporalConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQYesConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CQConceptConverter;
 import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
@@ -90,6 +91,7 @@ public interface DialectBundle {
 				new CQAndConverter(),
 				new CQOrConverter(),
 				new CQNegationConverter(),
+				new CQTemporalConverter(),
 				new CQYesConverter(),
 				new CQConceptConverter(),
 				new CQExternalConverter(),

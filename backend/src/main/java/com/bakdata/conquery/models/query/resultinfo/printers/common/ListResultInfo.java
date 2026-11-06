@@ -46,6 +46,7 @@ public class ListResultInfo extends ResultInfo {
 
 	@Override
 	public ResultSetProcessor.Reader<?> createReader(ResultSetProcessor resultSetProcessor) {
-		return resultInfo.createReader(resultSetProcessor); //TODO not sure if this is correct
+		ResultType.Primitive elementType = (ResultType.Primitive) resultInfo.getType();
+		return (resultSet, columnIndex) -> resultSetProcessor.getOrderedList(resultSet, columnIndex, elementType);
 	}
 }

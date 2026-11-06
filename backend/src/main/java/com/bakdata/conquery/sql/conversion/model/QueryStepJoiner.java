@@ -11,7 +11,6 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.models.config.ColumnConfig;
-import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
@@ -34,22 +33,22 @@ public class QueryStepJoiner {
 	private static final String NEGATED_CTE_SUFFIX = "_negated";
 
 	/**
-	 * Implements an antijoin against the allIdsTable defined in {@link IdColumnConfig#getTable()}, for negation without siblings.
+	 * Implements an antijoin against the current conversion universe for negation without siblings.
+	 * <p>
+	 * Stratified conversions use their stratification table as universe so that internal partition IDs are preserved. Other conversions use the
+	 * configured all-IDs table.
 	 */
-	public static QueryStep antiJoinWithAllIdsTable(QueryStep queryStep, ConversionContext context, DateAggregationAction dateAggregationAction) {
+	public static QueryStep antiJoinWithUniverse(QueryStep queryStep, ConversionContext context, DateAggregationAction dateAggregationAction) {
 
 		SqlFunctionProvider functionProvider = context.getConversionContext().getDialectBundle().getFunctionProvider();
-
-		Field<String> queryStepPrimaryColumn = queryStep.getQualifiedSelects().getIds().getPrimaryColumn();
-		ColumnConfig idColumnConfig = context.getIdColumns().findPrimaryIdColumn();
-
-		String allIdsTable = context.getIdColumns().getTable();
-
-		Field<String> allIdsPrimaryColumn = field(name(allIdsTable, idColumnConfig.getField()), String.class);
-
-		Table<?> table = table(name(allIdsTable))
-				.leftOuterJoin(table(name(queryStep.getCteName())))
-				.on(allIdsPrimaryColumn.eq(queryStepPrimaryColumn));
+		NegationUniverse universe = negationUniverse(context);
+		Selects querySelects = queryStep.getQualifiedSelects();
+		Field<String> queryStepPrimaryColumn = querySelects.getIds().getPrimaryColumn();
+		Table<Record> joined = functionProvider.leftJoin(
+				universe.table(),
+				table(name(queryStep.getCteName())),
+				joinConditions(universe.selects(), querySelects)
+		);
 
 		String cteName = queryStep.getCteName() + NEGATED_CTE_SUFFIX;
 
@@ -59,17 +58,36 @@ public class QueryStepJoiner {
 		};
 
 		Selects selects = Selects.builder()
-								 .ids(new SqlIdColumns(allIdsPrimaryColumn))
+								 .ids(universe.selects().getIds())
 								 .validityDate(validityDate.map(cdr -> cdr.asValidityDateRange(cteName)))
+								 .stratificationDate(universe.selects().getStratificationDate())
 								 .build();
 
+		List<QueryStep> predecessors = Stream.concat(Stream.of(queryStep), universe.predecessors().stream()).toList();
 		return QueryStep.builder()
 						.cteName(cteName)
 						.selects(selects)
-						.fromTable(table)
+						.fromTable(joined)
 						.conditions(List.of(queryStepPrimaryColumn.isNull()))
-						.predecessor(queryStep)
+						.predecessors(predecessors)
 						.build();
+	}
+
+	private static NegationUniverse negationUniverse(ConversionContext context) {
+		if (context.isWithStratification()) {
+			QueryStep stratificationTable = context.getStratificationTable();
+			return new NegationUniverse(
+					table(name(stratificationTable.getCteName())),
+					stratificationTable.getQualifiedSelects(),
+					List.of(stratificationTable)
+			);
+		}
+
+		ColumnConfig idColumnConfig = context.getIdColumns().findPrimaryIdColumn();
+		String allIdsTable = context.getIdColumns().getTable();
+		Field<String> allIdsPrimaryColumn = field(name(allIdsTable, idColumnConfig.getField()), String.class);
+		Selects selects = Selects.builder().ids(new SqlIdColumns(allIdsPrimaryColumn)).build();
+		return new NegationUniverse(table(name(allIdsTable)), selects, List.of());
 	}
 
 	public static QueryStep joinChildren(
@@ -162,7 +180,7 @@ public class QueryStepJoiner {
 
 		if (withoutNegation == null) {
 			QueryStep negateJoined = doJoin(withNegation, logicalOperation, dateAggregationAction, context);
-			return antiJoinWithAllIdsTable(negateJoined, context, dateAggregationAction);
+			return antiJoinWithUniverse(negateJoined, context, dateAggregationAction);
 		}
 
 		String cteName = context.getNameGenerator().joinedNodeName(logicalOperation) + NEGATED_CTE_SUFFIX;
@@ -175,10 +193,13 @@ public class QueryStepJoiner {
 
 
 		if (logicalOperation == ConqueryJoinType.INNER_JOIN) {
-			Table<?> table = table(name(nonNegateJoined.getCteName()))
-					.leftOuterJoin(table(name(negateJoined.getCteName())))
-					.on(nonNegateJoined.getQualifiedSelects().getIds().getPrimaryColumn()
-									   .eq(negateJoined.getQualifiedSelects().getIds().getPrimaryColumn()));
+			Selects nonNegateSelects = nonNegateJoined.getQualifiedSelects();
+			Selects negateSelects = negateJoined.getQualifiedSelects();
+			Table<Record> table = context.getFunctionProvider().leftJoin(
+					table(name(nonNegateJoined.getCteName())),
+					table(name(negateJoined.getCteName())),
+					joinConditions(nonNegateSelects, negateSelects)
+			);
 
 			return QueryStep.builder()
 							.cteName(cteName)
@@ -193,11 +214,11 @@ public class QueryStepJoiner {
 		SqlDateAggregator dateAggregator = context.getDialectBundle().getDateAggregator();
 		negateJoined = dateAggregator.invertAggregatedIntervals(negateJoined, context);
 
-		// join with all-ids table necessary
-		ColumnConfig columnConfig = context.getIdColumns().findPrimaryIdColumn();
-		Field<Object> allIdsPrimaryColumn = field(name(columnConfig.getField()));
-		Field<String> negatePrimaryColumn = negateJoined.getQualifiedSelects().getIds().getPrimaryColumn();
-		Field<String> nonNegatePrimaryColumn = nonNegateJoined.getQualifiedSelects().getIds().getPrimaryColumn();
+		NegationUniverse universe = negationUniverse(context);
+		Selects negateSelects = negateJoined.getQualifiedSelects();
+		Selects nonNegateSelects = nonNegateJoined.getQualifiedSelects();
+		Field<String> negatePrimaryColumn = negateSelects.getIds().getPrimaryColumn();
+		Field<String> nonNegatePrimaryColumn = nonNegateSelects.getIds().getPrimaryColumn();
 
 		// prepare date aggregation
 		Condition infinityRangeCondition = negatePrimaryColumn.isNull().or(nonNegatePrimaryColumn.isNull());
@@ -210,25 +231,33 @@ public class QueryStepJoiner {
 				dateAggregator.getAggregatedValidityDate(aggregationDates, DateAggregationAction.MERGE)
 							  .as(cteName + SharedAliases.DATES_COLUMN.getAlias());
 
-		Field<String> coalescedId = DSL.coalesce(nonNegatePrimaryColumn, allIdsPrimaryColumn)
-									   .as(SharedAliases.PRIMARY_COLUMN.getAlias());
-
 		selects = selects
-				.ids(new SqlIdColumns(coalescedId))
-				.validityDate(Optional.of(merged));
+				.ids(universe.selects().getIds())
+				.validityDate(Optional.of(merged))
+				.stratificationDate(universe.selects().getStratificationDate());
 
-		Table<?> table = table(name(context.getIdColumns().getTable()))
-				.leftOuterJoin(table(name(negateJoined.getCteName())))
-				.on(allIdsPrimaryColumn.eq(negatePrimaryColumn))
-				.leftOuterJoin(table(name(nonNegateJoined.getCteName())))
-				.on(allIdsPrimaryColumn.eq(nonNegatePrimaryColumn));
+		SqlFunctionProvider functionProvider = context.getFunctionProvider();
+		Table<Record> table = functionProvider.leftJoin(
+				universe.table(),
+				table(name(negateJoined.getCteName())),
+				joinConditions(universe.selects(), negateSelects)
+		);
+		table = functionProvider.leftJoin(
+				table,
+				table(name(nonNegateJoined.getCteName())),
+				joinConditions(universe.selects(), nonNegateSelects)
+		);
+		List<QueryStep> predecessors = Stream.concat(
+				Stream.of(nonNegateJoined, negateJoined),
+				universe.predecessors().stream()
+		).toList();
 
 		return QueryStep.builder()
 						.cteName(cteName)
 						.selects(selects.build())
 						.fromTable(table)
 						.conditions(List.of(negatePrimaryColumn.isNull().or(nonNegatePrimaryColumn.isNotNull())))
-						.predecessors(List.of(nonNegateJoined, negateJoined))
+						.predecessors(predecessors)
 						.build();
 
 	}
@@ -251,14 +280,7 @@ public class QueryStepJoiner {
 			QueryStep leftPartQS = queriesToJoin.get(i);
 			QueryStep rightPartQS = queriesToJoin.get(i + 1);
 
-			SqlIdColumns leftIds = leftPartQS.getQualifiedSelects().getIds();
-			SqlIdColumns rightIds = rightPartQS.getQualifiedSelects().getIds();
-
-			List<Condition> joinIdsCondition = leftIds.join(rightIds);
-
-			Condition joinDateCondition = joinOnStratification(leftPartQS, rightPartQS);
-
-			List<Condition> joinConditions = Stream.concat(joinIdsCondition.stream(), Stream.of(joinDateCondition)).collect(Collectors.toList());
+			List<Condition> joinConditions = joinConditions(leftPartQS.getQualifiedSelects(), rightPartQS.getQualifiedSelects());
 
 			Table<Record> rightPartTable = table(name(rightPartQS.getCteName()));
 			joinedQuery = joinType.apply(joinedQuery, rightPartTable, joinConditions);
@@ -267,17 +289,23 @@ public class QueryStepJoiner {
 		return joinedQuery;
 	}
 
+	private static List<Condition> joinConditions(Selects left, Selects right) {
+		List<Condition> idConditions = left.getIds().join(right.getIds());
+		Condition dateCondition = joinOnStratification(left, right);
+		return Stream.concat(idConditions.stream(), Stream.of(dateCondition)).toList();
+	}
+
 	/**
 	 * join on stratification date if present
 	 */
-	private static Condition joinOnStratification(QueryStep leftPartQS, QueryStep rightPartQS) {
-		if (leftPartQS.getSelects().getStratificationDate().isEmpty() || rightPartQS.getSelects().getStratificationDate().isEmpty()) {
+	private static Condition joinOnStratification(Selects left, Selects right) {
+		if (left.getStratificationDate().isEmpty() || right.getStratificationDate().isEmpty()) {
 			//TODO use unconditionalJoin in the future. Hana does not like noCondition joins
 			return DSL.noCondition();
 		}
 
-		ColumnDateRange leftStratificationDate = leftPartQS.getQualifiedSelects().getStratificationDate().get();
-		ColumnDateRange rightStratificationDate = rightPartQS.getQualifiedSelects().getStratificationDate().get();
+		ColumnDateRange leftStratificationDate = left.getStratificationDate().orElseThrow();
+		ColumnDateRange rightStratificationDate = right.getStratificationDate().orElseThrow();
 
 		return leftStratificationDate.join(rightStratificationDate);
 	}
@@ -343,6 +371,9 @@ public class QueryStepJoiner {
 							.filter(Optional::isPresent)
 							.map(Optional::get)
 							.reduce(ColumnDateRange::coalesce);
+	}
+
+	private record NegationUniverse(Table<?> table, Selects selects, List<QueryStep> predecessors) {
 	}
 
 

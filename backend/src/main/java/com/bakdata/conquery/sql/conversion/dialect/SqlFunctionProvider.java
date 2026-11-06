@@ -231,6 +231,11 @@ public interface SqlFunctionProvider {
 		);
 	}
 
+	/**
+	 * Aggregates one value per temporal partition into the database representation consumed by list result readers.
+	 */
+	Field<?> listAggregation(Field<?> value, List<Field<?>> orderByFields);
+
 	ColumnDateRange allRangeIf(Condition condition);
 
 	/**

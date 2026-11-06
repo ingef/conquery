@@ -141,6 +141,11 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		return ofStartAndEnd(tableName, startColumn, endColumn);
 	}
 
+	@Override
+	public Field<?> listAggregation(Field<?> value, List<Field<?>> orderByFields) {
+		return stringAggregation(cast(value, SQLDataType.VARCHAR), toChar(UNIT_SEPARATOR), orderByFields);
+	}
+
 	private ColumnDateRange ofStartAndEnd(String tableName, Column startColumn, Column endColumn) {
 
 		Field<Date> rangeStart = coalesce(
