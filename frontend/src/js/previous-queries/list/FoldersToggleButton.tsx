@@ -1,6 +1,5 @@
-import { faFolder } from "@fortawesome/free-solid-svg-icons";
+import { FolderIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Icon } from "../../ui-components/Icon";
 import { ToggleButton } from "../../ui-components/ToggleButton";
 
 import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
@@ -22,7 +21,7 @@ const FoldersToggleButton = ({
         onChange={onClick}
         isSelected={active}
       >
-        <Icon icon={faFolder} />
+        <FolderIcon />
       </ToggleButton>
       <Tooltip>{t("previousQueriesFolderButton.tooltip")}</Tooltip>
     </TooltipTrigger>

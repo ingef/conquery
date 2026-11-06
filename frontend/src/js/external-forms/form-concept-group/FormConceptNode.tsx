@@ -1,23 +1,20 @@
-import {
-  faCompressArrowsAlt,
-  faExpandArrowsAlt,
-} from "@fortawesome/free-solid-svg-icons";
+import { Maximize2Icon, Minimize2Icon } from "lucide-react";
 import { useRef } from "react";
 import { useDrag } from "react-dnd";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import { getWidthAndHeight } from "../../app/DndProvider";
 import { canNodeBeDropped } from "../../model/node";
-import { HoverNavigatable } from "../../small-tab-navigation/HoverNavigatable";
 import { getRootNodeLabel } from "../../standard-query-editor/helper";
 import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
 import { Button } from "../../ui-components/Button";
-import { Icon } from "../../ui-components/Icon";
+import { HoverNavigatable } from "../../ui-components/HoverNavigatable";
 import {
   Tooltip,
   TooltipTarget,
   TooltipTrigger,
 } from "../../ui-components/Tooltip";
+import { C2, C3 } from "../../ui-components/Typography";
 
 const node = tv({
   base: [
@@ -28,7 +25,7 @@ const node = tv({
     "rounded",
     "hover:bg-bg-100",
     "transition-[background-color] duration-100",
-    "text-sm",
+    "[word-break:break-word]",
   ],
   variants: {
     active: {
@@ -36,32 +33,6 @@ const node = tv({
       false: "border border-gray-400",
     },
   },
-});
-
-const labelText = tv({
-  base: ["m-0", "[word-break:break-word]", "leading-[1.2]", "text-base"],
-});
-
-const descriptionText = tv({
-  base: [
-    "mt-[3px]",
-    "[word-break:break-word]",
-    "leading-[1.2]",
-    "uppercase",
-    "text-xs",
-  ],
-});
-
-const rootNode = tv({
-  base: [
-    "mb-1",
-    "leading-none",
-    "uppercase",
-    "font-bold",
-    "text-xs",
-    "text-primary-500",
-    "[word-break:break-word]",
-  ],
 });
 
 // generalized node to handle concepts queried in forms
@@ -146,12 +117,14 @@ const FormConceptNode = ({
         <div>
           <TooltipTrigger>
             <TooltipTarget as="div" excludeFromTabOrder>
-              {rootNodeLabel && <p className={rootNode()}>{rootNodeLabel}</p>}
-              <p className={labelText()}>{conceptNode?.label}</p>
+              {rootNodeLabel && (
+                <C3 tone="muted" strong>
+                  {rootNodeLabel}
+                </C3>
+              )}
+              <C2>{conceptNode?.label}</C2>
               {conceptNode && !!conceptNode.description && (
-                <div className={descriptionText()}>
-                  {conceptNode.description}
-                </div>
+                <C3>{conceptNode.description}</C3>
               )}
             </TooltipTarget>
             <Tooltip>{tooltipText}</Tooltip>
@@ -168,9 +141,7 @@ const FormConceptNode = ({
                   expand.onClick();
                 }}
               >
-                <Icon
-                  icon={expand.active ? faCompressArrowsAlt : faExpandArrowsAlt}
-                />
+                {expand.active ? <Minimize2Icon /> : <Maximize2Icon />}
               </Button>
               <Tooltip>{t("externalForms.common.concept.expand")}</Tooltip>
             </TooltipTrigger>

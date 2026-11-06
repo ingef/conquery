@@ -1,13 +1,13 @@
-import { faCaretDown, faDownload } from "@fortawesome/free-solid-svg-icons";
+import { ChevronDownIcon, DownloadIcon } from "lucide-react";
 import { memo, useContext, useEffect, useMemo, useState } from "react";
 import { MenuTrigger, Button as RacButton } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import type { ResultUrlWithLabel } from "../api/types";
 import { AuthTokenContext } from "../authorization/AuthTokenProvider";
-import { Icon } from "../ui-components/Icon";
 import { Menu, MenuItem } from "../ui-components/Menu";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
+import { textStyle } from "../ui-components/Typography";
 import { getUserSettings, storeUserSettings } from "../user/userSettings";
 import { getFileIcon } from "./DownloadButton";
 
@@ -24,12 +24,13 @@ const part = tv({
     "inline-flex items-center",
     "gap-[10px]",
     "h-full",
-    "text-sm font-medium text-gray-800 whitespace-nowrap",
+    textStyle({ size: 2, strong: true, tone: "default" }),
+    "whitespace-nowrap",
     "cursor-pointer",
     "hover:bg-gray-50",
   ],
   variants: {
-    caret: { true: "px-2", false: "px-[14px]" },
+    caret: { true: "px-2", false: "px-3" },
   },
 });
 
@@ -91,9 +92,14 @@ const DownloadResultsDropdownButton = ({
     return getResultUrl(resultUrls, fileChoice);
   }, [resultUrls, fileChoice]);
 
+  const choice = getFileIcon(urlChoice.url);
+  const ChoiceIcon = choice.icon;
+
   const truncChosenLabel = useMemo(() => {
     return truncate(fileChoice.label);
   }, [fileChoice]);
+
+  const showDropdown = tiny || resultUrls.length > 1;
 
   return (
     <div className={frame({ bordered: !tiny })}>
@@ -103,52 +109,53 @@ const DownloadResultsDropdownButton = ({
             href={`${urlChoice.url}?access_token=${encodeURIComponent(authToken)}`}
           >
             <RacButton className={part({ caret: false })}>
-              <Icon
-                icon={getFileIcon(urlChoice.url).icon}
-                style={{ color: getFileIcon(urlChoice.url).color }}
-              />
+              <ChoiceIcon style={{ color: choice.color }} />
               {truncChosenLabel}
             </RacButton>
           </a>
-          <div className={separator()} />
+          {showDropdown && <div className={separator()} />}
         </>
       )}
-      <TooltipTrigger>
-        <MenuTrigger>
-          <RacButton aria-label={tooltip} className={part({ caret: true })}>
-            <Icon icon={tiny ? faDownload : faCaretDown} />
-          </RacButton>
-          <Menu
-            aria-label={t("previousQuery.downloadResults")}
-            onAction={(key) => {
-              const chosen = resultUrls.find(({ url }) => url === key);
-              if (chosen) {
-                setFileChoice({
-                  label: chosen.label,
-                  ending: getEnding(chosen.url),
-                });
-              }
-            }}
-          >
-            {resultUrls.map((resultUrl) => {
-              const { icon, color } = getFileIcon(resultUrl.url);
+      {showDropdown && (
+        <TooltipTrigger>
+          <MenuTrigger>
+            <RacButton aria-label={tooltip} className={part({ caret: true })}>
+              {tiny ? <DownloadIcon /> : <ChevronDownIcon />}
+            </RacButton>
+            <Menu
+              aria-label={t("previousQuery.downloadResults")}
+              onAction={(key) => {
+                const chosen = resultUrls.find(({ url }) => url === key);
+                if (chosen) {
+                  setFileChoice({
+                    label: chosen.label,
+                    ending: getEnding(chosen.url),
+                  });
+                }
+              }}
+            >
+              {resultUrls.map((resultUrl) => {
+                const { icon: FileTypeIcon, color } = getFileIcon(
+                  resultUrl.url,
+                );
 
-              return (
-                <MenuItem
-                  key={resultUrl.url}
-                  id={resultUrl.url}
-                  href={`${resultUrl.url}?access_token=${encodeURIComponent(authToken)}`}
-                  textValue={resultUrl.label}
-                >
-                  <Icon icon={icon} style={{ color }} />
-                  {truncate(resultUrl.label)}
-                </MenuItem>
-              );
-            })}
-          </Menu>
-        </MenuTrigger>
-        <Tooltip>{tooltip}</Tooltip>
-      </TooltipTrigger>
+                return (
+                  <MenuItem
+                    key={resultUrl.url}
+                    id={resultUrl.url}
+                    href={`${resultUrl.url}?access_token=${encodeURIComponent(authToken)}`}
+                    textValue={resultUrl.label}
+                  >
+                    <FileTypeIcon style={{ color }} />
+                    {truncate(resultUrl.label)}
+                  </MenuItem>
+                );
+              })}
+            </Menu>
+          </MenuTrigger>
+          <Tooltip>{tooltip}</Tooltip>
+        </TooltipTrigger>
+      )}
     </div>
   );
 };

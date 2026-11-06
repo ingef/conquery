@@ -132,6 +132,18 @@ public class AdminDatasetResource {
 		processor.addSearchIndex(namespace, searchIndex);
 	}
 
+	@GET
+	@Path("searchIndex/{" + SEARCH_INDEX_ID + "}")
+	public SearchIndex getSearchIndex(@PathParam(SEARCH_INDEX_ID) SearchIndexId id) {
+		return processor.getSearchIndex(namespace, id);
+	}
+
+	@GET
+	@Path("searchIndex")
+	public List<SearchIndexId> listSearchIndexes() {
+		return processor.listSearchIndexes(namespace);
+	}
+
 	@POST
 	@Path("tables")
 	public void addTable(Table table) {
@@ -223,15 +235,18 @@ public class AdminDatasetResource {
 		processor.deleteDataset(dataset);
 	}
 
-	/**
-	 * @param dataset the namespace to postprocess
-	 * @implNote The path mapping is historical named. Renaming the path requires some coordination.
-	 */
 	@POST
-	@Path("/update-matching-stats")
+	@Path("update-matching-stats")
 	@Consumes(MediaType.WILDCARD)
-	public void postprocessNamespace(@PathParam(DATASET) DatasetId dataset) {
-		processor.postprocessNamespace(dataset);
+	public void updateMatchingStats(@PathParam(DATASET) DatasetId dataset) {
+		processor.updateMatchingStats(dataset);
+	}
+
+	@POST
+	@Path("update-filter-search")
+	@Consumes(MediaType.WILDCARD)
+	public void updateFilterSearch(@PathParam(DATASET) DatasetId dataset) {
+		processor.updateFilterSearch(dataset);
 	}
 
 	@POST

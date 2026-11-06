@@ -18,7 +18,6 @@ import {
   queryGroupModalResetAllDates,
   queryGroupModalSetDate,
 } from "../query-group-modal/actions";
-import { filterSuggestionToSelectOption } from "../query-node-editor/suggestionsHelper";
 import { acceptUploadedConceptsOrFilter } from "../query-upload-concept-list-modal/actions";
 import { isMovedObject } from "../ui-components/Dropzone";
 
@@ -39,7 +38,6 @@ import {
   setFilterValue,
   setSelects,
   setTableSelects,
-  switchFilterMode,
   toggleExcludeGroup,
   toggleSecondaryIdExclude,
   toggleTable,
@@ -399,26 +397,6 @@ const setNodeSelects = (
   });
 };
 
-const switchNodeFilterMode = (
-  state: StandardQueryStateT,
-  {
-    andIdx,
-    orIdx,
-    tableIdx,
-    filterIdx,
-    mode,
-  }: ActionType<typeof switchFilterMode>["payload"],
-) => {
-  return setNodeFilterProperties(
-    state,
-    { andIdx, orIdx, tableIdx, filterIdx },
-    {
-      mode,
-      value: null,
-    },
-  );
-};
-
 const resetNodeAllSettings = (
   state: StandardQueryStateT,
   { andIdx, orIdx, config }: ActionType<typeof resetAllSettings>["payload"],
@@ -590,9 +568,7 @@ const onLoadFilterSuggestionsSuccess = (
   state: StandardQueryStateT,
   { data, ...rest }: ActionType<typeof loadFilterSuggestionsSuccess>["payload"],
 ) => {
-  const newOptions: SelectOptionT[] = data.values.map(
-    filterSuggestionToSelectOption,
-  );
+  const newOptions: SelectOptionT[] = data.values;
 
   const options =
     rest.page === 0
@@ -790,8 +766,6 @@ const query = (
       return resetNodeAllSettings(state, action.payload);
     case getType(resetTable):
       return resetNodeTable(state, action.payload);
-    case getType(switchFilterMode):
-      return switchNodeFilterMode(state, action.payload);
     case getType(toggleTimestamps):
       return onToggleTimestamps(state, action.payload);
     case getType(toggleSecondaryIdExclude):

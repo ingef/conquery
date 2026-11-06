@@ -1,14 +1,17 @@
-import {
-  faBan,
-  faCalendar,
-  faEdit,
-  faFolder,
-  faThumbtack,
-} from "@fortawesome/free-solid-svg-icons";
 import type { Meta, StoryObj } from "@storybook/react";
+import {
+  BanIcon,
+  CalendarIcon,
+  FolderIcon,
+  PinIcon,
+  SquarePenIcon,
+} from "lucide-react";
 import { useState } from "react";
+import { DialogTrigger } from "react-aria-components";
 
-import { Icon } from "./Icon";
+import { Button } from "./Button";
+import { CheckboxField } from "./CheckboxField";
+import { Modal, ModalBody, ModalFooter, ModalHeader } from "./Modal";
 import { ToggleButton, type ToggleButtonProps } from "./ToggleButton";
 import { Tooltip, TooltipTrigger } from "./Tooltip";
 
@@ -44,7 +47,7 @@ const Row = ({
   children: React.ReactNode;
 }) => (
   <div className="flex items-center gap-3">
-    <span className="w-40 text-xs text-gray-500">{label}</span>
+    <span className="w-40 text-xs text-gray-600">{label}</span>
     {children}
   </div>
 );
@@ -54,21 +57,21 @@ export const Intents: Story = {
     <div className="flex flex-col gap-3">
       <Row label="tertiary (default), off / on">
         <Toggle>
-          <Icon icon={faFolder} />
+          <FolderIcon />
           folders
         </Toggle>
         <Toggle defaultSelected>
-          <Icon icon={faFolder} />
+          <FolderIcon />
           folders
         </Toggle>
       </Row>
       <Row label="secondary, off / on">
         <Toggle intent="secondary">
-          <Icon icon={faFolder} />
+          <FolderIcon />
           folders
         </Toggle>
         <Toggle intent="secondary" defaultSelected>
-          <Icon icon={faFolder} />
+          <FolderIcon />
           folders
         </Toggle>
       </Row>
@@ -81,13 +84,13 @@ export const Highlights: Story = {
     <div className="flex flex-col gap-3">
       <Row label="primary: a setting is on">
         <Toggle defaultSelected>
-          <Icon icon={faCalendar} />
+          <CalendarIcon />
           date
         </Toggle>
       </Row>
       <Row label="danger: a warning state is on">
         <Toggle highlight="danger" defaultSelected>
-          <Icon icon={faBan} />
+          <BanIcon />
           exclude
         </Toggle>
       </Row>
@@ -101,15 +104,15 @@ export const Sizes: Story = {
       {(["sm", "md", "lg"] as const).map((size) => (
         <Row key={size} label={size}>
           <Toggle size={size} defaultSelected>
-            <Icon icon={faEdit} />
+            <SquarePenIcon />
             edit
           </Toggle>
           <Toggle size={size} intent="secondary" defaultSelected>
-            <Icon icon={faEdit} />
+            <SquarePenIcon />
             edit
           </Toggle>
           <Toggle size={size} defaultSelected aria-label="Pin">
-            <Icon icon={faThumbtack} />
+            <PinIcon />
           </Toggle>
         </Row>
       ))}
@@ -122,10 +125,53 @@ export const IconOnlyWithTooltip: Story = {
     <Row label="square, named by the tooltip">
       <TooltipTrigger>
         <Toggle defaultSelected aria-label="Pin">
-          <Icon icon={faThumbtack} />
+          <PinIcon />
         </Toggle>
         <Tooltip>Pin</Tooltip>
       </TooltipTrigger>
     </Row>
   ),
 };
+
+const RestrictionEditor = () => {
+  const [years, setYears] = useState({ before2020: false, after2024: false });
+  const restricted = years.before2020 || years.after2024;
+  return (
+    <Row label="pressing opens an editor">
+      <DialogTrigger>
+        <ToggleButton isSelected={restricted}>
+          <CalendarIcon />
+          {restricted ? "restricted" : "all years"}
+        </ToggleButton>
+        <Modal size="sm">
+          <ModalHeader>Exclude years</ModalHeader>
+          <ModalBody>
+            <div className="flex flex-col gap-1">
+              <CheckboxField
+                isSelected={years.before2020}
+                onChange={(before2020) => setYears({ ...years, before2020 })}
+              >
+                before 2020
+              </CheckboxField>
+              <CheckboxField
+                isSelected={years.after2024}
+                onChange={(after2024) => setYears({ ...years, after2024 })}
+              >
+                after 2024
+              </CheckboxField>
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <Button slot="close">Done</Button>
+          </ModalFooter>
+        </Modal>
+      </DialogTrigger>
+    </Row>
+  );
+};
+
+/**
+ * A button whose look reflects a state is a ToggleButton even when pressing
+ * opens an editor: the selected look mirrors the state, the modal edits it.
+ */
+export const OpensAnEditor: Story = { render: () => <RestrictionEditor /> };

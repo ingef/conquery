@@ -12,7 +12,7 @@ interface TranslatableString {
 
 export type Forms = Form[];
 
-export type NonFormField = Headline | Description;
+type NonFormField = Headline | Description;
 export type FormField = Field | Tabs | Group;
 export type FormFieldWithValue = Exclude<FormField, Group>;
 
@@ -93,7 +93,7 @@ export interface Headline {
 
 /* ------------------------------ */
 
-export interface Description {
+interface Description {
   type: "DESCRIPTION";
   label: TranslatableString;
 }
@@ -123,10 +123,6 @@ export type StringField = CommonField & {
   type: "STRING";
   placeholder?: TranslatableString;
   defaultValue?: string; // Default: ""
-  style?: {
-    fullWidth?: boolean; // Default: False
-  };
-  pattern?: string; // Regex to validate, using double backslashes, e.g.: "^(?!-)\\\\d*$"
   validations?: StringFieldValidation[];
 };
 
@@ -152,8 +148,7 @@ export type NumberField = CommonField & {
   type: "NUMBER";
   defaultValue?: number; // Default: null
   placeholder?: TranslatableString;
-  pattern?: string; // Regex to validate, using double backslashes, e.g.: "^(?!-)\\\\d*$"
-  step?: string;
+  step?: string; // Default: any decimals; "1" for whole numbers
   min?: number;
   max?: number;
   validations?: NumberFieldValidation[];

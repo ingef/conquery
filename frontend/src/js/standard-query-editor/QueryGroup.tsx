@@ -10,6 +10,7 @@ import {
   TooltipTrigger,
   tooltipDelay,
 } from "../ui-components/Tooltip";
+import { C2 } from "../ui-components/Typography";
 
 import QueryEditorDropzone from "./QueryEditorDropzone";
 import QueryGroupActions from "./QueryGroupActions";
@@ -32,10 +33,6 @@ const groupBox = tv({
       false: "border border-gray-100",
     },
   },
-});
-
-const queryOrConnector = tv({
-  base: ["text-sm", "text-gray-500", "text-center"],
 });
 
 const isDateActive = (dateRange?: DateRangeT) => {
@@ -106,7 +103,7 @@ const QueryGroup = ({
   );
 
   return (
-    <div className="max-w-[250px] text-sm">
+    <div className="max-w-[250px] text-center">
       <TooltipTrigger delay={tooltipDelay.long}>
         <TooltipTarget as="div" excludeFromTabOrder>
           <QueryEditorDropzone
@@ -119,7 +116,7 @@ const QueryGroup = ({
         </TooltipTarget>
         <Tooltip>{t("help.editorDropzoneOr")}</Tooltip>
       </TooltipTrigger>
-      <p className={queryOrConnector()}>{t("common.or")}</p>
+      <C2 tone="muted">{t("common.or")}</C2>
       <div
         className={groupBox({ excluded: !!group.exclude })}
         data-test-id="query-group"
@@ -146,9 +143,9 @@ const QueryGroup = ({
                   onExpandClick={onExpandClick}
                 />
                 {orIdx !== group.elements.length - 1 && (
-                  <p className={queryOrConnector()} key={"last-or"}>
+                  <C2 tone="muted" key={"last-or"}>
                     {t("common.or")}
-                  </p>
+                  </C2>
                 )}
               </div>
             )),

@@ -69,7 +69,7 @@ public interface  Shareable extends Authorized {
 
 			setShared(!patch.getGroups().isEmpty());
 		};
-		
+
 	}
 
 	interface ShareInformation {

@@ -1,4 +1,5 @@
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { DialogTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import { usePostPrefixForSuggestions } from "../../api/api";
@@ -24,9 +25,9 @@ import DropzoneWithFileInput, {
 } from "../../ui-components/DropzoneWithFileInput";
 import { ToggleButton } from "../../ui-components/ToggleButton";
 import { ToggleButtonGroup } from "../../ui-components/ToggleButtonGroup";
+import { C3 } from "../../ui-components/Typography";
 import UploadConceptListModal from "../../upload-concept-list-modal/UploadConceptListModal";
 import type { ConceptListDefaults as ConceptListDefaultsType } from "../config-types";
-import { Description } from "../form-components/Description";
 import DropzoneList from "../form-components/DropzoneList";
 import DynamicInputGroup from "../form-components/DynamicInputGroup";
 import FormQueryNodeEditor from "../form-query-node-editor/FormQueryNodeEditor";
@@ -56,7 +57,6 @@ import {
   setSelects,
   setTableSelects,
   setValueProperties,
-  switchFilterMode,
   toggleTable,
   updateFilterOptionsWithSuggestions,
 } from "./formConceptGroupState";
@@ -92,12 +92,7 @@ interface Props {
 
 // named to avoid shadowing the `row` map param below
 const connectorRow = tv({
-  base: ["flex items-center", "mb-[5px]"],
-});
-
-// Description's own margins are overridden here
-const connectorDescription = tv({
-  base: ["m-0 mr-[5px]", "text-xs"],
+  base: ["flex items-center", "gap-[5px]", "mb-[5px]"],
 });
 
 export interface EditedFormQueryNodePosition {
@@ -282,11 +277,7 @@ const FormConceptGroup = (props: Props) => {
     isValidConcept: props.isValidConcept,
   });
 
-  const {
-    isOpen: isCopyModalOpen,
-    setIsOpen: setIsCopyModalOpen,
-    onAccept: onAcceptCopyModal,
-  } = useCopyModal({
+  const { onAccept: onAcceptCopyModal } = useCopyModal({
     value: props.value,
     onChange: props.onChange,
     newValue,
@@ -310,13 +301,15 @@ const FormConceptGroup = (props: Props) => {
             {props.label}
             {allowExtendedCopying && (
               <span className="ml-[10px]">
-                <Button
-                  intent="secondary"
-                  size="sm"
-                  onPress={() => setIsCopyModalOpen(true)}
-                >
-                  {t("externalForms.common.concept.copyFrom")}
-                </Button>
+                <DialogTrigger>
+                  <Button intent="secondary" size="sm">
+                    {t("externalForms.common.concept.copyFrom")}
+                  </Button>
+                  <FormConceptCopyModal
+                    targetFieldname={props.fieldName}
+                    onAccept={onAcceptCopyModal}
+                  />
+                </DialogTrigger>
               </span>
             )}
           </>
@@ -360,11 +353,8 @@ const FormConceptGroup = (props: Props) => {
               : null}
             {row.concepts.length > 1 && (
               <div className={connectorRow()}>
-                <Description className={connectorDescription()}>
-                  {t("externalForms.common.connectedWith")}:
-                </Description>
+                <C3>{t("externalForms.common.connectedWith")}:</C3>
                 <ToggleButtonGroup
-                  segmented
                   size="sm"
                   selectionMode="single"
                   disallowEmptySelection
@@ -476,13 +466,6 @@ const FormConceptGroup = (props: Props) => {
           </div>
         ))}
       />
-      {isCopyModalOpen && (
-        <FormConceptCopyModal
-          targetFieldname={props.fieldName}
-          onAccept={onAcceptCopyModal}
-          onClose={() => setIsCopyModalOpen(false)}
-        />
-      )}
       {isUploadConceptListModalOpen && (
         <UploadConceptListModal
           onAcceptConceptsOrFilter={onAcceptUploadModalConceptsOrFilter}
@@ -611,19 +594,6 @@ const FormConceptGroup = (props: Props) => {
                 conceptIdx,
                 tableIdx,
                 selectedSelects,
-              ),
-            );
-          }}
-          onSwitchFilterMode={(tableIdx, filterIdx, mode) => {
-            const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
-            props.onChange(
-              switchFilterMode(
-                props.value,
-                valueIdx,
-                conceptIdx,
-                tableIdx,
-                filterIdx,
-                mode,
               ),
             );
           }}

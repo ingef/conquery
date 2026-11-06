@@ -1,6 +1,6 @@
 import { tv } from "tailwind-variants";
-
 import type { ColumnDescription } from "../../api/types";
+import { textStyle } from "../../ui-components/Typography";
 import type { EntityEvent } from "../reducer";
 
 const badge = tv({
@@ -8,9 +8,8 @@ const badge = tv({
     "rounded",
     "bg-primary-500",
     "px-1 py-px",
-    "text-xs",
+    textStyle({ size: 3, strong: true }),
     "text-white",
-    "font-bold",
   ],
 });
 

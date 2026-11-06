@@ -4,10 +4,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 
 import com.bakdata.conquery.io.jackson.Initializing;
 import com.bakdata.conquery.io.jackson.View;

@@ -7,6 +7,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import { exists } from "../../common/helpers/exists";
+import { C2 } from "../../ui-components/Typography";
 import type { Field, Tabs } from "../config-types";
 import { getErrorForField } from "../validators";
 import type { DynamicFormValues } from "./Form";
@@ -34,26 +35,26 @@ import type { DynamicFormValues } from "./Form";
 // };
 
 type Props<T> = T & {
-  children: (props: ControllerRenderProps<DynamicFormValues>) => ReactNode;
+  children: (
+    props: ControllerRenderProps<DynamicFormValues> & { errorMessage?: string },
+  ) => ReactNode;
   control: Control<DynamicFormValues>;
   formField: Field | Tabs;
   defaultValue?: unknown;
   noContainer?: boolean;
-  noLabel?: boolean;
+  /** the field shows the error below its input itself */
+  errorInField?: boolean;
 };
 const fieldContainer = tv({
   base: [
     "flex flex-col",
     "gap-[5px]",
+    "px-[10px] py-2",
     "bg-white",
     "rounded",
     "border border-gray-100",
   ],
   variants: {
-    noLabel: {
-      true: "px-[10px] py-[7px]",
-      false: "pt-[2px] px-[10px] pb-[7px]",
-    },
     hasError: { true: "", false: "" },
     red: { true: "", false: "" },
   },
@@ -61,16 +62,6 @@ const fieldContainer = tv({
     { hasError: true, red: false, class: "border-primary-500" },
     { hasError: true, red: true, class: "border-red" },
   ],
-});
-
-const errorContainer = tv({
-  base: ["font-bold", "text-sm"],
-  variants: {
-    red: {
-      true: "text-red",
-      false: "text-primary-500",
-    },
-  },
 });
 
 export const setValueConfig = {
@@ -85,7 +76,7 @@ export const ConnectedField = <T extends object>({
   formField,
   defaultValue,
   noContainer,
-  noLabel,
+  errorInField,
   ...props
 }: Props<T>) => {
   const { t } = useTranslation();
@@ -102,23 +93,25 @@ export const ConnectedField = <T extends object>({
   // TODO: REFINE COLORS
   // const color = useColorByField(formField.type);
 
+  const errorMessage = fieldState.error?.message;
   const requiredMsg = t("externalForms.formValidation.isRequired");
-  const isRedError = fieldState.error?.message !== requiredMsg;
+  const isRedError = errorMessage !== requiredMsg;
 
   return noContainer ? (
-    <div>{children({ ...field, ...props })}</div>
+    <div>{children({ ...field, ...props, errorMessage })}</div>
   ) : (
     <div
       className={fieldContainer({
-        noLabel: !!noLabel,
         hasError: exists(fieldState.error),
         red: isRedError,
       })}
     >
-      {children({ ...field, ...props })}
-      <div className={errorContainer({ red: isRedError })}>
-        {fieldState.error?.message}
-      </div>
+      {children({ ...field, ...props, errorMessage })}
+      {!errorInField && (
+        <C2 tone={isRedError ? "danger" : "primary"} strong={isRedError}>
+          {errorMessage}
+        </C2>
+      )}
     </div>
   );
 };

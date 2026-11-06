@@ -75,7 +75,7 @@ public class IdTests {
 					);
 				});
 	}
-	
+
 	@Test
 	public void testEquals() {
 		ConceptTreeChildId idA = new ConceptTreeChildId(
@@ -104,7 +104,7 @@ public class IdTests {
 		assertThat(idA).hasSameHashCodeAs(idB);
 		assertThat(idA.toString()).isEqualTo(idB.toString());
 	}
-	
+
 	@Test
 	public void testStringSerialization() {
 		ConceptTreeChildId id = new ConceptTreeChildId(
@@ -124,7 +124,7 @@ public class IdTests {
 		assertThat(copy).hasSameHashCodeAs(id);
 		assertThat(copy.toString()).isEqualTo(id.toString());
 	}
-	
+
 	@Test
 	public void testJacksonSerialization() throws IOException {
 		ConceptTreeChildId id = new ConceptTreeChildId(
@@ -147,7 +147,7 @@ public class IdTests {
 		assertThat(copy).hasSameHashCodeAs(id);
 		assertThat(copy.toString()).isEqualTo(id.toString());
 	}
-	
+
 	@Test
 	public void testInterning() throws IOException {
 
@@ -170,7 +170,7 @@ public class IdTests {
 		assertThat(id1.findConcept()).isSameAs(id2.findConcept());
 		assertThat(id1.findConcept().getDataset()).isSameAs(id2.findConcept().getDataset());
 	}
-	
+
 	@Test
 	public void testJacksonBinarySerialization() throws IOException {
 		ConceptTreeChildId id = new ConceptTreeChildId(

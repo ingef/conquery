@@ -9,8 +9,7 @@
       "!!dist",
       "!!storybook-static",
       "!!public",
-      "!mock-api/**/*.json",
-      "!src/fixtures"
+      "!mock-api/**/*.json"
     ],
     "ignoreUnknown": true
   },

@@ -1,4 +1,4 @@
-import { faCheck } from "@fortawesome/free-solid-svg-icons";
+import { CheckIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
@@ -9,20 +9,12 @@ import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
 import { QueryResultHistoryButton } from "../entity-history/QueryResultHistoryButton";
 import PreviewButton from "../preview/PreviewButton";
-import { Icon } from "../ui-components/Icon";
+import { C1, C2 } from "../ui-components/Typography";
 import { canViewEntityPreview, canViewQueryPreview } from "../user/selectors";
 import DownloadResultsDropdownButton from "./DownloadResultsDropdownButton";
 
 const root = tv({
   base: ["flex items-center justify-end", "gap-[7px]"],
-});
-
-const text = tv({
-  base: ["m-0", "leading-none", "text-sm"],
-});
-
-const lgText = tv({
-  base: ["m-0", "leading-none", "text-xl", "whitespace-nowrap"],
 });
 
 const QueryResults = ({
@@ -48,17 +40,21 @@ const QueryResults = ({
   return (
     <div className={root()}>
       {isEmpty(resultCount) ? (
-        <p className={text()}>
-          <Icon icon={faCheck} className="mr-[10px]" />
-          {t("queryRunner.endSuccess")}
-        </p>
+        <div className="flex items-center gap-[10px]">
+          <CheckIcon />
+          <C2 as="span">{t("queryRunner.endSuccess")}</C2>
+        </div>
       ) : (
-        <p className={lgText()}>
-          <span className="font-bold">{resultCount}</span>{" "}
-          {queryType === "SECONDARY_ID_QUERY"
-            ? t("queryRunner.resultCountSecondaryIdQuery")
-            : t("queryRunner.resultCount")}
-        </p>
+        <div className="whitespace-nowrap">
+          <C1>
+            <C1 as="span" strong>
+              {resultCount}
+            </C1>{" "}
+            {queryType === "SECONDARY_ID_QUERY"
+              ? t("queryRunner.resultCountSecondaryIdQuery")
+              : t("queryRunner.resultCount")}
+          </C1>
+        </div>
       )}
       {canViewPreview && previewAvailable && <PreviewButton />}
       {!!csvUrl && canViewHistory && exists(resultColumns) && (

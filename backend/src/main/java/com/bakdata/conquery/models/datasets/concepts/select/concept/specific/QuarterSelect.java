@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.datasets.concepts.select.concept.specific;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.query.TemporalSamplerFactory;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -12,7 +11,6 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.QuarterA
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 

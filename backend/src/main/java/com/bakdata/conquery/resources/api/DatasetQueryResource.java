@@ -1,5 +1,7 @@
 package com.bakdata.conquery.resources.api;
 
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -26,14 +28,13 @@ import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.util.validation.ValidUUID4;
 import io.dropwizard.auth.Auth;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 
 @Path("datasets/{" + DATASET + "}/queries")
 @Data
@@ -42,6 +43,7 @@ import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class DatasetQueryResource {
 	private final QueryProcessor processor;
+	private final ConqueryConfig config;
 
 	@Context
 	protected HttpServletRequest servletRequest;
@@ -87,6 +89,12 @@ public class DatasetQueryResource {
 		subject.authorize(dataset, Ability.READ);
 
 		return processor.getAllQueries(dataset, servletRequest, subject, allProviders.orElse(false));
+	}
+
+	@GET
+	@Path("/default-tags")
+	public List<String> getDefaultTags(@Auth Subject subject) {
+		return config.getFrontend().getDefaultTags();
 	}
 
 	/***

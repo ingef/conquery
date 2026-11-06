@@ -39,7 +39,6 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.util.io.Cloner;
-import com.google.common.base.Stopwatch;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.core.cli.Command;
 import io.dropwizard.testing.DropwizardTestSupport;

@@ -1,15 +1,11 @@
-import {
-  faCalendar,
-  faFolder as faFolderRegular,
-  faUser as faUserRegular,
-} from "@fortawesome/free-regular-svg-icons";
-import {
-  faFolder,
-  faMicroscope,
-  faUser,
-} from "@fortawesome/free-solid-svg-icons";
 import { parseISO } from "date-fns";
 import type { TFunction } from "i18next";
+import {
+  CalendarIcon,
+  FolderIcon,
+  MicroscopeIcon,
+  UserIcon,
+} from "lucide-react";
 import { type Ref, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
@@ -24,12 +20,12 @@ import FormSymbol from "../../symbols/FormSymbol";
 import QuerySymbol from "../../symbols/QuerySymbol";
 import { Button } from "../../ui-components/Button";
 import { Highlighter } from "../../ui-components/Highlighter";
-import { Icon } from "../../ui-components/Icon";
 import {
   Tooltip,
   TooltipTarget,
   TooltipTrigger,
 } from "../../ui-components/Tooltip";
+import { C3 } from "../../ui-components/Typography";
 import { useUpdateFormConfig, useUpdateQuery } from "./actions";
 import { DeleteProjectItemButton } from "./DeleteProjectItemButton";
 import { isFormConfig } from "./helpers";
@@ -52,22 +48,15 @@ const root = tv({
 });
 
 const topInfos = tv({
-  base: [
-    "flex items-center justify-between",
-    "leading-5",
-    "text-gray-500",
-    "text-xs",
-  ],
+  base: ["flex items-center justify-between", "text-gray-600"],
 });
 
-const ownerName = tv({
-  base: ["shrink-0", "pl-[5px]", "text-gray-500", "text-xs"],
-});
+const ownerName = tv({ base: ["shrink-0", "pl-[5px]"] });
 
-const tooltipText = tv({ base: ["flex flex-col items-start", "font-normal"] });
+const tooltipText = tv({ base: "flex flex-col items-start" });
 
 const labelRow = tv({
-  base: ["flex justify-between", "w-full", "leading-6"],
+  base: ["flex items-center justify-between", "w-full", "min-h-6"],
 });
 
 const content = tv({
@@ -85,7 +74,7 @@ const content = tv({
 });
 
 const downloadButton = tv({
-  base: ["whitespace-nowrap", "[&_button]:text-xs"],
+  base: "whitespace-nowrap",
 });
 
 const getTopLeftLabel = (
@@ -146,7 +135,7 @@ const ShareButton = ({
         data-test-id="share"
         onPress={onClick}
       >
-        <Icon icon={isShared ? faUser : faUserRegular} />
+        <UserIcon data-filled={isShared} />
       </Button>
       <Tooltip>
         {
@@ -181,7 +170,12 @@ const ResultsLabel = ({
   resultUrl: ResultUrlWithLabel | null;
 }) => {
   const { t } = useTranslation();
-  if (!resultUrl) return <span className="whitespace-nowrap">{label}</span>;
+  if (!resultUrl)
+    return (
+      <span className="whitespace-nowrap">
+        <C3 as="span">{label}</C3>
+      </span>
+    );
   return (
     <TooltipTrigger>
       <DownloadButton
@@ -263,7 +257,7 @@ const ProjectItem = ({
       )}
       <div className={content({ own: !!item.own, system: isSystem })}>
         <div className={topInfos()}>
-          <div className="flex items-center gap-[10px]">
+          <div className="flex items-center gap-1">
             <TooltipTrigger>
               <Button
                 intent="tertiary"
@@ -272,9 +266,7 @@ const ProjectItem = ({
                 onPress={onIndicateEditFolders}
                 isDisabled={!mayEdit}
               >
-                <Icon
-                  icon={folders.length === 0 ? faFolderRegular : faFolder}
-                />
+                <FolderIcon data-filled={folders.length > 0} />
               </Button>
               <Tooltip>{<FoldersTooltip folders={folders} />}</Tooltip>
             </TooltipTrigger>
@@ -287,15 +279,15 @@ const ProjectItem = ({
                     aria-label={t("previousQuery.hasNoDates")}
                     excludeFromTabOrder
                   >
-                    <Icon icon={faCalendar} className="opacity-70 text-red" />
+                    <CalendarIcon className="opacity-70 text-red" />
                   </TooltipTarget>
                   <Tooltip>{t("previousQuery.hasNoDates")}</Tooltip>
                 </TooltipTrigger>
               )}
             </div>
           </div>
-          <div className="ml-[5px] flex shrink-0 items-center gap-[10px]">
-            {executedAt}
+          <div className="ml-1 flex shrink-0 items-center gap-1">
+            <C3 as="span">{executedAt}</C3>
             {secondaryId && (
               <TooltipTrigger>
                 <Button
@@ -304,7 +296,7 @@ const ProjectItem = ({
                   size="sm"
                   onPress={() => {}}
                 >
-                  <Icon icon={faMicroscope} />
+                  <MicroscopeIcon />
                 </Button>
                 <Tooltip>{`${t("queryEditor.secondaryId")}: ${secondaryId.label}`}</Tooltip>
               </TooltipTrigger>
@@ -326,10 +318,12 @@ const ProjectItem = ({
             setIsEditing={setIsEditingLabel}
           />
           <div className={ownerName()}>
-            <HighlightedText
-              text={item.ownerName}
-              highlightedWords={highlightedWords}
-            />
+            <C3 tone="muted">
+              <HighlightedText
+                text={item.ownerName}
+                highlightedWords={highlightedWords}
+              />
+            </C3>
           </div>
         </div>
       </div>

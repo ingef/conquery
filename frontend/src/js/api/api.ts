@@ -13,9 +13,11 @@ import { transformQueryToApi } from "./apiHelper";
 import type {
   ConceptIdT,
   DatasetT,
+  FilterConfigT,
   GetConceptResponseT,
   GetConceptsResponseT,
   GetDatasetsResponseT,
+  GetDefaultFoldersResponseT,
   GetEntityHistoryDefaultParamsResponse,
   GetEntityHistoryResponse,
   GetFormConfigResponseT,
@@ -23,6 +25,7 @@ import type {
   GetFormQueriesResponseT,
   GetFrontendConfigResponseT,
   GetMeResponseT,
+  GetNewsResponseT,
   GetQueriesResponseT,
   GetQueryResponseT,
   HistorySources,
@@ -206,6 +209,18 @@ export const useGetQueries = () => {
   );
 };
 
+export const useGetDefaultFolders = () => {
+  const api = useApi<GetDefaultFoldersResponseT>();
+
+  return useCallback(
+    (datasetId: DatasetT["id"]) =>
+      api({
+        url: getProtectedUrl(`/datasets/${datasetId}/queries/default-tags`),
+      }),
+    [api],
+  );
+};
+
 export const usePatchQuery = () => {
   const api = useApi<null>();
 
@@ -263,6 +278,18 @@ export const usePostFilterValuesResolve = () => {
         url: getProtectedUrl(`/filters/${filterId}/resolve`),
         method: "POST",
         data: { values },
+      }),
+    [api],
+  );
+};
+
+export const useGetNews = () => {
+  const api = useApi<GetNewsResponseT>();
+
+  return useCallback(
+    (datasetId: DatasetT["id"]) =>
+      api({
+        url: getProtectedUrl(`/datasets/${datasetId}/news`),
       }),
     [api],
   );
@@ -385,14 +412,7 @@ export const usePostResolveEntities = () => {
   const api = useApi<PostResolveEntitiesResponse>();
 
   return useCallback(
-    (
-      datasetId: DatasetT["id"],
-      filterValues: {
-        filter: string; // id
-        type: "MULTI_SELECT" | "BIG_MULTI_SELECT";
-        value: string[];
-      }[],
-    ) =>
+    (datasetId: DatasetT["id"], filterValues: FilterConfigT[]) =>
       api({
         url: getProtectedUrl(`/datasets/${datasetId}/queries/resolve-entities`),
         method: "POST",

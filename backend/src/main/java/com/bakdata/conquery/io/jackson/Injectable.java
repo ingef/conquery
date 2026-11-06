@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 public interface Injectable {
 
 	/**
-	 *	See {@link Injectable#injectIntoNew(ObjectMapper)} 
+	 *	See {@link Injectable#injectIntoNew(ObjectMapper)}
 	 */
 	default ObjectReader injectIntoNew(ObjectReader reader) {
 		// If is already MutableInjectable, add my values to other, else begin from scratch.
@@ -21,7 +21,7 @@ public interface Injectable {
 	}
 
 	/**
-	 * Creates a copy of the provided mapper and its injected values and adds the caller to the new copy 
+	 * Creates a copy of the provided mapper and its injected values and adds the caller to the new copy
 	 * @param mapper the blueprint mapper to use which remains untouched
 	 * @return a new mapper with this injected
 	 */
