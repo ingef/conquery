@@ -1,6 +1,5 @@
 package com.bakdata.conquery.resources.api;
 
-import static com.bakdata.conquery.io.result.ResultUtil.checkSingleTableResult;
 import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 import java.net.MalformedURLException;
@@ -20,8 +19,12 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
+import com.bakdata.conquery.io.result.ResultExportContext;
+import com.bakdata.conquery.io.result.ResultExportPreparation;
 import com.bakdata.conquery.io.result.arrow.ResultArrowProcessor;
 import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.config.ArrowConfig;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.SingleTableResult;
@@ -36,6 +39,8 @@ import lombok.extern.slf4j.Slf4j;
 public class ResultArrowResource {
 
 	private final ResultArrowProcessor processor;
+	private final ConqueryConfig conqueryConfig;
+	private final ArrowConfig arrowConfig;
 
 	@GET
 	@Path("{" + QUERY + "}." + FILE_EXTENTION_ARROW_FILE)
@@ -48,9 +53,9 @@ public class ResultArrowResource {
 			@QueryParam("limit") OptionalLong limit
 			) {
 
-		checkSingleTableResult(query.resolve());
 		log.info("Result for {} download on dataset {} by subject {} ({}).", query, query.getDataset(), subject.getId(), subject.getName());
-		return processor.createResultFile(subject, query, pretty, limit);
+		final ResultExportContext context = ResultExportPreparation.prepare(subject, query, pretty, limit, conqueryConfig);
+		return processor.createResultFile(context, arrowConfig.getBatchSize());
 	}
 
 	public static <E extends ManagedExecution & SingleTableResult> URL getFileDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
@@ -84,8 +89,8 @@ public class ResultArrowResource {
 			@QueryParam("pretty") Optional<Boolean> pretty,
 			@QueryParam("limit") OptionalLong limit
 	) {
-		checkSingleTableResult(execution.resolve());
 		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, execution.getDataset(), subject.getId(), subject.getName());
-		return processor.createResultStream(subject, execution, pretty.orElse(false), limit);
+		final ResultExportContext context = ResultExportPreparation.prepare(subject, execution, pretty.orElse(false), limit, conqueryConfig);
+		return processor.createResultStream(context, arrowConfig.getBatchSize());
 	}
 }

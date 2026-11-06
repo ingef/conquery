@@ -1,6 +1,5 @@
 package com.bakdata.conquery.resources.api;
 
-import static com.bakdata.conquery.io.result.ResultUtil.checkSingleTableResult;
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
 import java.net.MalformedURLException;
@@ -19,8 +18,11 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
+import com.bakdata.conquery.io.result.ResultExportContext;
+import com.bakdata.conquery.io.result.ResultExportPreparation;
 import com.bakdata.conquery.io.result.excel.ResultExcelProcessor;
 import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.SingleTableResult;
@@ -37,6 +39,7 @@ public class ResultExcelResource {
 	public static final String GET_RESULT_PATH_METHOD = "get";
 
 	private final ResultExcelProcessor processor;
+	private final ConqueryConfig conqueryConfig;
 
 	@GET
 	@Path("{" + QUERY + "}.xlsx")
@@ -47,9 +50,9 @@ public class ResultExcelResource {
 			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
 			@QueryParam("pretty") @DefaultValue("true") boolean pretty,
 			@QueryParam("limit") OptionalLong limit) {
-		checkSingleTableResult(execution.resolve());
 		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, execution.getDataset(), subject.getId(), subject.getName());
-		return processor.createResult(subject, execution, pretty, limit);
+		final ResultExportContext context = ResultExportPreparation.prepare(subject, execution, pretty, limit, conqueryConfig);
+		return processor.createResult(context);
 	}
 
 	public static <E extends ManagedExecution & SingleTableResult> URL getDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {

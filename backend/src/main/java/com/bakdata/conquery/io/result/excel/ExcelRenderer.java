@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 
 import c10n.C10N;
 import com.bakdata.conquery.internationalization.ExcelSheetNameC10n;
-import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.result.PreparedResultColumn;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ExcelConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -21,10 +21,8 @@ import com.bakdata.conquery.models.identifiable.mapping.PrintIdMapper;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.resultinfo.printers.ExcelResultPrinters;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
-import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import com.google.common.collect.ImmutableMap;
@@ -62,11 +60,17 @@ public class ExcelRenderer {
 	}
 
 	public <E extends ManagedExecution & SingleTableResult> void renderToStream(
-			List<ResultInfo> idHeaders, E exec, OutputStream outputStream, OptionalLong limit, PrintSettings printSettings, MetaStorage storage)
+			List<ResultInfo> idHeaders, E exec, OutputStream outputStream, OptionalLong limit)
 			throws IOException {
 		final List<ResultInfo> resultInfosExec = exec.getResultInfos();
+		final PreparedResultColumn.Columns columns = PreparedResultColumn.prepare(
+				idHeaders,
+				resultInfosExec,
+				settings,
+				new ExcelResultPrinters()
+		);
 
-		setMetaData(exec, storage);
+		setMetaData(exec);
 
 		final SXSSFSheet sheet = workbook.createSheet(C10N.get(ExcelSheetNameC10n.class, I18n.LOCALE.get()).result());
 		try {
@@ -75,11 +79,11 @@ public class ExcelRenderer {
 			// Create a table environment inside the excel sheet
 			final XSSFTable table = createTableEnvironment(exec, sheet);
 
-			writeHeader(sheet, idHeaders, resultInfosExec, table, printSettings);
+			writeHeader(sheet, columns, table);
 
-			final int writtenLines = writeBody(sheet, resultInfosExec, exec.streamResults(OptionalLong.of(limit.orElse(MAX_LINES))), new ExcelResultPrinters());
+			final int writtenLines = writeBody(sheet, columns.resultColumns(), exec.streamResults(OptionalLong.of(limit.orElse(MAX_LINES))));
 
-			postProcessTable(sheet, table, writtenLines, idHeaders.size());
+			postProcessTable(sheet, table, writtenLines, columns.idColumns().size());
 
 			workbook.write(outputStream);
 		}
@@ -92,7 +96,7 @@ public class ExcelRenderer {
 	/**
 	 * Include meta data in the xlsx such as the title, owner/author, tag and the name of this instance.
 	 */
-	private <E extends ManagedExecution & SingleTableResult> void setMetaData(E exec, MetaStorage metaStorage) {
+	private <E extends ManagedExecution & SingleTableResult> void setMetaData(E exec) {
 		final POIXMLProperties.CoreProperties coreProperties = workbook.getXSSFWorkbook().getProperties().getCoreProperties();
 		coreProperties.setTitle(exec.getLabelWithoutAutoLabelSuffix());
 
@@ -137,27 +141,24 @@ public class ExcelRenderer {
 	 */
 	private void writeHeader(
 			SXSSFSheet sheet,
-			List<ResultInfo> idHeaders,
-			List<ResultInfo> infos,
-			XSSFTable table, PrintSettings printSettings) {
+			PreparedResultColumn.Columns preparedColumns,
+			XSSFTable table) {
 
 		final CTTableColumns columns = table.getCTTable().addNewTableColumns();
-		columns.setCount(idHeaders.size() + infos.size());
-		final UniqueNamer uniqueNamer = new UniqueNamer(settings);
+		columns.setCount(preparedColumns.allColumns().size());
 
 		{
 			final Row header = sheet.createRow(0);
 			// First to create the columns and track them for auto size before the first row is written
 			int currentColumn = 0;
-			for (ResultInfo idHeader : idHeaders) {
+			for (PreparedResultColumn idColumn : preparedColumns.idColumns()) {
 				final CTTableColumn column = columns.addNewTableColumn();
 				// Table column ids MUST be set and MUST start at 1, excel will fail otherwise
 				column.setId(currentColumn + 1);
-				final String uniqueName = uniqueNamer.getUniqueName(idHeader, printSettings);
-				column.setName(uniqueName);
+				column.setName(idColumn.name());
 
 				final Cell headerCell = header.createCell(currentColumn);
-				headerCell.setCellValue(uniqueName);
+				headerCell.setCellValue(idColumn.name());
 
 				// Track column explicitly, because sheet.trackAllColumnsForAutoSizing() does not work with
 				// sheet.getTrackedColumnsForAutoSizing(), if no flush has happened
@@ -166,14 +167,13 @@ public class ExcelRenderer {
 				currentColumn++;
 			}
 
-			for (ResultInfo info : infos) {
-				final String columnName = uniqueNamer.getUniqueName(info, printSettings);
+			for (PreparedResultColumn resultColumn : preparedColumns.resultColumns()) {
 				final CTTableColumn column = columns.addNewTableColumn();
 				column.setId(currentColumn + 1);
-				column.setName(columnName);
+				column.setName(resultColumn.name());
 
 				final Cell headerCell = header.createCell(currentColumn);
-				headerCell.setCellValue(columnName);
+				headerCell.setCellValue(resultColumn.name());
 
 				sheet.trackColumnForAutoSizing(currentColumn);
 
@@ -184,17 +184,17 @@ public class ExcelRenderer {
 
 	private int writeBody(
 			SXSSFSheet sheet,
-			List<ResultInfo> infos,
-			Stream<EntityResult> resultLines, PrinterFactory printerFactory) {
+			List<PreparedResultColumn> columns,
+			Stream<EntityResult> resultLines) {
 
 		// Row 0 is the Header the data starts at 1
 		final AtomicInteger currentRow = new AtomicInteger(1);
 
 		final TypeWriter[] writers =
-				infos.stream().map(info -> writer(info.getType(), info.createPrinter(printerFactory, settings), settings)).toArray(TypeWriter[]::new);
+				columns.stream().map(column -> writer(column.type(), column.printer(), settings)).toArray(TypeWriter[]::new);
 		final PrintIdMapper idMapper = settings.getIdMapper();
 
-		final int writtenLines = resultLines.mapToInt(l -> writeRowsForEntity(infos, l, currentRow, sheet, writers, idMapper)).sum();
+		final int writtenLines = resultLines.mapToInt(l -> writeRowsForEntity(columns, l, currentRow, sheet, writers, idMapper)).sum();
 
 		// The result was shorter than the number of rows to track, so we auto size here explicitly
 		if (writtenLines < config.getLastRowToAutosize()) {
@@ -246,7 +246,7 @@ public class ExcelRenderer {
 	 * Writes the result lines for each entity.
 	 */
 	private int writeRowsForEntity(
-			List<ResultInfo> infos,
+			List<PreparedResultColumn> columns,
 			EntityResult internalRow,
 			final AtomicInteger currentRow,
 			SXSSFSheet sheet,
@@ -271,7 +271,7 @@ public class ExcelRenderer {
 			}
 
 			// Write data cells
-			for (int index = 0; index < infos.size(); index++) {
+			for (int index = 0; index < columns.size(); index++) {
 				final Object value = line[index];
 				final Cell dataCell = row.createCell(currentColumn);
 				currentColumn++;

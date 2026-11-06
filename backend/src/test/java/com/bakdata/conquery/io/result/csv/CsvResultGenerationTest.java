@@ -28,6 +28,7 @@ import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -66,7 +67,7 @@ public class CsvResultGenerationTest {
 		try (Writer writer = new BufferedWriter(new OutputStreamWriter(bufferOut, charset))) {
 
 			final CsvRenderer renderer = new CsvRenderer(CONFIG.getCsv().createWriter(writer), printSettings);
-			renderer.toCSV(getIdFields(), mquery.collectResultInfos(), mquery.streamResults(OptionalLong.empty()), printSettings, charset);
+			renderer.toCSV(getIdFields(), mquery.collectResultInfos(), mquery.streamResults(OptionalLong.empty()), charset);
 		}
 
 		final String computed = bufferOut.toString(charset);
@@ -79,6 +80,30 @@ public class CsvResultGenerationTest {
 		assertThat(computed).isNotEmpty();
 		assertThat(computed).isEqualTo(expected);
 
+	}
+
+	@Test
+	void preserveEncounterOrder() throws IOException {
+		final Charset charset = Charset.forName("UTF-8");
+		final PrintSettings printSettings = new PrintSettings(
+				true,
+				Locale.GERMANY,
+				CONFIG,
+				result -> EntityPrintId.from(result.getEntityId(), result.getEntityId()),
+				null
+		);
+		final List<EntityResult> results = getTestEntityResults();
+		final List<EntityResult> unorderedResults = List.of(results.get(1), results.get(0));
+		final ByteArrayOutputStream output = new ByteArrayOutputStream();
+
+		try (Writer writer = new BufferedWriter(new OutputStreamWriter(output, charset))) {
+			final CsvRenderer renderer = new CsvRenderer(CONFIG.getCsv().createWriter(writer), printSettings);
+			renderer.toCSV(getIdFields(), getTestQuery().collectResultInfos(), unorderedResults.stream(), charset);
+		}
+
+		final String[] lines = output.toString(charset).split("\\R");
+		assertThat(lines[1]).startsWith("2,2,");
+		assertThat(lines[2]).startsWith("1,1,");
 	}
 
 	private String generateExpectedCSV(List<EntityResult> results, List<ResultInfo> resultInfos, PrintSettings printSettings, PrinterFactory printerFactory) {

@@ -16,9 +16,9 @@ public abstract class PrinterFactory {
 	 * Default implementation of determining the printer for a {@link ResultType}.
 	 * Generally, this method should not be overriden and preferably be final, but {@link ExcelResultPrinters} makes this problematic.
 	 */
-	public <T> Printer<T> printerFor(ResultType type, PrintSettings printSettings) {
+	public final <T> Printer<T> printerFor(ResultType type, PrintSettings printSettings) {
 		if (type instanceof ResultType.ListT<?> listT) {
-			final Printer<?> elementPrinter = printerFor(listT.getElementType(), printSettings);
+			final Printer<?> elementPrinter = printerForListElement(listT.getElementType(), printSettings);
 			return (Printer<T>) getListPrinter(elementPrinter, printSettings);
 		}
 
@@ -31,6 +31,10 @@ public abstract class PrinterFactory {
 			case STRING -> getStringPrinter(printSettings);
 			case MONEY -> getMoneyPrinter(printSettings);
 		};
+	}
+
+	protected Printer<?> printerForListElement(ResultType elementType, PrintSettings printSettings) {
+		return printerFor(elementType, printSettings);
 	}
 
 	public abstract <T> Printer<Collection<T>> getListPrinter(Printer<T> elementPrinter, PrintSettings printSettings);

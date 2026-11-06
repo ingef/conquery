@@ -1,6 +1,5 @@
 package com.bakdata.conquery.resources.api;
 
-import static com.bakdata.conquery.io.result.ResultUtil.checkSingleTableResult;
 import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_PARQUET;
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
@@ -19,8 +18,11 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 
+import com.bakdata.conquery.io.result.ResultExportContext;
+import com.bakdata.conquery.io.result.ResultExportPreparation;
 import com.bakdata.conquery.io.result.parquet.ResultParquetProcessor;
 import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.SingleTableResult;
@@ -37,6 +39,7 @@ public class ResultParquetResource {
 	public static final String PARQUET_MEDIA_TYPE_STRING = "application/vnd.apache.parquet";
 
 	private final ResultParquetProcessor processor;
+	private final ConqueryConfig conqueryConfig;
 
 	public static <E extends ManagedExecution & SingleTableResult> URL getDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
 		return uriBuilder
@@ -58,9 +61,9 @@ public class ResultParquetResource {
 			@QueryParam("pretty") @DefaultValue("false") boolean pretty,
 			@QueryParam("limit") OptionalLong limit) {
 
-		checkSingleTableResult(execution.resolve());
 		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, execution.getDataset(), subject.getId(), subject.getName());
-		return processor.createResultFile(subject, execution, pretty, limit);
+		final ResultExportContext context = ResultExportPreparation.prepare(subject, execution, pretty, limit, conqueryConfig);
+		return processor.createResultFile(context);
 	}
 
 }
