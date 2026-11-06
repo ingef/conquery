@@ -33,7 +33,7 @@ const getNodeLabel = (
   } else if (node.children) {
     return node.children.items
       .map((n) => getNodeLabel(n, getTranslatedConnection))
-      .join(" " + getTranslatedConnection(node.children.connection) + " ");
+      .join(` ${getTranslatedConnection(node.children.connection)} `);
   } else {
     return "";
   }

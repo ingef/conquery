@@ -1,5 +1,4 @@
-import styled from "@emotion/styled";
-import { type FC, memo, useCallback } from "react";
+import { memo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { PostPrefixForSuggestionsParams } from "../api/api";
@@ -12,24 +11,24 @@ import type {
   ConceptQueryNodeType,
   FilterWithValueType,
 } from "../standard-query-editor/types";
-import type { ModeT } from "../ui-components/InputRange";
 
 import ContentCell from "./ContentCell";
 import DateColumnSelect from "./DateColumnSelect";
 import TableFilters from "./TableFilters";
 import TableSelects from "./TableSelects";
 
-const Column = styled("div")`
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-`;
+const TableView = ({
+  node,
+  tableIdx,
+  allowlistedSelects,
+  blocklistedSelects,
 
-const MaximizedCell = styled(ContentCell)`
-  flex-grow: 1;
-`;
+  onSelectTableSelects,
+  onSetDateColumn,
 
-interface PropsT {
+  onSetFilterValue,
+  onLoadFilterSuggestions,
+}: {
   node: ConceptQueryNodeType;
   tableIdx: number;
   blocklistedSelects?: SelectorResultType[];
@@ -42,31 +41,12 @@ interface PropsT {
     filterIdx: number,
     value: FilterWithValueType["value"],
   ) => void;
-  onSwitchFilterMode: (
-    tableIdx: number,
-    filterIdx: number,
-    mode: ModeT,
-  ) => void;
   onLoadFilterSuggestions: (
     params: PostPrefixForSuggestionsParams,
     tableIdx: number,
     filterIdx: number,
     config?: { returnOnly?: boolean },
   ) => Promise<PostFilterSuggestionsResponseT | null>;
-}
-
-const TableView: FC<PropsT> = ({
-  node,
-  tableIdx,
-  allowlistedSelects,
-  blocklistedSelects,
-
-  onSelectTableSelects,
-  onSetDateColumn,
-
-  onSetFilterValue,
-  onSwitchFilterMode,
-  onLoadFilterSuggestions,
 }) => {
   const { t } = useTranslation();
 
@@ -81,12 +61,6 @@ const TableView: FC<PropsT> = ({
     (filterIdx: number, value: FilterWithValueType["value"]) =>
       onSetFilterValue(tableIdx, filterIdx, value),
     [tableIdx, onSetFilterValue],
-  );
-
-  const setFilterMode = useCallback(
-    (filterIdx: number, mode: ModeT) =>
-      onSwitchFilterMode(tableIdx, filterIdx, mode),
-    [tableIdx, onSwitchFilterMode],
   );
 
   const loadFilterSuggestions = useCallback(
@@ -119,11 +93,12 @@ const TableView: FC<PropsT> = ({
   );
 
   return (
-    <Column>
+    <div className="flex grow flex-col">
       {displaySelects && (
-        <ContentCell headline={t("queryNodeEditor.selects")}>
+        <ContentCell>
           {table.selects && table.selects.length > 0 && (
             <TableSelects
+              label={t("queryNodeEditor.selects")}
               selects={table.selects}
               allowlistedSelects={allowlistedSelects}
               blocklistedSelects={blocklistedSelects}
@@ -134,7 +109,7 @@ const TableView: FC<PropsT> = ({
         </ContentCell>
       )}
       {displayDateColumnOptions && (
-        <ContentCell headline={t("queryNodeEditor.selectValidityDate")}>
+        <ContentCell>
           <DateColumnSelect
             dateColumn={table.dateColumn!}
             onSelectDateColumn={(value) => onSetDateColumn(tableIdx, value)}
@@ -142,18 +117,17 @@ const TableView: FC<PropsT> = ({
         </ContentCell>
       )}
       {displayFilters && (
-        <MaximizedCell headline={t("queryNodeEditor.filters")}>
+        <ContentCell className="grow" headline={t("queryNodeEditor.filters")}>
           <TableFilters
             key={tableIdx}
             filters={table.filters}
             excludeTable={table.exclude}
             onSetFilterValue={setFilterValue}
-            onSwitchFilterMode={setFilterMode}
             onLoadFilterSuggestions={loadFilterSuggestions}
           />
-        </MaximizedCell>
+        </ContentCell>
       )}
-    </Column>
+    </div>
   );
 };
 

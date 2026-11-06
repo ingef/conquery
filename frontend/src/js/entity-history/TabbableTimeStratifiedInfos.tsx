@@ -1,33 +1,25 @@
-import styled from "@emotion/styled";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import type { TimeStratifiedInfo } from "../api/types";
-import SmallTabNavigation from "../small-tab-navigation/SmallTabNavigation";
+import { Tab, TabList, Tabs } from "../ui-components/Tabs";
 
 import { TimeStratifiedChart } from "./TimeStratifiedChart";
 import { TimeStratifiedConceptChart } from "./TimeStratifiedConceptChart";
 import { isConceptColumn, isMoneyColumn } from "./timeline/util/util";
 
-const Container = styled("div")`
-  align-self: flex-start;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  overflow-x: hidden;
-`;
+const container = tv({
+  base: ["self-start", "flex flex-col items-end", "overflow-x-hidden"],
+});
 
 export const TabbableTimeStratifiedInfos = ({
   infos,
 }: {
   infos: TimeStratifiedInfo[];
 }) => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(infos[0].label);
-  const options = useMemo(() => {
-    return infos.map((info) => ({
-      value: info.label,
-      label: () => info.label,
-    }));
-  }, [infos]);
 
   const { data, type } = useMemo(() => {
     let infoType = "money";
@@ -54,18 +46,22 @@ export const TabbableTimeStratifiedInfos = ({
   }, [infos, activeTab]);
 
   return (
-    <Container>
-      <SmallTabNavigation
-        options={options}
-        selectedTab={activeTab}
-        onSelectTab={setActiveTab}
-      />
+    <div className={container()}>
+      <Tabs selectedKey={activeTab} onSelectionChange={setActiveTab}>
+        <TabList aria-label={t("history.infoTabs")}>
+          {infos.map((info) => (
+            <Tab key={info.label} id={info.label}>
+              {info.label}
+            </Tab>
+          ))}
+        </TabList>
+      </Tabs>
       {data && type === "money" && (
         <TimeStratifiedChart timeStratifiedInfo={data} />
       )}
       {data && type === "concept" && (
         <TimeStratifiedConceptChart timeStratifiedInfo={data} />
       )}
-    </Container>
+    </div>
   );
 };

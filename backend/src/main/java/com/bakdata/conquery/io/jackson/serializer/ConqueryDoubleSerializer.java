@@ -12,7 +12,7 @@ public class ConqueryDoubleSerializer extends JsonSerializer<Double> {
 	public Class<Double> handledType() {
 		return Double.class;
 	}
-	
+
 	@Override
 	public void serialize(Double value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
 		if(value.isInfinite() || value.isNaN()) {

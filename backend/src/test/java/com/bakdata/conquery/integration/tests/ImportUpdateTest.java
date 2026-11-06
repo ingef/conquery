@@ -116,7 +116,7 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 			assertThat(namespace.getNumberOfEntities()).isEqualTo(4);
 
 			//assert that the query can be executed after the import
-			IntegrationUtils.assertQueryResult(conquery, query, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
+			IntegrationUtils.assertQueryResult(conquery, query, null, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
 
 		}
 
@@ -207,7 +207,7 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 			}
 			assertThat(namespace.getNumberOfEntities()).isEqualTo(9);
 			// Issue a query and assert that it has more content.
-			IntegrationUtils.assertQueryResult(conquery, query, 4L, ExecutionState.DONE, conquery.getTestUser(), 201);
+			IntegrationUtils.assertQueryResult(conquery, query, null, 4L, ExecutionState.DONE, conquery.getTestUser(), 201);
 		}
 	}
 }

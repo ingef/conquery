@@ -55,7 +55,7 @@ public interface QueryDescription extends Visitable {
 	 * @param context Holds information which can be used for the initialize the description of the query to be executed.
 	 */
 	void resolve(QueryResolveContext context);
-	
+
 	/**
 	 * Allows the implementation to add visitors that traverse the QueryTree.
 	 * All visitors are concatenated so only a single traverse needs to be done.
@@ -65,7 +65,7 @@ public interface QueryDescription extends Visitable {
 		// Register visitors for permission checks
 		visitors.add(new QueryUtils.ExternalIdChecker());
 	}
-	
+
 	/**
 	 * Check implementation specific permissions. Is called after all visitors have been registered and executed.
 	 */

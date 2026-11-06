@@ -51,7 +51,7 @@ export interface TableWithFilterValueT
   dateColumn?: SelectedDateColumnT;
 }
 
-export interface DragContext {
+interface DragContext {
   width: number;
   height: number;
   movedFromAndIdx?: number;
@@ -95,7 +95,7 @@ export interface PreviousQueryQueryNodeType {
   canExpand?: boolean;
   secondaryId?: string | null;
   availableSecondaryIds?: string[];
-  files?: void;
+  files?: undefined;
 
   own?: boolean;
   shared?: boolean;

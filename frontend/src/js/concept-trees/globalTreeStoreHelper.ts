@@ -188,16 +188,17 @@ export const globalSearch = async (trees: TreesT, query: string) => {
   const result = Object.keys(combinedTrees)
     .filter((key) => !combinedTrees[key].parent)
     .reduce<Record<ConceptIdT, number>>(
-      (all, key) => ({
-        ...all,
-        ...findConcepts(
-          combinedTrees,
-          key,
-          key,
-          combinedTrees[key][key],
-          lowerQuery,
+      (all, key) =>
+        Object.assign(
+          all,
+          findConcepts(
+            combinedTrees,
+            key,
+            key,
+            combinedTrees[key][key],
+            lowerQuery,
+          ),
         ),
-      }),
       {},
     );
 

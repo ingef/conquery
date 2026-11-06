@@ -1,56 +1,52 @@
-import { type FC, type ReactNode, useMemo } from "react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
 import type { StateT } from "../../app/reducers";
-import SmallTabNavigation from "../../small-tab-navigation/SmallTabNavigation";
+import { ToggleButton } from "../../ui-components/ToggleButton";
+import { ToggleButtonGroup } from "../../ui-components/ToggleButtonGroup";
 
 import { setFilter } from "./actions";
 import type { ProjectItemsFilterStateT } from "./reducer";
 
-interface Props {
-  className?: string;
-}
+const isFilter = (key: unknown): key is ProjectItemsFilterStateT =>
+  key === "all" || key === "own" || key === "shared" || key === "system";
 
-const ProjectItemsFilter: FC<Props> = ({ className }) => {
+const ProjectItemsFilter = () => {
   const { t } = useTranslation();
-  const OPTIONS: { value: ProjectItemsFilterStateT; label: () => ReactNode }[] =
-    useMemo(
-      () => [
-        {
-          value: "all",
-          label: () => t("projectItemsFilter.all"),
-        },
-        {
-          value: "own",
-          label: () => t("projectItemsFilter.own"),
-        },
-        {
-          value: "shared",
-          label: () => t("projectItemsFilter.shared"),
-        },
-        {
-          value: "system",
-          label: () => t("projectItemsFilter.system"),
-        },
-      ],
-      [t],
-    );
+  const OPTIONS: { value: ProjectItemsFilterStateT; label: string }[] = useMemo(
+    () => [
+      { value: "all", label: t("projectItemsFilter.all") },
+      { value: "own", label: t("projectItemsFilter.own") },
+      { value: "shared", label: t("projectItemsFilter.shared") },
+      { value: "system", label: t("projectItemsFilter.system") },
+    ],
+    [t],
+  );
 
-  const selectedFilter = useSelector<StateT, string>(
+  const selectedFilter = useSelector<StateT, ProjectItemsFilterStateT>(
     (state) => state.projectItemsFilter,
   );
   const dispatch = useDispatch();
-  const onSetFilter = (filter: ProjectItemsFilterStateT) =>
-    dispatch(setFilter(filter));
 
   return (
-    <SmallTabNavigation
-      className={className}
-      options={OPTIONS}
-      selectedTab={selectedFilter}
-      onSelectTab={(tab) => onSetFilter(tab as ProjectItemsFilterStateT)}
-    />
+    <ToggleButtonGroup
+      size="sm"
+      aria-label={t("projectItemsFilter.label")}
+      selectionMode="single"
+      disallowEmptySelection
+      selectedKeys={[selectedFilter]}
+      onSelectionChange={(keys) => {
+        const [key] = keys;
+        if (isFilter(key)) dispatch(setFilter(key));
+      }}
+    >
+      {OPTIONS.map(({ value, label }) => (
+        <ToggleButton key={value} id={value}>
+          {label}
+        </ToggleButton>
+      ))}
+    </ToggleButtonGroup>
   );
 };
 

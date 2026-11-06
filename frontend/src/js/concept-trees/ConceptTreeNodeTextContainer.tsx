@@ -5,12 +5,12 @@ import type { ConceptIdT, ConceptT } from "../api/types";
 import { getWidthAndHeight } from "../app/DndProvider";
 import { DNDType } from "../common/constants/dndTypes";
 import { exists } from "../common/helpers/exists";
+import AdditionalInfoHoverable from "../info-pane/AdditionalInfoHoverable";
 import { getNodeIcon } from "../model/node";
 import type {
   ConceptQueryNodeType,
   DragItemConceptTreeNode,
 } from "../standard-query-editor/types";
-import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
 
 import ConceptTreeNodeText from "./ConceptTreeNodeText";
 import type { SearchT } from "./reducer";
@@ -60,7 +60,6 @@ const ConceptTreeNodeTextContainer = ({
   const resultCount = isStructFolder
     ? null
     : getResultCount(search, node, conceptId);
-  const hasChildren = !!node.children && node.children.length > 0;
 
   const item: DragItemConceptTreeNode = {
     dragContext: {
@@ -112,7 +111,6 @@ const ConceptTreeNodeTextContainer = ({
         description={node.description}
         resultCount={resultCount}
         searchWords={search.words}
-        hasChildren={hasChildren}
         isOpen={open}
         icon={icon}
         red={red}

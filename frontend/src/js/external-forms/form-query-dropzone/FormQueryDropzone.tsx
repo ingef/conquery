@@ -1,40 +1,31 @@
-import styled from "@emotion/styled";
-import { type FC, useCallback, useRef } from "react";
+import { useCallback, useRef } from "react";
 
 import { DNDType } from "../../common/constants/dndTypes";
-import { exists } from "../../common/helpers/exists";
 import type { DragItemQuery } from "../../standard-query-editor/types";
-import InfoTooltip from "../../tooltip/InfoTooltip";
 import Dropzone from "../../ui-components/Dropzone";
-import Label from "../../ui-components/Label";
+import { Label } from "../../ui-components/Label";
 
 import ValidatedFormQueryResult from "./ValidatedFormQueryResult";
-
-const SxDropzone = styled(Dropzone)`
-  justify-content: flex-start;
-`;
 
 const DROP_TYPES = [
   DNDType.PREVIOUS_QUERY,
   DNDType.PREVIOUS_SECONDARY_ID_QUERY,
 ];
 
-interface PropsT {
-  label: string;
-  tooltip?: string;
-  dropzoneText: string;
-  className?: string;
-  value: DragItemQuery | null;
-  onChange: (value: DragItemQuery | null) => void;
-}
-
-const FormQueryDropzone: FC<PropsT> = ({
+const FormQueryDropzone = ({
   label,
   tooltip,
   dropzoneText,
   className,
   value,
   onChange,
+}: {
+  label: string;
+  tooltip?: string;
+  dropzoneText: string;
+  className?: string;
+  value: DragItemQuery | null;
+  onChange: (value: DragItemQuery | null) => void;
 }) => {
   const onDrop = (item: DragItemQuery) => {
     onChange(item);
@@ -56,11 +47,11 @@ const FormQueryDropzone: FC<PropsT> = ({
 
   return (
     <div className={className}>
-      <Label>
+      <Label elementType="span" tooltip={tooltip}>
         {label}
-        {exists(tooltip) && <InfoTooltip text={tooltip} />}
       </Label>
-      <SxDropzone /* TODO: ADD GENERIC TYPE <FC<DropzoneProps<DragItemQuery>>> */
+      <Dropzone
+        className="justify-start"
         onDrop={(item) => onDrop(item as DragItemQuery)}
         acceptedDropTypes={DROP_TYPES}
       >
@@ -72,7 +63,7 @@ const FormQueryDropzone: FC<PropsT> = ({
             onDelete={onDelete}
           />
         )}
-      </SxDropzone>
+      </Dropzone>
     </div>
   );
 };

@@ -1,7 +1,7 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import Chance from "chance";
 import type { Application } from "express";
-import path from "path";
-import { fileURLToPath } from "url";
 import packagejson from "../package.json" with { type: "json" };
 
 import config from "./config.json" with { type: "json" };
@@ -9,6 +9,7 @@ import config from "./config.json" with { type: "json" };
 import EXPORT_FORM_CONFIG from "./forms/export-form.json" with { type: "json" };
 
 import mockAuthMiddleware from "./mockAuthMiddleware.js";
+import { getNews } from "./news.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -159,6 +160,7 @@ export default function mockApi(app: Application) {
               status: "DONE",
               label: "Test result",
               numberOfResults: 5,
+              previewAvailable: true,
               resultUrls:
                 dice > 0.85
                   ? [
@@ -211,6 +213,19 @@ export default function mockApi(app: Application) {
   });
 
   /*
+    NEWS
+  */
+  app.get(
+    "/api/datasets/:id/news",
+    mockAuthMiddleware,
+    function response(req, res) {
+      res.setHeader("Content-Type", "application/json");
+
+      res.send(JSON.stringify(getNews(String(req.params.id))));
+    },
+  );
+
+  /*
     QUERY RESULT DOWNLOAD
   */
   app.get(
@@ -239,6 +254,18 @@ export default function mockApi(app: Application) {
   /*
     STORED QUERIES
   */
+  app.get(
+    "/api/datasets/:datasetId/queries/default-tags",
+    mockAuthMiddleware,
+    function response(_, res) {
+      res.setHeader("Content-Type", "application/json");
+
+      setTimeout(() => {
+        res.send(JSON.stringify(["research", "group 1", "archive"]));
+      }, SHORT_DELAY);
+    },
+  );
+
   app.get(
     "/api/datasets/:datasetId/queries",
     mockAuthMiddleware,
@@ -360,7 +387,9 @@ export default function mockApi(app: Application) {
       setTimeout(() => {
         res.setHeader("Content-Type", "application/json");
 
-        const text = req.body.text.toLowerCase();
+        const text = (req.body.text ?? "").toLowerCase();
+        const page = req.body.page ?? 0;
+        const pageSize = req.body.pageSize ?? 50;
         const countriesRequested = req.params.filterId === "production_country";
         const wordsRequested = req.params.filterId === "words";
 
@@ -381,15 +410,16 @@ export default function mockApi(app: Application) {
                 "1008445564",
               ];
 
-        const suggestions = storedValues
-          .map((v, id) => ({
-            label: v,
-            value: id,
-            templateValues: { company: "Columbia Pictures Corporation" },
-          }))
+        const matching = storedValues
+          .map((v) => ({ label: v, value: v, optionValue: v }))
           .filter((v) => v.label.toLowerCase().startsWith(text));
 
-        res.send(JSON.stringify(suggestions));
+        res.send(
+          JSON.stringify({
+            total: matching.length,
+            values: matching.slice(page * pageSize, (page + 1) * pageSize),
+          }),
+        );
       }, LONG_DELAY);
     },
   );

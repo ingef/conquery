@@ -1,37 +1,14 @@
-import styled from "@emotion/styled";
 import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import { exists } from "../common/helpers/exists";
 import type { DragItemConceptTreeNode } from "../standard-query-editor/types";
+import { C3, H5 } from "../ui-components/Typography";
 
-const Bold = styled("span")`
-  font-weight: 400;
-`;
-
-const SectionHeading = styled("h4")`
-  font-weight: 700;
-  color: ${(props) => props.theme.col.blueGrayDark};
-  margin: 0;
-  text-transform: uppercase;
-  font-size: ${({ theme }) => theme.font.xs};
-`;
-
-const Appendix = styled("div")`
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 8px;
-`;
-
-const Description = styled("div")`
-  font-size: ${({ theme }) => theme.font.xs};
-  color: ${({ theme }) => theme.col.black};
-  display: flex;
-  align-items: center;
-  gap: 0px 5px;
-  flex-wrap: wrap;
-`;
+const description = tv({
+  base: ["flex items-center flex-wrap", "gap-x-[5px] gap-y-0"],
+});
 
 export const TreeNodeConcept = ({
   node,
@@ -48,8 +25,7 @@ export const TreeNodeConcept = ({
 
   const filtersWithValues = node.tables.flatMap((t) =>
     t.filters.filter(
-      (f) =>
-        exists(f.value) && (!(f.value instanceof Array) || f.value.length > 0),
+      (f) => exists(f.value) && (!Array.isArray(f.value) || f.value.length > 0),
     ),
   );
 
@@ -59,29 +35,33 @@ export const TreeNodeConcept = ({
 
   return (
     <>
-      {node.description && <Description>{node.description}</Description>}
+      {node.description && (
+        <div className={description()}>
+          <C3 as="span">{node.description}</C3>
+        </div>
+      )}
       {showAppendix && (
-        <Appendix>
+        <div className="mt-2 flex flex-col gap-[6px]">
           {selectedSelects.length > 0 && (
             <div>
-              <SectionHeading>{t("editorV2.outputSection")}</SectionHeading>
-              <Description>
+              <H5 as="h4">{t("editorV2.outputSection")}</H5>
+              <div className={description()}>
                 <Value value={selectedSelects} />
-              </Description>
+              </div>
             </div>
           )}
           {filtersWithValues.length > 0 && (
             <div>
-              <SectionHeading>{t("editorV2.filtersSection")}</SectionHeading>
+              <H5 as="h4">{t("editorV2.filtersSection")}</H5>
               {filtersWithValues.map((f) => (
-                <Description>
-                  <Bold>{f.label}:</Bold>
+                <div key={f.label} className={description()}>
+                  <C3 as="span">{f.label}:</C3>
                   <Value value={f.value} />
-                </Description>
+                </div>
               ))}
             </div>
           )}
-        </Appendix>
+        </div>
       )}
     </>
   );
@@ -96,14 +76,14 @@ const Value = ({
 }) => {
   if (typeof value === "string" || typeof value === "number") {
     return (
-      <span>
+      <C3 as="span">
         {value}
         {isElement && ","}
-      </span>
+      </C3>
     );
   } else if (typeof value === "boolean") {
-    return <span>{value ? "✔" : "✗"}</span>;
-  } else if (value instanceof Array) {
+    return <C3 as="span">{value ? "✔" : "✗"}</C3>;
+  } else if (Array.isArray(value)) {
     return (
       <>
         {value.slice(0, 10).map((v, idx) => (
@@ -111,7 +91,7 @@ const Value = ({
             <Value key={idx} value={v} isElement={idx < value.length - 1} />
           </>
         ))}
-        {value.length > 10 && <span>{`... +${value.length - 10}`}</span>}
+        {value.length > 10 && <C3 as="span">{`... +${value.length - 10}`}</C3>}
       </>
     );
   } else if (
@@ -120,10 +100,10 @@ const Value = ({
     typeof value.label === "string"
   ) {
     return (
-      <span>
+      <C3 as="span">
         {value.label}
         {isElement && ","}
-      </span>
+      </C3>
     );
   } else if (value instanceof Object) {
     return (
@@ -138,8 +118,8 @@ const Value = ({
       </>
     );
   } else if (value === null) {
-    return <span></span>;
+    return <C3 as="span"></C3>;
   } else {
-    return <span>{JSON.stringify(value)}</span>;
+    return <C3 as="span">{JSON.stringify(value)}</C3>;
   }
 };

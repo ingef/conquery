@@ -2,6 +2,7 @@
   "id": 25,
   "status": "DONE",
   "numberOfResults": 5,
+  "previewAvailable": true,
   "label": "Result list",
   "resultUrls": [
     {

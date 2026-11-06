@@ -1,11 +1,10 @@
-import styled from "@emotion/styled";
+import type { ComponentProps } from "react";
+import { tv } from "tailwind-variants";
 
-export const InABox = styled.div`
-  /* border: 2px solid ${({ theme }) => theme.col.blueGrayDark}; */
-  border-radius: 3px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 24px;
-  width: 24px;
-`;
+const inABox = tv({
+  base: ["inline-flex items-center justify-center", "h-6 w-6", "rounded"],
+});
+
+export const InABox = ({ className, ...props }: ComponentProps<"div">) => (
+  <div className={inABox({ className })} {...props} />
+);

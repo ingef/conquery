@@ -1,9 +1,9 @@
-import { type Theme, useTheme } from "@emotion/react";
 import type { ChartData, ChartOptions } from "chart.js";
 import { addMonths, format } from "date-fns";
 import { useMemo } from "react";
 import { Bar, Line } from "react-chartjs-2";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 import type {
   BarStatistics,
   DateStatistics,
@@ -11,6 +11,7 @@ import type {
 } from "../api/types";
 import { parseDate, parseStdDate } from "../common/helpers/dateHelper";
 import { hexToRgbA } from "../entity-history/TimeStratifiedChart";
+import { getCssVarColor } from "./getThemeColor";
 import {
   formatNumber,
   previewStatsIsBarStats,
@@ -18,23 +19,33 @@ import {
   useDateTickHandler,
 } from "./util";
 
+const root = tv({
+  variants: { clickable: { true: "cursor-pointer" } },
+});
+
 type DiagramProps = {
   stat: PreviewStatistics;
   className?: string;
   onClick?: () => void;
   height?: string | number;
   width?: string | number;
+  showTitle?: boolean;
+  /** cuts category labels on the axis, the tooltip keeps the full label */
+  maxLabelLength?: number;
 };
+
+const cut = (label: string, maxLength: number) =>
+  label.length > maxLength ? `${label.slice(0, maxLength - 1)}…` : label;
 function transformBarStatsToData(
   stats: BarStatistics,
-  theme: Theme,
+  color: string,
 ): ChartData<"bar"> {
   return {
     labels: stats.entries.map((entry) => entry.label),
     datasets: [
       {
         data: stats.entries.map((entry) => entry.value),
-        backgroundColor: `rgba(${hexToRgbA(theme.col.blueGrayDark)}, 1)`,
+        backgroundColor: color,
         borderWidth: 1,
       },
     ],
@@ -43,7 +54,7 @@ function transformBarStatsToData(
 
 function transformDateStatsToData(
   stats: DateStatistics,
-  theme: Theme,
+  color: string,
 ): ChartData<"line"> {
   const labels: string[] = [];
   const values: number[] = [];
@@ -58,7 +69,7 @@ function transformDateStatsToData(
       datasets: [
         {
           data: values,
-          borderColor: `rgba(${hexToRgbA(theme.col.blueGrayDark)}, 1)`,
+          borderColor: color,
           borderWidth: 1,
           fill: false,
         },
@@ -81,7 +92,7 @@ function transformDateStatsToData(
     datasets: [
       {
         data: values,
-        borderColor: `rgba(${hexToRgbA(theme.col.blueGrayDark)}, 1)`,
+        borderColor: color,
         borderWidth: 1,
         fill: false,
       },
@@ -95,16 +106,18 @@ export default function Diagram({
   onClick,
   height,
   width,
+  showTitle = true,
+  maxLabelLength,
 }: DiagramProps) {
-  const theme = useTheme();
   const data = useMemo(() => {
+    const color = `rgba(${hexToRgbA(getCssVarColor("--color-primary-500"))}, 1)`;
     if (previewStatsIsBarStats(stat)) {
-      return transformBarStatsToData(stat, theme);
+      return transformBarStatsToData(stat, color);
     }
     if (previewStatsIsDateStats(stat)) {
-      return transformDateStatsToData(stat, theme);
+      return transformDateStatsToData(stat, color);
     }
-  }, [stat, theme]);
+  }, [stat]);
   const { t } = useTranslation();
   const { shouldTickRender } = useDateTickHandler(stat);
 
@@ -121,7 +134,7 @@ export default function Diagram({
       },
       plugins: {
         title: {
-          display: true,
+          display: showTitle,
           font: {
             weight: "normal",
             size: 14,
@@ -167,6 +180,14 @@ export default function Diagram({
             title: yScaleTitle,
             beginAtZero: true,
           },
+          x: {
+            ticks: {
+              callback: (valueIndex: number) => {
+                const label = String(data?.labels?.[valueIndex] ?? "");
+                return maxLabelLength ? cut(label, maxLabelLength) : label;
+              },
+            },
+          },
         },
       } as ChartOptions<"bar">;
     }
@@ -210,15 +231,15 @@ export default function Diagram({
     }
 
     throw new Error("Unknown stats type");
-  }, [data?.labels, stat, t, shouldTickRender]);
+  }, [data?.labels, stat, t, shouldTickRender, showTitle, maxLabelLength]);
 
   return (
-    <div className={className}>
+    <div className={root({ clickable: !!onClick, className })}>
       {previewStatsIsBarStats(stat) ? (
         <Bar
           options={options as ChartOptions<"bar">}
           data={data as ChartData<"bar">}
-          onClick={() => onClick && onClick()}
+          onClick={() => onClick?.()}
           height={height}
           width={width}
         />
@@ -226,7 +247,7 @@ export default function Diagram({
         <Line
           options={options as ChartOptions<"line">}
           data={data as ChartData<"line">}
-          onClick={() => onClick && onClick()}
+          onClick={() => onClick?.()}
           height={height}
           width={width}
         />

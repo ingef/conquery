@@ -25,6 +25,86 @@ import type {
 import type { Tree } from "../types";
 import { findNodeById } from "../util";
 
+interface ExpandConfig {
+  parentId?: string;
+  negation?: boolean;
+  dateRestriction?: DateRangeT;
+}
+
+type ExpandableNode =
+  | AndNodeT
+  | DateRestrictionNodeT
+  | OrNodeT
+  | NegationNodeT
+  | QueryConceptNodeT
+  | SavedQueryNodeT;
+
+// AND / OR with a single child collapse into that child
+const expandGroup = (
+  children: ExpandableNode[],
+  config: ExpandConfig,
+  connection: "and" | "or",
+  expand: (node: ExpandableNode, config: ExpandConfig) => Tree,
+): Tree => {
+  if (children.length === 1) {
+    return expand(children[0], config);
+  }
+  const id = createId();
+  return {
+    id,
+    ...config,
+    children: {
+      connection,
+      direction: connection === "and" ? "horizontal" : "vertical",
+      items: children.map((child) => expand(child, { parentId: id })),
+    },
+  };
+};
+
+const conceptNodeToTree = (
+  queryNode: QueryConceptNodeT,
+  config: ExpandConfig,
+  rootConcepts: TreesT,
+): Tree => {
+  const lookupResult = getConceptsByIdsWithTablesAndSelects(
+    rootConcepts,
+    queryNode.ids,
+    { useDefaults: false },
+  );
+  if (!lookupResult) {
+    throw new Error("Concept not found");
+  }
+  const { tables, selects } = mergeFromSavedConceptIntoNode(queryNode, {
+    tables: lookupResult.tables,
+    selects: lookupResult.selects || [],
+  });
+  const label = queryNode.label || lookupResult.concepts[0].label;
+  const description = lookupResult.concepts[0].description;
+
+  const dataNode: DragItemConceptTreeNode = {
+    ...queryNode,
+    dragContext: { width: 0, height: 0 },
+    additionalInfos: lookupResult.concepts[0].additionalInfos,
+    matchingEntities: lookupResult.concepts[0].matchingEntities,
+    matchingEntries: lookupResult.concepts[0].matchingEntries,
+    type: DNDType.CONCEPT_TREE_NODE,
+    label,
+    description,
+    tables,
+    selects,
+    tree: lookupResult.root,
+  };
+
+  const dates = config.dateRestriction
+    ? {
+        ...config.dateRestriction,
+        ...(queryNode.excludeFromTimeAggregation ? { excluded: true } : {}),
+      }
+    : undefined;
+
+  return { id: createId(), data: dataNode, dates, ...config };
+};
+
 export const useExpandQuery = ({
   selectedNode,
   hotkey,
@@ -44,53 +124,12 @@ export const useExpandQuery = ({
     (state) => state.conceptTrees.trees,
   );
   const expandNode = useCallback(
-    (
-      queryNode:
-        | AndNodeT
-        | DateRestrictionNodeT
-        | OrNodeT
-        | NegationNodeT
-        | QueryConceptNodeT
-        | SavedQueryNodeT,
-      config: {
-        parentId?: string;
-        negation?: boolean;
-        dateRestriction?: DateRangeT;
-      } = {},
-    ): Tree => {
+    (queryNode: ExpandableNode, config: ExpandConfig = {}): Tree => {
       switch (queryNode.type) {
         case "AND":
-          if (queryNode.children.length === 1) {
-            return expandNode(queryNode.children[0], config);
-          }
-          const andid = createId();
-          return {
-            id: andid,
-            ...config,
-            children: {
-              connection: "and",
-              direction: "horizontal",
-              items: queryNode.children.map((child) =>
-                expandNode(child, { parentId: andid }),
-              ),
-            },
-          };
+          return expandGroup(queryNode.children, config, "and", expandNode);
         case "OR":
-          if (queryNode.children.length === 1) {
-            return expandNode(queryNode.children[0], config);
-          }
-          const orid = createId();
-          return {
-            id: orid,
-            ...config,
-            children: {
-              connection: "or",
-              direction: "vertical",
-              items: queryNode.children.map((child) =>
-                expandNode(child, { parentId: orid }),
-              ),
-            },
-          };
+          return expandGroup(queryNode.children, config, "or", expandNode);
         case "NEGATION":
           return expandNode(queryNode.child, { ...config, negation: true });
         case "DATE_RESTRICTION":
@@ -99,48 +138,7 @@ export const useExpandQuery = ({
             dateRestriction: queryNode.dateRange,
           });
         case "CONCEPT":
-          const lookupResult = getConceptsByIdsWithTablesAndSelects(
-            rootConcepts,
-            queryNode.ids,
-            { useDefaults: false },
-          );
-          if (!lookupResult) {
-            throw new Error("Concept not found");
-          }
-          const { tables, selects } = mergeFromSavedConceptIntoNode(queryNode, {
-            tables: lookupResult.tables,
-            selects: lookupResult.selects || [],
-          });
-          const label = queryNode.label || lookupResult.concepts[0].label;
-          const description = lookupResult.concepts[0].description;
-
-          const dataNode: DragItemConceptTreeNode = {
-            ...queryNode,
-            dragContext: { width: 0, height: 0 },
-            additionalInfos: lookupResult.concepts[0].additionalInfos,
-            matchingEntities: lookupResult.concepts[0].matchingEntities,
-            matchingEntries: lookupResult.concepts[0].matchingEntries,
-            type: DNDType.CONCEPT_TREE_NODE,
-            label,
-            description,
-            tables,
-            selects,
-            tree: lookupResult.root,
-          };
-
-          return {
-            id: createId(),
-            data: dataNode,
-            dates: config.dateRestriction
-              ? {
-                  ...config.dateRestriction,
-                  ...(queryNode.excludeFromTimeAggregation
-                    ? { excluded: true }
-                    : {}),
-                }
-              : undefined,
-            ...config,
-          };
+          return conceptNodeToTree(queryNode, config, rootConcepts);
         case "SAVED_QUERY":
           const dataQuery: DragItemQuery = {
             ...queryNode,

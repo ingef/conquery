@@ -26,7 +26,7 @@ public class ProgressReporterUtil {
 		if (done) {
 			return ProgressReporterUtil.MAX_PROGRESS;
 		}
-		
+
 		if (progress == 0 || maxProgress == 0) {
 			// When no estimate can be calculated
 			return String.format(
@@ -36,7 +36,7 @@ public class ProgressReporterUtil {
 					UNKNOWN
 			);
 		}
-		
+
 
 		long remainingProgress = maxProgress - progress;
 		long estimateMillis = DoubleMath.roundToLong((elapsedMillis / progress) * remainingProgress, RoundingMode.HALF_UP);

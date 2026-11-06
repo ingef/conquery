@@ -1,17 +1,14 @@
-import styled from "@emotion/styled";
+import { C2 } from "../ui-components/Typography";
 
 interface Props {
   className?: string;
   message: string;
 }
 
-const Root = styled("p")`
-  color: ${({ theme }) => theme.col.red};
-  font-weight: 400;
-`;
-
-const ErrorMessage = ({ className, message }: Props) => {
-  return <Root className={className}>{message}</Root>;
-};
+const ErrorMessage = ({ className, message }: Props) => (
+  <div className={className}>
+    <C2 tone="danger">{message}</C2>
+  </div>
+);
 
 export default ErrorMessage;

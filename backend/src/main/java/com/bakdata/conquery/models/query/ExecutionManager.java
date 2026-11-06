@@ -142,17 +142,9 @@ public abstract class ExecutionManager {
 		executionInfosL2.put(id, result);
 	}
 
-	public final ManagedExecution runQuery(Namespace namespace, QueryDescription query, UserId user, boolean system) {
-		final ManagedExecution execution = createExecution(query, user, namespace, system);
-
-		execute(execution);
-
-		return execution;
-	}
-
 	// Visible for testing
-	public final ManagedExecution createExecution(QueryDescription query, UserId user, Namespace namespace, boolean system) {
-		return createExecution(query, UUID.randomUUID(), user, namespace, system);
+	public final ManagedExecution createExecution(QueryDescription query, UserId user, Namespace namespace, boolean system, UUID queryId) {
+		return createExecution(query, queryId, user, namespace, system);
 	}
 
 	public final void execute(ManagedExecution execution) {

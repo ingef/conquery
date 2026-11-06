@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import {
   Table as ArrowTable,
   type AsyncRecordBatchStreamReader,
@@ -6,8 +5,10 @@ import {
   type Vector,
 } from "apache-arrow";
 import RcTable from "rc-table";
-import { memo, useMemo, useRef } from "react";
+import { type ComponentProps, memo, useMemo, useRef } from "react";
+import { tv } from "tailwind-variants";
 import type { GetQueryResponseDoneT, GetQueryResponseT } from "../api/types";
+import { C2 } from "../ui-components/Typography";
 import { useCustomTableRenderers } from "./tableUtils";
 
 interface Props {
@@ -16,58 +17,37 @@ interface Props {
   queryData: GetQueryResponseT;
 }
 
-const Root = styled("div")`
-  flex-grow: 1;
-  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
-  transform: rotateX(180deg);
+// flipped so the horizontal scrollbar sits on top; the inner table flips back
+const root = tv({
+  base: [
+    "[transform:rotateX(180deg)]",
+    "[&_table]:[transform:rotateX(-180deg)]",
+  ],
+});
 
-  table {
-    transform: rotateX(-180deg);
-  }
-`;
+const table = tv({
+  base: [
+    "w-full",
+    "border-spacing-0",
+    "[&_th]:bg-bg-50 [&_th]:text-left",
+    "[&_td]:max-w-[25ch] [&_td]:overflow-hidden [&_td]:text-ellipsis [&_td]:whitespace-nowrap",
+    "[&_th]:px-2 [&_th]:py-[5px] [&_td]:px-2 [&_td]:py-[5px]",
+    "[&_th]:border-r [&_th]:border-b [&_th]:border-gray-100",
+    "[&_td]:border-r [&_td]:border-b [&_td]:border-gray-100",
+    "[&_th:last-of-type]:border-r-0 [&_td:last-of-type]:border-r-0",
+    "[&_tbody_tr:last-of-type_td]:border-b-0",
+    "[&_.rc-table-measure-cell]:py-0 [&_.rc-table-measure-cell]:border-y-0",
+    "[&_.rc-table-measure-cell-content]:invisible [&_.rc-table-measure-cell-content]:pointer-events-none",
+    "[&_.rc-table-measure-cell-content]:h-0 [&_.rc-table-measure-cell-content]:overflow-hidden",
+  ],
+});
 
-export const StyledTable = styled("table")`
-  width: 100%;
-  border-spacing: 0;
-
-  th {
-    background: ${({ theme }) => theme.col.grayVeryLight};
-    font-weight: normal;
-    text-align: left;
-  }
-
-  td {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 25ch;
-  }
-
-  th,
-  td {
-    padding: 10px;
-    border-bottom: 1px solid ${({ theme }) => theme.col.grayMediumLight};
-    border-right: 1px solid ${({ theme }) => theme.col.grayMediumLight};
-  }
-
-  th:last-of-type,
-  td:last-of-type {
-    border-right: none;
-  }
-
-  .rc-table-measure-cell {
-    padding-top: 0;
-    padding-bottom: 0;
-    border-top: 0;
-    border-bottom: 0;
-  }
-  .rc-table-measure-cell-content {
-    height: 0;
-    overflow: hidden;
-    visibility: hidden;
-    pointer-events: none;
-  }
-`;
+export const StyledTable = ({
+  className,
+  ...props
+}: ComponentProps<"table">) => (
+  <table className={table({ className })} {...props} />
+);
 
 export default memo(function Table({
   arrowReader,
@@ -84,13 +64,23 @@ export default memo(function Table({
       arrowReader.schema?.fields.map((field) => {
         const renderer = getRenderFunctionByFieldName(field.name);
 
+        const title = field.name.charAt(0).toUpperCase() + field.name.slice(1);
+
         return {
-          title: field.name.charAt(0).toUpperCase() + field.name.slice(1),
+          title: (
+            <C2 as="span" strong>
+              {title}
+            </C2>
+          ),
           dataIndex: field.name,
           key: field.name,
           render: (value: string | Vector) => {
             const rendered = renderer(value);
-            return <span title={rendered}>{rendered}</span>;
+            return (
+              <C2 as="span" title={rendered}>
+                {rendered}
+              </C2>
+            );
           },
         };
       }),
@@ -103,7 +93,7 @@ export default memo(function Table({
   );
 
   return (
-    <Root ref={rootRef}>
+    <div ref={rootRef} className={root()}>
       <RcTable
         columns={columns}
         data={loadedTableData}
@@ -113,6 +103,6 @@ export default memo(function Table({
         }}
         scroll={{ x: true }}
       />
-    </Root>
+    </div>
   );
 });

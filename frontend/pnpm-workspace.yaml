@@ -5,12 +5,13 @@ minimumReleaseAge: 10080
 trustPolicy: no-downgrade
 # Old transitive releases that predate their package's provenance; revisit when they drop out of the tree
 trustPolicyExclude:
+  # semver 6.x - comes from storybook: @storybook/react -> react-docgen -> @babel/core, whose helper
+  # packages pin semver ^6. 6.3.1 (2023) has no provenance while the 7.x line does, so pnpm reads it
+  # as a downgrade. Goes away if storybook stops using the babel-based react-docgen.
   - "semver@6.3.1"
-  - "@swc/core@1.13.5"
-# Lifecycle scripts are blocked unless explicitly allowed here
+# Lifecycle scripts are blocked unless explicitly allowed here (this is not a trust exception, it only
+# lets a package run its install script)
 allowBuilds:
+  # esbuild's install script puts the platform binary in place; needed by vitest, tsx, @tailwindcss/vite,
+  # @vitejs/plugin-react and storybook (vite 8 itself no longer uses esbuild)
   esbuild: true
-  # optional peer of ts-node (via jest-config), unused: never run its postinstall
-  "@swc/core": false
-  # jest 30 resolver ships prebuilt binaries as optional deps, postinstall is only a fallback
-  unrs-resolver: false

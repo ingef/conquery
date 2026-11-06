@@ -1,84 +1,63 @@
-import styled from "@emotion/styled";
-import { faFile, faPaste } from "@fortawesome/free-solid-svg-icons";
-import {
-  type ChangeEvent,
-  type MouseEvent,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { ClipboardPasteIcon, FileIcon } from "lucide-react";
+import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import { NativeTypes } from "react-dnd-html5-backend";
-import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
-
-import IconButton from "../button/IconButton";
-import PrimaryButton from "../button/PrimaryButton";
+import { tv } from "tailwind-variants";
 import { getUniqueFileRows } from "../common/helpers/fileHelper";
-import Modal from "../modal/Modal";
-
+import { Button } from "./Button";
 import DropzoneWithFileInput, {
   type DragItemFile,
 } from "./DropzoneWithFileInput";
+import {
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  type ModalProps,
+} from "./Modal";
+import { C2 } from "./Typography";
 
-const Content = styled("div")`
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-`;
+const content = tv({
+  base: ["flex flex-col", "gap-5"],
+});
 
-const Row = styled("div")`
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 10px;
-`;
-
-const Textarea = styled("textarea")`
-  font-family: monospace;
-  width: 100%;
-`;
-
-const HiddenFileInput = styled("input")`
-  display: none;
-`;
-
-const Subtitle = styled(`p`)`
-  margin: 0;
-  max-width: 600px;
-`;
+const textarea = tv({
+  base: ["font-mono", "w-full"],
+});
 
 const acceptedDropTypes = [NativeTypes.FILE];
 
 const useCanReadClipboard = () => {
   const [canReadClipboard, setCanReadClipboard] = useState(false);
   useEffect(() => {
-    const checkPersmission = async () => {
-      const { state } = await navigator.permissions.query({
+    if (!navigator.clipboard?.readText) return;
+
+    navigator.permissions
+      .query({
         // @ts-ignore https://github.com/microsoft/TypeScript/issues/33923
         name: "clipboard-read",
-      });
-
-      if (state === "granted" || state === "prompt") {
-        setCanReadClipboard(true);
-      }
-    };
-    checkPersmission();
+      })
+      .then(({ state }) => setCanReadClipboard(state !== "denied"))
+      // Firefox knows no clipboard-read permission, readText prompts on its own
+      .catch(() => setCanReadClipboard(true));
   }, []);
 
   return canReadClipboard;
 };
 
-export const ImportModal = ({
-  placeholder,
-  description,
-  onClose,
-  onSubmit,
-}: {
+type ImportProps = {
   description?: string;
   placeholder?: string;
-  onClose: () => void;
   onSubmit: (lines: string[], filename?: string) => void;
-}) => {
+};
+
+// rendered only while the modal is open, so nothing here runs for a closed modal
+const ImportModalContent = ({
+  placeholder,
+  description,
+  onSubmit,
+  close,
+}: ImportProps & { close: () => void }) => {
   const { t } = useTranslation();
   const [textInput, setTextInput] = useState("");
   const [droppedFilename, setDroppedFilename] = useState<string>();
@@ -86,18 +65,14 @@ export const ImportModal = ({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const onSubmitClick = (
-    e: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>,
-  ) => {
-    e.stopPropagation();
-
+  const onSubmitClick = () => {
     const lines = textInput
       .split("\n")
       .map((line) => line.trim())
       .filter((line) => line.length > 0);
 
     onSubmit(lines, droppedFilename);
-    onClose();
+    close();
   };
 
   const onOpenFileDialog = () => {
@@ -131,11 +106,10 @@ export const ImportModal = ({
   };
 
   const onPasteClick = async () => {
-    if (navigator.clipboard) {
-      const text = await navigator.clipboard.readText();
+    // rejects when the user denies the browser's clipboard prompt
+    const text = await navigator.clipboard.readText().catch(() => null);
 
-      autoFormatAndSet(text);
-    }
+    if (text) autoFormatAndSet(text);
   };
 
   const onDrop = async ({ files }: DragItemFile) => {
@@ -155,63 +129,89 @@ export const ImportModal = ({
     }
   };
 
-  return createPortal(
-    <Modal
-      headline={t("importModal.headline")}
-      subtitle={t("importModal.subtitle")}
-      onClose={onClose}
-    >
-      <Content>
-        {description && (
-          <Subtitle dangerouslySetInnerHTML={{ __html: description }} />
-        )}
-        <DropzoneWithFileInput
-          onDrop={onDrop}
-          acceptedDropTypes={acceptedDropTypes}
-          disableClick
-          accept="text/plain,text/csv"
-        >
-          {() => (
-            <Textarea
-              rows={15}
-              value={textInput}
-              onChange={onChange}
-              placeholder={placeholder}
+  return (
+    <>
+      <ModalHeader subtitle={t("importModal.subtitle")}>
+        {t("importModal.headline")}
+      </ModalHeader>
+      <ModalBody>
+        <div className={content()}>
+          {description && (
+            <C2
+              // biome-ignore lint/security/noDangerouslySetInnerHtml: description is our own i18n text
+              dangerouslySetInnerHTML={{ __html: description }}
             />
           )}
-        </DropzoneWithFileInput>
-        <Row>
-          <IconButton icon={faFile} onClick={onOpenFileDialog}>
-            {t("common.openFileDialog")}
-          </IconButton>
-          {canReadClipboard && (
-            <IconButton icon={faPaste} onClick={onPasteClick}>
-              {t("importModal.paste")}
-            </IconButton>
-          )}
-          <PrimaryButton
-            disabled={textInput.length === 0}
-            onClick={onSubmitClick}
+          <DropzoneWithFileInput
+            onDrop={onDrop}
+            acceptedDropTypes={acceptedDropTypes}
+            disableClick
+            accept="text/plain,text/csv"
           >
-            {t("importModal.submit")}
-          </PrimaryButton>
-        </Row>
-        <HiddenFileInput
-          type="file"
-          ref={fileInputRef}
-          accept="text/plain,text/csv"
-          onChange={(e) => {
-            if (e.target.files) {
-              onSelectFile(e.target.files[0]);
-            }
+            {() => (
+              <textarea
+                className={textarea()}
+                rows={15}
+                value={textInput}
+                onChange={onChange}
+                placeholder={placeholder}
+              />
+            )}
+          </DropzoneWithFileInput>
+          <input
+            className="hidden"
+            type="file"
+            ref={fileInputRef}
+            accept="text/plain,text/csv"
+            onChange={(e) => {
+              if (e.target.files) {
+                onSelectFile(e.target.files[0]);
+              }
 
-            if (fileInputRef.current) {
-              fileInputRef.current.value = "";
-            }
-          }}
-        />
-      </Content>
-    </Modal>,
-    document.getElementById("root")!,
+              if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+              }
+            }}
+          />
+        </div>
+      </ModalBody>
+      <ModalFooter>
+        <Button intent="tertiary" onPress={onOpenFileDialog}>
+          <FileIcon />
+          {t("common.openFileDialog")}
+        </Button>
+        {canReadClipboard && (
+          <Button intent="tertiary" onPress={onPasteClick}>
+            <ClipboardPasteIcon />
+            {t("importModal.paste")}
+          </Button>
+        )}
+        <Button
+          intent="primary"
+          isDisabled={textInput.length === 0}
+          onPress={onSubmitClick}
+        >
+          {t("importModal.submit")}
+        </Button>
+      </ModalFooter>
+    </>
   );
 };
+
+export const ImportModal = ({
+  placeholder,
+  description,
+  onSubmit,
+  ...modalProps
+}: Pick<ModalProps, "isOpen" | "onOpenChange"> & ImportProps) => (
+  <Modal size="lg" {...modalProps}>
+    {({ close }) => (
+      <ImportModalContent
+        placeholder={placeholder}
+        description={description}
+        onSubmit={onSubmit}
+        close={close}
+      />
+    )}
+  </Modal>
+);

@@ -1,64 +1,41 @@
-import { css } from "@emotion/react";
-import styled from "@emotion/styled";
+import type { ReactNode } from "react";
+import { tv } from "tailwind-variants";
 
-import type { Headline as HeadlineField } from "../config-types";
+import { exists } from "../../common/helpers/exists";
+import { H3, H4, H5 } from "../../ui-components/Typography";
 
-const HEADLINE_DOM = {
-  h1: "h3" as const,
-  h2: "h4" as const,
-  h3: "h5" as const,
+// the config's h1/h2/h3 are the form's own levels; the app's outline starts at h3 inside the form pane
+const HEADING = { h1: H3, h2: H4, h3: H5 } as const;
+
+// no margins below the section level: inside a grid group they would offset the columns
+const spacing = tv({
+  variants: {
+    size: {
+      h1: "mt-3",
+      h2: "",
+      h3: "",
+    },
+  },
+  defaultVariants: { size: "h1" },
+});
+
+export const Headline = ({
+  size = "h1",
+  index,
+  children,
+}: {
+  size?: "h1" | "h2" | "h3";
+  /** the number of a top-level section */
+  index?: number;
+  children: ReactNode;
+}) => {
+  const Heading = HEADING[size];
+  return (
+    <div className={spacing({ size })}>
+      <Heading>
+        {exists(index) && <span className="mr-2 text-gray-400">{index}</span>}
+        {children}
+      </Heading>
+    </div>
+  );
 };
-
-export const getHeadlineFieldAs = (headline: HeadlineField) => {
-  if (!headline.style?.size) return "h3";
-
-  // To convert the "simplified" headline type to the real DOM element type
-  return HEADLINE_DOM[headline.style.size];
-};
-
-export const Headline = styled("h3")<{ size?: "h1" | "h2" | "h3" }>`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: ${({ theme, size }) =>
-    size === "h3"
-      ? theme.font.sm
-      : size === "h2"
-        ? theme.font.md
-        : theme.font.lg};
-  line-height: 1;
-  color: ${({ theme }) => theme.col.black};
-  font-weight: ${({ size }) => (size === "h3" ? "700" : "400")};
-
-  &:first-child {
-    margin-top: 0;
-  }
-
-  position: relative;
-
-  ${({ size }) =>
-    (!size || size === "h1") &&
-    css`
-      margin: 20px 0 5px;
-      margin-left: 0;
-    `};
-
-  ${({ size }) =>
-    (size === "h2" || size === "h3") &&
-    css`
-      border-left: 0;
-      padding-left: 0;
-      margin: 10px 0 3px;
-      margin-left: 10px;
-    `};
-`;
-
-export const HeadlineIndex = styled("span")`
-  padding: 0 10px;
-  font-size: ${({ theme }) => theme.font.lg};
-  border-right: 3px solid ${({ theme }) => theme.col.grayMediumLight};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: ${({ theme }) => theme.col.grayMediumLight};
-`;

@@ -56,7 +56,7 @@ public class ChunkingOutputStream extends OutputStream {
 	public void close() throws IOException {
 		write();
 	}
-	
+
 	private void write() {
 		if (off > 0) {
 			if(off == size) {
@@ -67,7 +67,7 @@ public class ChunkingOutputStream extends OutputStream {
 				consumer.accept(Arrays.copyOf(buf, off));
 			}
 			off = 0;
-			
+
 		}
 	}
 }

@@ -1,9 +1,8 @@
-import styled from "@emotion/styled";
-import { t } from "i18next";
 import RcTable from "rc-table";
-import { useHotkeys } from "react-hotkeys-hook";
+import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 import type { PreviewStatistics } from "../api/types";
-import Modal from "../modal/Modal";
+import { Modal, ModalBody, ModalHeader } from "../ui-components/Modal";
 import Diagram from "./Diagram";
 import { StyledTable } from "./Table";
 import { previewStatsIsBarStats } from "./util";
@@ -13,57 +12,57 @@ interface DiagramModalProps {
   onClose: () => void;
 }
 
-const Horizontal = styled("div")`
-  display: inline-flex;
-`;
+const body = tv({ base: ["flex items-start", "gap-5"] });
 
-const SxDiagram = styled(Diagram)`
-  width: 70vw;
-  height: 70vh;
-  margin-right: 15px;
-`;
+const diagram = tv({ base: ["h-[70vh]", "min-w-0 grow"] });
 
-const StyledRcTable = styled(RcTable)`
-  margin: auto;
-`;
+const components = { table: StyledTable };
 
 export default function DiagramModal({
   statistic,
   onClose,
 }: DiagramModalProps) {
-  const components = {
-    table: StyledTable,
-  };
-
-  useHotkeys("esc", () => onClose());
+  const { t } = useTranslation();
 
   return (
-    <Modal onClose={onClose}>
-      <Horizontal>
-        <SxDiagram stat={statistic} />
-        {previewStatsIsBarStats(statistic) &&
-          Object.keys(statistic.extras).length > 0 && (
-            <StyledRcTable
-              columns={[
-                {
-                  title: t("preview.name"),
-                  dataIndex: "name",
-                  key: "name",
-                },
-                {
-                  title: t("preview.value"),
-                  dataIndex: "value",
-                  key: "value",
-                },
-              ]}
-              data={Object.entries(statistic.extras).map(([name, value]) => {
-                return { name, value };
-              })}
-              rowKey={(_, index) => `row_${index}`}
-              components={components}
-            />
-          )}
-      </Horizontal>
+    <Modal
+      size="full"
+      isOpen
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onClose();
+      }}
+    >
+      <ModalHeader subtitle={statistic.description}>
+        {statistic.label}
+      </ModalHeader>
+      <ModalBody>
+        <div className={body()}>
+          <Diagram className={diagram()} stat={statistic} showTitle={false} />
+          {previewStatsIsBarStats(statistic) &&
+            Object.keys(statistic.extras).length > 0 && (
+              <RcTable
+                className="shrink-0"
+                columns={[
+                  {
+                    title: t("preview.name"),
+                    dataIndex: "name",
+                    key: "name",
+                  },
+                  {
+                    title: t("preview.value"),
+                    dataIndex: "value",
+                    key: "value",
+                  },
+                ]}
+                data={Object.entries(statistic.extras).map(([name, value]) => {
+                  return { name, value };
+                })}
+                rowKey={(_, index) => `row_${index}`}
+                components={components}
+              />
+            )}
+        </div>
+      </ModalBody>
     </Modal>
   );
 }

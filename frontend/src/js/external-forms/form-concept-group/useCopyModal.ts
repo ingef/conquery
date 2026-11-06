@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 import {
   addConcept,
   addValue,
@@ -16,8 +14,6 @@ export const useCopyModal = ({
   onChange: (value: FormConceptGroupT[]) => void;
   newValue: FormConceptGroupT;
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
-
   const onAccept = (valuesToCopy: FormConceptGroupT[]) => {
     // Deeply copy all values + concepts
     const nextValue = valuesToCopy.reduce((currentValue, value) => {
@@ -33,9 +29,5 @@ export const useCopyModal = ({
     return onChange(nextValue);
   };
 
-  return {
-    isOpen,
-    onAccept,
-    setIsOpen,
-  };
+  return { onAccept };
 };

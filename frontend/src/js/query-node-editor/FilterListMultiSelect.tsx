@@ -1,4 +1,4 @@
-import { type FC, useState } from "react";
+import { useState } from "react";
 
 import { usePostFilterValuesResolve } from "../api/api";
 import type {
@@ -8,12 +8,14 @@ import type {
   SelectOptionT,
 } from "../api/types";
 import { exists } from "../common/helpers/exists";
-import InputMultiSelect from "../ui-components/InputMultiSelect/InputMultiSelect";
-import { filterSuggestionToSelectOption } from "./suggestionsHelper";
+import { ComboBoxMultiField } from "../ui-components/ComboBoxMultiField";
+import { withoutDuplicates } from "../ui-components/ComboBoxParts";
 import UploadFilterListModal from "./UploadFilterListModal";
 
 const PAGE_SIZE = 25;
+// the backend's caps
 const MAX_AUTOCOMPLETE_TEXT_LENGTH = 500;
+const MAX_AUTOCOMPLETE_PAGE_SIZE = 500;
 
 const getPageToLoad = (
   prevPageLoaded: number | null,
@@ -37,13 +39,27 @@ const getPageToLoad = (
     : prevPageLoaded + 1;
 };
 
-interface PropsT {
+const FilterListMultiSelect = ({
+  filterId,
+  value,
+  onChange,
+  label,
+  tooltip,
+  indexPrefix,
+  options,
+  isDisabled,
+  allowDropFile,
+  creatable,
+
+  total,
+  onLoad,
+}: {
   filterId: FilterT["id"];
 
   label: string;
   indexPrefix?: number;
   options: SelectOptionT[];
-  disabled?: boolean;
+  isDisabled?: boolean;
   tooltip?: string;
   allowDropFile?: boolean;
   creatable?: boolean;
@@ -58,22 +74,6 @@ interface PropsT {
 
   value: SelectOptionT[];
   onChange: (value: SelectOptionT[]) => void;
-}
-
-const FilterListMultiSelect: FC<PropsT> = ({
-  filterId,
-  value,
-  onChange,
-  label,
-  tooltip,
-  indexPrefix,
-  options,
-  disabled,
-  allowDropFile,
-  creatable,
-
-  total,
-  onLoad,
 }) => {
   const [resolved, setResolved] = useState<PostFilterResolveResponseT | null>(
     null,
@@ -112,12 +112,18 @@ const FilterListMultiSelect: FC<PropsT> = ({
 
     setLoading(true);
     try {
-      const suggestions = await onLoad(prefix, 0, total, { returnOnly: true });
-      const options = suggestions?.values.map(filterSuggestionToSelectOption);
-
-      if (options) {
-        onChange(options);
+      const all: SelectOptionT[] = [];
+      for (let page = 0; page * MAX_AUTOCOMPLETE_PAGE_SIZE < total; page++) {
+        const suggestions = await onLoad(
+          prefix,
+          page,
+          MAX_AUTOCOMPLETE_PAGE_SIZE,
+          { returnOnly: true },
+        );
+        if (!suggestions) break;
+        all.push(...suggestions.values);
       }
+      onChange(withoutDuplicates(value, all));
     } catch (e) {
       // fail silently
       console.error(e);
@@ -159,7 +165,7 @@ const FilterListMultiSelect: FC<PropsT> = ({
 
     if (!hasSomethingToInsert) return;
 
-    const value = includeUnresolved
+    const added = includeUnresolved
       ? [
           ...resolvedResponse.resolvedFilter!.value,
           ...resolvedResponse.unknownCodes.map((item) => ({
@@ -169,7 +175,7 @@ const FilterListMultiSelect: FC<PropsT> = ({
         ]
       : resolvedResponse.resolvedFilter!.value;
 
-    onChange(value);
+    onChange(withoutDuplicates(value, added));
   };
 
   return (
@@ -183,7 +189,7 @@ const FilterListMultiSelect: FC<PropsT> = ({
           onClose={() => setIsModalOpen(false)}
         />
       )}
-      <InputMultiSelect
+      <ComboBoxMultiField
         value={value}
         onChange={onChange}
         label={label}
@@ -191,7 +197,7 @@ const FilterListMultiSelect: FC<PropsT> = ({
         options={options}
         total={total}
         loading={loading}
-        disabled={disabled}
+        isDisabled={isDisabled}
         indexPrefix={indexPrefix}
         creatable={creatable}
         maxInputLength={onLoad ? MAX_AUTOCOMPLETE_TEXT_LENGTH : undefined}

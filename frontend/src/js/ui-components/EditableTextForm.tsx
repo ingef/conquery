@@ -1,41 +1,27 @@
-import styled from "@emotion/styled";
-import { faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
-import { type FC, type FormEvent, useRef, useState } from "react";
+import { CheckIcon, LoaderCircleIcon } from "lucide-react";
+import { type FormEvent, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-
-import IconButton from "../button/IconButton";
+import { tv } from "tailwind-variants";
 import { useClickOutside } from "../common/helpers/useClickOutside";
-import WithTooltip from "../tooltip/WithTooltip";
+import { Button } from "./Button";
+import { Tooltip, TooltipTrigger } from "./Tooltip";
+import { textStyle } from "./Typography";
 
-interface PropsT {
-  className?: string;
-  text: string;
-  loading?: boolean;
-  selectTextOnMount?: boolean;
-  saveOnClickoutside?: boolean;
-  onSubmit: (text: string) => void;
-  onCancel: () => void;
-}
+const input = tv({
+  base: [
+    "h-[30px]",
+    "px-2",
+    "rounded",
+    "border border-gray-500",
+    textStyle({ size: 2 }),
+  ],
+});
 
-const Input = styled("input")`
-  font-size: ${({ theme }) => theme.font.sm};
-  padding: 0 8px;
-  height: 28px;
-  border: 1px solid ${({ theme }) => theme.col.gray};
-  border-radius: ${({ theme }) => theme.borderRadius};
-`;
+const form = tv({
+  base: "flex items-center",
+});
 
-const Form = styled("form")`
-  display: flex;
-  align-items: center;
-`;
-
-const SxIconButton = styled(IconButton)`
-  padding: 6px 10px;
-  margin-left: 3px;
-`;
-
-const EditableTextForm: FC<PropsT> = ({
+const EditableTextForm = ({
   className,
   text,
   loading,
@@ -43,6 +29,14 @@ const EditableTextForm: FC<PropsT> = ({
   saveOnClickoutside,
   onSubmit,
   onCancel,
+}: {
+  className?: string;
+  text: string;
+  loading?: boolean;
+  selectTextOnMount?: boolean;
+  saveOnClickoutside?: boolean;
+  onSubmit: (text: string) => void;
+  onCancel: () => void;
 }) => {
   const { t } = useTranslation();
   const [value, setValue] = useState<string>(text);
@@ -58,8 +52,9 @@ const EditableTextForm: FC<PropsT> = ({
   useClickOutside(ref, saveOnClickoutside ? () => onSubmit(value) : onCancel);
 
   return (
-    <Form ref={ref} className={className} onSubmit={onSubmitForm}>
-      <Input
+    <form ref={ref} className={form({ className })} onSubmit={onSubmitForm}>
+      <input
+        className={input()}
         type="text"
         value={value}
         onChange={(e) => setValue(e.target.value)}
@@ -74,16 +69,21 @@ const EditableTextForm: FC<PropsT> = ({
         }}
       />
       {!saveOnClickoutside && (
-        <WithTooltip text={t("common.save")}>
-          <SxIconButton
-            type="submit"
-            frame
-            disabled={loading}
-            icon={loading ? faSpinner : faCheck}
-          />
-        </WithTooltip>
+        <div className="ml-[3px]">
+          <TooltipTrigger>
+            <Button
+              aria-label={t("common.save")}
+              intent="secondary"
+              type="submit"
+              isDisabled={loading}
+            >
+              {loading ? <LoaderCircleIcon /> : <CheckIcon />}
+            </Button>
+            <Tooltip>{t("common.save")}</Tooltip>
+          </TooltipTrigger>
+        </div>
       )}
-    </Form>
+    </form>
   );
 };
 

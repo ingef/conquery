@@ -70,7 +70,7 @@ export const groupByQuarter = (
   // Bucket by quarter
   for (const row of entityData) {
     const [year, month] = (row[dateColumn.label] as DateRow).from.split("-");
-    const quarter = Math.floor((parseInt(month) - 1) / 3) + 1;
+    const quarter = Math.floor((parseInt(month, 10) - 1) / 3) + 1;
 
     if (!result[year]) {
       result[year] = { [quarter]: [] };
@@ -94,12 +94,15 @@ export const groupByQuarter = (
 
   // Sort within quarter
   const sortedEvents = Object.entries(result)
-    .sort(([yearA], [yearB]) => parseInt(yearB) - parseInt(yearA))
+    .sort(([yearA], [yearB]) => parseInt(yearB, 10) - parseInt(yearA, 10))
     .map(([year, quarterwiseData]) => ({
-      year: parseInt(year),
+      year: parseInt(year, 10),
       quarterwiseData: Object.entries(quarterwiseData)
-        .sort(([qA], [qB]) => parseInt(qB) - parseInt(qA))
-        .map(([quarter, events]) => ({ quarter: parseInt(quarter), events })),
+        .sort(([qA], [qB]) => parseInt(qB, 10) - parseInt(qA, 10))
+        .map(([quarter, events]) => ({
+          quarter: parseInt(quarter, 10),
+          events,
+        })),
     }));
 
   if (sortedEvents.length === 0) {

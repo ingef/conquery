@@ -1,29 +1,28 @@
-import styled from "@emotion/styled";
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { LoaderCircleIcon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
-
+import { tv } from "tailwind-variants";
 import {
   usePostPrefixForSuggestions,
   usePostResolveEntities,
 } from "../api/api";
 import { transformFilterValueToApi } from "../api/apiHelper";
-import type { ConceptT, TableT } from "../api/types";
+import type { TableT } from "../api/types";
 import type { StateT } from "../app/reducers";
-import PrimaryButton from "../button/PrimaryButton";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import { useDatasetId } from "../dataset/selectors";
-import FaIcon from "../icon/FaIcon";
-import { isMultiSelectFilter, resetFilters } from "../model/filter";
+import {
+  filterHasValue,
+  isMultiSelectFilter,
+  resetFilters,
+} from "../model/filter";
 import { nodeIsElement } from "../model/node";
-import { filterSuggestionToSelectOption } from "../query-node-editor/suggestionsHelper";
 import TableFilters from "../query-node-editor/TableFilters";
-import type {
-  BigMultiSelectFilterWithValueType,
-  MultiSelectFilterWithValueType,
-} from "../standard-query-editor/types";
+import type { FilterWithValueType } from "../standard-query-editor/types";
+import { Button } from "../ui-components/Button";
 
+import { pickEntityId } from "./entityIds";
 import type { LoadingPayload } from "./LoadHistoryDropzone";
 import { useDefaultStatusOptions } from "./useDefaultStatusOptions";
 
@@ -32,53 +31,45 @@ export const SearchEntites = ({
 }: {
   onLoad: (payload: LoadingPayload) => void;
 }) => {
-  const searchConcept = useSelector<StateT, ConceptT | undefined>((state) => {
-    const searchConceptId = state.entityHistory.defaultParams.searchConcept;
+  const searchConceptTable = useSelector<StateT, TableT | undefined>(
+    (state) => {
+      const { searchConcept, searchConnector } =
+        state.entityHistory.defaultParams;
+      const concept = searchConcept ? getConceptById(searchConcept) : undefined;
 
-    return searchConceptId ? getConceptById(searchConceptId) : undefined;
-  });
+      if (!concept || !nodeIsElement(concept)) return undefined;
 
-  if (
-    !searchConcept ||
-    !nodeIsElement(searchConcept) ||
-    searchConcept.tables?.length !== 1
-  ) {
-    return null;
-  }
+      return concept.tables?.find((t) => t.connectorId === searchConnector);
+    },
+  );
 
-  const searchConceptTable = searchConcept.tables[0];
+  if (!searchConceptTable) return null;
 
   return <SearchEntitiesComponent table={searchConceptTable} onLoad={onLoad} />;
 };
-
-type MultiSelectFilter =
-  | MultiSelectFilterWithValueType
-  | BigMultiSelectFilterWithValueType;
 
 const useFilterState = (table: TableT) => {
   const allowlistedSearchFilters = useSelector<StateT, string[]>(
     (state) => state.entityHistory.defaultParams.searchFilters,
   );
-  const [searchFilters, setSearchFilters] = useState<MultiSelectFilter[]>(
-    resetFilters(
-      table.filters
-        .filter((f) => allowlistedSearchFilters.includes(f.id))
-        .filter(
-          (f): f is MultiSelectFilter =>
-            f.type === "BIG_MULTI_SELECT" || f.type === "MULTI_SELECT",
-        ),
-    ) as MultiSelectFilter[],
+  const [searchFilters, setSearchFilters] = useState<FilterWithValueType[]>(
+    () =>
+      resetFilters(
+        table.filters.filter((f) => allowlistedSearchFilters.includes(f.id)),
+      ),
   );
 
-  const setFilterValue = useCallback((filterIdx: number, value: unknown) => {
-    setSearchFilters((filters) =>
-      filters.map((f, i) =>
-        i === filterIdx
-          ? { ...f, value: value as MultiSelectFilterWithValueType["value"] }
-          : f,
-      ),
-    );
-  }, []);
+  const setFilterValue = useCallback(
+    (filterIdx: number, value: FilterWithValueType["value"]) => {
+      setSearchFilters((filters) =>
+        filters.map((f, i) =>
+          // value shape follows the filter type, TableFilter guarantees the match
+          i === filterIdx ? ({ ...f, value } as FilterWithValueType) : f,
+        ),
+      );
+    },
+    [],
+  );
 
   const postPrefixForSuggestions = usePostPrefixForSuggestions();
 
@@ -104,12 +95,12 @@ const useFilterState = (table: TableT) => {
 
       const nextOptions =
         page === 0
-          ? suggestions.values.map(filterSuggestionToSelectOption)
+          ? suggestions.values
           : [
               ...filter.options,
-              ...suggestions.values
-                .filter((v) => !filter.options.find((o) => o.value === v.value))
-                .map(filterSuggestionToSelectOption),
+              ...suggestions.values.filter(
+                (v) => !filter.options.find((o) => o.value === v.value),
+              ),
             ];
 
       const filterParams = {
@@ -141,10 +132,7 @@ const useSubmitSearch = ({
   searchFilters,
   onLoad,
 }: {
-  searchFilters: (
-    | MultiSelectFilterWithValueType
-    | BigMultiSelectFilterWithValueType
-  )[];
+  searchFilters: FilterWithValueType[];
   onLoad: (payload: LoadingPayload) => void;
 }) => {
   const { t } = useTranslation();
@@ -152,26 +140,26 @@ const useSubmitSearch = ({
   const defaultStatusOptions = useDefaultStatusOptions();
   const datasetId = useDatasetId();
   const postResolveEntities = usePostResolveEntities();
+  const prioritizedIdColumns = useSelector<StateT, string[]>(
+    (state) => state.entityHistory.defaultParams.prioritizedIdColumns,
+  );
 
   const onSubmitSearch = useCallback(async () => {
     if (!datasetId) return;
 
     setLoading(true);
 
-    const filterValues = searchFilters
-      .map((f) => ({
-        filter: f.id,
-        type: f.type as "MULTI_SELECT" | "BIG_MULTI_SELECT",
-        value: transformFilterValueToApi(f) as string[],
-      }))
-      .filter((f) => f.value.length !== 0);
+    const filterValues = searchFilters.filter(filterHasValue).flatMap((f) => {
+      const value = transformFilterValueToApi(f);
+      return value === null ? [] : [{ filter: f.id, type: f.type, value }];
+    });
 
     try {
       const result = await postResolveEntities(datasetId, filterValues);
 
-      const loadedEntityIds = result.map((e) => {
-        const keys = Object.keys(e);
-        return { id: e[keys[0]], kind: keys[0] };
+      const loadedEntityIds = result.flatMap((idsByKind) => {
+        const entityId = pickEntityId(idsByKind, prioritizedIdColumns);
+        return entityId ? [entityId] : [];
       });
 
       setLoading(false);
@@ -188,6 +176,7 @@ const useSubmitSearch = ({
   }, [
     t,
     datasetId,
+    prioritizedIdColumns,
     onLoad,
     defaultStatusOptions,
     searchFilters,
@@ -195,7 +184,7 @@ const useSubmitSearch = ({
   ]);
 
   const hasFiltersSet = useMemo(
-    () => searchFilters.some((f) => (f.value?.length ?? 0) > 0),
+    () => searchFilters.some(filterHasValue),
     [searchFilters],
   );
 
@@ -206,29 +195,16 @@ const useSubmitSearch = ({
   };
 };
 
-const Root = styled("div")`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  padding: 10px 12px;
+const root = tv({
+  base: [
+    "flex flex-col items-center",
+    "gap-[14px]",
+    "px-3 py-[10px]",
+    "[&>div]:w-full",
+  ],
+});
 
-  > div {
-    width: 100%;
-  }
-`;
-
-const SxPrimaryButton = styled(PrimaryButton)`
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-`;
-
-const noop = () => {};
-
-export const SearchEntitiesComponent = ({
+const SearchEntitiesComponent = ({
   table,
   onLoad,
 }: {
@@ -247,21 +223,23 @@ export const SearchEntitiesComponent = ({
   if (searchFilters.length === 0) return null;
 
   return (
-    <Root>
+    <div className={root()}>
       <TableFilters
         filters={searchFilters}
         excludeTable={false}
         onSetFilterValue={setFilterValue}
-        onSwitchFilterMode={noop}
         onLoadFilterSuggestions={loadFilterSuggestions}
       />
-      <SxPrimaryButton
-        onClick={onSubmitSearch}
-        disabled={!hasFiltersSet || loading}
-      >
-        {loading && <FaIcon white icon={faSpinner} />}
-        {t("history.searchEntitiesButton")}
-      </SxPrimaryButton>
-    </Root>
+      <div className="grid">
+        <Button
+          intent="primary"
+          onPress={onSubmitSearch}
+          isDisabled={!hasFiltersSet || loading}
+        >
+          {loading && <LoaderCircleIcon className="text-white" />}
+          {t("history.searchEntitiesButton")}
+        </Button>
+      </div>
+    </div>
   );
 };

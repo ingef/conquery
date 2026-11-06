@@ -1,22 +1,21 @@
-import styled from "@emotion/styled";
 import { Fragment, memo } from "react";
-
+import { tv } from "tailwind-variants";
 import type { EntityInfo } from "../api/types";
+import { C2 } from "../ui-components/Typography";
 
-const Grid = styled("div")`
-  display: inline-grid;
-  grid-template-columns: 1fr auto;
-  gap: 0 20px;
-  place-items: center start;
-`;
-const Label = styled("div")`
-  font-size: ${({ theme }) => theme.font.sm};
-`;
-const Value = styled("div")<{ blurred?: boolean }>`
-  font-size: ${({ theme }) => theme.font.sm};
-  font-weight: 400;
-  ${({ blurred }) => blurred && "filter: blur(6px);"}
-`;
+const grid = tv({
+  base: [
+    "inline-grid grid-cols-[1fr_auto]",
+    "gap-x-5 gap-y-0",
+    "[place-items:center_start]",
+  ],
+});
+
+const value = tv({
+  variants: {
+    blurred: { true: "blur-[6px]" },
+  },
+});
 
 const EntityInfos = ({
   infos,
@@ -26,14 +25,16 @@ const EntityInfos = ({
   blurred?: boolean;
 }) => {
   return (
-    <Grid>
+    <div className={grid()}>
       {infos.map((info) => (
         <Fragment key={info.label}>
-          <Label>{info.label}</Label>
-          <Value blurred={blurred}>{info.value}</Value>
+          <C2>{info.label}</C2>
+          <div className={value({ blurred })}>
+            <C2>{info.value}</C2>
+          </div>
         </Fragment>
       ))}
-    </Grid>
+    </div>
   );
 };
 

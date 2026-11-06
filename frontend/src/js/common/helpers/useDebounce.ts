@@ -20,7 +20,6 @@ export const useDebounce = (
     delayRef.current = delay;
   }, [delay]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: dependencies are passed in by the caller, so useDebounce works like useEffect
   useEffect(() => {
     if (handle.current) clearTimeout(handle.current);
 
@@ -32,5 +31,6 @@ export const useDebounce = (
     return () => {
       if (handle.current) clearTimeout(handle.current);
     };
+    // biome-ignore lint/correctness/useExhaustiveDependencies: dependencies are passed in by the caller, so useDebounce works like useEffect
   }, debounceTriggers);
 };

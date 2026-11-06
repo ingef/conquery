@@ -1,95 +1,76 @@
-import styled from "@emotion/styled";
-import { faFolder as faFolderRegular } from "@fortawesome/free-regular-svg-icons";
-import { faFolder } from "@fortawesome/free-solid-svg-icons";
-import type { FC } from "react";
-import Highlighter from "react-highlight-words";
-
+import { FolderIcon } from "lucide-react";
+import { tv } from "tailwind-variants";
 import { exists } from "../../common/helpers/exists";
-import FaIcon from "../../icon/FaIcon";
+import { Highlighter } from "../../ui-components/Highlighter";
+import { C2, textStyle } from "../../ui-components/Typography";
 
-const SxFaIcon = styled(FaIcon)`
-  margin-right: 8px;
-`;
+const root = tv({
+  base: [
+    "inline-flex items-center",
+    "px-[7px] py-[2px]",
+    "rounded",
+    "cursor-pointer",
+    "hover:bg-gray-50",
+  ],
+  variants: {
+    selected: {
+      true: "bg-primary-50 text-primary-500 hover:bg-primary-100",
+    },
+    special: { true: "italic" },
+  },
+});
 
-const Root = styled("div")<{ active?: boolean; special?: boolean }>`
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 7px;
-  border-radius: ${({ theme }) => theme.borderRadius};
-  font-size: ${({ theme }) => theme.font.sm};
-  cursor: pointer;
-  font-style: ${({ special }) => (special ? "italic" : "inherit")};
+const resultCount = tv({
+  base: [
+    "shrink-0",
+    "inline-flex items-center justify-center",
+    "h-4",
+    "mr-[5px]",
+    "rounded",
+    textStyle({ size: 3, tone: "primary", strong: true }),
+  ],
+});
 
-  background-color: ${({ theme, active }) =>
-    active ? theme.col.grayLight : "transparent"};
-  &:hover {
-    background-color: ${({ theme }) => theme.col.blueGrayVeryLight};
-  }
-`;
-
-const Text = styled("div")`
-  flex-shrink: 0;
-  color: ${({ theme }) => theme.col.black};
-`;
-
-const ResultCount = styled("span")`
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-  padding: 2px 0;
-  margin-right: 5px;
-  font-size: ${({ theme }) => theme.font.xs};
-  border-radius: ${({ theme }) => theme.borderRadius};
-  color: ${({ theme }) => theme.col.blueGrayDark};
-  font-weight: 700;
-`;
-
-interface Props {
+const Folder = ({
+  className,
+  resultCount: count,
+  resultWords,
+  folder,
+  selected,
+  special,
+  empty,
+  onClick,
+}: {
   folder: string;
   resultCount: number | null;
   resultWords: string[];
   className?: string;
-  active?: boolean;
+  selected?: boolean;
   special?: boolean;
   empty?: boolean;
   onClick: () => void;
-}
-
-const Folder: FC<Props> = ({
-  className,
-  resultCount,
-  resultWords,
-  folder,
-  active,
-  special,
-  empty,
-  onClick,
 }) => {
   return (
-    <Root
+    // biome-ignore lint/a11y/useKeyWithClickEvents: TODO make this a button
+    // biome-ignore lint/a11y/noStaticElementInteractions: see above
+    <div
       key={folder}
-      active={active}
-      special={special}
       onClick={onClick}
-      className={className}
+      className={root({ selected, special, className })}
       title={folder}
     >
-      <SxFaIcon icon={special ? faFolderRegular : faFolder} active />
-      {exists(resultCount) && <ResultCount>{resultCount}</ResultCount>}
-      <Text>
-        {!empty && resultWords.length > 0 ? (
-          <Highlighter
-            autoEscape
-            searchWords={resultWords}
-            textToHighlight={folder}
-          />
-        ) : (
-          folder
-        )}
-      </Text>
-    </Root>
+      <FolderIcon data-filled={!special} className="mr-2 text-primary-500" />
+      {exists(count) && <span className={resultCount()}>{count}</span>}
+      <span className="shrink-0">
+        <C2 as="span">
+          {!empty && resultWords.length > 0 ? (
+            <Highlighter searchWords={resultWords} textToHighlight={folder} />
+          ) : (
+            folder
+          )}
+        </C2>
+      </span>
+    </div>
   );
 };
 export default Folder;

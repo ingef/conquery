@@ -1,20 +1,17 @@
-import styled from "@emotion/styled";
-import {
-  faEuroSign,
-  faFingerprint,
-  faInfo,
-} from "@fortawesome/free-solid-svg-icons";
-import Highlighter from "react-highlight-words";
+import { EuroIcon, FingerprintPatternIcon, InfoIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { type InputAttributes, NumericFormat } from "react-number-format";
-import type {
-  ColumnDescription,
-  ConceptIdT,
-  CurrencyConfigT,
-} from "../../api/types";
+import { tv } from "tailwind-variants";
+import type { ColumnDescription, ConceptIdT } from "../../api/types";
 import { exists } from "../../common/helpers/exists";
-import FaIcon from "../../icon/FaIcon";
-import WithTooltip from "../../tooltip/WithTooltip";
+import { useMoneyFormatter } from "../../common/useMoneyFormatter";
+import { Card } from "../../ui-components/Card";
+import { Highlighter } from "../../ui-components/Highlighter";
+import {
+  Tooltip,
+  TooltipTarget,
+  TooltipTrigger,
+} from "../../ui-components/Tooltip";
+import { C3 } from "../../ui-components/Typography";
 import type { ContentFilterValue } from "../ContentControl";
 import { RowDates } from "../RowDates";
 import type { DateRow, EntityEvent } from "../reducer";
@@ -25,73 +22,40 @@ import { TinyLabel } from "./TinyLabel";
 import type { ColumnBuckets } from "./util/useColumnInformation";
 import { isDateColumn, isSourceColumn } from "./util/util";
 
-const Card = styled("div")`
-  display: grid;
-  grid-template-columns: auto 45px 1fr;
-  gap: 3px;
-  font-size: ${({ theme }) => theme.font.xs};
-  padding: 5px 0;
-  position: relative;
-`;
+const card = tv({
+  base: ["relative", "grid grid-cols-[auto_45px_1fr]", "gap-[3px]", "py-[5px]"],
+});
 
-const EventItemContent = styled("div")`
-  border-radius: ${({ theme }) => theme.borderRadius};
-  box-shadow: 0 0 1px 1px ${({ theme }) => theme.col.grayLight};
-  margin-top: 5px;
-  background-color: white;
-  overflow: hidden;
-  > div {
-    &:first-of-type {
-      padding-top: 14px;
-    }
-  }
-`;
+const eventItemContent = tv({ base: ["flex flex-col", "gap-5"] });
 
-const ColBucket = styled("div")`
-  color: black;
-  padding: 1px 4px;
-  display: grid;
-  width: 100%;
-  grid-template-columns: 1fr 1fr 1fr;
-  @media (min-width: 1800px) {
-    grid-template-columns: 1fr 1fr 1fr 1fr;
-  }
-  @media (min-width: 2500px) {
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-  }
-  gap: 3px 10px;
-`;
+const colBucket = tv({
+  base: [
+    "grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))]",
+    "gap-x-[10px] gap-y-[3px]",
+    "w-full",
+    "px-1 py-px",
+  ],
+});
 
-const Flex = styled("div")`
-  display: flex;
-  align-items: flex-start;
-  gap: 5px;
-  padding: 12px 15px 10px 6px;
-  font-size: ${({ theme }) => theme.font.sm};
-`;
+const flex = tv({ base: ["flex items-start", "gap-[5px]"] });
 
-const SxRawDataBadge = styled(RawDataBadge)`
-  position: absolute;
-  z-index: 1;
-  top: 4px;
-  left: 55px;
-`;
+const rawDataBadge = tv({
+  base: ["absolute top-[4px] left-[55px]", "z-1"],
+});
 
-const SxFaIcon = styled(FaIcon)`
-  width: 24px !important;
-  text-align: center;
-  margin: 8px 5px;
-  font-size: ${({ theme }) => theme.font.md};
-`;
+const bucketIcon = tv({
+  base: ["w-6", "mx-[5px] my-2", "text-primary-500"],
+});
 
-const Bullet = styled("div")`
-  width: 10px;
-  height: 10px;
-  margin: 2px 0;
-  background-color: ${({ theme }) => theme.col.blueGrayDark};
-  border-radius: 50%;
-  flex-shrink: 0;
-`;
+const bullet = tv({
+  base: [
+    "h-[10px] w-[10px]",
+    "my-[2px]",
+    "bg-primary-500",
+    "rounded-full",
+    "shrink-0",
+  ],
+});
 
 const EventCard = ({
   row,
@@ -99,7 +63,6 @@ const EventCard = ({
   dateColumn,
   sourceColumn,
   columnBuckets,
-  currencyConfig,
   contentFilter,
   rootConceptIdsByColumn,
   groupedRows,
@@ -111,13 +74,13 @@ const EventCard = ({
   sourceColumn: ColumnDescription;
   columnBuckets: ColumnBuckets;
   contentFilter: ContentFilterValue;
-  currencyConfig: CurrencyConfigT;
   rootConceptIdsByColumn: Record<string, ConceptIdT>;
   groupedRows?: EntityEvent[];
   groupedRowsKeysWithDifferentValues?: string[];
 }) => {
   const { searchTerm } = useTimelineSearch();
   const { t } = useTranslation();
+  const moneyFormatter = useMoneyFormatter();
 
   const applicableGroupableIds = columnBuckets.groupableIds.filter(
     (column) =>
@@ -138,103 +101,120 @@ const EventCard = ({
   const restTooltip = t("history.content.rest");
 
   return (
-    <Card>
-      <Bullet />
+    <div className={card()}>
+      <div className={bullet()} />
       <RowDates dates={row[dateColumn.label] as DateRow} />
-      <SxRawDataBadge event={row} sourceColumn={sourceColumn} />
-      <EventItemContent>
-        {contentFilter.money && applicableMoney.length > 0 && (
-          <Flex>
-            <WithTooltip text={moneyTooltip}>
-              <span>
-                <SxFaIcon icon={faEuroSign} active large />
-              </span>
-            </WithTooltip>
-            <ColBucket>
-              {applicableMoney.map((column) => (
-                <div key={column.label}>
-                  <TinyLabel>{column.defaultLabel}</TinyLabel>
-                  <code>
-                    <NumericFormat<InputAttributes>
-                      thousandSeparator={currencyConfig.thousandSeparator}
-                      decimalSeparator={currencyConfig.decimalSeparator}
-                      decimalScale={currencyConfig.decimalScale}
-                      suffix={" " + currencyConfig.unit}
-                      displayType="text"
-                      value={parseFloat(row[column.label] as string)}
-                    />
-                  </code>
+      <RawDataBadge
+        className={rawDataBadge()}
+        event={row}
+        sourceColumn={sourceColumn}
+      />
+      <div className="mt-[5px] min-w-0">
+        <Card>
+          <div className={eventItemContent()}>
+            {contentFilter.money && applicableMoney.length > 0 && (
+              <div className={flex()}>
+                <TooltipTrigger>
+                  <TooltipTarget
+                    role="img"
+                    aria-label={moneyTooltip}
+                    excludeFromTabOrder
+                  >
+                    <EuroIcon className={bucketIcon()} />
+                  </TooltipTarget>
+                  <Tooltip>{moneyTooltip}</Tooltip>
+                </TooltipTrigger>
+                <div className={colBucket()}>
+                  {applicableMoney.map((column) => (
+                    <div key={column.label}>
+                      <TinyLabel>{column.defaultLabel}</TinyLabel>
+                      <C3 as="code">
+                        {moneyFormatter.format(
+                          parseFloat(row[column.label] as string),
+                        )}
+                      </C3>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </ColBucket>
-          </Flex>
-        )}
-        {groupedRowsKeysWithDifferentValues && groupedRows && (
-          <GroupedContent
-            columns={columns}
-            contentFilter={contentFilter}
-            groupedRows={groupedRows}
-            groupedRowsKeysWithDifferentValues={
-              groupedRowsKeysWithDifferentValues
-            }
-            currencyConfig={currencyConfig}
-            rootConceptIdsByColumn={rootConceptIdsByColumn}
-          />
-        )}
-        {contentFilter.rest && applicableRest.length > 0 && (
-          <Flex>
-            <WithTooltip text={restTooltip}>
-              <span>
-                <SxFaIcon icon={faInfo} active large />
-              </span>
-            </WithTooltip>
-            <ColBucket>
-              {applicableRest.map((column) => (
-                <div key={column.label}>
-                  <TinyLabel>{column.defaultLabel}</TinyLabel>
-                  <span>
-                    {searchTerm && searchTerm.length > 0 ? (
-                      <Highlighter
-                        searchWords={searchTerm.split(" ")}
-                        textToHighlight={row[column.label] as string}
-                      />
-                    ) : (
-                      (row[column.label] as string)
-                    )}
-                  </span>
+              </div>
+            )}
+            {groupedRowsKeysWithDifferentValues && groupedRows && (
+              <GroupedContent
+                columns={columns}
+                contentFilter={contentFilter}
+                groupedRows={groupedRows}
+                groupedRowsKeysWithDifferentValues={
+                  groupedRowsKeysWithDifferentValues
+                }
+                rootConceptIdsByColumn={rootConceptIdsByColumn}
+              />
+            )}
+            {contentFilter.rest && applicableRest.length > 0 && (
+              <div className={flex()}>
+                <TooltipTrigger>
+                  <TooltipTarget
+                    role="img"
+                    aria-label={restTooltip}
+                    excludeFromTabOrder
+                  >
+                    <InfoIcon className={bucketIcon()} />
+                  </TooltipTarget>
+                  <Tooltip>{restTooltip}</Tooltip>
+                </TooltipTrigger>
+                <div className={colBucket()}>
+                  {applicableRest.map((column) => (
+                    <div key={column.label}>
+                      <TinyLabel>{column.defaultLabel}</TinyLabel>
+                      <C3 as="span">
+                        {searchTerm && searchTerm.length > 0 ? (
+                          <Highlighter
+                            searchWords={searchTerm.split(" ")}
+                            textToHighlight={row[column.label] as string}
+                          />
+                        ) : (
+                          (row[column.label] as string)
+                        )}
+                      </C3>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </ColBucket>
-          </Flex>
-        )}
-        {contentFilter.groupId && applicableGroupableIds.length > 0 && (
-          <Flex>
-            <WithTooltip text={groupableIdsTooltip}>
-              <span>
-                <SxFaIcon icon={faFingerprint} active large />
-              </span>
-            </WithTooltip>
-            <ColBucket>
-              {applicableGroupableIds.map((column) => (
-                <div key={column.label}>
-                  <TinyLabel>{column.defaultLabel}</TinyLabel>
-                  <span>
-                    {searchTerm && searchTerm.length > 0 ? (
-                      <Highlighter
-                        searchWords={searchTerm.split(" ")}
-                        textToHighlight={row[column.label] as string}
-                      />
-                    ) : (
-                      (row[column.label] as string)
-                    )}
-                  </span>
+              </div>
+            )}
+            {contentFilter.groupId && applicableGroupableIds.length > 0 && (
+              <div className={flex()}>
+                <TooltipTrigger>
+                  <TooltipTarget
+                    role="img"
+                    aria-label={groupableIdsTooltip}
+                    excludeFromTabOrder
+                  >
+                    <FingerprintPatternIcon className={bucketIcon()} />
+                  </TooltipTarget>
+                  <Tooltip>{groupableIdsTooltip}</Tooltip>
+                </TooltipTrigger>
+                <div className={colBucket()}>
+                  {applicableGroupableIds.map((column) => (
+                    <div key={column.label}>
+                      <TinyLabel>{column.defaultLabel}</TinyLabel>
+                      <C3 as="span">
+                        {searchTerm && searchTerm.length > 0 ? (
+                          <Highlighter
+                            searchWords={searchTerm.split(" ")}
+                            textToHighlight={row[column.label] as string}
+                          />
+                        ) : (
+                          (row[column.label] as string)
+                        )}
+                      </C3>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </ColBucket>
-          </Flex>
-        )}
-      </EventItemContent>
-    </Card>
+              </div>
+            )}
+          </div>
+        </Card>
+      </div>
+    </div>
   );
 };
 

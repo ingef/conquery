@@ -1,48 +1,37 @@
-import styled from "@emotion/styled";
 import {
-  faCheckCircle,
-  faExclamationCircle,
-  faSpinner,
-} from "@fortawesome/free-solid-svg-icons";
+  CircleAlertIcon,
+  CircleCheckIcon,
+  LoaderCircleIcon,
+} from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 import type { PostFilterResolveResponseT } from "../api/types";
-import PrimaryButton from "../button/PrimaryButton";
-import FaIcon from "../icon/FaIcon";
-import Modal from "../modal/Modal";
 import ScrollableList from "../scrollable-list/ScrollableList";
-import InputCheckbox from "../ui-components/InputCheckbox";
+import { Button } from "../ui-components/Button";
+import { CheckboxField } from "../ui-components/CheckboxField";
+import {
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+} from "../ui-components/Modal";
+import { C2 } from "../ui-components/Typography";
 
-const Root = styled("div")`
-  padding: 0 0 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-`;
-const Col = styled("div")`
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-`;
+const root = tv({
+  base: ["flex flex-col", "gap-[15px]"],
+});
 
-const Msg = styled("p")`
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-`;
-const BigIcon = styled(FaIcon)`
-  font-size: 20px;
-`;
-const ErrorIcon = styled(BigIcon)`
-  color: ${({ theme }) => theme.col.red};
-`;
-const SuccessIcon = styled(BigIcon)`
-  color: ${({ theme }) => theme.col.green};
-`;
-const CenteredIcon = styled(FaIcon)`
-  text-align: center;
-`;
+const msg = tv({ base: ["flex items-center", "gap-[10px]"] });
+
+const bigIcon = tv({
+  variants: {
+    kind: {
+      error: "text-red",
+      success: "text-green",
+    },
+  },
+});
 
 const selectResolvedItemsCount = (
   resolved: PostFilterResolveResponseT | null,
@@ -53,9 +42,7 @@ const selectResolvedItemsCount = (
 const selectUnresolvedItemsCount = (
   resolved: PostFilterResolveResponseT | null,
 ) => {
-  return resolved && resolved.unknownCodes && resolved.unknownCodes.length
-    ? resolved.unknownCodes.length
-    : 0;
+  return resolved?.unknownCodes?.length ? resolved.unknownCodes.length : 0;
 };
 
 const UploadFilterListModal = ({
@@ -89,64 +76,77 @@ const UploadFilterListModal = ({
 
   return (
     <Modal
-      onClose={onClose}
-      doneButton
-      headline={t("uploadFilterListModal.headline")}
+      isOpen
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onClose();
+      }}
     >
-      <Root>
-        {loading && <CenteredIcon icon={faSpinner} />}
-        {error && (
-          <p>
-            <ErrorIcon icon={faExclamationCircle} />
-            {t("uploadConceptListModal.error")}
-          </p>
-        )}
-        {hasUnresolvedItems && (
-          <Col>
-            <Msg>
-              <ErrorIcon icon={faExclamationCircle} />
-              <span
-                dangerouslySetInnerHTML={{
-                  __html: t("uploadConceptListModal.unknownCodes", {
-                    count: unresolvedItemsCount,
-                  }),
-                }}
+      <ModalHeader>{t("uploadFilterListModal.headline")}</ModalHeader>
+      <ModalBody>
+        <div className={root()}>
+          {loading && <LoaderCircleIcon className="text-center" />}
+          {error && (
+            <div className={msg()}>
+              <CircleAlertIcon className={bigIcon({ kind: "error" })} />
+              <C2 as="span">{t("uploadConceptListModal.error")}</C2>
+            </div>
+          )}
+          {hasUnresolvedItems && (
+            <div className="flex flex-col gap-[5px]">
+              <div className={msg()}>
+                <CircleAlertIcon className={bigIcon({ kind: "error" })} />
+                <C2
+                  as="span"
+                  // biome-ignore lint/security/noDangerouslySetInnerHtml: i18n text with markup
+                  dangerouslySetInnerHTML={{
+                    __html: t("uploadConceptListModal.unknownCodes", {
+                      count: unresolvedItemsCount,
+                    }),
+                  }}
+                />
+              </div>
+              <ScrollableList
+                maxVisibleItems={3}
+                fullWidth
+                items={resolved.unknownCodes || []}
               />
-            </Msg>
-            <ScrollableList
-              maxVisibleItems={3}
-              fullWidth
-              items={resolved.unknownCodes || []}
-            />
-          </Col>
-        )}
-        <Col>
-          {hasResolvedItems && (
-            <Msg>
-              <SuccessIcon icon={faCheckCircle} />
-              {t("uploadConceptListModal.resolvedCodes", {
-                count: resolvedItemsCount,
-              })}
-            </Msg>
+            </div>
           )}
-          {(resolved.unknownCodes?.length || 0) > 0 && (
-            <InputCheckbox
-              value={includeUnresolved}
-              onChange={setIncludeUnresolved}
-              label={t("uploadConceptListModal.includeUnresolved")}
-            />
-          )}
-        </Col>
-        <PrimaryButton
-          disabled={loading || nothingToInsert}
-          onClick={() => {
+          <div className="flex flex-col gap-[5px]">
+            {hasResolvedItems && (
+              <div className={msg()}>
+                <CircleCheckIcon className={bigIcon({ kind: "success" })} />
+                <C2 as="span">
+                  {t("uploadConceptListModal.resolvedCodes", {
+                    count: resolvedItemsCount,
+                  })}
+                </C2>
+              </div>
+            )}
+            {(resolved.unknownCodes?.length || 0) > 0 && (
+              <CheckboxField
+                isSelected={includeUnresolved}
+                onChange={setIncludeUnresolved}
+              >
+                {t("uploadConceptListModal.includeUnresolved")}
+              </CheckboxField>
+            )}
+          </div>
+        </div>
+      </ModalBody>
+      <ModalFooter>
+        <Button slot="close">{t("common.done")}</Button>
+        <Button
+          intent="primary"
+          isDisabled={loading || nothingToInsert}
+          onPress={() => {
             onSubmit(resolved, { includeUnresolved });
             onClose();
           }}
         >
           {t("uploadConceptListModal.insertNode")}
-        </PrimaryButton>
-      </Root>
+        </Button>
+      </ModalFooter>
     </Modal>
   );
 };

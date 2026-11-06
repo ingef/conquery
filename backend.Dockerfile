@@ -16,6 +16,7 @@ COPY ./pom.xml .
 COPY ./backend/pom.xml ./backend/
 COPY ./executable/pom.xml ./executable/
 COPY ./autodoc/pom.xml ./autodoc/
+COPY ./news-service/pom.xml ./news-service/
 
 RUN mvn dependency:go-offline -Dsilent=true -DexcludeGroupIds="com.bakdata.conquery" -pl backend -am
 

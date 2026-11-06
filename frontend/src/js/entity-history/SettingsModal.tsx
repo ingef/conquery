@@ -1,31 +1,25 @@
-import styled from "@emotion/styled";
 import type { Dispatch, SetStateAction } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../api/types";
-import Modal from "../modal/Modal";
-import InputMultiSelect from "../ui-components/InputMultiSelect/InputMultiSelect";
-
-const Content = styled("div")`
-  width: 300px;
-`;
+import { ComboBoxMultiField } from "../ui-components/ComboBoxMultiField";
+import { Modal, ModalBody, ModalHeader } from "../ui-components/Modal";
 
 interface Props {
-  onClose: () => void;
   entityStatusOptions: SelectOptionT[];
   setEntityStatusOptions: Dispatch<SetStateAction<SelectOptionT[]>>;
 }
 
 export const SettingsModal = ({
-  onClose,
   setEntityStatusOptions,
   entityStatusOptions,
 }: Props) => {
   const { t } = useTranslation();
   return (
-    <Modal onClose={onClose} headline={t("history.settings.headline")}>
-      <Content>
-        <InputMultiSelect
+    <Modal>
+      <ModalHeader>{t("history.settings.headline")}</ModalHeader>
+      <ModalBody>
+        <ComboBoxMultiField
           creatable
           label={t("history.settings.selectStatusHeadline")}
           placeholder={t("history.settings.selectStatusPlaceholder")}
@@ -34,7 +28,7 @@ export const SettingsModal = ({
           value={entityStatusOptions}
           options={entityStatusOptions}
         />
-      </Content>
+      </ModalBody>
     </Modal>
   );
 };

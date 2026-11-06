@@ -1,17 +1,10 @@
-import styled from "@emotion/styled";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
-
-import { TransparentButton } from "../button/TransparentButton";
 import type { NodeResetConfig } from "../model/node";
-import WithTooltip from "../tooltip/WithTooltip";
+import { Button } from "../ui-components/Button";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 import ResetAllSettingsButton from "./ResetAllSettingsButton";
-
-const Row = styled("div")`
-  display: flex;
-  align-items: center;
-`;
 
 interface Props {
   isCompact: boolean;
@@ -29,19 +22,20 @@ const ResetAndClose = ({
   const { t } = useTranslation();
 
   return (
-    <Row>
+    <div className="flex shrink-0 items-center gap-4">
       {showClearReset && (
         <ResetAllSettingsButton
           onClick={() => onResetAllSettings({ useDefaults: false })}
           compact={isCompact}
         />
       )}
-      <WithTooltip text={t("common.saveAndCloseEsc")}>
-        <TransparentButton small onClick={onClose}>
+      <TooltipTrigger>
+        <Button intent="secondary" onPress={onClose}>
           {t("common.save")}
-        </TransparentButton>
-      </WithTooltip>
-    </Row>
+        </Button>
+        <Tooltip>{t("common.saveAndCloseEsc")}</Tooltip>
+      </TooltipTrigger>
+    </div>
   );
 };
 

@@ -1,4 +1,3 @@
-import { type Theme, ThemeProvider } from "@emotion/react";
 import { createRoot } from "react-dom/client";
 import type { Store } from "redux";
 
@@ -7,7 +6,7 @@ import "../index.css";
 
 import AppRoot from "./AppRoot";
 import type { StateT } from "./app/reducers";
-import GlobalStyles from "./GlobalStyles";
+import { type AppTheme, AppThemeContext } from "./app-theme-context";
 import { makeStore } from "./store";
 
 // TODO: OG image required?
@@ -16,19 +15,18 @@ import { makeStore } from "./store";
 
 let store: Store<StateT>;
 
-const renderRoot = (theme: Theme) => {
+const renderRoot = (theme: AppTheme) => {
   store = store || makeStore();
 
   const root = createRoot(document.getElementById("root")!);
 
   return root.render(
-    <ThemeProvider theme={theme}>
-      <GlobalStyles />
+    <AppThemeContext.Provider value={theme}>
       <AppRoot store={store} />
-    </ThemeProvider>,
+    </AppThemeContext.Provider>,
   );
 };
 
-export default function conquery({ theme }: { theme: Theme }) {
+export default function conquery({ theme }: { theme: AppTheme }) {
   return renderRoot(theme);
 }

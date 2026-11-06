@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import type { ReactNode } from "react";
 import { DndProvider as ReactDndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -8,19 +7,20 @@ import {
   usePreview,
 } from "react-dnd-multi-backend";
 import { TouchBackend } from "react-dnd-touch-backend";
+import { tv } from "tailwind-variants";
 
 import { DNDType } from "../common/constants/dndTypes";
 import type { PossibleDroppableObject } from "../ui-components/Dropzone";
 
-const PreviewItem = styled("div")<{ width: number; height: number }>`
-  background-color: ${({ theme }) => theme.col.grayVeryLight};
-  opacity: 0.9;
-  box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.2);
-  border-radius: ${({ theme }) => theme.borderRadius};
-  border: 1px solid ${({ theme }) => theme.col.gray};
-  width: ${({ width }) => `${width}px`};
-  height: ${({ height }) => `${height}px`};
-`;
+const previewItem = tv({
+  base: [
+    "rounded",
+    "border border-gray-500",
+    "bg-gray-50",
+    "opacity-90",
+    "shadow-[0_0_15px_0_rgba(0,0,0,0.2)]",
+  ],
+});
 
 const CustomHTML5toTouch = {
   backends: [
@@ -72,7 +72,12 @@ const DndPreview = () => {
 
   const { width, height } = findItemWithAndHeight(preview.item);
 
-  return <PreviewItem width={width} height={height} style={preview.style} />;
+  return (
+    <div
+      className={previewItem()}
+      style={{ width, height, ...preview.style }}
+    />
+  );
 };
 
 const DndProvider = ({ children }: { children: ReactNode }) => {

@@ -38,7 +38,15 @@
     },
     "rules": {
       "preset": "recommended",
+      "complexity": {
+        "noExcessiveCognitiveComplexity": {
+          "level": "error",
+          "options": { "maxAllowedComplexity": 18 }
+        },
+        "noForEach": "error"
+      },
       "correctness": {
+        "noUnusedImports": { "level": "error", "fix": "safe" },
         "noUnusedVariables": {
           "level": "error",
           "options": { "ignoreRestSiblings": true }
@@ -47,19 +55,14 @@
         "noSwitchDeclarations": "off",
         "useExhaustiveDependencies": "warn",
         "useHookAtTopLevel": "error",
-        // TODO: 7 lists render without keys, fix and raise to error
-        "useJsxKeyInIterable": "warn"
-      },
-      "security": {
-        // Markdown/HTML rendering from trusted backend content is intentional
-        "noDangerouslySetInnerHtml": "off"
+        "useJsxKeyInIterable": "error"
       },
       "style": {
         // Was allowed by the previous eslint config
         "noNonNullAssertion": "off"
       },
       "suspicious": {
-        // TODO: ~30 index keys, revisit
+        // Index keys are fine for the static, non-reorderable lists this app renders
         "noArrayIndexKey": "off",
         "noDoubleEquals": "error",
         "noDebugger": "warn",
@@ -73,6 +76,15 @@
     "actions": { "source": { "organizeImports": "on" } }
   },
   "overrides": [
+    {
+      // mock data generators are branchy on purpose
+      "includes": ["mock-api/**"],
+      "linter": {
+        "rules": {
+          "complexity": { "noExcessiveCognitiveComplexity": "off" }
+        }
+      }
+    },
     {
       // tailwind v3 entry directives
       "includes": ["src/index.css"],

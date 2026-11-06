@@ -1,16 +1,13 @@
-import { css } from "@emotion/react";
-import styled from "@emotion/styled";
 import type { ReactNode } from "react";
+import { tv } from "tailwind-variants";
 
-const Label = styled("span")<{ isHighlighted?: boolean }>`
-  ${({ theme, isHighlighted }) =>
-    isHighlighted &&
-    css`
-      background-color: ${theme.col.grayVeryLight};
-      border-radius: ${theme.borderRadius};
-      padding: 0 3px;
-    `};
-`;
+const label = tv({
+  variants: {
+    isHighlighted: {
+      true: ["rounded", "bg-gray-50", "px-[3px] py-0"],
+    },
+  },
+});
 
 const HighlightableLabel = ({
   isHighlighted,
@@ -22,9 +19,7 @@ const HighlightableLabel = ({
   isHighlighted?: boolean;
 }) => {
   return (
-    <Label className={className} isHighlighted={isHighlighted}>
-      {children}
-    </Label>
+    <span className={label({ isHighlighted, className })}>{children}</span>
   );
 };
 

@@ -1,59 +1,24 @@
-import styled from "@emotion/styled";
-import { faSliders } from "@fortawesome/free-solid-svg-icons";
-import { type Dispatch, memo, type SetStateAction, useState } from "react";
+import { SlidersHorizontalIcon } from "lucide-react";
+import { type Dispatch, memo, type SetStateAction } from "react";
+import { DialogTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
-
+import { tv } from "tailwind-variants";
 import type { SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
-import IconButton from "../button/IconButton";
-import ProgressBar from "../common/components/ProgressBar";
-import { Heading3 } from "../headings/Headings";
-import WithTooltip from "../tooltip/WithTooltip";
+import { Button } from "../ui-components/Button";
+import { Card } from "../ui-components/Card";
+import ProgressBar from "../ui-components/ProgressBar";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
+import { C1, C2, C3, H3 } from "../ui-components/Typography";
 
 import { SettingsModal } from "./SettingsModal";
 
-const Root = styled("div")`
-  display: grid;
-  gap: 8px;
-  background-color: white;
-  box-shadow: 1px 1px 5px 0px rgba(0, 0, 0, 0.2);
-  padding: 14px;
-  border-radius: ${({ theme }) => theme.borderRadius};
-`;
+const root = tv({ base: ["grid", "gap-2"] });
 
-const BaseInfo = styled("div")`
-  display: flex;
-  gap: 15px;
-  justify-content: space-between;
-  overflow: hidden;
-`;
-
-const SxHeading3 = styled(Heading3)`
-  flex-shrink: 0;
-  margin: 0;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-`;
-
-const Count = styled(SxHeading3)`
-  justify-self: end;
-`;
-
-const Text = styled("span")`
-  font-size: ${({ theme }) => theme.font.md};
-  color: ${({ theme }) => theme.col.gray};
-  font-weight: 400;
-`;
-
-const SpecialText = styled("p")<{ zero?: boolean }>`
-  margin: 0;
-  font-size: ${({ theme }) => theme.font.xs};
-  color: ${({ theme, zero }) => (zero ? theme.col.red : theme.col.gray)};
-  text-transform: uppercase;
-  font-weight: 400;
-`;
+const baseInfo = tv({
+  base: ["flex justify-between", "gap-[15px]", "overflow-hidden"],
+});
 
 interface Props {
   className?: string;
@@ -75,37 +40,47 @@ export const NavigationHeader = memo(
       (state) => state.entityHistory.label,
     );
 
-    const [settingsModalOpen, setSettingsModalOpen] = useState(false);
-
     return (
-      <Root className={className}>
-        {settingsModalOpen && (
-          <SettingsModal
-            onClose={() => setSettingsModalOpen(false)}
-            setEntityStatusOptions={setEntityStatusOptions}
-            entityStatusOptions={entityStatusOptions}
-          />
-        )}
-        <BaseInfo>
-          <div style={{ overflow: "hidden" }}>
-            <SxHeading3 title={label}>{label}</SxHeading3>
-            <SpecialText>{t("history.history")}</SpecialText>
+      <div className={className}>
+        <Card>
+          <div className={root()}>
+            <div className={baseInfo()}>
+              <div className="min-w-0">
+                <H3 truncate title={label}>
+                  {label}
+                </H3>
+                <C3 tone="muted">{t("history.history")}</C3>
+              </div>
+              <TooltipTrigger>
+                <DialogTrigger>
+                  <Button
+                    aria-label={t("history.settings.headline")}
+                    intent="tertiary"
+                  >
+                    <SlidersHorizontalIcon />
+                  </Button>
+                  <SettingsModal
+                    setEntityStatusOptions={setEntityStatusOptions}
+                    entityStatusOptions={entityStatusOptions}
+                  />
+                </DialogTrigger>
+                <Tooltip>{t("history.settings.headline")}</Tooltip>
+              </TooltipTrigger>
+            </div>
+            <div className="grid grid-cols-[auto_1fr] items-baseline gap-x-2 text-right">
+              <C1 strong>{idsCount}</C1>
+              <C2 tone="muted">
+                {t("common.entitiesFound", { count: idsCount })}
+              </C2>
+              <C1 strong>{markedCount}</C1>
+              <C2 tone="muted">
+                {t("history.marked", { count: markedCount })}
+              </C2>
+            </div>
+            <ProgressBar donePercent={100 * (markedCount / idsCount)} />
           </div>
-          <WithTooltip text={t("history.settings.headline")}>
-            <IconButton
-              icon={faSliders}
-              onClick={() => setSettingsModalOpen(true)}
-            />
-          </WithTooltip>
-        </BaseInfo>
-        <div className="grid gap-x-2 grid-cols-[auto_1fr] items-center">
-          <Count>{idsCount}</Count>
-          <Text>{t("tooltip.entitiesFound", { count: idsCount })}</Text>
-          <Count>{markedCount}</Count>
-          <Text>{t("history.marked", { count: markedCount })}</Text>
-        </div>
-        <ProgressBar donePercent={100 * (markedCount / idsCount)} />
-      </Root>
+        </Card>
+      </div>
     );
   },
 );
