@@ -1,15 +1,10 @@
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
+import { C2 } from "../ui-components/Typography";
 import type { QueryRunnerStateT } from "./reducer";
 
-const status = tv({
-  base: ["m-0", "text-right", "text-sm", "font-normal"],
-  variants: {
-    success: { true: "text-green" },
-    error: { true: "text-red" },
-  },
-});
+const status = tv({ base: "text-right" });
 
 const useMessage = (queryRunner: QueryRunnerStateT) => {
   const { t } = useTranslation();
@@ -55,15 +50,11 @@ const QueryRunnerInfo = ({
   }
 
   return (
-    <p
-      className={status({
-        success: message.type === "success",
-        error: message.type === "error",
-        className,
-      })}
-    >
-      {message.value}
-    </p>
+    <div className={status({ className })}>
+      <C2 tone={message.type === "error" ? "danger" : "success"}>
+        {message.value}
+      </C2>
+    </div>
   );
 };
 

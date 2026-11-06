@@ -1,8 +1,8 @@
 import {
-  faCheckCircle,
-  faExclamationCircle,
-  faSpinner,
-} from "@fortawesome/free-solid-svg-icons";
+  CircleAlertIcon,
+  CircleCheckIcon,
+  LoaderCircleIcon,
+} from "lucide-react";
 import {
   type FormEvent,
   memo,
@@ -28,19 +28,23 @@ import type {
   SelectOptionT,
 } from "../api/types";
 import type { StateT } from "../app/reducers";
-import Modal from "../modal/Modal";
 import { nodeIsElement } from "../model/node";
 import ScrollableList from "../scrollable-list/ScrollableList";
 import { Button } from "../ui-components/Button";
-import { Checkbox } from "../ui-components/Checkbox";
-import { Icon } from "../ui-components/Icon";
-import InputPlain from "../ui-components/InputPlain/InputPlain";
-import InputSelect from "../ui-components/InputSelect/InputSelect";
+import { CheckboxField } from "../ui-components/CheckboxField";
+import { ComboBoxField } from "../ui-components/ComboBoxField";
+import {
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+} from "../ui-components/Modal";
+import { TextField } from "../ui-components/TextField";
 import { DropdownOption } from "./DropdownOption";
 import type { UploadConceptListModalStateT } from "./reducer";
 
 const bigIcon = tv({
-  base: ["text-xl", "mr-[10px]"],
+  base: "mr-[10px]",
   variants: {
     kind: {
       error: "text-red",
@@ -176,7 +180,7 @@ const useDropdownOptions = () => {
   };
 };
 
-export const useResolveConcepts = () => {
+const useResolveConcepts = () => {
   const postConceptsListToResolve = usePostConceptsListToResolve();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -475,13 +479,16 @@ const UploadConceptListModal = ({
 
   return (
     <Modal
-      onClose={onClose}
-      headline={t("uploadConceptListModal.headline")}
-      dataTestId="uploadConceptListModal"
+      size="xl"
+      data-test-id="uploadConceptListModal"
+      isOpen
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onClose();
+      }}
     >
-      <div className="pb-[10px]">
-        <InputSelect
-          className="w-[60vw] max-w-[900px]"
+      <ModalHeader>{t("uploadConceptListModal.headline")}</ModalHeader>
+      <ModalBody>
+        <ComboBoxField
           label={t("uploadConceptListModal.selectConceptRootNode")}
           value={
             selectOptions.find(({ value }) => value === selectedValue) || null
@@ -493,23 +500,17 @@ const UploadConceptListModal = ({
         <div className="mt-[15px] grid gap-5">
           {error && (
             <div className="flex items-center">
-              <Icon
-                icon={faExclamationCircle}
-                className={bigIcon({ kind: "error" })}
-              />
+              <CircleAlertIcon className={bigIcon({ kind: "error" })} />
               {t("uploadConceptListModal.error")}
             </div>
           )}
-          {loading && <Icon icon={faSpinner} className="text-center" />}
+          {loading && <LoaderCircleIcon className="text-center" />}
           {(!!resolvedConcepts || !!resolvedFilters) && (
             <>
               {hasUnresolvedItems && (
                 <div>
                   <p className="m-0">
-                    <Icon
-                      icon={faExclamationCircle}
-                      className={bigIcon({ kind: "error" })}
-                    />
+                    <CircleAlertIcon className={bigIcon({ kind: "error" })} />
                     <span>
                       {t("uploadConceptListModal.unknownCodes", {
                         count: unresolvedItemsCount,
@@ -536,8 +537,7 @@ const UploadConceptListModal = ({
                 <div>
                   {hasResolvedItems && (
                     <>
-                      <Icon
-                        icon={faCheckCircle}
+                      <CircleCheckIcon
                         className={bigIcon({ kind: "success" })}
                       />
                       {t("uploadConceptListModal.resolvedCodes", {
@@ -545,19 +545,16 @@ const UploadConceptListModal = ({
                       })}
                     </>
                   )}
-                  <InputPlain
+                  <TextField
                     label={t("uploadConceptListModal.label")}
-                    fullWidth
-                    inputProps={{
-                      autoFocus: true,
-                    }}
+                    autoFocus
                     value={label}
-                    onChange={(value) => setLabel(value as string)}
+                    onChange={setLabel}
                   />
                 </div>
                 {(resolvedFilters?.unknownCodes?.length || 0) > 0 && (
-                  <Checkbox
-                    infoTooltip={
+                  <CheckboxField
+                    tooltip={
                       mustIncludeUnresolved
                         ? t(
                             "uploadConceptListModal.includeUnresolvedTooltipDisabled",
@@ -569,18 +566,20 @@ const UploadConceptListModal = ({
                     onChange={setIncludeUnresolved}
                   >
                     {t("uploadConceptListModal.includeUnresolved")}
-                  </Checkbox>
+                  </CheckboxField>
                 )}
-                <Button intent="primary" type="submit" data-test-id="insert">
-                  {mustIncludeUnresolved
-                    ? t("uploadConceptListModal.insertRegardless")
-                    : t("uploadConceptListModal.insertNode")}
-                </Button>
+                <ModalFooter>
+                  <Button intent="primary" type="submit" data-test-id="insert">
+                    {mustIncludeUnresolved
+                      ? t("uploadConceptListModal.insertRegardless")
+                      : t("uploadConceptListModal.insertNode")}
+                  </Button>
+                </ModalFooter>
               </form>
             </>
           )}
         </div>
-      </div>
+      </ModalBody>
     </Modal>
   );
 };

@@ -5,7 +5,7 @@ import type {
 } from "../standard-query-editor/types";
 
 export type ConnectionKind = "and" | "or" | "time";
-export type DirectionKind = "horizontal" | "vertical";
+type DirectionKind = "horizontal" | "vertical";
 
 export interface Tree {
   id: string;
@@ -19,15 +19,15 @@ export interface Tree {
   children?: TreeChildren;
 }
 
-export interface TreeChildrenBase {
+interface TreeChildrenBase {
   direction: DirectionKind;
   items: Tree[];
 }
 
-export interface TreeChildrenAnd extends TreeChildrenBase {
+interface TreeChildrenAnd extends TreeChildrenBase {
   connection: "and";
 }
-export interface TreeChildrenOr extends TreeChildrenBase {
+interface TreeChildrenOr extends TreeChildrenBase {
   connection: "or";
 }
 
@@ -36,7 +36,7 @@ export const TIME_OPERATORS: ("BEFORE" | "AFTER" | "WHILE")[] = [
   "AFTER",
   "WHILE",
 ] as const;
-export const TIME_TIMESTAMPS: ("ALL" | "ANY" | "EARLIEST" | "LATEST")[] = [
+const TIME_TIMESTAMPS: ("ALL" | "ANY" | "EARLIEST" | "LATEST")[] = [
   "ALL",
   "ANY",
   "EARLIEST",

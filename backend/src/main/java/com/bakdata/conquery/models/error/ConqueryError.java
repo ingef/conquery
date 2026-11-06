@@ -17,25 +17,21 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * Base class for errors that are thrown within Conquery and can be serialized
  * and deserialized to allow transportation between nodes.
  */
-@SuppressWarnings("serial")
 @Getter
 @Setter
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "code")
 @CPSBase
 @ToString(onlyExplicitlyIncluded = true)
 @JsonIgnoreProperties({"suppressed", "localizedMessage"})
+@Data
+@EqualsAndHashCode(onlyExplicitlyIncluded = true,  callSuper = false)
 public abstract class ConqueryError extends RuntimeException implements ConqueryErrorInfo {
 
 	private static final String NO_MESSAGE = "Unable to provide error message. No message template was provided by error.";
@@ -48,6 +44,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	/**
 	 * Since Jackson does not seem to be able to deserialize throwable with super.cause set. We have our own member
 	 */
+	@EqualsAndHashCode.Include
 	private ConqueryError conqueryCause;
 
 	protected ConqueryError() {
@@ -62,6 +59,9 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	 * Wraps the {@link Throwable} into an {@link ConqueryError}.
 	 */
 	public static ConqueryError asConqueryError(Throwable t) {
+		if (t == null) {
+			return null;
+		}
 		return t instanceof ConqueryError ? (ConqueryError) t : new ConqueryError.UnknownError(t);
 	}
 
@@ -106,6 +106,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION")
 	@Data
+	@EqualsAndHashCode(callSuper = true)
 	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 	public static class ExecutionCreationErrorUnspecified extends ConqueryError {
 		@Override
@@ -116,6 +117,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION_RESOLVE")
 	@Data
+	@EqualsAndHashCode(callSuper = true)
 	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 	public static class ExecutionCreationResolveError extends ConqueryError {
 
@@ -136,6 +138,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION_RESOLVE_EXTERNAL_FORMAT")
 	@Data
+	@EqualsAndHashCode(callSuper = true)
 	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 	public static class ExternalResolveFormatError extends ConqueryError {
 
@@ -152,6 +155,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION_RESOLVE_EXTERNAL_ONE_PER_ROW")
 	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
+	@EqualsAndHashCode(callSuper = true)
 	public static class ExternalResolveOnePerRowError extends ConqueryError {
 
 		@Override
@@ -162,6 +166,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION_RESOLVE_EXTERNAL_EMPTY")
 	@NoArgsConstructor(onConstructor_ = {@JsonCreator})
+	@EqualsAndHashCode(callSuper = true)
 	public static class ExternalResolveEmptyError extends ConqueryError {
 
 		@Override
@@ -172,6 +177,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION_CREATION_PLAN_FLAGS_MISSING")
 	@Data
+	@EqualsAndHashCode(callSuper = true)
 	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 	public static class ExecutionCreationPlanMissingFlagsError extends ConqueryError {
 		private final Set<String> labels;
@@ -186,6 +192,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION_CREATION_PLAN_DATECONTEXT_MISMATCH")
 	@Data
+	@EqualsAndHashCode(callSuper = true)
 	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 	public static class ExecutionCreationPlanDateContextError extends ConqueryError {
 
@@ -204,6 +211,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	 */
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_JOB")
 	@Data
+	@EqualsAndHashCode(callSuper = true)
 	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 	public static class ExecutionJobErrorWrapper extends ConqueryError {
 
@@ -225,6 +233,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	 */
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_PROCESSING")
 	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
+	@EqualsAndHashCode(callSuper = true)
 	public static class ExecutionProcessingError extends ConqueryError {
 
 		@Override
@@ -238,6 +247,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	 */
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_PROCESSING_TIMEOUT")
 	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
+	@EqualsAndHashCode(callSuper = true)
 	public static class ExecutionProcessingTimeoutError extends ConqueryError {
 
 		@Override
@@ -251,6 +261,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	 */
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_RESULT_SIZE")
 	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
+	@EqualsAndHashCode(callSuper = true)
 	public static class ExecutionProcessingResultSizeError extends ConqueryError {
 
 		@Override
@@ -261,6 +272,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_NO_SECONDARY_ID")
 	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
+	@EqualsAndHashCode(callSuper = true)
 	public static class NoSecondaryIdSelectedError extends ConqueryError {
 		@Override
 		public String getMessageTemplate(ErrorMessages errorMessages) {
@@ -270,6 +282,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 
 	@CPSType(base = ConqueryError.class, id = "CQ_SQL_ERROR")
 	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
+	@EqualsAndHashCode(callSuper = true)
 	public static class SqlError extends ConqueryError {
 		@ToString.Include
 		private final Throwable error;
@@ -282,6 +295,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 
 	@CPSType(base = ConqueryError.class, id = "CQ_RELATIVE_NO_DATES")
 	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
+	@EqualsAndHashCode(callSuper = true)
 	public static class RelativeFormMissingDatesError extends ConqueryError {
 		@Override
 		public String getMessageTemplate(ErrorMessages errorMessages) {

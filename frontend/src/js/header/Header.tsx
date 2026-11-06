@@ -1,13 +1,10 @@
-import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
 import type { StateT } from "../app/reducers";
 import { useAppTheme } from "../app-theme-context";
 import DatasetSelector from "../dataset/DatasetSelector";
-import { HistoryButton } from "../entity-history/HistoryButton";
-import { canViewEntityPreview, useHideLogoutButton } from "../user/selectors";
-import { HelpMenu } from "./HelpMenu";
-import LogoutButton from "./LogoutButton";
+import { NewsButton } from "../news/NewsButton";
+import { HeaderMenu } from "./HeaderMenu";
 
 // position absolute: fix, so content can expand to 100% and scroll
 const root = tv({
@@ -22,35 +19,15 @@ const root = tv({
   ],
 });
 
-const right = tv({
-  base: ["flex flex-row items-center", "gap-[5px]"],
-});
-
 const overflowHidden = tv({
   base: ["flex flex-row items-center", "shrink-0", "overflow-hidden"],
 });
 
 const logo = tv({
-  base: ["h-full", "bg-no-repeat", "[background-position-y:50%]"],
-});
-
-// the second font-size of the old styles won, hence text-xs and not text-base
-const headline = tv({
-  base: [
-    "mr-auto",
-    "text-xs",
-    "leading-[2]",
-    "font-bold",
-    "uppercase",
-    "opacity-30",
-    "text-primary-500",
-  ],
+  base: ["h-header", "bg-no-repeat", "[background-position-y:50%]"],
 });
 
 const Header = () => {
-  const { t } = useTranslation();
-  const canViewHistory = useSelector<StateT, boolean>(canViewEntityPreview);
-  const hideLogoutButton = useHideLogoutButton();
   const { manualUrl, contactEmail } = useSelector<
     StateT,
     StateT["startup"]["config"]
@@ -69,16 +46,11 @@ const Header = () => {
             backgroundSize: img.logoBackgroundSize,
           }}
         />
-        <span className="mx-[5px] h-5" />
-        <h1 className={headline()}>{t("headline")}</h1>
       </div>
-      <div className={right()}>
+      <div className="flex items-center gap-[5px]">
         <DatasetSelector />
-        {canViewHistory && <HistoryButton />}
-        {(manualUrl || contactEmail) && (
-          <HelpMenu manualUrl={manualUrl} contactEmail={contactEmail} />
-        )}
-        {!hideLogoutButton && <LogoutButton />}
+        <NewsButton />
+        <HeaderMenu manualUrl={manualUrl} contactEmail={contactEmail} />
       </div>
     </header>
   );

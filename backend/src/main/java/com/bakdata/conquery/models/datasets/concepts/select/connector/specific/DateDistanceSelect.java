@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.temporal.ChronoUnit;
 import java.util.EnumSet;
 import jakarta.validation.constraints.NotNull;

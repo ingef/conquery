@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.Collection;
 import java.util.List;
 
+import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
@@ -14,7 +15,7 @@ import lombok.Getter;
 public final class ConnectorSelectId extends SelectId {
 
 	private final ConnectorId connector;
-	
+
 	public ConnectorSelectId(ConnectorId connector, String select) {
 		super(select);
 		this.connector = connector;
@@ -33,10 +34,11 @@ public final class ConnectorSelectId extends SelectId {
 
 	@Override
 	public Select get() {
-		return getDomain().getStorage(getDataset())
-						  .getConcept(findConcept())
-						  .getConnectorByName(getConnector().getConnector())
-						  .getSelectByName(getSelect());
+		Connector resolvedConnector = connector.get();
+		if (resolvedConnector == null) {
+			return null;
+		}
+		return resolvedConnector.getSelectByName(getSelect());
 	}
 
 	@Override

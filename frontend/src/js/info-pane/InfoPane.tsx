@@ -1,7 +1,4 @@
-import {
-  faThumbtack,
-  type IconDefinition,
-} from "@fortawesome/free-solid-svg-icons";
+import { PinIcon } from "lucide-react";
 import { type ReactNode, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
@@ -10,11 +7,12 @@ import remarkFlexibleMarkers from "remark-flexible-markers";
 import remarkGfm from "remark-gfm";
 import { tv } from "tailwind-variants";
 import type { StateT } from "../app/reducers";
+import { NodeIcon } from "../concept-trees/NodeIcon";
+import type { NodeIconT } from "../model/node";
 import { Highlighter } from "../ui-components/Highlighter";
-import { Icon } from "../ui-components/Icon";
 import { ToggleButton } from "../ui-components/ToggleButton";
+import { C2, C3, H5 } from "../ui-components/Typography";
 import { toggleAdditionalInfos as toggleInfos } from "./actions";
-import InfoPaneCollapsed from "./InfoPaneCollapsed";
 import { InfoPaneHeader } from "./InfoPaneHeader";
 import MatchingStats from "./MatchingStats";
 import type { AdditionalInfosType } from "./reducer";
@@ -48,21 +46,14 @@ const head = tv({
   ],
 });
 
-const typeIcon = tv({ base: ["mt-px", "mr-[6px]", "text-primary-500"] });
+// centered on the first 20 px line of the label
+const typeIcon = tv({ base: ["mt-[2px]", "mr-[6px]", "text-primary-500"] });
 
 const pinnedLabel = tv({
-  base: [
-    "flex flex-row items-start",
-    "gap-[5px]",
-    "m-0",
-    "leading-[1.2]",
-    "text-sm",
-  ],
+  base: ["flex flex-row items-start", "gap-[5px]"],
 });
 
-const descriptionText = tv({
-  base: ["mt-[5px] mb-[2px]", "text-xs", "leading-[1.3]", "uppercase"],
-});
+const descriptionText = tv({ base: "mt-[5px] mb-[2px]" });
 
 const indentRoot = tv({ base: ["pl-[15px]", "mt-[5px] mb-3"] });
 
@@ -72,19 +63,11 @@ const pieceOfInfo = tv({
     // Markdown
     "text-xs",
     "[&_a]:underline",
-    "[&_p]:leading-[1.3] [&_p]:my-[5px]",
+    "[&_p]:my-[5px]",
     "[&_table]:border-collapse",
     "[&_td]:border [&_td]:border-gray-500 [&_td]:p-[5px]",
     "[&_th]:border [&_th]:border-gray-500 [&_th]:p-[5px]",
   ],
-});
-
-const infoHeadline = tv({
-  base: ["m-0", "text-xs", "font-bold", "leading-[1.3]"],
-});
-
-const matchingStats = tv({
-  base: ["grid grid-cols-[auto_1fr]", "gap-3", "items-center"],
 });
 
 const HighlightedText = ({
@@ -103,7 +86,7 @@ const ConceptLabel = ({
   tackIcon,
 }: {
   label?: string;
-  conceptIcon?: IconDefinition;
+  conceptIcon?: NodeIconT;
   tackIcon?: ReactNode;
 }) => {
   const wordsRaw = useSelector<StateT, string[] | null>(
@@ -114,15 +97,17 @@ const ConceptLabel = ({
 
   return (
     <p className={pinnedLabel()}>
-      {conceptIcon && <Icon icon={conceptIcon} className={typeIcon()} />}
+      {conceptIcon && <NodeIcon icon={conceptIcon} className={typeIcon()} />}
       <span className="grow">
-        {label ? (
-          <HighlightedText words={words} text={label} />
-        ) : (
-          t("infoPane.placeholder")
-        )}
+        <C2 as="span">
+          {label ? (
+            <HighlightedText words={words} text={label} />
+          ) : (
+            t("infoPane.placeholder")
+          )}
+        </C2>
       </span>
-      {tackIcon}
+      {tackIcon && <span className="-mt-[2px] shrink-0">{tackIcon}</span>}
     </p>
   );
 };
@@ -151,7 +136,6 @@ const InfoPane = () => {
   } = useSelector<StateT, AdditionalInfosType>(
     (state) => state.infoPane.additionalInfos,
   );
-  const isOpen = useSelector<StateT, boolean>((state) => state.infoPane.isOpen);
   const toggleAdditionalInfos = useSelector<StateT, boolean>(
     (state) => state.infoPane.toggleAdditionalInfos,
   );
@@ -165,8 +149,6 @@ const InfoPane = () => {
   const dispatch = useDispatch();
   const onToggleAdditionalInfos = () => dispatch(toggleInfos());
 
-  if (!isOpen) return <InfoPaneCollapsed />;
-
   const mainLabel = rootLabel || label;
   const mainIcon = rootIcon || icon;
 
@@ -177,7 +159,6 @@ const InfoPane = () => {
       <InfoPaneHeader />
       <div className={content()}>
         <MatchingStats
-          className={matchingStats()}
           matchingEntries={matchingEntries}
           matchingEntities={matchingEntities}
           dateRange={dateRange}
@@ -194,7 +175,7 @@ const InfoPane = () => {
                   isSelected
                   onChange={onToggleAdditionalInfos}
                 >
-                  <Icon icon={faThumbtack} />
+                  <PinIcon />
                 </ToggleButton>
               )
             }
@@ -205,17 +186,19 @@ const InfoPane = () => {
             </div>
           )}
           {description && (
-            <p className={descriptionText()}>
-              <HighlightedText words={words} text={description} />
-            </p>
+            <div className={descriptionText()}>
+              <C3>
+                <HighlightedText words={words} text={description} />
+              </C3>
+            </div>
           )}
         </div>
         <div className="w-full overflow-x-auto">
           {infos?.map((info, i) => (
             <div className={pieceOfInfo()} key={info.key + i}>
-              <h4 className={infoHeadline()}>
+              <H5 as="h4">
                 <HighlightedText words={words} text={info.key} />
-              </h4>
+              </H5>
               <Markdown remarkPlugins={[remarkGfm, remarkFlexibleMarkers]}>
                 {mark(info.value, highlightRegex)}
               </Markdown>

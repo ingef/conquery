@@ -1,13 +1,12 @@
-import { faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { CheckIcon, LoaderCircleIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import type { SelectOptionT, UserGroupT } from "../../api/types";
 import type { StateT } from "../../app/reducers";
-import Modal from "../../modal/Modal";
 import { Button } from "../../ui-components/Button";
-import { Icon } from "../../ui-components/Icon";
-import InputMultiSelect from "../../ui-components/InputMultiSelect/InputMultiSelect";
+import { ComboBoxMultiField } from "../../ui-components/ComboBoxMultiField";
+import { Modal, ModalBody, ModalHeader } from "../../ui-components/Modal";
 import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
 import {
   useLoadFormConfig,
@@ -128,39 +127,45 @@ const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
 
   return (
     <Modal
-      onClose={onClose}
-      headline={t("sharePreviousQueryModal.headline")}
-      subtitle={item.label}
+      isOpen
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onClose();
+      }}
     >
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          onShareClicked();
-        }}
-      >
-        <div className="flex w-full items-end">
-          <InputMultiSelect
-            autoFocus
-            value={userGroupsValue}
-            onChange={onSetUserGroupsValue}
-            label={groupsLabel}
-            options={userGroupOptions}
-          />
-          <div className="ml-[3px]">
-            <TooltipTrigger>
-              <Button
-                aria-label={shareLabel}
-                intent="secondary"
-                type="submit"
-                isDisabled={buttonDisabled}
-              >
-                <Icon icon={loading ? faSpinner : faCheck} />
-              </Button>
-              <Tooltip>{shareLabel}</Tooltip>
-            </TooltipTrigger>
+      <ModalHeader subtitle={item.label}>
+        {t("sharePreviousQueryModal.headline")}
+      </ModalHeader>
+      <ModalBody>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            onShareClicked();
+          }}
+        >
+          <div className="flex w-full items-end">
+            <ComboBoxMultiField
+              autoFocus
+              value={userGroupsValue}
+              onChange={onSetUserGroupsValue}
+              label={groupsLabel}
+              options={userGroupOptions}
+            />
+            <div className="ml-[3px]">
+              <TooltipTrigger>
+                <Button
+                  aria-label={shareLabel}
+                  intent="secondary"
+                  type="submit"
+                  isDisabled={buttonDisabled}
+                >
+                  {loading ? <LoaderCircleIcon /> : <CheckIcon />}
+                </Button>
+                <Tooltip>{shareLabel}</Tooltip>
+              </TooltipTrigger>
+            </div>
           </div>
-        </div>
-      </form>
+        </form>
+      </ModalBody>
     </Modal>
   );
 };

@@ -1,14 +1,13 @@
-import {
-  faBullseye,
-  faCircle,
-  faCircleDot,
-  faEuroSign,
-  faFolder,
-  faInfo,
-} from "@fortawesome/free-solid-svg-icons";
 import type { Meta, StoryObj } from "@storybook/react";
+import {
+  CircleDotIcon,
+  CircleIcon,
+  EuroIcon,
+  FolderIcon,
+  InfoIcon,
+  TargetIcon,
+} from "lucide-react";
 
-import { Icon } from "./Icon";
 import { ToggleButton } from "./ToggleButton";
 import { ToggleButtonGroup } from "./ToggleButtonGroup";
 import { Tooltip, TooltipTrigger } from "./Tooltip";
@@ -29,20 +28,34 @@ const periods = [
   { id: "month", label: "Month", description: "One row per month" },
 ];
 
-const detailLevels = [
-  { id: "summary", icon: faCircle, label: "Summary" },
-  { id: "detail", icon: faCircleDot, label: "Detail" },
-  { id: "full", icon: faBullseye, label: "Everything" },
+const regions = [
+  "North",
+  "South",
+  "East",
+  "West",
+  "Central",
+  "Coast",
+  "Highlands",
+  "Islands",
+  "Lakes",
+  "Plains",
+  "Valleys",
+  "Border",
 ];
 
-/** one connected control, exactly one segment selected, in every size */
-export const Segmented: Story = {
+const detailLevels = [
+  { id: "summary", icon: CircleIcon, label: "Summary" },
+  { id: "detail", icon: CircleDotIcon, label: "Detail" },
+  { id: "full", icon: TargetIcon, label: "Everything" },
+];
+
+/** one choice: a segmented bar, the chosen option in the selected look, in every size */
+export const SingleSelection: Story = {
   render: () => (
     <div className="flex flex-col items-start gap-3">
       {sizes.map((size) => (
         <ToggleButtonGroup
           key={size}
-          segmented
           size={size}
           selectionMode="single"
           disallowEmptySelection
@@ -60,11 +73,10 @@ export const Segmented: Story = {
   ),
 };
 
-/** each segment explains itself in a tooltip */
-export const SegmentedWithTooltips: Story = {
+/** each option explains itself in a tooltip */
+export const WithTooltips: Story = {
   render: () => (
     <ToggleButtonGroup
-      segmented
       size="sm"
       selectionMode="single"
       disallowEmptySelection
@@ -81,28 +93,29 @@ export const SegmentedWithTooltips: Story = {
   ),
 };
 
-/** the segments stack when the group is vertical */
-export const SegmentedVertical: Story = {
+/** options that come from data continue on the next line when the group may wrap; the bar keeps its corners at the top left and bottom right */
+export const Wrapping: Story = {
   render: () => (
-    <ToggleButtonGroup
-      segmented
-      size="sm"
-      orientation="vertical"
-      selectionMode="single"
-      disallowEmptySelection
-      defaultSelectedKeys={["week"]}
-      aria-label="Period"
-    >
-      {periods.map(({ id, label }) => (
-        <ToggleButton key={id} id={id}>
-          {label}
-        </ToggleButton>
-      ))}
-    </ToggleButtonGroup>
+    <div className="flex w-72 flex-col gap-3 border border-dashed border-gray-400 p-3">
+      <ToggleButtonGroup
+        wrap
+        size="sm"
+        selectionMode="single"
+        disallowEmptySelection
+        defaultSelectedKeys={["North"]}
+        aria-label="Region"
+      >
+        {regions.map((region) => (
+          <ToggleButton key={region} id={region}>
+            {region}
+          </ToggleButton>
+        ))}
+      </ToggleButtonGroup>
+    </div>
   ),
 };
 
-/** separate buttons, any number of them on: a filter */
+/** independent switches, any number of them on: separate buttons with a gap */
 export const MultipleSelection: Story = {
   render: () => (
     <ToggleButtonGroup
@@ -111,22 +124,22 @@ export const MultipleSelection: Story = {
       aria-label="Content"
     >
       <ToggleButton id="money">
-        <Icon icon={faEuroSign} />
+        <EuroIcon />
         money
       </ToggleButton>
       <ToggleButton id="concept">
-        <Icon icon={faFolder} />
+        <FolderIcon />
         concepts
       </ToggleButton>
       <ToggleButton id="rest">
-        <Icon icon={faInfo} />
+        <InfoIcon />
         other
       </ToggleButton>
     </ToggleButtonGroup>
   ),
 };
 
-/** a vertical toolbar of icon toggles, one of them on, tooltips to the side */
+/** a vertical bar of icon toggles, one of them on, tooltips to the side */
 export const VerticalIcons: Story = {
   render: () => (
     <ToggleButtonGroup
@@ -136,10 +149,10 @@ export const VerticalIcons: Story = {
       defaultSelectedKeys={["summary"]}
       aria-label="Detail level"
     >
-      {detailLevels.map(({ id, icon, label }) => (
+      {detailLevels.map(({ id, icon: LevelIcon, label }) => (
         <TooltipTrigger key={id}>
           <ToggleButton id={id} aria-label={label}>
-            <Icon icon={icon} />
+            <LevelIcon />
           </ToggleButton>
           <Tooltip placement="right">{label}</Tooltip>
         </TooltipTrigger>

@@ -19,11 +19,11 @@ import type {
   TableWithFilterValueT,
 } from "../standard-query-editor/types";
 
-import type { ConceptIdT, DateRangeT } from "./types";
+import type { ConceptIdT, DateRangeT, FilterConfigT } from "./types";
 
 export const transformFilterValueToApi = (
   filter: FilterWithValueType,
-): NonNullable<unknown> | null /* aka: "not undefined", to ensure a type error when a new filter.type is added */ => {
+): FilterConfigT["value"] | null => {
   switch (filter.type) {
     case "BIG_MULTI_SELECT":
     case "MULTI_SELECT":
@@ -33,17 +33,12 @@ export const transformFilterValueToApi = (
     case "INTEGER_RANGE":
     case "MONEY_RANGE":
     case "REAL_RANGE":
-      return !exists(filter.mode) || filter.mode === "range"
-        ? filter.value
-        : filter.value
-          ? { min: filter.value.exact, max: filter.value.exact }
-          : null;
     case "SELECT":
       return filter.value;
   }
 };
 
-export const transformSelectsToApi = (selects?: SelectedSelectorT[] | null) => {
+const transformSelectsToApi = (selects?: SelectedSelectorT[] | null) => {
   if (!selects) return [];
 
   return selects
@@ -51,7 +46,7 @@ export const transformSelectsToApi = (selects?: SelectedSelectorT[] | null) => {
     : [];
 };
 
-export const transformDateColumnToApi = (dateColumn?: SelectedDateColumnT) => {
+const transformDateColumnToApi = (dateColumn?: SelectedDateColumnT) => {
   if (!dateColumn) return null;
 
   return {
@@ -59,7 +54,7 @@ export const transformDateColumnToApi = (dateColumn?: SelectedDateColumnT) => {
   };
 };
 
-export const transformTablesToApi = (tables: TableWithFilterValueT[]) => {
+const transformTablesToApi = (tables: TableWithFilterValueT[]) => {
   if (!tables) return [];
 
   return tables

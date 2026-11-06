@@ -1,19 +1,13 @@
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { XIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import { exists } from "../../common/helpers/exists";
 import type { DragItemQuery } from "../../standard-query-editor/types";
 import { Button } from "../../ui-components/Button";
-import { Icon } from "../../ui-components/Icon";
+import { C2 } from "../../ui-components/Typography";
 
 const root = tv({
-  base: [
-    "px-[10px] py-[5px]",
-    "bg-white",
-    "rounded",
-    "text-base",
-    "text-gray-800",
-  ],
+  base: ["px-[10px] py-[5px]", "bg-white", "rounded"],
   variants: {
     error: {
       true: "border border-red",
@@ -21,8 +15,6 @@ const root = tv({
     },
   },
 });
-
-const errorMessage = tv({ base: ["text-red", "font-normal"] });
 
 interface PropsT {
   queryResult?: DragItemQuery;
@@ -41,9 +33,11 @@ const FormQueryResult = ({
   return (
     <div className={root({ error: exists(error), className })}>
       {error ? (
-        <span className={errorMessage()}>{error}</span>
+        <C2 as="span" tone="danger">
+          {error}
+        </C2>
       ) : queryResult ? (
-        queryResult.label || queryResult.id
+        <C2 as="span">{queryResult.label || queryResult.id}</C2>
       ) : null}
       {onDelete && (
         <Button
@@ -52,7 +46,7 @@ const FormQueryResult = ({
           aria-label={t("common.delete")}
           onPress={onDelete}
         >
-          <Icon icon={faTimes} />
+          <XIcon />
         </Button>
       )}
     </div>

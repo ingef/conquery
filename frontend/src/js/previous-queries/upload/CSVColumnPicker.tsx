@@ -1,14 +1,14 @@
-import {
-  faCheckCircle,
-  faDownload,
-  faExclamationCircle,
-  faSpinner,
-  faTrash,
-  faUpload,
-} from "@fortawesome/free-solid-svg-icons";
 import { format } from "date-fns";
 import { saveAs } from "file-saver";
 import type { TFunction } from "i18next";
+import {
+  CircleAlertIcon,
+  CircleCheckIcon,
+  DownloadIcon,
+  LoaderCircleIcon,
+  TrashIcon,
+  UploadIcon,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
@@ -17,20 +17,20 @@ import { parseCSV, toCSV } from "../../file/csv";
 import { useActiveLang } from "../../localization/useActiveLang";
 import ScrollableList from "../../scrollable-list/ScrollableList";
 import { Button } from "../../ui-components/Button";
-import { Icon } from "../../ui-components/Icon";
-import InputSelect from "../../ui-components/InputSelect/InputSelect";
+import { ComboBoxField } from "../../ui-components/ComboBoxField";
 import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
+import { C2, C3 } from "../../ui-components/Typography";
 
 const td = tv({
-  base: "min-w-[150px] overflow-hidden text-ellipsis whitespace-nowrap text-xs",
+  base: "min-w-[150px] overflow-hidden text-ellipsis whitespace-nowrap",
 });
 
 const th = tv({
-  base: ["w-[150px]", "align-top", "text-xs"],
+  base: ["w-[150px]", "align-top"],
 });
 
 const msg = tv({
-  base: ["flex items-center", "mt-[10px] mb-2 first-of-type:mt-0", "text-sm"],
+  base: ["flex items-center", "mt-[10px] mb-2 first-of-type:mt-0"],
 });
 
 const partialUploadResults = tv({
@@ -38,7 +38,7 @@ const partialUploadResults = tv({
 });
 
 const bigIcon = tv({
-  base: ["mr-[7px]", "text-xl"],
+  base: "mr-[7px]",
   variants: {
     kind: {
       error: "text-red",
@@ -145,8 +145,10 @@ const CSVPreviewTable = ({
             <tr key={j}>
               {row.map((cell, i) => (
                 <th key={cell + i} className={th()}>
-                  <InputSelect
-                    smallMenu
+                  <ComboBoxField
+                    aria-label={t("csvColumnPicker.columnType", {
+                      index: i + 1,
+                    })}
                     options={selectOptions}
                     value={
                       selectOptions.find((o) => o.value === csvHeader[i]) ||
@@ -176,7 +178,9 @@ const CSVPreviewTable = ({
             <tr key={j}>
               {row.map((cell, i) => (
                 <td key={cell + i} className={td()}>
-                  <span className="px-[6px]">{cell}</span>
+                  <span className="px-[6px]">
+                    <C3 as="span">{cell}</C3>
+                  </span>
                 </td>
               ))}
             </tr>
@@ -185,7 +189,9 @@ const CSVPreviewTable = ({
           <tr>
             {new Array(csv[0].length).fill(null).map((_, j) => (
               <td key={j} className={td()}>
-                <span className="px-[6px]">...</span>
+                <span className="px-[6px]">
+                  <C3 as="span">...</C3>
+                </span>
               </td>
             ))}
           </tr>
@@ -253,9 +259,9 @@ const CSVColumnPicker = ({
     <div>
       <div className="mb-[15px] flex items-end justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex flex-col text-sm">
-            <code className="font-bold">{file.name}</code>
-            <code>{csv.length} Zeilen</code>
+          <div className="flex flex-col">
+            <C2 as="code">{file.name}</C2>
+            <C2 as="code">{csv.length} Zeilen</C2>
           </div>
           <TooltipTrigger>
             <Button
@@ -263,24 +269,26 @@ const CSVColumnPicker = ({
               intent="secondary"
               onPress={onReset}
             >
-              <Icon icon={faTrash} />
+              <TrashIcon />
             </Button>
             <Tooltip>{t("common.clear")}</Tooltip>
           </TooltipTrigger>
         </div>
         {csv.length > 0 && (
-          <InputSelect
-            className="ml-[15px] inline-block w-[150px] text-left"
-            label={t("csvColumnPicker.delimiter")}
-            onChange={(val) => {
-              if (val) setDelimiter(val.value as string);
-            }}
-            value={
-              DELIMITER_OPTIONS.find((option) => option.value === delimiter) ||
-              null
-            }
-            options={DELIMITER_OPTIONS}
-          />
+          <div className="ml-[15px] inline-block w-[150px] text-left">
+            <ComboBoxField
+              label={t("csvColumnPicker.delimiter")}
+              onChange={(val) => {
+                if (val) setDelimiter(val.value as string);
+              }}
+              value={
+                DELIMITER_OPTIONS.find(
+                  (option) => option.value === delimiter,
+                ) || null
+              }
+              options={DELIMITER_OPTIONS}
+            />
+          </div>
         )}
       </div>
       <div className="overflow-hidden rounded-sm py-3 px-2 border w-full">
@@ -296,26 +304,24 @@ const CSVColumnPicker = ({
       </div>
       {uploadResult && (
         <div className={partialUploadResults()}>
-          <p className={msg()}>
+          <div className={msg()}>
             {uploadResult.resolved > 0 && (
-              <Icon
-                icon={faCheckCircle}
-                className={bigIcon({ kind: "success" })}
-              />
+              <CircleCheckIcon className={bigIcon({ kind: "success" })} />
             )}
-            {t("csvColumnPicker.resolved", { count: uploadResult.resolved })}
-          </p>
+            <C2 as="span">
+              {t("csvColumnPicker.resolved", { count: uploadResult.resolved })}
+            </C2>
+          </div>
           {uploadResult.unreadableDate.length > 0 && (
             <>
-              <p className={msg()}>
-                <Icon
-                  icon={faExclamationCircle}
-                  className={bigIcon({ kind: "error" })}
-                />
-                {t("csvColumnPicker.unreadableDate", {
-                  count: uploadResult.unreadableDate.length,
-                })}
-              </p>
+              <div className={msg()}>
+                <CircleAlertIcon className={bigIcon({ kind: "error" })} />
+                <C2 as="span">
+                  {t("csvColumnPicker.unreadableDate", {
+                    count: uploadResult.unreadableDate.length,
+                  })}
+                </C2>
+              </div>
               <ScrollableList
                 maxVisibleItems={3}
                 fullWidth
@@ -329,15 +335,14 @@ const CSVColumnPicker = ({
           )}
           {uploadResult.unresolvedId.length > 0 && (
             <>
-              <p className={msg()}>
-                <Icon
-                  icon={faExclamationCircle}
-                  className={bigIcon({ kind: "error" })}
-                />
-                {t("csvColumnPicker.unresolvedId", {
-                  count: uploadResult.unresolvedId.length,
-                })}
-              </p>
+              <div className={msg()}>
+                <CircleAlertIcon className={bigIcon({ kind: "error" })} />
+                <C2 as="span">
+                  {t("csvColumnPicker.unresolvedId", {
+                    count: uploadResult.unresolvedId.length,
+                  })}
+                </C2>
+              </div>
               <ScrollableList
                 maxVisibleItems={3}
                 fullWidth
@@ -356,7 +361,7 @@ const CSVColumnPicker = ({
             uploadResult.unresolvedId.length > 0) && (
             <div className="mr-auto">
               <Button intent="secondary" onPress={downloadUnresolved}>
-                <Icon icon={faDownload} />
+                <DownloadIcon />
                 {t("uploadQueryResultsModal.downloadUnresolved", {
                   count:
                     uploadResult.unreadableDate.length +
@@ -372,9 +377,9 @@ const CSVColumnPicker = ({
             onPress={uploadQuery}
           >
             {loading ? (
-              <Icon icon={faSpinner} className="text-white" />
+              <LoaderCircleIcon className="text-white" />
             ) : (
-              <Icon icon={faUpload} className="mr-[10px] text-white" />
+              <UploadIcon className="mr-[10px] text-white" />
             )}{" "}
             {t("uploadQueryResultsModal.uploadAgain")}
           </Button>
@@ -390,9 +395,9 @@ const CSVColumnPicker = ({
             onPress={uploadQuery}
           >
             {loading ? (
-              <Icon icon={faSpinner} className="text-white" />
+              <LoaderCircleIcon className="text-white" />
             ) : (
-              <Icon icon={faUpload} className="mr-[10px] text-white" />
+              <UploadIcon className="mr-[10px] text-white" />
             )}{" "}
             {t("uploadQueryResultsModal.upload")}
           </Button>

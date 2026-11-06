@@ -1,35 +1,40 @@
 import {
-  faArrowsLeftRightToLine,
-  faHashtag,
-  faMicroscope,
-  faUser,
-} from "@fortawesome/free-solid-svg-icons";
-import type { HTMLAttributes } from "react";
+  HashIcon,
+  MicroscopeIcon,
+  UnfoldHorizontalIcon,
+  UserIcon,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import type { DateRangeT } from "../api/types";
 import { numberToThreeDigitArray } from "../common/helpers/commonHelper";
 import { formatDate, parseDate } from "../common/helpers/dateHelper";
 import { exists } from "../common/helpers/exists";
-import { Icon } from "../ui-components/Icon";
+import { headingStyle, textStyle } from "../ui-components/Typography";
+
+const root = tv({
+  base: ["grid grid-cols-[auto_1fr]", "gap-3", "items-center"],
+});
 
 const dateText = tv({
   base: [
-    "m-0",
     "pr-2",
-    "font-bold",
-    "text-sm",
+    textStyle({ size: 2, strong: true }),
     "flex items-center",
     "whitespace-nowrap",
   ],
 });
 
+const idText = tv({
+  base: ["pr-2", textStyle({ size: 2, strong: true, truncate: true })],
+});
+
 const text = tv({
-  base: ["m-0", "text-xs", "uppercase", "font-normal"],
+  base: textStyle({ size: 3 }),
   variants: {
     zero: {
       true: "text-red",
-      false: "text-gray-500",
+      false: "text-gray-600",
     },
   },
 });
@@ -39,7 +44,7 @@ const icon = tv({
 });
 
 const numberText = tv({
-  base: ["font-bold", "m-0", "text-xl", "leading-none"],
+  base: headingStyle({ level: 3 }),
   variants: {
     zero: { true: "text-red" },
   },
@@ -47,17 +52,17 @@ const numberText = tv({
 
 const digits = tv({
   base: [
-    "after:text-gray-500",
+    "after:text-gray-600",
     "after:content-['.']",
     "last-of-type:after:content-['']",
   ],
 });
 
 const suffix = tv({
-  base: ["text-gray-500", "font-normal", "uppercase", "text-xs", "ml-[5px]"],
+  base: [textStyle({ size: 3, tone: "muted" }), "ml-[5px]"],
 });
 
-interface Props extends HTMLAttributes<HTMLDivElement> {
+interface Props {
   matchingEntries?: number | null;
   matchingEntities?: number | null;
   dateRange?: DateRangeT;
@@ -66,8 +71,7 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
 
 const MatchingStats = (props: Props) => {
   const { t } = useTranslation();
-  const { matchingEntries, matchingEntities, dateRange, idLabel, ...rest } =
-    props;
+  const { matchingEntries, matchingEntities, dateRange, idLabel } = props;
 
   const isZero = props.matchingEntries === 0;
   const isZeroEntities = props.matchingEntities === 0;
@@ -90,19 +94,8 @@ const MatchingStats = (props: Props) => {
     : "- - - - - - -";
 
   return (
-    <div {...rest}>
-      {idLabel && (
-        <>
-          <Icon icon={faMicroscope} className={icon()} />
-          <div className="shrink-0">
-            <p className={dateText()}>{idLabel}</p>
-            <p className={text({ zero: isZero })}>
-              {t("queryEditor.secondaryId")}
-            </p>
-          </div>
-        </>
-      )}
-      <Icon icon={faHashtag} className={icon()} />
+    <div className={root()}>
+      <HashIcon className={icon()} />
       <div className="shrink-0">
         <p className={numberText({ zero: isZero })}>
           {exists(matchingEntries) ? (
@@ -122,7 +115,7 @@ const MatchingStats = (props: Props) => {
           )}
         </p>
       </div>
-      <Icon icon={faUser} className={icon()} />
+      <UserIcon className={icon()} />
       <div className="shrink-0">
         <p className={numberText({ zero: isZeroEntities })}>
           {exists(matchingEntities) ? (
@@ -142,7 +135,7 @@ const MatchingStats = (props: Props) => {
           )}
         </p>
       </div>
-      <Icon icon={faArrowsLeftRightToLine} className={icon()} />
+      <UnfoldHorizontalIcon className={icon()} />
       <div className="shrink-0">
         <p className={dateText()}>
           {fromDate}
@@ -153,6 +146,19 @@ const MatchingStats = (props: Props) => {
           <span className={suffix()}>{`${t("infoPane.date.to")}`}</span>
         </p>
       </div>
+      {idLabel && (
+        <>
+          <MicroscopeIcon className={icon()} />
+          <div className="min-w-0">
+            <p className={idText()} title={idLabel}>
+              {idLabel}
+            </p>
+            <p className={text({ zero: isZero })}>
+              {t("queryEditor.secondaryId")}
+            </p>
+          </div>
+        </>
+      )}
     </div>
   );
 };

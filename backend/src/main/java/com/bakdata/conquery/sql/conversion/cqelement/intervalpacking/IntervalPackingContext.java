@@ -2,7 +2,6 @@ package com.bakdata.conquery.sql.conversion.cqelement.intervalpacking;
 
 import java.util.Collections;
 import java.util.List;
-
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.sql.conversion.Context;

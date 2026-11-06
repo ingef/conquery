@@ -1,4 +1,4 @@
-import { faCaretDown, faCaretRight } from "@fortawesome/free-solid-svg-icons";
+import { ChevronDownIcon, ChevronRightIcon } from "lucide-react";
 import { Fragment, memo } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
@@ -9,15 +9,13 @@ import type {
 } from "../../api/types";
 import { exists } from "../../common/helpers/exists";
 import { getConceptById } from "../../concept-trees/globalTreeStoreHelper";
-import { Icon } from "../../ui-components/Icon";
 import {
   Tooltip,
   TooltipTarget,
   TooltipTrigger,
 } from "../../ui-components/Tooltip";
+import { C2, C3, H4 } from "../../ui-components/Typography";
 import { ConceptBubble } from "../ConceptBubble";
-
-import { SmallHeading } from "./SmallHeading";
 import { formatCurrency, isConceptColumn, isMoneyColumn } from "./util/util";
 
 const stickyWrap = tv({
@@ -33,10 +31,7 @@ const stickyWrap = tv({
 });
 
 const infoGrid = tv({
-  base: [
-    "grid grid-cols-[auto_minmax(min-content,25px)]",
-    "gap-x-[10px] gap-y-0",
-  ],
+  base: ["grid grid-cols-[minmax(0,1fr)_auto]", "gap-x-[10px] gap-y-0"],
 });
 
 const conceptRow = tv({
@@ -44,19 +39,7 @@ const conceptRow = tv({
 });
 
 // named valueCell: `value` is shadowed by destructured data entries below
-const valueCell = tv({
-  base: ["text-sm", "font-normal", "justify-self-end", "w-full", "text-right"],
-});
-
-const labelText = tv({
-  base: [
-    "text-sm",
-    "max-w-full",
-    "whitespace-nowrap",
-    "overflow-hidden",
-    "text-ellipsis",
-  ],
-});
+const valueCell = tv({ base: ["text-right", "whitespace-nowrap"] });
 
 type YearValue = TimeStratifiedInfo["years"][number]["values"][string];
 type Column = TimeStratifiedInfo["columns"][number];
@@ -103,8 +86,8 @@ const ConceptValues = ({
 
   return (
     <>
-      <div className={labelText()} style={{ gridColumn: "span 2" }}>
-        {label}
+      <div className="col-span-2">
+        <C2>{label}</C2>
       </div>
       <div className={conceptRow()}>
         {concepts.map((concept) => (
@@ -177,9 +160,9 @@ const TimeStratifiedInfos = ({
 
                 return (
                   <Fragment key={label}>
-                    <div className={labelText()}>{label}</div>
-                    <div className={valueCell()} title={String(valueFormatted)}>
-                      {valueFormatted}
+                    <C2>{label}</C2>
+                    <div className={valueCell()}>
+                      <C2 as="span">{valueFormatted}</C2>
                     </div>
                   </Fragment>
                 );
@@ -207,19 +190,20 @@ const YearHead = ({
   const { t } = useTranslation();
 
   return (
-    <div className="pr-[10px] text-xs">
+    <div className="pr-[10px]">
       {/* biome-ignore lint/a11y/noStaticElementInteractions: TODO make this a button */}
       {/* biome-ignore lint/a11y/useKeyWithClickEvents: TODO make this a button */}
       <div className={stickyWrap()} onClick={onClick}>
-        <Icon
-          icon={isOpen ? faCaretDown : faCaretRight}
-          className="text-gray-500"
-        />
+        {isOpen ? (
+          <ChevronDownIcon className="text-gray-500" />
+        ) : (
+          <ChevronRightIcon className="text-gray-500" />
+        )}
         <div>
-          <SmallHeading>{year}</SmallHeading>
-          <div>
+          <H4 as="span">{year}</H4>
+          <C3>
             {totalEvents}&nbsp;{t("history.events", { count: totalEvents })}
-          </div>
+          </C3>
         </div>
         <span />
         <TimeStratifiedInfos

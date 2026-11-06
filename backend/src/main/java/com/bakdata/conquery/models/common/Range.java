@@ -1,9 +1,9 @@
 package com.bakdata.conquery.models.common;
 
 import java.math.BigDecimal;
+import java.util.Currency;
 import java.util.Optional;
 
-import com.bakdata.conquery.models.config.FrontendConfig;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -296,13 +296,13 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>> {
 			super(min, max);
 		}
 
-		public static MoneyRange fromNumberRange(IRange<? extends Number, ?> orig, FrontendConfig.CurrencyConfig currency) {
+		public static MoneyRange fromNumberRange(IRange<? extends Number, ?> orig, Currency currency) {
 			BigDecimal mappedMin = Optional.ofNullable(orig.getMin())
-										   .map(val -> new BigDecimal(val.longValue()).movePointLeft(currency.getDecimalScale()))
+										   .map(val -> new BigDecimal(val.longValue()).movePointLeft(currency.getDefaultFractionDigits()))
 										   .orElse(null);
 
 			BigDecimal mappedMax = Optional.ofNullable(orig.getMax())
-										   .map(val -> new BigDecimal(val.longValue()).movePointLeft(currency.getDecimalScale()))
+										   .map(val -> new BigDecimal(val.longValue()).movePointLeft(currency.getDefaultFractionDigits()))
 										   .orElse(null);
 
 			return new Range.MoneyRange(mappedMin, mappedMax);

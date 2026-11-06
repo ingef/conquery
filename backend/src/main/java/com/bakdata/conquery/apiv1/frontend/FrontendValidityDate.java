@@ -1,7 +1,6 @@
 package com.bakdata.conquery.apiv1.frontend;
 
 import java.util.List;
-
 import javax.annotation.Nullable;
 
 import lombok.AllArgsConstructor;

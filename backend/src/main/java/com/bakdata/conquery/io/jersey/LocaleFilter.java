@@ -2,7 +2,6 @@ package com.bakdata.conquery.io.jersey;
 
 import java.io.IOException;
 import java.util.Locale;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
@@ -17,10 +16,10 @@ import com.bakdata.conquery.models.i18n.I18n;
  */
 
 public class LocaleFilter implements ContainerRequestFilter {
-	
+
 	@Context
 	private HttpServletRequest request;
-	
+
 	@Override
 	public void filter(ContainerRequestContext requestContext) throws IOException {
 		// Use jetty context here because requestContext.getLanguage() does not work

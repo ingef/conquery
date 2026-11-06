@@ -9,23 +9,29 @@ const groupStyle = tv({
   base: "flex items-center",
   variants: {
     orientation: {
-      horizontal: "flex-row flex-wrap gap-1",
-      vertical: "flex-col gap-1",
+      horizontal: "flex-row",
+      vertical: "flex-col",
     },
-    // the buttons join into one control and share their borders
-    segmented: { true: "inline-flex flex-nowrap gap-0" },
+    // a group that grows with its data continues on the next line
+    wrap: { true: "flex-wrap" },
+    // joined buttons overlap their borders by a pixel; the padding gives the
+    // first button's border its room
+    segmented: {
+      true: "pt-px pl-px",
+      false: "gap-1",
+    },
   },
-  defaultVariants: { orientation: "horizontal" },
 });
 
 type Orientation = "horizontal" | "vertical";
 type Size = "sm" | "md" | "lg";
 
 /** what a ToggleButton needs to know about the group it sits in */
-export const ToggleButtonGroupContext = createContext<{
+const ToggleButtonGroupContext = createContext<{
+  size?: Size;
   segmented: boolean;
   orientation: Orientation;
-  size?: Size;
+  wrap: boolean;
 } | null>(null);
 
 export const useToggleButtonGroup = () => useContext(ToggleButtonGroupContext);
@@ -34,41 +40,53 @@ export interface ToggleButtonGroupProps
   extends Omit<RacToggleButtonGroupProps, "className" | "style" | "children"> {
   children?: ReactNode;
   orientation?: Orientation;
-  /** one connected control: the buttons share their borders, a segmented control */
-  segmented?: boolean;
+  /** the buttons may continue on further lines: for a group whose options come from data */
+  wrap?: boolean;
   /** the size of every button in the group */
   size?: Size;
 }
 
 /**
- * A group of ToggleButtons with one selection, react-aria's ToggleButtonGroup
- * underneath: `selectionMode` single or multiple, `selectedKeys` /
- * `onSelectionChange` (or `defaultSelectedKeys`), `disallowEmptySelection`,
- * and the arrow keys move along the group. Each button carries its key as `id`.
+ * A group of ToggleButtons, react-aria's ToggleButtonGroup underneath:
+ * `selectionMode` single or multiple, `selectedKeys` / `onSelectionChange`
+ * (or `defaultSelectedKeys`), `disallowEmptySelection`, and the arrow keys
+ * move along the group. Each button carries its key as `id`.
  *
- *   <ToggleButtonGroup segmented size="sm" selectionMode="single" disallowEmptySelection
+ * A group with `selectionMode="single"` is one choice among options, a radio
+ * group to assistive technology, and looks like one control: the buttons join
+ * into a segmented bar and the chosen one is filled. A group with multiple
+ * selection is a row of independent switches, each in its own button look.
+ *
+ *   <ToggleButtonGroup selectionMode="single" disallowEmptySelection
  *     selectedKeys={[mode]} onSelectionChange={(keys) => …}>
  *     <ToggleButton id="range">Range</ToggleButton>
  *     <ToggleButton id="exact">Exact</ToggleButton>
  *   </ToggleButtonGroup>
  *
- * Plain, the buttons keep their own look with a small gap; `segmented` joins
- * them into one bordered control. Layout around the group belongs to the parent.
+ * The group stays on one line unless it may `wrap`. Layout around the group
+ * belongs to the parent.
  */
 export const ToggleButtonGroup = ({
   orientation = "horizontal",
-  segmented = false,
+  wrap = false,
   size,
+  selectionMode,
   children,
   ...props
-}: ToggleButtonGroupProps) => (
-  <ToggleButtonGroupContext.Provider value={{ segmented, orientation, size }}>
-    <RacToggleButtonGroup
-      className={groupStyle({ orientation, segmented })}
-      orientation={orientation}
-      {...props}
+}: ToggleButtonGroupProps) => {
+  const segmented = selectionMode === "single";
+  return (
+    <ToggleButtonGroupContext.Provider
+      value={{ size, segmented, orientation, wrap }}
     >
-      {children}
-    </RacToggleButtonGroup>
-  </ToggleButtonGroupContext.Provider>
-);
+      <RacToggleButtonGroup
+        className={groupStyle({ orientation, wrap, segmented })}
+        orientation={orientation}
+        selectionMode={selectionMode}
+        {...props}
+      >
+        {children}
+      </RacToggleButtonGroup>
+    </ToggleButtonGroupContext.Provider>
+  );
+};

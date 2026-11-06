@@ -26,8 +26,8 @@ describe("Run query", () => {
 
         cy.get("@money-filter").find('input').first().as("money-min-input")
         cy.get("@money-filter").scrollIntoView()
-        // Unit should be automatically added
-        cy.get("@money-min-input").type("-4").should('have.value', '-4 €')
+        // Formatted with the currency's decimals once the input commits
+        cy.get("@money-min-input").type("-4").blur().should('have.value', '-4,00')
 
         // Save the settings
         cy.get("@queryEditor").contains("Speichern").click()
@@ -129,14 +129,12 @@ describe("Reference list", () => {
 
         // We need force here because the input is invisible
         cy.get("@queryEditor").find('input[type=file]').selectFile('cypress/support/test_data/concept_reference_list.txt', {"force": true})
-        cy.get('@queryEditor')
-            .find('[data-test-id="uploadConceptListModal"]')
+        cy.get('[data-test-id="uploadConceptListModal"]')
             .as("uploadConceptListModal")
             .find('[data-test-id="selection-dropdown"]').click()
 
         // Choose a concept
-        cy.get('@uploadConceptListModal')
-            .find('[data-test-id="select-options"]').contains("MultiConnector").first().click()
+        cy.get('[data-test-id="select-options"]').contains("MultiConnector").first().click()
 
         // We expect that one value 'b' cannot be resolved
         cy.get('@uploadConceptListModal').contains("1 Wert nicht aufgelöst")
@@ -147,8 +145,7 @@ describe("Reference list", () => {
         // Change list name
         cy.get('@uploadConceptListModal').find('[data-test-id="insert-form"]').as("insert-form")
         cy.get('@insert-form').find('input[type=text]').should('have.value', 'concept_reference_list')
-        cy.get('@insert-form').find('button[type=button]').click()
-        cy.get('@insert-form').find('input[type=text]').type("My List")
+        cy.get('@insert-form').find('input[type=text]').clear().type("My List")
 
         // Insert elements
         cy.get('@uploadConceptListModal').find('[data-test-id="insert"]').click()
@@ -158,7 +155,7 @@ describe("Reference list", () => {
         cy.get('@queryEditor').find('[data-test-id="query-group"]').contains("My List")
 
         // Clear editor
-        cy.get('@queryEditor').find('svg[data-icon="trash"]').click()
+        cy.get('@queryEditor').find('[data-test-id="clear-query"]').click()
         cy.get('[data-test-id="confirm"]').click()
         cy.get('@queryEditor').find('[data-test-id="text-initial"]')
     })
@@ -171,14 +168,12 @@ describe("Reference list", () => {
             .find('input[type=file]')
             .selectFile('cypress/support/test_data/filter_value_reference_list.txt', {"force": true})
 
-        cy.get('@queryEditor')
-            .find('[data-test-id="uploadConceptListModal"]')
+        cy.get('[data-test-id="uploadConceptListModal"]')
             .as("uploadConceptListModal")
             .find('[data-test-id="selection-dropdown"]').click()
 
         // Choose a concept
-        cy.get('@uploadConceptListModal')
-            .find('[data-test-id="select-options"]').contains("connector1").first().click()
+        cy.get('[data-test-id="select-options"]').contains("connector1").first().click()
 
         // We expect that one value 'b' cannot be resolved
         cy.get('@uploadConceptListModal').contains("1 Wert nicht aufgelöst")
@@ -189,8 +184,7 @@ describe("Reference list", () => {
         // Change list name
         cy.get('@uploadConceptListModal').find('[data-test-id="insert-form"]').as("insert-form")
         cy.get('@insert-form').find('input[type=text]').should('have.value', 'filter_value_reference_list')
-        cy.get('@insert-form').find('button[type=button]').click()
-        cy.get('@insert-form').find('input[type=text]').type("My List")
+        cy.get('@insert-form').find('input[type=text]').clear().type("My List")
 
         // Insert elements
         cy.get('@uploadConceptListModal').find('[data-test-id="insert"]').click()

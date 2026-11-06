@@ -155,7 +155,6 @@
                     "distinct": true,
                     "unit": "#",
                     "description": "The total number of series",
-                    "pattern": "^(?!-)\\d*$",
                     "min": 1,
                     "value": null
                   }

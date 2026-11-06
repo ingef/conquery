@@ -1,10 +1,8 @@
 import {
   addMonths,
   addQuarters,
-  differenceInCalendarDays,
   endOfMonth,
   format,
-  formatDistance,
   isValid,
   lastDayOfQuarter,
   parse,
@@ -15,17 +13,10 @@ import { useTranslation } from "react-i18next";
 // To save the date in this format in the state
 const DATE_FORMAT = "yyyy-MM-dd";
 
-export const useDateLocale = () => {
+const useDateLocale = () => {
   const { i18n } = useTranslation();
 
   return i18n.language === "de" ? de : enGB;
-};
-
-export const useFormatDateDistance = () => {
-  const locale = useDateLocale();
-
-  return (d1: Date, d2: Date, withSuffix: boolean = false) =>
-    formatDistance(d1, d2, { locale: locale, addSuffix: withSuffix });
 };
 
 export const formatStdDate = (date: Date) => {
@@ -166,7 +157,7 @@ interface DateMinMax {
   max: Date | null;
 }
 
-export const testRegexes = (
+const testRegexes = (
   what: "min" | "max",
   value: string,
   displayDateFormat: string,
@@ -184,10 +175,6 @@ export const testRegexes = (
       return { min: null, max: null };
   }
 };
-
-export function getDiffInDays(d1: Date, d2: Date) {
-  return Math.abs(differenceInCalendarDays(d1, d2)) + 1;
-}
 
 /**
  * A custom string format we're using that allows a list of day intervals

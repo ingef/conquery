@@ -3,7 +3,6 @@ import { memo } from "react";
 import type {
   ColumnDescription,
   ConceptIdT,
-  CurrencyConfigT,
   TimeStratifiedInfo,
 } from "../../api/types";
 import type { ContentFilterValue } from "../ContentControl";
@@ -26,7 +25,6 @@ const Year = ({
   dateColumn,
   sourceColumn,
   columnBuckets,
-  currencyConfig,
   rootConceptIdsByColumn,
   timeStratifiedInfos,
 }: {
@@ -38,7 +36,6 @@ const Year = ({
   detailLevel: DetailLevel;
   contentFilter: ContentFilterValue;
   rootConceptIdsByColumn: Record<string, ConceptIdT>;
-  currencyConfig: CurrencyConfigT;
   columnBuckets: ColumnBuckets;
   columns: Record<string, ColumnDescription>;
   dateColumn: ColumnDescription;
@@ -87,7 +84,6 @@ const Year = ({
               dateColumn={dateColumn}
               sourceColumn={sourceColumn}
               columnBuckets={columnBuckets}
-              currencyConfig={currencyConfig}
               rootConceptIdsByColumn={rootConceptIdsByColumn}
             />
           );

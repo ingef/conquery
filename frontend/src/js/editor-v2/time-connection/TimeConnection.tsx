@@ -2,6 +2,7 @@ import { type DOMAttributes, memo } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import { useAppTheme } from "../../app-theme-context";
+import { C2 } from "../../ui-components/Typography";
 
 import type { TreeChildrenTime } from "../types";
 import {
@@ -16,7 +17,7 @@ const container = tv({
 });
 
 const row = tv({
-  base: ["flex items-center", "gap-[5px]", "text-sm"],
+  base: ["flex items-center", "gap-[5px]"],
 });
 
 export const TimeConnection = memo(
@@ -43,28 +44,40 @@ export const TimeConnection = memo(
       // biome-ignore lint/a11y/noStaticElementInteractions: TODO double-click opens the time modal, emotion had hidden this
       <div className={container()} onDoubleClick={onDoubleClick}>
         <div className={row()}>
-          <span className="font-bold" style={{ color: palette[0] }}>
-            {aTimestamp}
+          <span style={{ color: palette[0] }}>
+            <C2 as="span" strong>
+              {aTimestamp}
+            </C2>
           </span>
-          <span>{t("editorV2.dateRangeFrom")}</span>
-          <span className="font-bold text-primary-500">{a}</span>
+          <C2 as="span">{t("editorV2.dateRangeFrom")}</C2>
+          <C2 as="span" strong tone="primary">
+            {a}
+          </C2>
         </div>
         <div className={row()}>
           {conditions.operator !== "WHILE" && (
-            <span className="font-bold" style={{ color: palette[1] }}>
-              {interval}
+            <span style={{ color: palette[1] }}>
+              <C2 as="span" strong>
+                {interval}
+              </C2>
             </span>
           )}
-          <span className="font-bold" style={{ color: palette.at(-2) }}>
-            {operator}
+          <span style={{ color: palette.at(-2) }}>
+            <C2 as="span" strong>
+              {operator}
+            </C2>
           </span>
         </div>
         <div className={row()}>
-          <span className="font-bold" style={{ color: palette[0] }}>
-            {bTimestamp}
+          <span style={{ color: palette[0] }}>
+            <C2 as="span" strong>
+              {bTimestamp}
+            </C2>
           </span>
-          <span>{t("editorV2.dateRangeFrom")}</span>
-          <span className="font-bold text-primary-500">{b}</span>
+          <C2 as="span">{t("editorV2.dateRangeFrom")}</C2>
+          <C2 as="span" strong tone="primary">
+            {b}
+          </C2>
         </div>
       </div>
     );

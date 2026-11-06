@@ -10,15 +10,15 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 public class ConceptPermission extends StringPermissionBuilder {
 
 	public static final String DOMAIN = "concepts";
-	
+
 
 	public static final EnumSet<Ability> ALLOWED_ABILITIES = EnumSet.of(
 		Ability.READ
 	);
-	
+
 	public static final ConceptPermission INSTANCE = new ConceptPermission();
-	
-	
+
+
 	private ConqueryPermission instancePermission(Ability ability, ConceptId instance) {
 		return instancePermission(ability, instance.toString());
 	}

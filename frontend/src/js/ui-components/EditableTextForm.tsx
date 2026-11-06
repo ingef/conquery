@@ -1,14 +1,20 @@
-import { faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { CheckIcon, LoaderCircleIcon } from "lucide-react";
 import { type FormEvent, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import { useClickOutside } from "../common/helpers/useClickOutside";
 import { Button } from "./Button";
-import { Icon } from "./Icon";
 import { Tooltip, TooltipTrigger } from "./Tooltip";
+import { textStyle } from "./Typography";
 
 const input = tv({
-  base: ["h-[30px]", "px-2", "rounded", "border border-gray-500", "text-sm"],
+  base: [
+    "h-[30px]",
+    "px-2",
+    "rounded",
+    "border border-gray-500",
+    textStyle({ size: 2 }),
+  ],
 });
 
 const form = tv({
@@ -71,7 +77,7 @@ const EditableTextForm = ({
               type="submit"
               isDisabled={loading}
             >
-              <Icon icon={loading ? faSpinner : faCheck} />
+              {loading ? <LoaderCircleIcon /> : <CheckIcon />}
             </Button>
             <Tooltip>{t("common.save")}</Tooltip>
           </TooltipTrigger>

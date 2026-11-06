@@ -12,21 +12,14 @@ import type { SearchT, TreesT } from "./reducer";
 import { useAreTreesAvailable } from "./selectors";
 import { useRootConceptIds } from "./useRootConceptIds";
 
-// For historic reasons, the concept tree list is only hidden / shown instead of
-// mounted / unmounted. Maybe we can remove this in the future.
 const root = tv({
   base: [
     "grow shrink-0 basis-0",
     "mb-[10px]",
     "px-[10px]",
-    "overflow-y-auto",
+    "overflow-x-hidden overflow-y-auto",
     "whitespace-nowrap",
   ],
-  variants: {
-    show: {
-      false: "hidden",
-    },
-  },
 });
 
 const ConceptTreeList = ({
@@ -44,9 +37,6 @@ const ConceptTreeList = ({
   const areTreesAvailable = useAreTreesAvailable();
   const areDatasetsPristineOrLoading = useSelector<StateT, boolean>(
     (state) => state.datasets.pristine || state.datasets.loading,
-  );
-  const activeTab = useSelector<StateT, string>(
-    (state) => state.panes.left.activeTab,
   );
   const search = useSelector<StateT, SearchT>(
     (state) => state.conceptTrees.search,
@@ -69,7 +59,7 @@ const ConceptTreeList = ({
   if (search.loading) return null;
 
   return (
-    <div className={root({ show: activeTab === "conceptTrees" })}>
+    <div className={root()}>
       {loading && <ConceptTreesLoading />}
       {!loading && !areTreesAvailable && !areDatasetsPristineOrLoading && (
         <EmptyConceptTreeList />

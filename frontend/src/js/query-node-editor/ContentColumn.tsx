@@ -1,4 +1,3 @@
-import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
@@ -8,29 +7,25 @@ import type {
   SelectOptionT,
   SelectorResultType,
 } from "../api/types";
-import { Heading3 } from "../headings/Headings";
 import { nodeIsConceptQueryNode } from "../model/node";
 import type {
   ConceptQueryNodeType,
   FilterWithValueType,
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
-import type { ModeT } from "../ui-components/InputRange";
-
+import { H3 } from "../ui-components/Typography";
 import CommonNodeSettings from "./CommonNodeSettings";
 import ContentCell from "./ContentCell";
 import NodeSelects from "./NodeSelects";
 import TableView from "./TableView";
+import { COMMON_SECTION } from "./useSectionSpy";
 
-// mb-0 overrides the h3 base margin from index.css
-const sectionHeading = tv({
-  base: ["mx-[10px] mt-[10px] mb-0"],
-});
+const sectionHeading = tv({ base: "mx-2 mt-2" });
 
 const contentCellGroup = tv({
   base: [
-    "pb-[10px]",
-    "mb-[10px]",
+    "pb-2",
+    "mb-2",
     "border-b border-gray-100",
     "last-of-type:border-b-0 last-of-type:pb-0 last-of-type:mb-0",
   ],
@@ -38,20 +33,25 @@ const contentCellGroup = tv({
 
 const ContentColumn = ({
   node,
-  selectedTableIdx,
+  registerSection,
+  registerSentinel,
   blocklistedSelects,
   allowlistedSelects,
   onLoadFilterSuggestions,
   onSetDateColumn,
   onSetFilterValue,
-  onSwitchFilterMode,
   onSelectSelects,
   onSelectTableSelects,
   onToggleTimestamps,
   onToggleSecondaryIdExclude,
 }: {
   node: StandardQueryNodeT;
-  selectedTableIdx: number | null;
+  /** a ref callback per section key, for the navigation to follow the scroll */
+  registerSection: (key: string) => (element: HTMLElement | null) => void;
+  /** ref callbacks for the 1 px marks at the content's start and end */
+  registerSentinel: (
+    edge: "start" | "end",
+  ) => (element: HTMLElement | null) => void;
   blocklistedSelects?: SelectorResultType[];
   allowlistedSelects?: SelectorResultType[];
   onSelectSelects: (value: SelectOptionT[]) => void;
@@ -62,11 +62,6 @@ const ContentColumn = ({
     tableIdx: number,
     filterIdx: number,
     value: FilterWithValueType["value"],
-  ) => void;
-  onSwitchFilterMode: (
-    tableIdx: number,
-    filterIdx: number,
-    mode: ModeT,
   ) => void;
   onLoadFilterSuggestions: (
     params: PostPrefixForSuggestionsParams,
@@ -80,24 +75,16 @@ const ContentColumn = ({
 
   const tables = nodeIsConceptQueryNode(node) ? node.tables : [];
 
-  const itemsRef = useRef<(HTMLDivElement | null)[]>(new Array(tables.length));
-
-  useEffect(() => {
-    if (selectedTableIdx && itemsRef.current?.[selectedTableIdx]) {
-      itemsRef.current[selectedTableIdx]?.scrollIntoView({
-        block: "start",
-        inline: "start",
-        behavior: "smooth",
-      });
-    }
-  }, [selectedTableIdx]);
-
   return (
     <div className="flex w-full flex-col">
-      <ContentCell className={contentCellGroup()}>
-        <Heading3 className={sectionHeading()}>
-          {t("queryNodeEditor.properties")}
-        </Heading3>
+      <div className="h-px shrink-0" ref={registerSentinel("start")} />
+      <ContentCell
+        className={contentCellGroup()}
+        ref={registerSection(COMMON_SECTION)}
+      >
+        <div className={sectionHeading()}>
+          <H3>{t("queryNodeEditor.properties")}</H3>
+        </div>
         {(onToggleSecondaryIdExclude || onToggleTimestamps) && (
           <CommonNodeSettings
             excludeFromSecondaryId={node.excludeFromSecondaryId}
@@ -124,11 +111,11 @@ const ContentColumn = ({
           <ContentCell
             className={contentCellGroup()}
             key={table.id}
-            ref={(instance) => {
-              itemsRef.current[idx] = instance;
-            }}
+            ref={registerSection(String(idx))}
           >
-            <Heading3 className={sectionHeading()}>{table.label}</Heading3>
+            <div className={sectionHeading()}>
+              <H3>{table.label}</H3>
+            </div>
             <TableView
               node={
                 node as ConceptQueryNodeType /* otherwise there won't be tables */
@@ -139,12 +126,12 @@ const ContentColumn = ({
               onSelectTableSelects={onSelectTableSelects}
               onSetDateColumn={onSetDateColumn}
               onSetFilterValue={onSetFilterValue}
-              onSwitchFilterMode={onSwitchFilterMode}
               onLoadFilterSuggestions={onLoadFilterSuggestions}
             />
           </ContentCell>
         );
       })}
+      <div className="h-px shrink-0" ref={registerSentinel("end")} />
     </div>
   );
 };

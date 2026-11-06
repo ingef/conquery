@@ -1,15 +1,15 @@
-import { faFile } from "@fortawesome/free-regular-svg-icons";
 import {
-  faArrowRight,
-  faDiagramProject,
-  faFolder,
-  faMinus,
-} from "@fortawesome/free-solid-svg-icons";
+  ArrowRightIcon,
+  FileIcon,
+  FolderIcon,
+  MinusIcon,
+  WorkflowIcon,
+} from "lucide-react";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
-import { Icon } from "../ui-components/Icon";
+import { C1, H2 } from "../ui-components/Typography";
 
 const textInitial = tv({
   base: [
@@ -18,17 +18,11 @@ const textInitial = tv({
     "gap-y-3 gap-x-5",
     "w-full",
     "p-[30px]",
-    "text-xl",
-    "font-normal",
   ],
 });
 
 const arrowRight = tv({
-  base: ["[grid-area:arrow]", "size-[140px]", "text-gray-100"],
-});
-
-const headline = tv({
-  base: ["[grid-area:headline]", "text-2xl", "leading-tight", "font-bold"],
+  base: ["[grid-area:arrow]", "size-10", "text-gray-100"],
 });
 
 const grid = tv({
@@ -53,32 +47,34 @@ export const EmptyQueryEditorDropzone = memo(() => {
 
   return (
     <div className={textInitial()} data-test-id="text-initial">
-      <h2 className={headline()}>{t("dropzone.explanation")}</h2>
-      <Icon icon={faArrowRight} className={arrowRight()} />
+      <div className="[grid-area:headline]">
+        <H2>{t("dropzone.explanation")}</H2>
+      </div>
+      <ArrowRightIcon className={arrowRight()} />
       <div className="[grid-area:description]">
-        <p>{t("dropzone.dropIntoThisArea")}</p>
+        <C1>{t("dropzone.dropIntoThisArea")}</C1>
         <div className={grid()}>
           <div className={row()}>
             <div className={iconInABox()}>
-              <Icon icon={faFolder} className="text-primary-500" />
+              <FolderIcon data-filled className="text-primary-500" />
             </div>
             <div className={iconInABox()}>
-              <Icon icon={faMinus} className="text-primary-500" />
+              <MinusIcon className="text-primary-500" />
             </div>
           </div>
-          {t("dropzone.aConcept")}
+          <C1 as="span">{t("dropzone.aConcept")}</C1>
           <div className={row()}>
             <div className={iconInABox()}>
-              <Icon icon={faDiagramProject} className="text-primary-500" />
+              <WorkflowIcon className="text-primary-500" />
             </div>
           </div>
-          {t("dropzone.aQuery")}
+          <C1 as="span">{t("dropzone.aQuery")}</C1>
           <div className={row()}>
             <div className={iconInABox()}>
-              <Icon icon={faFile} className="text-primary-500" />
+              <FileIcon className="text-primary-500" />
             </div>
           </div>
-          {t("dropzone.aConceptList")}
+          <C1 as="span">{t("dropzone.aConceptList")}</C1>
         </div>
       </div>
     </div>

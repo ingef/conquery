@@ -1,21 +1,11 @@
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-
 import type { DateRangeT } from "../../api/types";
 import { formatDate } from "../../common/helpers/dateHelper";
+import { C3 } from "../../ui-components/Typography";
 
 const root = tv({
-  base: [
-    "inline-grid",
-    "grid-cols-[auto_1fr]",
-    "gap-x-[5px] gap-y-0",
-    "text-xs",
-    "font-mono",
-  ],
-});
-
-const dateLabel = tv({
-  base: ["justify-self-end", "uppercase", "text-primary-500", "font-bold"],
+  base: ["inline-grid", "grid-cols-[auto_1fr]", "gap-x-[5px] gap-y-0"],
 });
 
 const getFormattedDate = (date: string | undefined, dateFormat: string) => {
@@ -39,14 +29,22 @@ export const DateRange = ({ dateRange }: { dateRange: DateRangeT }) => {
     <div className={root()}>
       {dateMin && (
         <>
-          <div className={dateLabel()}>{t("inputDateRange.from")}</div>
-          <span>{dateMin}</span>
+          <span className="justify-self-end">
+            <C3 as="span" tone="primary" strong>
+              {t("inputDateRange.from")}
+            </C3>
+          </span>
+          <C3 as="code">{dateMin}</C3>
         </>
       )}
       {dateMax && dateMax !== dateMin && (
         <>
-          <div className={dateLabel()}>{t("inputDateRange.to")}</div>
-          <span>{dateMax}</span>
+          <span className="justify-self-end">
+            <C3 as="span" tone="primary" strong>
+              {t("inputDateRange.to")}
+            </C3>
+          </span>
+          <C3 as="code">{dateMax}</C3>
         </>
       )}
     </div>

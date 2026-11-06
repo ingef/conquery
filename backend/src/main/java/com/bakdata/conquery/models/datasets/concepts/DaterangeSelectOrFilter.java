@@ -1,21 +1,26 @@
 package com.bakdata.conquery.models.datasets.concepts;
 
-import com.bakdata.conquery.models.common.ColumnUtils;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
+import com.bakdata.conquery.util.validation.ResolvableId;
+import com.bakdata.conquery.util.validation.SupportedColumnTypes;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
-
-import java.util.EnumSet;
 
 public interface DaterangeSelectOrFilter {
 
 	//TODO consider dropping this and require single column to just be same in start and end?
+	@ResolvableId
+	@SupportedColumnTypes({MajorTypeId.DATE_RANGE,MajorTypeId.DATE})
 	ColumnId getColumn();
 
+	@ResolvableId
+	@SupportedColumnTypes(MajorTypeId.DATE)
 	ColumnId getStartColumn();
 
+	@ResolvableId
+	@SupportedColumnTypes(MajorTypeId.DATE)
 	ColumnId getEndColumn();
 
 	@JsonIgnore
@@ -48,26 +53,6 @@ public interface DaterangeSelectOrFilter {
 			return true;
 		}
 		return getStartColumn().getTable().equals(getEndColumn().getTable());
-	}
-
-	@JsonIgnore
-	@ValidationMethod(message = "Both columns of a two-column daterange have to be of type DATE.")
-	default boolean isValidTwoColumnDaterangeSelect() {
-		if (getStartColumn() == null || getEndColumn() == null) {
-			return true;
-		}
-
-		return ColumnUtils.assertValidColumnTypes(getStartColumn(), EnumSet.of(MajorTypeId.DATE)) && ColumnUtils.assertValidColumnTypes(getEndColumn(), EnumSet.of(MajorTypeId.DATE));
-	}
-
-	@JsonIgnore
-	@ValidationMethod(message = "Column is not of type DATE or DATE_RANGE.")
-	default boolean isValidSingleColumnDateSelect() {
-		if (getColumn() == null) {
-			return true;
-		}
-
-		return ColumnUtils.assertValidColumnTypes(getColumn(), EnumSet.of(MajorTypeId.DATE, MajorTypeId.DATE_RANGE));
 	}
 
 }

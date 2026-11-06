@@ -1,11 +1,11 @@
-import { faPen } from "@fortawesome/free-solid-svg-icons";
+import { PencilIcon } from "lucide-react";
 import { tv } from "tailwind-variants";
 import HighlightableLabel from "../highlightable-label/HighlightableLabel";
 import { Button } from "./Button";
 import EditableTextForm from "./EditableTextForm";
 import { Highlighter } from "./Highlighter";
-import { Icon } from "./Icon";
 import { Tooltip, TooltipTrigger } from "./Tooltip";
+import { C2 } from "./Typography";
 
 // a flex wrapper, so the button does not sit on a text baseline and grow the row
 const editButton = tv({
@@ -73,20 +73,22 @@ const EditableText = ({
             size={large ? "md" : "sm"}
             onPress={onToggleEdit}
           >
-            <Icon icon={faPen} />
+            <PencilIcon />
           </Button>
           <Tooltip>{tooltip}</Tooltip>
         </TooltipTrigger>
       </span>
       <HighlightableLabel className={label()} isHighlighted={isHighlighted}>
-        {highlightedWords && highlightedWords.length > 0 ? (
-          <Highlighter
-            searchWords={highlightedWords}
-            textToHighlight={textValue}
-          />
-        ) : (
-          textValue
-        )}
+        <C2 as="span">
+          {highlightedWords && highlightedWords.length > 0 ? (
+            <Highlighter
+              searchWords={highlightedWords}
+              textToHighlight={textValue}
+            />
+          ) : (
+            textValue
+          )}
+        </C2>
       </HighlightableLabel>
     </div>
   );

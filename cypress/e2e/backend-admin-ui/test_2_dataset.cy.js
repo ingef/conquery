@@ -198,6 +198,19 @@ context("Admin UI Single Dataset", () => {
       cy.get('#origin_Manager > .card-header > .row > .accordion-infotext > div > .jobsAmount').eq(0);
     })
   });
+  describe("Perform Update Filter Search", () => {
+
+    it("Start Update Filter Search", () => {
+      visitAdminUI("datasets");
+      cy.get('[data-cy="datasets"]').contains(testDSID).click();
+      cy.get('[data-cy="update-filter-search"]').click();
+    })
+
+    it("Wait for Update Filter Search to finish", () => {
+      visitAdminUI("jobs");
+      cy.get('#origin_Manager > .card-header > .row > .accordion-infotext > div > .jobsAmount').eq(0);
+    })
+  });
   describe("Visit Index Service Page", () => {
 
     it("Check Statistics", () => {

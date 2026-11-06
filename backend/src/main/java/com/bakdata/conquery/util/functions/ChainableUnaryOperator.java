@@ -7,13 +7,13 @@ import java.util.function.UnaryOperator;
 /**
  * Adds convenience methods to chain {@link UnaryOperator}s and still have them typed as
  * an {@link UnaryOperator} instead of an {@link Function}.
- * This way the chain can be used with {@link List::replaceAll} for efficient replacement. 
- * 
+ * This way the chain can be used with {@link List::replaceAll} for efficient replacement.
+ *
  * @param <T> The input and output type of the operator
  */
 @FunctionalInterface
 public interface ChainableUnaryOperator<T> extends UnaryOperator<T>{
-	
+
     /**
      * Returns a composed function that first applies the {@code before}
      * function to its input, and then applies this function to the result.
