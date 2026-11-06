@@ -1,10 +1,8 @@
-import { faCalendar } from "@fortawesome/free-regular-svg-icons";
-import { faBan, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { BanIcon, CalendarIcon, XIcon } from "lucide-react";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import { Button } from "../ui-components/Button";
-import { Icon } from "../ui-components/Icon";
 import { ToggleButton } from "../ui-components/ToggleButton";
 
 import {
@@ -46,7 +44,7 @@ const QueryGroupActions = ({
             isSelected={excludeActive}
             onChange={onExcludeClick}
           >
-            <Icon icon={faBan} />
+            <BanIcon />
             {t("queryEditor.exclude")}
           </ToggleButton>
           <Tooltip>{t("help.queryEditorExclude")}</Tooltip>
@@ -58,7 +56,7 @@ const QueryGroupActions = ({
             isSelected={dateActive}
             onChange={onDateClick}
           >
-            <Icon icon={faCalendar} />
+            <CalendarIcon />
             {t("queryEditor.date")}
           </ToggleButton>
           <Tooltip>{t("help.queryEditorDate")}</Tooltip>
@@ -72,7 +70,7 @@ const QueryGroupActions = ({
             size="sm"
             onPress={onDeleteGroup}
           >
-            <Icon icon={faTimes} />
+            <XIcon />
           </Button>
           <Tooltip>{t("queryEditor.removeColumn")}</Tooltip>
         </TooltipTrigger>

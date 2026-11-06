@@ -1,52 +1,23 @@
-import { faSliders } from "@fortawesome/free-solid-svg-icons";
-import { type Dispatch, memo, type SetStateAction, useState } from "react";
+import { SlidersHorizontalIcon } from "lucide-react";
+import { type Dispatch, memo, type SetStateAction } from "react";
+import { DialogTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
 import type { SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
-import { Heading3 } from "../headings/Headings";
 import { Button } from "../ui-components/Button";
-import { Icon } from "../ui-components/Icon";
+import { Card } from "../ui-components/Card";
 import ProgressBar from "../ui-components/ProgressBar";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
+import { C1, C2, C3, H3 } from "../ui-components/Typography";
 
 import { SettingsModal } from "./SettingsModal";
 
-const root = tv({
-  base: [
-    "grid",
-    "gap-2",
-    "bg-white",
-    "shadow-[1px_1px_5px_0px_rgba(0,0,0,0.2)]",
-    "p-[14px]",
-    "rounded",
-  ],
-});
+const root = tv({ base: ["grid", "gap-2"] });
 
 const baseInfo = tv({
   base: ["flex justify-between", "gap-[15px]", "overflow-hidden"],
-});
-
-const heading = tv({
-  base: [
-    "shrink-0",
-    "m-0",
-    "whitespace-nowrap",
-    "text-ellipsis",
-    "overflow-hidden",
-  ],
-  variants: {
-    end: { true: "justify-self-end" },
-  },
-});
-
-const infoText = tv({
-  base: ["text-base", "text-gray-500", "font-normal"],
-});
-
-const specialText = tv({
-  base: ["m-0", "text-xs", "uppercase", "font-normal", "text-gray-500"],
 });
 
 interface Props {
@@ -69,46 +40,46 @@ export const NavigationHeader = memo(
       (state) => state.entityHistory.label,
     );
 
-    const [settingsModalOpen, setSettingsModalOpen] = useState(false);
-
     return (
-      <div className={root({ className })}>
-        {settingsModalOpen && (
-          <SettingsModal
-            onClose={() => setSettingsModalOpen(false)}
-            setEntityStatusOptions={setEntityStatusOptions}
-            entityStatusOptions={entityStatusOptions}
-          />
-        )}
-        <div className={baseInfo()}>
-          <div style={{ overflow: "hidden" }}>
-            <Heading3 className={heading()} title={label}>
-              {label}
-            </Heading3>
-            <p className={specialText()}>{t("history.history")}</p>
+      <div className={className}>
+        <Card>
+          <div className={root()}>
+            <div className={baseInfo()}>
+              <div className="min-w-0">
+                <H3 truncate title={label}>
+                  {label}
+                </H3>
+                <C3 tone="muted">{t("history.history")}</C3>
+              </div>
+              <TooltipTrigger>
+                <DialogTrigger>
+                  <Button
+                    aria-label={t("history.settings.headline")}
+                    intent="tertiary"
+                  >
+                    <SlidersHorizontalIcon />
+                  </Button>
+                  <SettingsModal
+                    setEntityStatusOptions={setEntityStatusOptions}
+                    entityStatusOptions={entityStatusOptions}
+                  />
+                </DialogTrigger>
+                <Tooltip>{t("history.settings.headline")}</Tooltip>
+              </TooltipTrigger>
+            </div>
+            <div className="grid grid-cols-[auto_1fr] items-baseline gap-x-2 text-right">
+              <C1 strong>{idsCount}</C1>
+              <C2 tone="muted">
+                {t("common.entitiesFound", { count: idsCount })}
+              </C2>
+              <C1 strong>{markedCount}</C1>
+              <C2 tone="muted">
+                {t("history.marked", { count: markedCount })}
+              </C2>
+            </div>
+            <ProgressBar donePercent={100 * (markedCount / idsCount)} />
           </div>
-          <TooltipTrigger>
-            <Button
-              aria-label={t("history.settings.headline")}
-              intent="tertiary"
-              onPress={() => setSettingsModalOpen(true)}
-            >
-              <Icon icon={faSliders} />
-            </Button>
-            <Tooltip>{t("history.settings.headline")}</Tooltip>
-          </TooltipTrigger>
-        </div>
-        <div className="grid gap-x-2 grid-cols-[auto_1fr] items-center">
-          <Heading3 className={heading({ end: true })}>{idsCount}</Heading3>
-          <span className={infoText()}>
-            {t("common.entitiesFound", { count: idsCount })}
-          </span>
-          <Heading3 className={heading({ end: true })}>{markedCount}</Heading3>
-          <span className={infoText()}>
-            {t("history.marked", { count: markedCount })}
-          </span>
-        </div>
-        <ProgressBar donePercent={100 * (markedCount / idsCount)} />
+        </Card>
       </div>
     );
   },

@@ -1,4 +1,4 @@
-import { faFolderMinus, faHome } from "@fortawesome/free-solid-svg-icons";
+import { FolderMinusIcon, HouseIcon } from "lucide-react";
 import { memo, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -7,7 +7,6 @@ import type { StateT } from "../app/reducers";
 import { clearSearchQuery } from "../concept-trees/actions";
 import { useRootConceptIds } from "../concept-trees/useRootConceptIds";
 import { Button } from "../ui-components/Button";
-import { Icon } from "../ui-components/Icon";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 import { closeAllConceptOpen, resetAllConceptOpen } from "./actions";
@@ -77,7 +76,7 @@ const ConceptTreesOpenButtonsView = memo(
             intent="secondary"
             onPress={onResetAllConceptOpen}
           >
-            <Icon icon={faHome} />
+            <HouseIcon />
           </Button>
           <Tooltip>{t("conceptTreesOpen.resetAll")}</Tooltip>
         </TooltipTrigger>
@@ -88,7 +87,7 @@ const ConceptTreesOpenButtonsView = memo(
             isDisabled={isCloseAllDisabled}
             onPress={onCloseAllConceptOpen}
           >
-            <Icon icon={faFolderMinus} />
+            <FolderMinusIcon />
           </Button>
           <Tooltip>{t("conceptTreesOpen.closeAll")}</Tooltip>
         </TooltipTrigger>

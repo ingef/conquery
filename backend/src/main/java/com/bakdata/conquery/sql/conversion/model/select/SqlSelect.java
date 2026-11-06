@@ -1,11 +1,11 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
+import java.util.List;
+
 import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.ExistsSelect;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.Qualifiable;
 import org.jooq.Field;
-
-import java.util.List;
 
 public interface SqlSelect extends Qualifiable<SqlSelect> {
 

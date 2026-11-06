@@ -1,12 +1,13 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
 import type { StateT } from "../app/reducers";
 import ConceptTreesOpenButtons from "../concept-trees-open/ConceptTreesOpenButtons";
-import SearchBar from "../search-bar/SearchBar";
 import AnimatedDots from "../ui-components/AnimatedDots";
 import { Button } from "../ui-components/Button";
+import { SearchField } from "../ui-components/SearchField";
+import { C3 } from "../ui-components/Typography";
 
 import {
   clearSearchQuery,
@@ -17,16 +18,10 @@ import type { SearchT, TreesT } from "./reducer";
 
 const root = tv({ base: "relative" });
 
-const tinyText = tv({
-  base: ["my-[3px]", "text-xs", "text-gray-500"],
-});
+const tinyText = tv({ base: "my-[3px]" });
 
 const row = tv({
   base: "flex flex-row items-center justify-between",
-});
-
-const displaying = tv({
-  base: ["text-xs", "uppercase", "text-gray-500"],
 });
 
 const ConceptTreeSearchBox = ({ className }: { className?: string }) => {
@@ -60,16 +55,30 @@ const ConceptTreeSearchBox = ({ className }: { className?: string }) => {
   );
   const onToggleShowMismatches = () => dispatch(toggleShowMismatches());
 
+  const [term, setTerm] = useState(search.query ?? "");
+  useEffect(() => {
+    setTerm(search.query ?? "");
+  }, [search.query]);
+
+  const placeholder = t("conceptTreeList.searchPlaceholder");
+
   return (
     <div className={root({ className })}>
       <div className="flex items-center gap-[5px]">
         <ConceptTreesOpenButtons />
-        <SearchBar
-          searchTerm={search.query}
-          placeholder={t("conceptTreeList.searchPlaceholder")}
-          onClear={onClearQuery}
-          onSearch={onSearch}
-        />
+        <div className="grow">
+          <SearchField
+            aria-label={placeholder}
+            placeholder={placeholder}
+            value={term}
+            onChange={(value) => {
+              setTerm(value);
+              if (!value) onClearQuery();
+            }}
+            onSubmit={onSearch}
+            onClear={onClearQuery}
+          />
+        </div>
       </div>
       {search.loading ? (
         <AnimatedDots />
@@ -77,18 +86,20 @@ const ConceptTreeSearchBox = ({ className }: { className?: string }) => {
         search.result &&
         search.resultCount >= 0 && (
           <div className={row()}>
-            <p className={tinyText()}>
-              {t("search.resultLabel", {
-                totalResults: search.resultCount,
-                duration: (search.duration / 1000.0).toFixed(2),
-              })}
-            </p>
+            <div className={tinyText()}>
+              <C3 tone="muted">
+                {t("search.resultLabel", {
+                  totalResults: search.resultCount,
+                  duration: (search.duration / 1000.0).toFixed(2),
+                })}
+              </C3>
+            </div>
             <div className="my-[3px] flex items-center gap-[5px]">
-              <span className={displaying()}>
+              <C3 as="span" tone="muted">
                 {showMismatches
                   ? t("conceptTreeList.showingMismatches")
                   : t("conceptTreeList.showingMatchesOnly")}
-              </span>
+              </C3>
               <Button
                 intent="secondary"
                 size="sm"

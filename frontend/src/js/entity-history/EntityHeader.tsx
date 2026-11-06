@@ -4,7 +4,7 @@ import { tv } from "tailwind-variants";
 
 import type { SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
-import { Heading3 } from "../headings/Headings";
+import { C3, H3 } from "../ui-components/Typography";
 import { BadgeToggleButton } from "./BadgeToggleButton";
 
 import type { EntityId } from "./reducer";
@@ -23,14 +23,9 @@ const buttons = tv({
 });
 
 const entityId = tv({
-  base: ["shrink-0", "m-0"],
   variants: {
     blurred: { true: "blur-[6px]" },
   },
-});
-
-const avatar = tv({
-  base: ["shrink-0", "m-0", "text-gray-500", "font-light"],
 });
 
 export const EntityHeader = ({
@@ -72,13 +67,17 @@ export const EntityHeader = ({
       <div className="flex items-center gap-[30px]">
         <div>
           <div className="flex gap-[5px]">
-            <Heading3 className={avatar()}>#{currentEntityIndex + 1}</Heading3>
-            <Heading3 className={entityId({ blurred })}>
-              {currentEntityId.id}
-            </Heading3>
+            <span className="text-gray-600">
+              <H3 as="span">#{currentEntityIndex + 1}</H3>
+            </span>
+            <span className={entityId({ blurred })}>
+              <H3 as="span">{currentEntityId.id}</H3>
+            </span>
           </div>
-          <div className="mt-[5px] text-xs text-gray-500">
-            {totalEvents} {t("history.events", { count: totalEvents })}
+          <div className="mt-[5px]">
+            <C3 tone="muted">
+              {totalEvents} {t("history.events", { count: totalEvents })}
+            </C3>
           </div>
         </div>
       </div>
@@ -86,7 +85,7 @@ export const EntityHeader = ({
         {entityStatusOptions.map((option, i) => (
           <span key={option.label + i}>
             <BadgeToggleButton
-              active={!!status.find((opt) => opt.value === option.value)}
+              selected={!!status.find((opt) => opt.value === option.value)}
               onClick={toggleOption(option)}
               hotkey={i < 9 ? String(i + 1) : undefined}
             >

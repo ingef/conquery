@@ -15,7 +15,7 @@ Conquery supplies a powerful interface to group event types in a hierarchical *c
 
 ## Requirements
 - Maven 3 (optional for building)
-- Java JDK 11
+- Java JDK 21
 - Node.js 24
 - pnpm 11
 - curl (to import the test data)
@@ -78,6 +78,23 @@ configurations, such as:
 - [Configure Authentication with OAuth2/OpenId Connect](./docs/authentication.md)
 
 ## Development
+
+### Java source hygiene
+
+We currently use minimal spotless rules, which are checked in the CI.
+
+Apply or check these rules from the repository root:
+
+```bash
+mvn spotless:apply
+mvn spotless:check
+```
+
+Install the repository's pre-push check once per clone:
+
+```bash
+mvn spotless:install-git-pre-push-hook
+```
 
 ### Testing
 

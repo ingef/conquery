@@ -1,9 +1,8 @@
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import { TrashIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 import { Button } from "../ui-components/Button";
 import { ConfirmMenu } from "../ui-components/ConfirmMenu";
-import { Icon } from "../ui-components/Icon";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 import { clearQuery } from "./actions";
@@ -22,11 +21,12 @@ const QueryClearButton = ({ className }: { className?: string }) => {
         >
           <Button
             aria-label={t("queryEditor.clear")}
+            data-test-id="clear-query"
             intent="tertiary"
             size="sm"
             excludeFromTabOrder
           >
-            <Icon icon={faTrash} />
+            <TrashIcon />
           </Button>
         </ConfirmMenu>
         <Tooltip>{t("queryEditor.clear")}</Tooltip>

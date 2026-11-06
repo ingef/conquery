@@ -60,7 +60,6 @@ const ConceptTreeNodeTextContainer = ({
   const resultCount = isStructFolder
     ? null
     : getResultCount(search, node, conceptId);
-  const hasChildren = !!node.children && node.children.length > 0;
 
   const item: DragItemConceptTreeNode = {
     dragContext: {
@@ -112,7 +111,6 @@ const ConceptTreeNodeTextContainer = ({
         description={node.description}
         resultCount={resultCount}
         searchWords={search.words}
-        hasChildren={hasChildren}
         isOpen={open}
         icon={icon}
         red={red}

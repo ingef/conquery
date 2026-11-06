@@ -4,7 +4,6 @@ import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.stores.primitive.IntegerDateStore;
 import com.bakdata.conquery.models.events.stores.root.DateStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;

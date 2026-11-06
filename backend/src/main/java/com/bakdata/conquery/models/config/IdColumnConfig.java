@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.external.DateFormat;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
@@ -22,8 +24,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Functions;
 import com.google.common.collect.MoreCollectors;
 import io.dropwizard.validation.ValidationMethod;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

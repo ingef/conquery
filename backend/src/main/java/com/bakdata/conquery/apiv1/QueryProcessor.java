@@ -45,6 +45,7 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.identifiable.IdResolvingException;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -291,23 +292,29 @@ public class QueryProcessor {
 		storage.removeExecution(executionId);
 	}
 
-	public FullExecutionStatus getQueryFullStatus(ManagedExecutionId queryId, Subject subject, UriBuilder url, Boolean allProviders, boolean await) {
-		final Namespace namespace = datasetRegistry.get(queryId.getDataset());
+	public FullExecutionStatus getQueryFullStatus(ManagedExecutionId executionId, Subject subject, UriBuilder url, Boolean allProviders, boolean await) {
+		final Namespace namespace = datasetRegistry.get(executionId.getDataset());
 
 		if (await) {
-			namespace.getExecutionManager().awaitDone(queryId, 1, TimeUnit.SECONDS);
+			namespace.getExecutionManager().awaitDone(executionId, 1, TimeUnit.SECONDS);
 		}
 
-		final ManagedExecution query = queryId.resolve();
+		// An IdResolvingException here is mapped to HttpStatus 404
+		final ManagedExecution execution = executionId.resolve();
 
-		query.initExecutable();
+		try{
+			// An IdResolvingException here is mapped to HttpStatus 500
+			execution.initExecutable();
 
-		final FullExecutionStatus status = query.buildStatusFull(subject, namespace);
+			final FullExecutionStatus status = execution.buildStatusFull(subject, namespace);
 
-		if (query.isReadyToDownload() && subject.isPermitted(namespace.getDataset(), Ability.DOWNLOAD)) {
-			status.setResultUrls(getResultAssets(config.getResultProviders(), query, url, allProviders));
+			if (execution.isReadyToDownload() && subject.isPermitted(namespace.getDataset(), Ability.DOWNLOAD)) {
+				status.setResultUrls(getResultAssets(config.getResultProviders(), execution, url, allProviders));
+			}
+			return status;
+		} catch (IdResolvingException idResolvingException) {
+			throw new IllegalStateException("Unable to resolve execution %s".formatted(executionId), idResolvingException);
 		}
-		return status;
 	}
 
 	/**
@@ -400,7 +407,7 @@ public class QueryProcessor {
 	 */
 	public ManagedExecution createExecution(DatasetId dataset, QueryDescription queryContent, Subject subject, boolean system, Optional<UUID> maybeQueryId) {
 
-		log.info("Query posted on Dataset[{}] by User[{{}].", dataset, subject.getId());
+		log.info("Query posted on Dataset[{}] by User[{}].", dataset, subject.getId());
 
 
 		final Namespace namespace = datasetRegistry.get(dataset);

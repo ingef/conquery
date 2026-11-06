@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.Collection;
 import java.util.List;
 
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSelect;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
@@ -14,7 +15,7 @@ import lombok.Getter;
 public final class ConceptSelectId extends SelectId {
 
 	private final ConceptId concept;
-	
+
 	public ConceptSelectId(ConceptId concept, String select) {
 		super(select);
 		this.concept = concept;
@@ -33,8 +34,12 @@ public final class ConceptSelectId extends SelectId {
 
 	@Override
 	public UniversalSelect get() {
-		return (UniversalSelect) getDomain().getStorage(getDataset())
-											.getConcept(concept).getSelectByName(getSelect());
+		Concept<?> resolvedConcept = concept.get();
+		if (resolvedConcept == null) {
+			return null;
+		}
+
+		return (UniversalSelect) resolvedConcept.getSelectByName(getSelect());
 	}
 
 

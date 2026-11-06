@@ -1,5 +1,6 @@
-import { faUpload } from "@fortawesome/free-solid-svg-icons";
+import { UploadIcon } from "lucide-react";
 import { useState } from "react";
+import { DialogTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { usePostQueryUpload } from "../../api/api";
@@ -11,7 +12,6 @@ import type {
 import type { StateT } from "../../app/reducers";
 import { setMessage } from "../../snack-message/actions";
 import { Button } from "../../ui-components/Button";
-import { Icon } from "../../ui-components/Icon";
 import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
 import { useLoadQueries } from "../list/actions";
 
@@ -27,7 +27,6 @@ const UploadQueryResults = ({
 }) => {
   const { t } = useTranslation();
 
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [uploadResult, setUploadResult] = useState<UploadQueryResponseT | null>(
     null,
@@ -41,10 +40,6 @@ const UploadQueryResults = ({
     (state) => state.startup.config.queryUpload,
   );
 
-  const onCloseModal = () => {
-    setIsModalOpen(false);
-    setUploadResult(null);
-  };
   const onUpload = async (query: QueryToUploadT) => {
     if (!datasetId) return;
 
@@ -77,25 +72,27 @@ const UploadQueryResults = ({
   return (
     <div className={className}>
       <TooltipTrigger>
-        <Button
-          aria-label={t("uploadQueryResults.uploadResults")}
-          intent="secondary"
-          onPress={() => setIsModalOpen(true)}
+        <DialogTrigger
+          onOpenChange={(isOpen) => {
+            if (!isOpen) setUploadResult(null);
+          }}
         >
-          <Icon icon={faUpload} />
-        </Button>
+          <Button
+            aria-label={t("uploadQueryResults.uploadResults")}
+            intent="secondary"
+          >
+            <UploadIcon />
+          </Button>
+          <UploadQueryResultsModal
+            loading={loading}
+            uploadResult={uploadResult}
+            config={queryUploadConfig}
+            onClearUploadResult={() => setUploadResult(null)}
+            onUpload={onUpload}
+          />
+        </DialogTrigger>
         <Tooltip>{t("uploadQueryResults.uploadResults")}</Tooltip>
       </TooltipTrigger>
-      {isModalOpen && (
-        <UploadQueryResultsModal
-          loading={loading}
-          uploadResult={uploadResult}
-          config={queryUploadConfig}
-          onClearUploadResult={() => setUploadResult(null)}
-          onClose={onCloseModal}
-          onUpload={onUpload}
-        />
-      )}
     </div>
   );
 };
