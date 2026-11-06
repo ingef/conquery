@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Set;
@@ -18,31 +19,36 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.With;
 
-@Getter
+@Data
 @AllArgsConstructor
 @RequiredArgsConstructor
 @With
 public class QueryExecutionContext {
 
 	private final ManagedExecutionId executionId;
-
 	private final QueryExecutor executor;
 	private final ModificationShieldedWorkerStorage storage;
 	private final BucketManager bucketManager;
+	private final Clock clock;
 
+
+	public int getToday() {
+		return CDate.ofLocalDate(LocalDate.now(clock));
+	}
 
 	private ValidityDate validityDateColumn;
+
+	private Connector connector;
+
 	@NonNull
 	private CDateSet dateRestriction = CDateSet.createFull();
-	private Connector connector;
 	@NonNull
 	private Optional<Aggregator<CDateSet>> queryDateAggregator = Optional.empty();
-
 
 
 	/**
@@ -50,7 +56,7 @@ public class QueryExecutionContext {
 	 */
 	private SecondaryIdDescription activeSecondaryId = null;
 
-	private final int today = CDate.ofLocalDate(LocalDate.now());
+
 
 	public Set<BucketId> getEntityBucketsForTable(Entity entity, TableId table) {
 		return bucketManager.getEntityBucketsForTable(entity, table);

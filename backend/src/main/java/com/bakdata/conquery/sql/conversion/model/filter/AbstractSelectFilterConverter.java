@@ -22,15 +22,13 @@ abstract class AbstractSelectFilterConverter<F extends SelectFilter<T>, T> imple
 		);
 
 		WhereCondition condition = new MultiSelectCondition(
-				rootSelect.qualify(filterContext.getTables().getPredecessor(ConceptCteStep.EVENT_FILTER)).select(),
+				rootSelect.select(),
 				getValues(filterContext),
 				filterContext.getFunctionProvider()
 		);
 
 		return new SqlFilters(
-				ConnectorSqlSelects.builder()
-								   .preprocessingSelect(rootSelect)
-								   .build(),
+				ConnectorSqlSelects.none(),
 				WhereClauses.builder()
 							.eventFilter(condition)
 							.build()

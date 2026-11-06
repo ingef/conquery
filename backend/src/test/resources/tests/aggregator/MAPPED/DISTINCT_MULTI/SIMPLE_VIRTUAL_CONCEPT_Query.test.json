@@ -24,7 +24,7 @@
     "type": "CSV_MAP",
     "internalColumn": "internal",
     "externalTemplate": "{{external}}",
-    "allowMultiple" : true,
+    "allowMultiple": true,
     "csv": "classpath:/tests/aggregator/MAPPED/mapping.csv"
   },
   "concepts": [

@@ -38,16 +38,16 @@
         {
           "label": "a1",
           "condition": {
-            "type": "PREFIX_LIST",
-            "prefixes": "A1"
+            "type": "EQUAL",
+            "values": "A1"
           },
           "children": []
         },
         {
           "label": "b2",
           "condition": {
-            "type": "PREFIX_LIST",
-            "prefixes": "B2"
+            "type": "EQUAL",
+            "values": "B2"
           },
           "children": []
         }

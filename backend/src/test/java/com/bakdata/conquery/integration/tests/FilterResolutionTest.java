@@ -17,8 +17,8 @@ import jakarta.ws.rs.core.Response;
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.integration.IntegrationTest;
+import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
-import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
@@ -27,12 +27,10 @@ import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilt
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.index.IndexService;
-import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
 import com.bakdata.conquery.resources.api.ConceptsProcessor;
 import com.bakdata.conquery.resources.api.FilterResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
-import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -51,13 +49,11 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 		//read test sepcification
 		final String
 				testJson =
-				In.resource("/tests/query/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY.test.json")
-				  .withUTF8()
-				  .readAll();
+				LoadingUtil.readResource("/tests/query/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY.test.json");
 
 		final DatasetId dataset = conquery.getDataset();
 
-		final ConqueryTestSpec test = JsonIntegrationTest.readJson(dataset, testJson);
+		final ConqueryTestSpec test = ConqueryTestSpec.readJson(dataset, testJson);
 
 		ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 
@@ -83,29 +79,21 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 		);
 
 
-		final IndexService indexService = new IndexService(conquery.getConfig().getCsv().createCsvParserSettings(), "emptyDefaultLabel");
+		final IndexService indexService = new IndexService(conquery.getConfig().getCsv().createCsvParserSettings());
 
 		final FilterTemplate
 				filterTemplate =
-				new FilterTemplate(tmpCSv.toUri(), "HEADER", "", "", 2, true, indexService);
+				new FilterTemplate(tmpCSv.toUri(), "HEADER", "", "", 2, true, indexService, conquery.getConfig());
 		filterTemplate.setDataset(conquery.getDataset());
 		filterTemplate.setName("test");
 
 		filter.setTemplate(filterTemplate.getId());
 
-		// We need to persist the modification before we submit the update matching stats request
+		// We need to persist the modification before we submit the filter search update request
 		namespaceStorage.addSearchIndex(filterTemplate);
 		namespaceStorage.updateConcept(concept);
 
-		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder()
-															, AdminDatasetResource.class, "postprocessNamespace"
-													)
-													.buildFromMap(Map.of(DATASET, conquery.getDataset()));
-
-		final Response post = conquery.getClient().target(matchingStatsUri)
-									  .request(MediaType.APPLICATION_JSON_TYPE)
-									  .post(null);
-		post.close();
+		LoadingUtil.updateFilterSearch(conquery);
 
 		conquery.waitUntilWorkDone();
 

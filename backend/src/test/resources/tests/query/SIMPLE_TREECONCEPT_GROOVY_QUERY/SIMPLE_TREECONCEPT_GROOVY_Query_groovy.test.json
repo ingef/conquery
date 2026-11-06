@@ -1,79 +1,95 @@
 {
-    "type": "QUERY_TEST",
-    "label": "SIMPLE_TREECONCEPT_GROOVY_QUERY Test",
-    "expectedCsv": "tests/query/SIMPLE_TREECONCEPT_GROOVY_QUERY/expected.csv",
-    "query": {
-        "type": "CONCEPT_QUERY",
-        "root": {
-            "type": "CONCEPT",
-            "ids": [
-                "test_tree.test_child1.test_child1_1"
-            ],
-            "label": "test_child1_1",
-            "tables": [
-                {
-                    "id": "test_tree.test_column",
-                    "filters": []
-                }
-            ]
-        }
-    },
-    "concepts": [
+  "type": "QUERY_TEST",
+  "label": "SIMPLE_TREECONCEPT_GROOVY_QUERY Test",
+  "expectedCsv": "tests/query/SIMPLE_TREECONCEPT_GROOVY_QUERY/expected.csv",
+  "sqlSpec": {
+    "isEnabled": false
+  },
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "CONCEPT",
+      "ids": [
+        "test_tree.test_child1.test_child1_1"
+      ],
+      "label": "test_child1_1",
+      "tables": [
         {
-            "label": "test_tree",
-            "type":"TREE",
-            "connectors": {
-              "label": "tree_label",
-              "name": "test_column",
-              "column": "test_table_groovy.test_column",
-              "validityDates": {"label": "datum" ,"column": "test_table_groovy.datum"}
-            },
-            "children": [
-                {
-                    "label": "test_child1",
-                    "description": " ",
-                    "condition": {"type": "GROOVY", "script": "row['groovy_column']==1"},
-                    "children": [
-                        {
-                            "label": "test_child1_1",
-                            "description": " ",
-                            "condition": {"type": "PREFIX_LIST", "prefixes": "2"},
-                            "children": []
-                        }]
-                },
-                {
-                    "label": "test_child2",
-                    "description": " ",
-                    "condition": {"type": "PREFIX_LIST", "prefixes": "3"},
-                    "children": []
-                }
-            ]
+          "id": "test_tree.test_column",
+          "filters": []
         }
-    ],
-    "content": {
-        "tables": [
-			{
-                "csv": "tests/query/SIMPLE_TREECONCEPT_GROOVY_QUERY/content.csv",
-				"name": "test_table_groovy",
-                "primaryColumn": {
-                    "name": "pid",
-                    "type": "STRING"
-                },
-				"columns": [
-					{
-						"name": "datum",
-						"type": "DATE"
-					},
-					{
-						"name": "test_column",
-						"type": "STRING"
-					},
-					{
-						"name": "groovy_column",
-						"type": "INTEGER"
-					}
-				]
-			}
-		]
+      ]
     }
+  },
+  "concepts": [
+    {
+      "label": "test_tree",
+      "type": "TREE",
+      "connectors": {
+        "label": "tree_label",
+        "name": "test_column",
+        "column": "test_table_groovy.test_column",
+        "validityDates": {
+          "label": "datum",
+          "column": "test_table_groovy.datum"
+        }
+      },
+      "children": [
+        {
+          "label": "test_child1",
+          "description": " ",
+          "condition": {
+            "type": "GROOVY",
+            "script": "row['groovy_column']==1"
+          },
+          "children": [
+            {
+              "label": "test_child1_1",
+              "description": " ",
+              "condition": {
+                "type": "PREFIX_LIST",
+                "prefixes": "2"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "label": "test_child2",
+          "description": " ",
+          "condition": {
+            "type": "PREFIX_LIST",
+            "prefixes": "3"
+          },
+          "children": []
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/SIMPLE_TREECONCEPT_GROOVY_QUERY/content.csv",
+        "name": "test_table_groovy",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "test_column",
+            "type": "STRING"
+          },
+          {
+            "name": "groovy_column",
+            "type": "INTEGER"
+          }
+        ]
+      }
+    ]
+  }
 }

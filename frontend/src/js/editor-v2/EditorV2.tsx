@@ -1,85 +1,50 @@
-import styled from "@emotion/styled";
-import { faCalendar, faTrashCan } from "@fortawesome/free-regular-svg-icons";
-import {
-  faBan,
-  faCircleNodes,
-  faEdit,
-  faExpandArrowsAlt,
-  faHourglass,
-  faRefresh,
-  faTrash,
-} from "@fortawesome/free-solid-svg-icons";
 import { createId } from "@paralleldrive/cuid2";
+import {
+  BanIcon,
+  CalendarIcon,
+  HourglassIcon,
+  Maximize2Icon,
+  RefreshCwIcon,
+  SquarePenIcon,
+  TrashIcon,
+  WaypointsIcon,
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
-
-import IconButton from "../button/IconButton";
+import { tv } from "tailwind-variants";
 import { useDatasetId } from "../dataset/selectors";
 import { nodeIsConceptQueryNode, useActiveState } from "../model/node";
 import { EmptyQueryEditorDropzone } from "../standard-query-editor/EmptyQueryEditorDropzone";
-import {
+import type {
   DragItemConceptTreeNode,
   DragItemQuery,
 } from "../standard-query-editor/types";
-import { ConfirmableTooltip } from "../tooltip/ConfirmableTooltip";
-import WithTooltip from "../tooltip/WithTooltip";
+import { Button } from "../ui-components/Button";
+import { ConfirmMenu } from "../ui-components/ConfirmMenu";
 import Dropzone from "../ui-components/Dropzone";
-
-import { Connector, Grid } from "./EditorLayout";
-import { EditorV2QueryRunner } from "./EditorV2QueryRunner";
-import { KeyboardShortcutTooltip } from "./KeyboardShortcutTooltip";
-import { TreeNode } from "./TreeNode";
+import { ToggleButton } from "../ui-components/ToggleButton";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 import { EDITOR_DROP_TYPES, HOTKEYS } from "./config";
 import { useConnectorEditing } from "./connector-update/useConnectorRotation";
 import { DateModal } from "./date-restriction/DateModal";
 import { useDateEditing } from "./date-restriction/useDateEditing";
+import { Connector, Grid } from "./EditorLayout";
+import { EditorV2QueryRunner } from "./EditorV2QueryRunner";
 import { useExpandQuery } from "./expand/useExpandQuery";
+import { KeyboardShortcutTooltip } from "./KeyboardShortcutTooltip";
 import { useNegationEditing } from "./negation/useNegationEditing";
 import { EditorV2QueryNodeEditor } from "./query-node-edit/EditorV2QueryNodeEditor";
 import { useQueryNodeEditing } from "./query-node-edit/useQueryNodeEditing";
+import { TreeNode } from "./TreeNode";
 import { TimeConnectionModal } from "./time-connection/TimeConnectionModal";
 import { useTimeConnectionEditing } from "./time-connection/useTimeConnectionEditing";
-import { Tree, TreeChildrenTime } from "./types";
+import type { Tree, TreeChildrenTime } from "./types";
 import { findNodeById, useGetTranslatedConnection } from "./util";
 
-const Root = styled("div")`
-  flex-grow: 1;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-`;
-
-const Main = styled("div")`
-  flex-grow: 1;
-  height: 100%;
-  padding: 8px 10px 10px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-`;
-
-const SxDropzone = styled(Dropzone)`
-  width: 100%;
-  height: 100%;
-`;
-
-const Actions = styled("div")`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const Flex = styled("div")`
-  display: flex;
-  align-items: center;
-`;
-
-const SxIconButton = styled(IconButton)`
-  display: flex;
-  align-items: center;
-  gap: 5px;
-`;
+const main = tv({
+  base: ["pt-2 pb-[10px] px-[10px]", "flex flex-col", "gap-[10px]"],
+});
 
 const useEditorState = () => {
   const [tree, setTree] = useState<Tree | undefined>(undefined);
@@ -124,6 +89,7 @@ const useEditorState = () => {
 
 const useResetOnDatasetChange = (onReset: () => void) => {
   const datasetId = useDatasetId();
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reset whenever the dataset changes
   useEffect(() => {
     onReset();
   }, [datasetId, onReset]);
@@ -160,7 +126,7 @@ export function EditorV2({
   useResetOnDatasetChange(onReset);
 
   const onFlip = useCallback(() => {
-    if (!selectedNode || !selectedNode.children) return;
+    if (!selectedNode?.children) return;
 
     updateTreeNode(selectedNode.id, (node) => {
       if (!node.children) return;
@@ -270,8 +236,8 @@ export function EditorV2({
   );
 
   return (
-    <Root>
-      <Main>
+    <div className="grid grid-rows-[minmax(0,1fr)_auto]">
+      <div className={main()}>
         {showQueryNodeEditor &&
           selectedNode?.data &&
           nodeIsConceptQueryNode(selectedNode.data) && (
@@ -319,153 +285,145 @@ export function EditorV2({
           />
         )}
         {tree && (
-          <Actions>
-            <Flex>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
               {featureQueryNodeEdit && selectedNode && (
                 <KeyboardShortcutTooltip
                   keyname={HOTKEYS.editQueryNode.keyname}
                 >
-                  <IconButton
-                    icon={faEdit}
-                    tight
-                    disabled={
+                  <ToggleButton
+                    intent="tertiary"
+                    isDisabled={
                       !selectedNode?.data ||
                       !nodeIsConceptQueryNode(selectedNode.data)
                     }
-                    active={selectedNodeActive}
-                    onClick={(e) => {
-                      e.stopPropagation();
+                    isSelected={selectedNodeActive}
+                    onChange={() => {
                       onOpenQueryNodeEditor();
                     }}
                   >
+                    <SquarePenIcon />
                     {t("editorV2.edit")}
-                  </IconButton>
+                  </ToggleButton>
                 </KeyboardShortcutTooltip>
               )}
               {featureDates && selectedNode && (
                 <KeyboardShortcutTooltip keyname={HOTKEYS.editDates.keyname}>
-                  <IconButton
-                    icon={faCalendar}
-                    tight
-                    active={!!selectedNode.dates?.restriction}
-                    onClick={(e) => {
-                      e.stopPropagation();
+                  <ToggleButton
+                    intent="tertiary"
+                    isSelected={!!selectedNode.dates?.restriction}
+                    onChange={() => {
                       onOpen();
                     }}
                   >
+                    <CalendarIcon />
                     {t("editorV2.dates")}
-                  </IconButton>
+                  </ToggleButton>
                 </KeyboardShortcutTooltip>
               )}
               {featureNegate && selectedNode && (
                 <KeyboardShortcutTooltip keyname={HOTKEYS.negate.keyname}>
-                  <IconButton
-                    icon={faBan}
-                    tight
-                    active={selectedNode.negation}
-                    red={selectedNode.negation}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onNegateClick();
-                    }}
+                  <ToggleButton
+                    intent="tertiary"
+                    highlight="danger"
+                    isSelected={!!selectedNode.negation}
+                    onChange={onNegateClick}
                   >
+                    <BanIcon />
                     {t("editorV2.negate")}
-                  </IconButton>
+                  </ToggleButton>
                 </KeyboardShortcutTooltip>
               )}
               {featureConnectorRotate && selectedNode && connection && (
                 <KeyboardShortcutTooltip
                   keyname={HOTKEYS.rotateConnector.keyname}
                 >
-                  <SxIconButton
-                    icon={faCircleNodes}
-                    tight
-                    disabled={!selectedNode?.children}
-                    onClick={(e) => {
-                      e.stopPropagation();
+                  <Button
+                    intent="tertiary"
+                    isDisabled={!selectedNode?.children}
+                    onPress={() => {
                       onRotateConnector();
                     }}
                   >
+                    <WaypointsIcon />
                     <Connector>{connection}</Connector>
-                  </SxIconButton>
+                  </Button>
                 </KeyboardShortcutTooltip>
               )}
               {selectedNode?.children?.connection === "time" && (
                 <KeyboardShortcutTooltip
                   keyname={HOTKEYS.editTimeConnection.keyname}
                 >
-                  <SxIconButton
-                    icon={faHourglass}
-                    tight
-                    onClick={(e) => {
-                      e.stopPropagation();
+                  <Button
+                    intent="tertiary"
+                    onPress={() => {
                       onOpenTimeModal();
                     }}
                   >
+                    <HourglassIcon />
                     <span>{t("editorV2.timeConnection")}</span>
-                  </SxIconButton>
+                  </Button>
                 </KeyboardShortcutTooltip>
               )}
               {canExpand && (
                 <KeyboardShortcutTooltip keyname={HOTKEYS.expand.keyname}>
-                  <IconButton
-                    icon={faExpandArrowsAlt}
-                    tight
-                    onClick={(e) => {
-                      e.stopPropagation();
+                  <Button
+                    intent="tertiary"
+                    onPress={() => {
                       onExpand();
                     }}
                   >
+                    <Maximize2Icon />
                     {t("editorV2.expand")}
-                  </IconButton>
+                  </Button>
                 </KeyboardShortcutTooltip>
               )}
-            </Flex>
-            <Flex>
+            </div>
+            <div className="flex items-center">
               {selectedNode && (
                 <KeyboardShortcutTooltip keyname={HOTKEYS.flip.keyname}>
-                  <IconButton
-                    icon={faRefresh}
-                    tight
-                    disabled={!selectedNode?.children}
-                    onClick={(e) => {
-                      e.stopPropagation();
+                  <Button
+                    intent="tertiary"
+                    isDisabled={!selectedNode?.children}
+                    onPress={() => {
                       onFlip();
                     }}
                   >
+                    <RefreshCwIcon />
                     {t("editorV2.flip")}
-                  </IconButton>
+                  </Button>
                 </KeyboardShortcutTooltip>
               )}
               {selectedNode && (
                 <KeyboardShortcutTooltip
                   keyname={HOTKEYS.delete.keyname.join(" | ")}
                 >
-                  <IconButton
-                    icon={faTrashCan}
-                    tight
-                    onClick={(e) => {
-                      e.stopPropagation();
+                  <Button
+                    intent="tertiary"
+                    onPress={() => {
                       onDelete();
                     }}
                   >
+                    <TrashIcon />
                     {t("editorV2.delete")}
-                  </IconButton>
+                  </Button>
                 </KeyboardShortcutTooltip>
               )}
-              <ConfirmableTooltip
-                onConfirm={onReset}
-                confirmationText={t("editorV2.clearConfirm")}
-              >
-                <WithTooltip text={t("editorV2.clear")}>
-                  <IconButton
-                    style={{ marginLeft: "20px", height: "32.5px" }}
-                    icon={faTrash}
-                  />
-                </WithTooltip>
-              </ConfirmableTooltip>
-            </Flex>
-          </Actions>
+              <div className="ml-5">
+                <TooltipTrigger>
+                  <ConfirmMenu
+                    onConfirm={onReset}
+                    confirmationText={t("editorV2.clearConfirm")}
+                  >
+                    <Button aria-label={t("editorV2.clear")} intent="tertiary">
+                      <TrashIcon />
+                    </Button>
+                  </ConfirmMenu>
+                  <Tooltip>{t("editorV2.clear")}</Tooltip>
+                </TooltipTrigger>
+              </div>
+            </div>
+          </div>
         )}
         <Grid
           onClick={() => {
@@ -486,7 +444,8 @@ export function EditorV2({
               onRotateConnector={onRotateConnector}
             />
           ) : (
-            <SxDropzone
+            <Dropzone
+              className="h-full w-full"
               onDrop={(item) => {
                 const id = createId();
                 setTree({
@@ -498,11 +457,12 @@ export function EditorV2({
               acceptedDropTypes={EDITOR_DROP_TYPES}
             >
               {() => <EmptyQueryEditorDropzone />}
-            </SxDropzone>
+            </Dropzone>
           )}
         </Grid>
-      </Main>
+      </div>
+
       <EditorV2QueryRunner query={{ tree }} />
-    </Root>
+    </div>
   );
 }

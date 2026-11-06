@@ -26,21 +26,21 @@ public class StratificationTableFactory {
 
 	public StratificationTableFactory(QueryStep baseStep, ConversionContext context) {
 		this.baseStep = baseStep;
-		this.stratificationFunctions = StratificationFunctions.create(context);
-		this.functionProvider = context.getSqlDialect().getFunctionProvider();
+		this.stratificationFunctions = context.getStratificationFunctions();
+		this.functionProvider = context.getFunctionProvider();
 	}
 
-	public QueryStep createRelativeStratificationTable(RelativeFormQuery form) {
+	public QueryStep createRelativeStratificationTable(RelativeFormQuery form, ConversionContext context) {
 		RelativeStratification relativeStratification = new RelativeStratification(baseStep, stratificationFunctions, functionProvider);
-		return relativeStratification.createRelativeStratificationTable(form);
+		return relativeStratification.createRelativeStratificationTable(form, context);
 	}
 
-	public QueryStep createAbsoluteStratificationTable(List<ExportForm.ResolutionAndAlignment> resolutionAndAlignments) {
+	public QueryStep createAbsoluteStratificationTable(List<ExportForm.ResolutionAndAlignment> resolutionAndAlignments, ConversionContext context) {
 		AbsoluteStratification absoluteStratification = new AbsoluteStratification(baseStep, stratificationFunctions);
-		return absoluteStratification.createStratificationTable(resolutionAndAlignments);
+		return absoluteStratification.createStratificationTable(resolutionAndAlignments, context);
 	}
 
-	protected static QueryStep unionResolutionTables(List<QueryStep> unionSteps, List<QueryStep> predecessors) {
+	protected static QueryStep unionResolutionTables(List<QueryStep> unionSteps, List<QueryStep> predecessors, ConversionContext context) {
 
 		Preconditions.checkArgument(!unionSteps.isEmpty(), "Expecting at least 1 resolution table");
 
@@ -54,7 +54,8 @@ public class StratificationTableFactory {
 		return QueryStep.createUnionAllStep(
 				withQualifiedSelects,
 				FormCteStep.FULL_STRATIFICATION.getSuffix(),
-				Stream.concat(predecessors.stream(), unionSteps.stream()).toList()
+				Stream.concat(predecessors.stream(), unionSteps.stream()).toList(),
+				context.isNegation(), context.getFunctionProvider()
 		);
 	}
 

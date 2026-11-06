@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -33,9 +34,7 @@ import com.bakdata.conquery.models.types.ResultType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.collect.Streams;
-import groovyjarjarantlr4.v4.runtime.atn.LexerIndexedCustomAction;
 import io.dropwizard.validation.ValidationMethod;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -145,7 +144,7 @@ public class CQExternal extends CQElement {
 		final Map<String, ConstantValueAggregator<String>> extraAggregators = new HashMap<>(extraHeaders.length);
 		for (String extraHeader : extraHeaders) {
 			// Just allocating, the result type is irrelevant here
-			final ConstantValueAggregator<String> aggregator = new ConstantValueAggregator<>(null, null);
+			final ConstantValueAggregator<String> aggregator = new ConstantValueAggregator<>(null);
 			extraAggregators.put(extraHeader, aggregator);
 			plan.registerAggregator(aggregator);
 
@@ -158,7 +157,7 @@ public class CQExternal extends CQElement {
 		final Map<String, ConstantValueAggregator<List<String>>> extraAggregators = new HashMap<>(extraHeaders.length);
 		for (String extraHeader : extraHeaders) {
 			// Just allocating, the result type is irrelevant here
-			final ConstantValueAggregator<List<String>> aggregator = new ConstantValueAggregator<>(null, null);
+			final ConstantValueAggregator<List<String>> aggregator = new ConstantValueAggregator<>(null);
 			extraAggregators.put(extraHeader, aggregator);
 			plan.registerAggregator(aggregator);
 		}

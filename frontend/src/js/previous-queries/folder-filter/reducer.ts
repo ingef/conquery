@@ -1,4 +1,4 @@
-import { ActionType, getType } from "typesafe-actions";
+import { type ActionType, getType } from "typesafe-actions";
 
 import type { Action } from "../../app/actions";
 import { getUserSettings, storeUserSettings } from "../../user/userSettings";

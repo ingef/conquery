@@ -9,7 +9,7 @@ import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
-import com.bakdata.conquery.integration.json.JsonIntegrationTest;
+import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -21,7 +21,6 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.util.support.StandaloneSupport;
-import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -31,8 +30,8 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 	public void execute(StandaloneSupport conquery) throws Exception {
 		final MetaStorage storage = conquery.getMetaStorage();
 		final DatasetId dataset = conquery.getDataset();
-		final String testJson = In.resource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
-		final QueryTest test = JsonIntegrationTest.readJson(dataset, testJson);
+		final String testJson = LoadingUtil.readResource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json");
+		final QueryTest test = ConqueryTestSpec.readJson(dataset, testJson);
 		final User user  = new User("testUser", "testUserLabel", storage);
 
 		// Manually import data, so we can do our own work.
@@ -65,7 +64,7 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 			// The lone concept that is used in the test.
 			Concept<?> concept = allConcepts.iterator().next();
 
-			IntegrationUtils.assertQueryResult(conquery, query, -1, ExecutionState.FAILED, user, 403);
+			IntegrationUtils.assertQueryResult(conquery, query, null, -1, ExecutionState.FAILED, user, 403);
 
 			// Add the necessary Permission
 			{
@@ -76,7 +75,7 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 		}
 
 		// Only assert permissions
-		IntegrationUtils.assertQueryResult(conquery, query, -1, ExecutionState.DONE, user, 201);
+		IntegrationUtils.assertQueryResult(conquery, query, null, -1, ExecutionState.DONE, user, 201);
 
 		conquery.waitUntilWorkDone();
 		// Clean up

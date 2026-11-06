@@ -26,6 +26,7 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer;
  */
 @Slf4j
 @CPSType(id = "GROOVY", base = CTCondition.class)
+@Deprecated
 public class GroovyCondition implements CTCondition {
 
 	public static final String[] AUTO_IMPORTS = Stream.of(
@@ -116,5 +117,10 @@ public class GroovyCondition implements CTCondition {
 				}
 			}
 		}
+	}
+
+	@Override
+	public ConceptConditions buildExpression(CTConditionContext context, ConceptElement<?> id) {
+		throw new IllegalStateException("Not implemented");
 	}
 }

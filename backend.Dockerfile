@@ -1,5 +1,5 @@
 # Version Extractor
-FROM bitnami/git:2.38.1 AS version-extractor
+FROM alpine/git:v2.54.0 AS version-extractor
 
 WORKDIR /app
 COPY .git .
@@ -16,6 +16,7 @@ COPY ./pom.xml .
 COPY ./backend/pom.xml ./backend/
 COPY ./executable/pom.xml ./executable/
 COPY ./autodoc/pom.xml ./autodoc/
+COPY ./news-service/pom.xml ./news-service/
 
 RUN mvn dependency:go-offline -Dsilent=true -DexcludeGroupIds="com.bakdata.conquery" -pl backend -am
 

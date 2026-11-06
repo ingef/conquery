@@ -91,6 +91,10 @@ public class MetaStorage implements ConqueryStorage, Injectable {
 						 .filter(Objects::nonNull);
 	}
 
+	public Stream<ManagedExecutionId> getAllExecutionIds() {
+		return executions.getAllKeys().map(ManagedExecutionId.class::cast);
+	}
+
 	public synchronized void updateExecution(ManagedExecution query) {
 		executions.update(query);
 	}

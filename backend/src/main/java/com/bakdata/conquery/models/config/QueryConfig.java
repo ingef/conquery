@@ -1,11 +1,14 @@
 package com.bakdata.conquery.models.config;
 
+import com.bakdata.conquery.util.validation.ValidCaffeineSpec;
 import io.dropwizard.util.Duration;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-@Getter @Setter @ToString
+@Getter
+@Setter
+@ToString
 public class QueryConfig {
 
 	private ThreadPoolDefinition executionPool = new ThreadPoolDefinition();
@@ -19,4 +22,18 @@ public class QueryConfig {
 	 * TODO Implement global limit of active secondaryId sub plans
 	 */
 	private int secondaryIdSubPlanRetention = 15;
+
+
+	/**
+	 * See {@link com.bakdata.conquery.models.query.ExecutionManager#executionInfosL1} for an explanation
+	 */
+	@ValidCaffeineSpec
+	private String L1CacheSpec = "expireAfterAccess=10m";
+
+	/**
+	 * See {@link com.bakdata.conquery.models.query.ExecutionManager#executionInfosL1} for an explanation
+	 */
+	@ValidCaffeineSpec(softValue=true)
+	private String L2CacheSpec = "softValues";
+
 }

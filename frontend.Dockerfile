@@ -1,5 +1,5 @@
 # Version Extractor
-FROM bitnami/git:2.38.1 AS version-extractor
+FROM alpine/git:v2.54.0@sha256:6f8eae2205a85c51106a9650e574a37fb1d5e4f645e5f6ea57cb57b9462cd4cf AS version-extractor
 
 WORKDIR /app
 COPY .git .
@@ -7,12 +7,14 @@ COPY .git .
 RUN git describe --tags |  sed 's/^v//' > git_describe.txt
 
 # Builder
-FROM node:18-alpine AS builder
+FROM node:24-alpine@sha256:d32cdf619f63fe0471182d08996dd516c6275bb5fd31ae06e55a570bd9e1ad43 AS builder
 
 WORKDIR /app
-COPY ./frontend/package.json ./frontend/package-lock.json ./
+RUN npm install -g pnpm@11.24.0
 
-RUN npm ci
+COPY ./frontend/package.json ./frontend/pnpm-lock.yaml ./frontend/pnpm-workspace.yaml ./
+
+RUN pnpm install --frozen-lockfile
 
 COPY ./frontend .
 
@@ -20,34 +22,20 @@ COPY ./frontend .
 COPY --from=version-extractor /app/git_describe.txt .
 
 # Uses env variables from .env file (BUILD TIME)
-RUN PUBLIC_URL=/ npm run build
+RUN PUBLIC_URL=/ pnpm build
 
 # The final image is just an nginx with a webroot
-FROM nginx:stable-alpine
+FROM nginxinc/nginx-unprivileged:1.31-alpine@sha256:8122337ed6c475bb486bc9340da453d4599f225e6b920ff0d92ca2267486b9b5
 
-# To allow passing env variables at RUN TIME
-# we're injecting them into the built artifacts.
-# See `./scripts/replace-env-at-runtime.sh`, `.env`, `.env.example` for details
-ENV REACT_APP_API_URL=$REACT_APP_API_URL
-ENV REACT_APP_DISABLE_LOGIN=$REACT_APP_DISABLE_LOGIN
-ENV REACT_APP_LANG=$REACT_APP_LANG
-ENV REACT_APP_BASENAME=$REACT_APP_BASENAME
-ENV REACT_APP_IDP_ENABLE=$REACT_APP_IDP_ENABLE
-ENV REACT_APP_IDP_URL=$REACT_APP_IDP_URL
-ENV REACT_APP_IDP_REALM=$REACT_APP_IDP_REALM
-ENV REACT_APP_IDP_CLIENT_ID=$REACT_APP_IDP_CLIENT_ID
+# This will be used by nginx's templating mechanism
+# NGINX_PORT sets the container port on which nginx is listening
+ENV NGINX_PORT=8000
 
 # Copy the build artifacts from the builder phase
-COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=builder --chown=nginx /app/dist /usr/share/nginx/html/frontend
 # Copy the env replacer
-COPY ./frontend/scripts/replace-env-at-runtime.sh /
+COPY --chown=nginx ./frontend/scripts/replace-env-at-runtime.sh /
 
-# Copy nginx config
-COPY ./frontend/container/ /
-
-# The default command replaces the environment variables and starts nginx as a subprocess
-CMD [ "/bin/sh", "-c", "/replace-env-at-runtime.sh /usr/share/nginx/html/index.html && nginx -g \"daemon off;\""]
-
-
-EXPOSE 80
+# Copy nginx config template
+COPY --chown=nginx ./frontend/container/ /
 

@@ -1,11 +1,11 @@
-import { DateRangeT } from "../api/types";
-import {
+import type { DateRangeT } from "../api/types";
+import type {
   DragItemConceptTreeNode,
   DragItemQuery,
 } from "../standard-query-editor/types";
 
 export type ConnectionKind = "and" | "or" | "time";
-export type DirectionKind = "horizontal" | "vertical";
+type DirectionKind = "horizontal" | "vertical";
 
 export interface Tree {
   id: string;
@@ -19,20 +19,33 @@ export interface Tree {
   children?: TreeChildren;
 }
 
-export interface TreeChildrenBase {
+interface TreeChildrenBase {
   direction: DirectionKind;
   items: Tree[];
 }
 
-export interface TreeChildrenAnd extends TreeChildrenBase {
+interface TreeChildrenAnd extends TreeChildrenBase {
   connection: "and";
 }
-export interface TreeChildrenOr extends TreeChildrenBase {
+interface TreeChildrenOr extends TreeChildrenBase {
   connection: "or";
 }
 
-export type TimeTimestamp = "every" | "some" | "earliest" | "latest";
-export type TimeOperator = "before" | "after" | "while";
+export const TIME_OPERATORS: ("BEFORE" | "AFTER" | "WHILE")[] = [
+  "BEFORE",
+  "AFTER",
+  "WHILE",
+] as const;
+const TIME_TIMESTAMPS: ("ALL" | "ANY" | "EARLIEST" | "LATEST")[] = [
+  "ALL",
+  "ANY",
+  "EARLIEST",
+  "LATEST",
+] as const;
+
+export type TimeTimestamp = (typeof TIME_TIMESTAMPS)[number];
+export type TimeOperator = (typeof TIME_OPERATORS)[number];
+
 export interface TreeChildrenTime extends TreeChildrenBase {
   connection: "time";
   operator: TimeOperator;

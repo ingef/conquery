@@ -1,14 +1,13 @@
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
-
+import type { SelectOptionT } from "../api/types";
 import { downloadBlob } from "../common/helpers/downloadBlob";
 import { toCSV } from "../file/csv";
 import { setMessage } from "../snack-message/actions";
-
-import { EntityIdsStatus } from "./History";
-import { LoadingPayload } from "./LoadHistoryDropzone";
-import { EntityId } from "./reducer";
+import type { EntityIdsStatus } from "./History";
+import type { LoadingPayload } from "./LoadHistoryDropzone";
+import type { EntityId } from "./reducer";
 
 export const saveHistory = ({
   entityIds,
@@ -54,9 +53,9 @@ export const useLoadHistory = ({
 
   return useCallback(
     ({ label, data }: { label: string; data: string[][] }) => {
+      const distinctEntityIds: Set<string> = new Set();
       const loadedEntityIds: EntityId[] = [];
       const loadedEntityStatus: EntityIdsStatus = {};
-      const loadedEntityStatusOptionsRaw: string[] = [];
 
       // Expect data to be a CSV in format:
       // kind;id;status1;status2;...
@@ -67,7 +66,13 @@ export const useLoadHistory = ({
 
         const [kind, id] = row;
 
-        loadedEntityIds.push({ kind, id });
+        // Deduplication is necessary for SecondaryId Queries
+        if (distinctEntityIds.has(kind + id)) {
+          continue;
+        }
+
+        distinctEntityIds.add(kind + id);
+        loadedEntityIds.push({ kind: kind, id: id });
 
         if (row.length > 2) {
           loadedEntityStatus[id] = row
@@ -75,17 +80,16 @@ export const useLoadHistory = ({
             .filter((str) => str.length > 0)
             .map((s) => {
               const opt = s.trim();
-              loadedEntityStatusOptionsRaw.push(opt);
               return { label: opt, value: opt };
             });
         }
       }
 
-      const loadedEntityStatusOptions = [
-        ...new Set(loadedEntityStatusOptionsRaw),
-      ].map((item) => ({ label: item, value: item }));
+      const loadedEntityStatusOptions: SelectOptionT[] = [
+        ...new Set(Object.values(loadedEntityStatus).flat()),
+      ];
 
-      if (loadedEntityIds.length === 0) {
+      if (distinctEntityIds.size === 0) {
         dispatch(
           setMessage({
             message: t("history.load.error"),

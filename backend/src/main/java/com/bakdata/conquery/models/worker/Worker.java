@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.worker;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.time.Clock;
 import java.util.concurrent.ExecutorService;
 
 import com.bakdata.conquery.io.mina.MessageSender;
@@ -50,18 +51,21 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	@Setter
 	private NetworkSession session;
 
+	private Clock clock;
+
 	/**
 	 * @implSpec storage must not be open yet.
 	 */
 	public static Worker create(
 			@NonNull WorkerStorage storage, ShardWorkers shardWorkers, @NonNull ThreadPoolDefinition queryThreadPoolDefinition,
 			@NonNull ExecutorService jobsExecutorService,
-			boolean failOnError,
+			Clock clock, boolean failOnError,
 			int secondaryIdSubPlanLimit, ObjectMapper persistenceMapper, boolean loadStorage) {
 
 
 		final Worker worker = new Worker();
 
+		worker.clock = clock;
 		worker.storage = storage;
 		worker.jobsExecutorService = jobsExecutorService;
 		worker.queryExecutor = new QueryExecutor(worker, queryThreadPoolDefinition.createService("QueryExecutor %d"), secondaryIdSubPlanLimit);

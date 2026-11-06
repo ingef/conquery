@@ -1,5 +1,4 @@
 package com.bakdata.conquery.models.worker;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
@@ -14,11 +13,11 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.jobs.JobManager;
-import com.bakdata.conquery.models.messages.namespaces.specific.CollectColumnValuesJob;
+import com.bakdata.conquery.models.messages.namespaces.specific.CollectColumnValuesMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
 import com.bakdata.conquery.models.query.DistributedExecutionManager;
-import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.models.query.entity.Entity;
+import com.bakdata.conquery.util.search.SearchProcessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.ToString;
@@ -43,7 +42,7 @@ public class DistributedNamespace extends Namespace {
 			NamespaceStorage storage,
 			DistributedExecutionManager executionManager,
 			JobManager jobManager,
-			FilterSearch filterSearch,
+			SearchProcessor filterSearch,
 			ClusterEntityResolver clusterEntityResolver,
 			WorkerHandler workerHandler,
 			ClusterConfig clusterConfig) {
@@ -68,7 +67,7 @@ public class DistributedNamespace extends Namespace {
 	void registerColumnValuesInSearch(Set<Column> columns) {
 		log.trace("Sending columns to collect values on shards: {}", Arrays.toString(columns.toArray()));
 
-		final CollectColumnValuesJob columnValuesJob = new CollectColumnValuesJob(
+		final CollectColumnValuesMessage columnValuesJob = new CollectColumnValuesMessage(
 				clusterConfig.getColumnValuesPerChunk(),
 				columns.stream().map(Column::getId).collect(Collectors.toSet()), this
 		);

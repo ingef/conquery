@@ -16,6 +16,7 @@ import lombok.Setter;
  * This condition matches if its child does not.
  */
 @CPSType(id="NOT", base=CTCondition.class)
+@Deprecated
 public class NotCondition implements CTCondition {
 
 	@Setter @Getter @Valid
@@ -35,5 +36,10 @@ public class NotCondition implements CTCondition {
 	public WhereCondition convertToSqlCondition(CTConditionContext context) {
 		WhereCondition whereCondition = condition.convertToSqlCondition(context);
 		return whereCondition.negate();
+	}
+
+	@Override
+	public ConceptConditions buildExpression(CTConditionContext context, ConceptElement<?> id) {
+		throw new IllegalStateException("Not implemented");
 	}
 }

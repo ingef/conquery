@@ -156,6 +156,10 @@ public class NamespaceStorage extends NamespacedStorageImpl {
 		return searchIndexes.getAll();
 	}
 
+	public Stream<SearchIndexId> getSearchIndexIds() {
+		return searchIndexes.getAllKeys().map(SearchIndexId.class::cast);
+	}
+
 	// PreviewConfig
 
 	public PreviewConfig getPreviewConfig() {

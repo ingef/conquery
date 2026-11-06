@@ -36,7 +36,7 @@ by creating a new range from `2012-01-01` to `2013-01-01`. But how do we achieve
 
 Taking the short example from above, we want to explain how we do this using the
 [AnsiSqlIntervalPacker](./AnsiSqlIntervalPacker.java). To outline, we need to
-create 3 consecutive common table expressions (CTE):
+create 3 consecutive common table conceptConditions (CTE):
 
 - `previous_end`: Adds the previous end date to the table
 - `range_index`: Creates and adds a counter for each new range

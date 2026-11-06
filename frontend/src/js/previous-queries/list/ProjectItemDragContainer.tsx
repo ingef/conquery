@@ -5,10 +5,9 @@ import { getWidthAndHeight } from "../../app/DndProvider";
 import { DNDType } from "../../common/constants/dndTypes";
 import type { DragItemFormConfig } from "../../external-forms/types";
 import type { DragItemQuery } from "../../standard-query-editor/types";
-
-import ProjectItem, { ProjectItemT } from "./ProjectItem";
 import { isFormConfig } from "./helpers";
-import { PreviousQueryT } from "./reducer";
+import ProjectItem, { type ProjectItemT } from "./ProjectItem";
+import type { PreviousQueryT } from "./reducer";
 
 const getDragType = (item: PreviousQueryT) => {
   return item.queryType === "CONCEPT_QUERY"

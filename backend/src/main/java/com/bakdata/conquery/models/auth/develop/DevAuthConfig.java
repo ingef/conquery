@@ -15,7 +15,7 @@ import io.dropwizard.core.setup.Environment;
  */
 @CPSType(base = AuthenticationRealmFactory.class, id = "DEVELOPMENT")
 public class DevAuthConfig implements AuthenticationRealmFactory {
-		
+
 	@Override
 	public ConqueryAuthenticationRealm createRealm(Environment environment, ConqueryConfig config, AuthorizationController authorizationController) {
 

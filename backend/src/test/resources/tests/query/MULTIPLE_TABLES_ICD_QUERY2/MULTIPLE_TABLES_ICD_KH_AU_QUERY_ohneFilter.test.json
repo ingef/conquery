@@ -2,6 +2,10 @@
   "type": "QUERY_TEST",
   "label": "MULTIPLE_TABLES_ICD_QUERY2 Test",
   "expectedCsv": "tests/query/MULTIPLE_TABLES_ICD_QUERY2/expected.csv",
+  "sqlSpec": {
+    "isEnabled": false,
+    "comment": "Prefix not supported in SQL Mode."
+  },
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {

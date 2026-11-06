@@ -1,7 +1,6 @@
 package com.bakdata.conquery.io.result.arrow;
 
 import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
-import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.renderToStream;
 import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_FILE;
 import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_STREAM;
 
@@ -99,17 +98,17 @@ public class ResultArrowProcessor {
 		IdPrinter idPrinter = IdColumnUtil.getIdPrinter(subject, exec, namespace, config.getIdColumns().getIds());
 		final Locale locale = I18n.LOCALE.get();
 
-		PrintSettings settings = new PrintSettings(pretty, locale, namespace, config, idPrinter::createId, null);
+		PrintSettings settings = new PrintSettings(pretty, locale, config, idPrinter::createId, null);
 
 
 		// Collect ResultInfos for id columns and result columns
 		final List<ResultInfo> resultInfosId = config.getIdColumns().getIdResultInfos();
-		final List<ResultInfo> resultInfosExec = exec.getResultInfos();
+		final List<ResultInfo> resultInfosExec = exec.collectResultInfos();
 
 		StreamingOutput out = output -> {
 			CountingOutputStream countingOutputStream = new CountingOutputStream(output);
 			try {
-				renderToStream(
+				ArrowRenderer.renderToStream(
 						writerProducer.apply(countingOutputStream),
 						settings,
 						arrowConfig,

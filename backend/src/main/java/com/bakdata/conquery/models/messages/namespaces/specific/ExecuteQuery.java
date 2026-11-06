@@ -1,12 +1,10 @@
 package com.bakdata.conquery.models.messages.namespaces.specific;
 
-import static com.bakdata.conquery.models.error.ConqueryError.asConqueryError;
 
 import java.util.Set;
 
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
@@ -56,13 +54,12 @@ public class ExecuteQuery extends WorkerMessage {
 			log.trace("Created query plan in {}", stopwatch);
 		}
 		catch (Exception e) {
-			ConqueryError err = asConqueryError(e);
-			log.warn("Failed to create query plans for {}.", id, err);
-			queryExecutor.sendFailureToManagerNode(result, err, worker);
+			log.warn("Failed to create query plans for {}.", id, e);
+			queryExecutor.sendFailureToManagerNode(e, id);
 			return;
 		}
 
-		final QueryExecutionContext executionContext = new QueryExecutionContext(id, queryExecutor, worker.getStorage(), worker.getBucketManager());
+		final QueryExecutionContext executionContext = new QueryExecutionContext(id, queryExecutor, worker.getStorage(), worker.getBucketManager(), worker.getClock());
 
 		final Set<Entity> entities = query.collectRequiredEntities(executionContext).resolve(worker.getBucketManager());
 

@@ -1,6 +1,8 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
 import java.math.BigDecimal;
+import java.util.List;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
@@ -10,17 +12,20 @@ import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.concepts.filters.EventFilter;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
-import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.filter.event.number.DecimalFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.IntegerFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.MoneyFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.RealFilterNode;
-import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.bakdata.conquery.sql.conversion.model.filter.NumberFilterConverter;
+import com.bakdata.conquery.util.validation.ResolvableId;
+import com.bakdata.conquery.util.validation.SupportedColumnTypes;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
@@ -36,13 +41,25 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Slf4j
 @CPSType(id = "NUMBER", base = Filter.class)
-public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends SingleColumnFilter<RANGE> {
+public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends EventFilter<RANGE> {
+
+	@Valid
+	@NotNull
+	@ResolvableId
+	@SupportedColumnTypes(numericTypes = true)
+	private ColumnId column;
 
 	@JsonIgnore
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	@NotNull
 	@EqualsAndHashCode.Exclude
 	private ConqueryConfig config;
+
+	@Override
+	public List<ColumnId> getRequiredColumns() {
+		return List.of(getColumn());
+	}
+
 
 	@Override
 	public void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
@@ -58,7 +75,7 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Sin
 	}
 
 	@Override
-	public FilterNode<?> createFilterNode(RANGE value) {
+	public EventFilterNode<?> createFilterNode(RANGE value) {
 		final Column column = getColumn().resolve();
 		final MajorTypeId typeId = column.getType();
 
@@ -75,4 +92,5 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Sin
 	public FilterConverter<? extends NumberFilter<RANGE>, RANGE> createConverter() {
 		return new NumberFilterConverter<>();
 	}
+
 }

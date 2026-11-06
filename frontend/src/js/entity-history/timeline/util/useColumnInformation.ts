@@ -1,12 +1,12 @@
 import { useMemo } from "react";
 import { useSelector } from "react-redux";
-import {
+import type {
   ColumnDescription,
   ColumnDescriptionSemanticConceptColumn,
   ConceptIdT,
 } from "../../../api/types";
 import type { StateT } from "../../../app/reducers";
-import { EntityHistoryStateT } from "../../reducer";
+import type { EntityHistoryStateT } from "../../reducer";
 import {
   isConceptColumn,
   isDateColumn,

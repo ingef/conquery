@@ -1,13 +1,11 @@
-import { faChartColumn } from "@fortawesome/free-solid-svg-icons";
-
-import FaIcon from "../icon/FaIcon";
+import { ChartColumnIcon } from "lucide-react";
 
 import { InABox } from "./InABox";
 
 const FormSymbol = ({ className }: { className?: string }) => {
   return (
     <InABox className={className}>
-      <FaIcon icon={faChartColumn} active />
+      <ChartColumnIcon className="text-primary-500" />
     </InABox>
   );
 };

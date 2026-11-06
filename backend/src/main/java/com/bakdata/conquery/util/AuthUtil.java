@@ -2,8 +2,10 @@ package com.bakdata.conquery.util;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.ExecutionManager;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
@@ -14,7 +16,7 @@ public class AuthUtil {
 	/**
 	 * When the execution finishes, the service user and all its executions are cleaned up.
 	 */
-	public synchronized void cleanUpUserAndBelongings(User user, MetaStorage storage) {
+	public synchronized void cleanUpUserAndBelongings(User user, MetaStorage storage, DatasetRegistry<?> datasetRegistry) {
 
 		log.debug("BEGIN Removing user '{}' and it's assets", user);
 
@@ -31,12 +33,19 @@ public class AuthUtil {
 
 		// Remove executions
 		int countExecs = 0;
-		for (ManagedExecution exec : storage.getAllExecutions().toList()) {
+		for (ManagedExecutionId exec : storage.getAllExecutionIds().toList()) {
 			if (!user.isOwner(exec)) {
 				continue;
 			}
-			log.trace("Cleaning execution '{}' for user '{}'", exec.getId(), user.getId());
-			storage.removeExecution(exec.getId());
+			log.trace("Cleaning execution '{}' for user '{}'", exec, user.getId());
+			try{
+				ExecutionManager executionManager = datasetRegistry.get(exec.getDataset()).getExecutionManager();
+				executionManager.clearQueryResults(exec);
+
+			} catch (Exception e) {
+				log.error("Failed to clean query {}", exec, e);
+			}
+			storage.removeExecution(exec);
 			countExecs++;
 		}
 

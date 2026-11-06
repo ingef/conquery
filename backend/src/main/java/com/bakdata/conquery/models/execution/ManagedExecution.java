@@ -64,13 +64,13 @@ import org.apache.shiro.authz.Permission;
 
 @Getter
 @Setter
-@ToString
 @Slf4j
 @CPSBase
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @JsonIgnoreProperties("state")
+@ToString(onlyExplicitlyIncluded = true)
 public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecutionId> implements Taggable, Shareable, Labelable, Owned, Visitable {
 
 	/**
@@ -78,16 +78,23 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 	 */
 	public static final String AUTO_LABEL_SUFFIX = "\t@§$";
 
+	@ToString.Include
 	private DatasetId dataset;
+	@ToString.Include
 	private UUID queryId;
+	@ToString.Include
 	private String label;
 
+	@ToString.Include
 	private LocalDateTime creationTime = LocalDateTime.now();
 
+	@ToString.Include
 	private UserId owner;
 
 	@NotNull
+	@ToString.Include
 	private String[] tags = ArrayUtils.EMPTY_STRING_ARRAY;
+	@ToString.Include
 	private boolean shared = false;
 
 	// Most queries contain dates, and this retroactively creates a saner default than false for old queries.
@@ -95,18 +102,23 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 	private boolean containsDates;
 
 	@JsonAlias("machineGenerated")
+	@ToString.Include
 	private boolean system;
 
 	// TODO may transfer these to the ExecutionManager
 	@EqualsAndHashCode.Exclude
+	@ToString.Include
 	private LocalDateTime startTime;
 	@EqualsAndHashCode.Exclude
+	@ToString.Include
 	private LocalDateTime finishTime;
 	@EqualsAndHashCode.Exclude
+	@ToString.Include
 	private Float progress;
 
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
+	@ToString.Include
 	private transient ConqueryErrorInfo error;
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
@@ -118,7 +130,12 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
 	private transient ConqueryConfig config;
-
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	@Setter
+	@Getter(AccessLevel.PROTECTED)
+	@JsonIgnore
+	@NotNull
+	private transient MetaStorage metaStorage;
 
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	@Setter
@@ -147,8 +164,7 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 															  .<Concept<?>>map(ConceptElement::getConcept)
 															  .collect(Collectors.toSet());
 
-		boolean canExpand = subject.isPermittedAll(concepts, Ability.READ);
-		return canExpand;
+        return subject.isPermittedAll(concepts, Ability.READ);
 	}
 
 	/**
@@ -163,7 +179,7 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 			}
 			if (label == null) {
 				// IdMapper is not necessary here
-				label = makeAutoLabel(new PrintSettings(true, I18n.LOCALE.get(), getNamespace(), config, null, null));
+				label = makeAutoLabel(new PrintSettings(true, I18n.LOCALE.get(), config, null, null));
 			}
 
 			doInitExecutable();
@@ -262,7 +278,7 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 		synchronized (this) {
 			Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
 
-			if (getExecutionManager().isResultPresent(getId())) {
+			if (getExecutionManager().isInfoPresent(getId())) {
 				Preconditions.checkArgument(getExecutionManager().getExecutionInfo(getId()).getExecutionState() != ExecutionState.RUNNING);
 			}
 
@@ -320,12 +336,9 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 		return label != null && label.endsWith(AUTO_LABEL_SUFFIX);
 	}
 
+	@JsonIgnore
 	public ExecutionState getState() {
-		if (!getExecutionManager().isResultPresent(getId())) {
-			return ExecutionState.NEW;
-		}
-
-		return getExecutionManager().getExecutionInfo(getId()).getExecutionState();
+		return getExecutionManager().getState(getId());
 	}
 
 	/**
@@ -343,7 +356,7 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 	public void setStatusFull(FullExecutionStatus status, Subject subject, Namespace namespace) {
 		setStatusBase(subject, status);
 
-		setAdditionalFieldsForStatusWithColumnDescription(subject, status);
+		setAdditionalStatusFields(subject, status);
 		setAdditionalFieldsForStatusWithSource(subject, status, namespace);
 		setAdditionalFieldsForStatusWithGroups(status);
 		setAvailableSecondaryIds(status);
@@ -383,7 +396,7 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 		status.setGroups(permittedGroups);
 	}
 
-	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
+	protected void setAdditionalStatusFields(Subject subject, FullExecutionStatus status) {
 		// Implementation specific
 	}
 

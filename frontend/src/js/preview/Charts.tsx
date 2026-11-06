@@ -1,109 +1,43 @@
-import styled from "@emotion/styled";
-import { faArrowLeft, faArrowRight } from "@fortawesome/free-solid-svg-icons";
-import { t } from "i18next";
-
-import { PreviewStatistics } from "../api/types";
-import IconButton from "../button/IconButton";
-
-import { useHotkeys } from "react-hotkeys-hook";
+import { tv } from "tailwind-variants";
+import type { PreviewStatistics } from "../api/types";
 import Diagram from "./Diagram";
 
-const Root = styled("div")``;
+const root = tv({
+  base: ["grid grid-cols-2", "gap-5", "overflow-x-hidden"],
+});
 
-const SxDiagram = styled(Diagram)`
-  padding: 5px;
-  margin-right: 15px;
-  height: 27vh;
-`;
+const diagram = tv({ base: "h-[27vh]" });
 
-const DirectionSelector = styled("div")`
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 5px;
-  grid-column: 1 / 3;
-  grid-row: 3;
-  padding-left: 100px;
-  padding-right: 100px;
-`;
+export const DIAGRAMS_PER_PAGE = 4;
 
-const SxIconButton = styled(IconButton)`
-  font-size: 24;
-`;
-
-const DiagramContainer = styled("div")`
-  overflow-x: hidden;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-gap: 5px;
-`;
-
-type ChartProps = {
-  statistics: PreviewStatistics[];
-  className?: string;
-  showPopup: (statistic: PreviewStatistics) => void;
-  page: number;
-  setPage: (page: number) => void;
-};
-
-const DIAGRAMS_PER_PAGE = 4;
+// the axis keeps its height for the chart when category labels run long
+const MAX_LABEL_LENGTH = 24;
 
 export default function Charts({
   statistics,
-  className,
   showPopup,
   page,
-  setPage,
-}: ChartProps) {
+}: {
+  statistics: PreviewStatistics[];
+  showPopup: (statistic: PreviewStatistics) => void;
+  page: number;
+}) {
   const diagramsOnPage = statistics.slice(
     page * DIAGRAMS_PER_PAGE,
     (page + 1) * DIAGRAMS_PER_PAGE,
   );
-  const maxPage = Math.ceil(statistics.length / DIAGRAMS_PER_PAGE);
-
-  const updatePage = (change: number) => {
-    const newValue = page + change;
-    if (newValue >= 0 && newValue < maxPage) {
-      setPage(newValue);
-    }
-  };
-
-  useHotkeys("left", () => updatePage(-1), [page]);
-  useHotkeys("right", () => updatePage(1), [page]);
 
   return (
-    <>
-      <Root className={className}>
-        <DiagramContainer>
-          {diagramsOnPage.map((statistic) => {
-            return (
-              <div key={statistic.label}>
-                <SxDiagram
-                  stat={statistic}
-                  onClick={() => showPopup(statistic)}
-                />
-              </div>
-            );
-          })}
-        </DiagramContainer>
-        <DirectionSelector>
-          <SxIconButton
-            icon={faArrowLeft}
-            onClick={() => updatePage(-1)}
-            disabled={page === 0}
-          />
-          <span>
-            {t("preview.page")} {page + 1}/
-            {Math.ceil(statistics.length / DIAGRAMS_PER_PAGE)}
-          </span>
-          <SxIconButton
-            icon={faArrowRight}
-            onClick={() => updatePage(1)}
-            disabled={page === maxPage - 1}
-          />
-        </DirectionSelector>
-      </Root>
-    </>
+    <div className={root()}>
+      {diagramsOnPage.map((statistic) => (
+        <Diagram
+          key={statistic.label}
+          className={diagram()}
+          stat={statistic}
+          maxLabelLength={MAX_LABEL_LENGTH}
+          onClick={() => showPopup(statistic)}
+        />
+      ))}
+    </div>
   );
 }

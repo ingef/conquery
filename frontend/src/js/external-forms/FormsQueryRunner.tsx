@@ -5,11 +5,11 @@ import type { DatasetT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { exists } from "../common/helpers/exists";
 import { useDatasetId } from "../dataset/selectors";
-import QueryRunner from "../query-runner/QueryRunner";
 import { useStartQuery, useStopQuery } from "../query-runner/actions";
-import { QueryRunnerStateT } from "../query-runner/reducer";
+import QueryRunner from "../query-runner/QueryRunner";
+import type { QueryRunnerStateT } from "../query-runner/reducer";
 
-import { Form } from "./config-types";
+import type { Form } from "./config-types";
 import {
   selectFormConfig,
   selectQueryRunner,

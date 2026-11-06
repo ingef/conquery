@@ -1,8 +1,8 @@
 package com.bakdata.conquery.sql.conversion;
 
 import java.util.List;
+import java.util.Optional;
 
-import com.google.common.collect.MoreCollectors;
 import lombok.Getter;
 
 /**
@@ -23,9 +23,24 @@ public abstract class Conversions<C, R, X extends Context> {
 	}
 
 	public R convert(C node, X context) {
-		return converters.stream()
-						 .flatMap(converter -> converter.tryConvert(node, context).stream())
-						 .collect(MoreCollectors.onlyElement());
+		R converted = null;
+		for (Converter<? extends C, R, X> converter : converters) {
+			Optional<R> maybeConverted = converter.tryConvert(node, context);
+			if (maybeConverted.isPresent()) {
+				if (converted == null) {
+					converted = maybeConverted.get();
+				}
+				else {
+					throw new IllegalStateException("Multiple Converters for %s".formatted(node));
+				}
+			}
+		}
+
+		if (converted == null) {
+			throw new IllegalStateException("No converter found for %s".formatted(node));
+		}
+
+		return converted;
 	}
 
 }

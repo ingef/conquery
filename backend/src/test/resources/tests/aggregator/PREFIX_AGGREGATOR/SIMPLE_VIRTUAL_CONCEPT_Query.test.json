@@ -2,6 +2,9 @@
   "type": "QUERY_TEST",
   "label": "PREFIX_AGGREGATOR Test",
   "expectedCsv": "tests/aggregator/PREFIX_AGGREGATOR/expected.csv",
+  "sqlSpec": {
+    "isEnabled": false
+  },
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {

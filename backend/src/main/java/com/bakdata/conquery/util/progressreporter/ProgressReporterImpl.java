@@ -54,24 +54,24 @@ public class ProgressReporterImpl implements ProgressReporter {
 	public double getProgress() {
 		return (double) getAbsoluteProgress() / (double) getAbsoluteMax();
 	}
-	
+
 	public long getAbsoluteProgress() {
 		long absoluteProgress = innerProgress.get();
 
 		for (ProgressReporterImpl child : children) {
 			absoluteProgress += child.getAbsoluteProgress();
 		}
-		
+
 		return absoluteProgress;
 	}
-	
+
 	public long getAbsoluteMax() {
 		long absoluteMax = max.get();
 
 		for (ProgressReporterImpl child : children) {
 			absoluteMax += child.getAbsoluteMax();
 		}
-		
+
 		return absoluteMax;
 	}
 
@@ -98,7 +98,7 @@ public class ProgressReporterImpl implements ProgressReporter {
 	@Override
 	public void report(int steps) {
 		if (!isStarted()) {
-			log.warn("Progress reporter was not started");
+			log.warn("Progress reporter was not started", new Exception());
 			return;
 		}
 		if (innerProgress.get() + steps > max.get()) {
@@ -138,9 +138,9 @@ public class ProgressReporterImpl implements ProgressReporter {
 
 		innerProgress.set(max.get() - reservedForChildren.get());
 	}
-	
 
-	
+
+
 	@JsonValue
 	public ImmutableProgressReporter toImmutable() {
 		return new ImmutableProgressReporter(this);

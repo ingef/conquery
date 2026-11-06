@@ -21,7 +21,7 @@ public class MapIndexKey implements IndexKey {
 	}
 
 	@Override
-	public Index<String> createIndex(String defaultEmptyLabel) {
+	public Index<String> createIndex() {
 		if (allowMultiple){
 			return new MapMultiIndex(externalTemplate);
 		}

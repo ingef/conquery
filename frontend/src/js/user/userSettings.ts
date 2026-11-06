@@ -2,14 +2,13 @@
 const localStorage: Storage = window.localStorage;
 
 interface UserSettings {
-  showEditorV2: boolean;
   arePreviousQueriesFoldersOpen: boolean;
   preferredDownloadEnding?: string; // Usually CSV or XLSX
   preferredDownloadLabel?: string; // Label of the preferred Download format (e.g. "All files")
+  readNewsIds?: Record<string, string[]>; // per user name
 }
 
 const initialState: UserSettings = {
-  showEditorV2: false,
   arePreviousQueriesFoldersOpen: false,
   preferredDownloadEnding: undefined,
   preferredDownloadLabel: undefined,

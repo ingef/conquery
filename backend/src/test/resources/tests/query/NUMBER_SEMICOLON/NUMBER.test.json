@@ -4,6 +4,9 @@
       "delimeter" : ";"
     }
   },
+  "sqlSpec": {
+    "isEnabled": false
+  },
   "type": "QUERY_TEST",
   "label": "NUMBER_QUERY Test",
   "expectedCsv": "tests/query/NUMBER_SEMICOLON/expected.csv",

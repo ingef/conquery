@@ -7,9 +7,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -31,9 +31,7 @@ import org.apache.commons.lang3.ArrayUtils;
 public class QueryCleanupTask extends Task {
 
 	public static final String EXPIRATION_PARAM = "expiration";
-	private static final Predicate<String>
-			UUID_PATTERN =
-			Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$").asPredicate();
+	public static final String DRY_RUN_PARAM = "dry-run";
 
 	private final MetaStorage storage;
 	private final Duration queryExpiration;
@@ -44,12 +42,10 @@ public class QueryCleanupTask extends Task {
 		this.queryExpiration = queryExpiration;
 	}
 
-	public static boolean isDefaultLabel(String label) {
-		return UUID_PATTERN.test(label);
-	}
-
 	@Override
 	public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
+
+		boolean dryRun = Optional.ofNullable(parameters.get(DRY_RUN_PARAM)).filter(Predicate.not(List::isEmpty)).map(List::getFirst).map(Boolean::parseBoolean).orElse(false);
 
 		Duration queryExpiration = this.queryExpiration;
 
@@ -58,7 +54,7 @@ public class QueryCleanupTask extends Task {
 				log.warn("Will not respect more than one expiration time. Have `{}`", parameters.get(EXPIRATION_PARAM));
 			}
 
-			queryExpiration = Duration.parse(parameters.get(EXPIRATION_PARAM).get(0));
+			queryExpiration = Duration.parse(parameters.get(EXPIRATION_PARAM).getFirst());
 		}
 
 		if (queryExpiration == null) {
@@ -97,10 +93,10 @@ public class QueryCleanupTask extends Task {
 				}
 				log.trace("{} has no tags", execution.getId());
 
-				if (execution.getLabel() != null && !isDefaultLabel(execution.getLabel())) {
+				if (execution.getLabel() != null && !execution.isAutoLabeled()) {
 					continue;
 				}
-				log.trace("{} has no label", execution.getId());
+				log.trace("{} has no custom label", execution.getId());
 
 
 				if (LocalDateTime.now().minus(queryExpiration).isBefore(execution.getCreationTime())) {
@@ -123,6 +119,11 @@ public class QueryCleanupTask extends Task {
 			if (toDelete.isEmpty()) {
 				log.info("No queries to delete");
 				break;
+			}
+
+			if (dryRun) {
+				log.info("Dry Run: Cleanup would delete {} Executions", toDelete.size());
+				return;
 			}
 
 			log.info("Deleting {} Executions", toDelete.size());

@@ -1,6 +1,6 @@
-import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
+import axios, { type AxiosRequestConfig, type AxiosResponse } from "axios";
 import { useCallback, useContext, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 import { AuthTokenContext } from "../authorization/AuthTokenProvider";
 import { useIsCacheEnabled } from "../common/feature-flags/useIsCacheEnabled";
@@ -116,7 +116,7 @@ async function getCachedResponse(cacheConfig: CustomCacheConfig) {
       );
 }
 
-export async function fetchJsonUnauthorized(
+async function fetchJsonUnauthorized(
   request?: Partial<AxiosRequestConfig>,
   cacheConfig: CustomCacheConfig = {},
   rawBody: boolean = false,
@@ -161,7 +161,7 @@ export async function fetchJsonUnauthorized(
     // Reject other status
     try {
       return Promise.reject({ status: response.status, ...response.data });
-    } catch (e) {
+    } catch {
       return Promise.reject({ status: response.status });
     }
   }

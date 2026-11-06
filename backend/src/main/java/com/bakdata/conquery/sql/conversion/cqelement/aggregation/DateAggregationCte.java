@@ -19,22 +19,23 @@ abstract class DateAggregationCte {
 		SqlTables dateAggregationTables = context.getDateAggregationTables();
 
 		// this way all selects are already qualified, and we don't need to care for that in the respective steps
-		context = context.qualify(dateAggregationTables.getPredecessor(cteStep));
+		String predecessor = dateAggregationTables.getPredecessor(cteStep);
+		context = context.qualify(predecessor);
 
-		QueryStep.QueryStepBuilder builder = this.convertStep(context);
+		QueryStep.QueryStepBuilder builder = this.convertStep(context, predecessor);
 
 		if (cteStep != DateAggregationCteStep.NODE_NO_OVERLAP) {
 			builder = builder.cteName(dateAggregationTables.cteName(cteStep))
 							 .predecessors(List.of(previous));
 		}
 		if (cteStep != DateAggregationCteStep.INVERT && cteStep != DateAggregationCteStep.NODE_NO_OVERLAP) {
-			builder = builder.fromTable(QueryStep.toTableLike(dateAggregationTables.getPredecessor(cteStep)));
+			builder = builder.fromTable(QueryStep.toTableLike(predecessor));
 		}
 
 		return builder.build();
 	}
 
-	protected abstract QueryStep.QueryStepBuilder convertStep(DateAggregationContext context);
+	protected abstract QueryStep.QueryStepBuilder convertStep(DateAggregationContext context, String predecessor);
 
 	public abstract DateAggregationCteStep getCteStep();
 

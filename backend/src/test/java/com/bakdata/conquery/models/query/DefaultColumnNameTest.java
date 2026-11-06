@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.query;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,8 +34,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.types.ResultType;
-import com.bakdata.conquery.models.worker.LocalNamespace;
-import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.TestNamespacedStorageProvider;
 import io.dropwizard.jersey.validation.Validators;
@@ -48,22 +46,21 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 @Slf4j
 public class DefaultColumnNameTest {
-	private static final Namespace NAMESPACE = mock(LocalNamespace.class);
-	private static final PrintSettings SETTINGS = new PrintSettings(false, Locale.ENGLISH, NAMESPACE, new ConqueryConfig(), null, null);
+    private static final PrintSettings SETTINGS = new PrintSettings(false, Locale.ENGLISH, new ConqueryConfig(), null, null);
 	private static final Validator VALIDATOR = Validators.newValidator();
 
 
 	private static final BiFunction<TestConcept, CQConcept, Select> CONCEPT_SELECT_SELECTOR =
 			(concept, cq) -> {
-				final UniversalSelect select = concept.getSelects().get(0);
+				final UniversalSelect select = concept.getSelects().getFirst();
 				cq.setSelects(List.of(select.getId()));
 				return select;
 			};
 
 	private static final BiFunction<TestConcept, CQConcept, Select> CONNECTOR_SELECT_SELECTOR =
 			(concept, cq) -> {
-				final Select select = concept.getConnectors().get(0).getSelects().get(0);
-				cq.getTables().get(0).setSelects(List.of((ConnectorSelectId) select.getId()));
+				final Select select = concept.getConnectors().getFirst().getSelects().getFirst();
+				cq.getTables().getFirst().setSelects(List.of((ConnectorSelectId) select.getId()));
 				return select;
 			};
 
@@ -185,7 +182,7 @@ public class DefaultColumnNameTest {
 			if (elements.isEmpty()) {
 				elements = List.of(concept);
 			}
-			final List<ConceptElementId<?>> list = (List<ConceptElementId<?>>) elements.stream().map(ConceptElement::getId).toList();
+			final List<ConceptElementId<?>> list = elements.stream().<ConceptElementId<?>>map(ConceptElement::getId).toList();
 			cqConcept.setElements(list);
 
 			List<CQTable> tables = concept.getConnectors().stream()
@@ -215,7 +212,7 @@ public class DefaultColumnNameTest {
 
 		private final BiFunction<TestConcept, CQConcept, Select> selectExtractor;
 
-		private TestConcept(BiFunction<TestConcept, CQConcept, Select> selectExtractor) {
+		private TestConcept(BiFunction<TestConcept, CQConcept, Select> selectExtractor) throws Exception {
 			final NamespaceStorage storage = new NonPersistentStoreFactory().createNamespaceStorage();
 
 			this.selectExtractor = selectExtractor;
@@ -226,7 +223,9 @@ public class DefaultColumnNameTest {
 			dataset.setStorageProvider(new TestNamespacedStorageProvider(storage));
 			storage.updateDataset(dataset);
 
-			setDataset(dataset.getId());
+			setNamespacedStorageProvider(storage);
+
+			init();
 
 			storage.updateConcept(this);
 
@@ -303,6 +302,11 @@ public class DefaultColumnNameTest {
 			@Override
 			public Aggregator<?> createAggregator() {
 				return null;
+			}
+
+			@Override
+			public ResultSetProcessor.Reader<?> createResultSetReader(ResultSetProcessor processor) {
+				return processor::getString;
 			}
 
 			@Override

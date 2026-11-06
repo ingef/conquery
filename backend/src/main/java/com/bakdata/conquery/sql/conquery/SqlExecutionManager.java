@@ -62,7 +62,7 @@ public class SqlExecutionManager extends ExecutionManager {
 	}
 
 	private CompletableFuture<Void> executeAsync(ManagedQuery managedQuery) {
-		SqlQuery sqlQuery = converter.convert(managedQuery.getQuery(), managedQuery.getNamespace());
+		SqlQuery sqlQuery = converter.convert(managedQuery.getQuery());
 
 		return CompletableFuture.supplyAsync(() -> executionService.execute(sqlQuery))
 								.thenAccept(result -> {
@@ -72,7 +72,7 @@ public class SqlExecutionManager extends ExecutionManager {
 									SqlExecutionExecutionInfo startResult = getExecutionInfo(id);
 									SqlExecutionExecutionInfo
 											finishResult =
-											new SqlExecutionExecutionInfo(ExecutionState.DONE, result.getColumnNames(), result.getTable(), startResult.getExecutingLock());
+											new SqlExecutionExecutionInfo(ExecutionState.DONE, result.getColumnNames(), result.getTable(), result.getResultInfos(), startResult.getExecutingLock());
 									addState(id, finishResult);
 
 									managedQuery.finish(ExecutionState.DONE);

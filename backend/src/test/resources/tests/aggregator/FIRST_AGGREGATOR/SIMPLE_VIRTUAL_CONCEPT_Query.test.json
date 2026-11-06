@@ -32,7 +32,7 @@
             "column": "table.datum"
           },
           "selects": {
-            "name" : "select",
+            "name": "select",
             "type": "FIRST",
             "column": "table.value"
           }

@@ -2,13 +2,7 @@ package com.bakdata.conquery.resources.admin.rest;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import jakarta.inject.Inject;
@@ -20,6 +14,7 @@ import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.mode.ImportHandler;
 import com.bakdata.conquery.mode.StorageListener;
 import com.bakdata.conquery.mode.ValidationMode;
@@ -66,7 +61,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AdminDatasetProcessor {
 
 	public static final int MAX_IMPORTS_TEXT_LENGTH = 100;
-	private static final String ABBREVIATION_MARKER = "\u2026";
+	private static final String ABBREVIATION_MARKER = "…";
 
 	private final ConqueryConfig config;
 	private final DatasetRegistry<? extends Namespace> datasetRegistry;
@@ -172,15 +167,8 @@ public class AdminDatasetProcessor {
 	 */
 	@SneakyThrows
 	public synchronized void addTable(@NonNull Table table, Namespace namespace) {
-		final Dataset dataset = namespace.getDataset();
 
-		final DatasetId datasetId = dataset.getId();
-		if (table.getDataset() == null) {
-			table.setDataset(datasetId);
-		}
-		else if (!table.getDataset().equals(datasetId)) {
-			throw new IllegalArgumentException();
-		}
+		ValidatorHelper.failOnError(log, environment.getValidator().validate(table));
 
 
 		if (namespace.getStorage().getTable(table.getId()) != null) {
@@ -215,25 +203,25 @@ public class AdminDatasetProcessor {
 	 * update a concept of the given dataset.
 	 * Therefore, the concept will be deleted first then added
 	 */
-	public synchronized void updateConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept) {
-		concept.setDataset(dataset.getId());
-		if (!datasetRegistry.get(dataset.getId()).getStorage().hasConcept(concept.getId())) {
+	public synchronized void updateConcept(@NonNull Namespace namespace, @NonNull Concept<?> concept) {
+
+		if (!namespace.getStorage().hasConcept(concept.getId())) {
 			throw new NotFoundException("Can't find the concept in the dataset " + concept.getId());
 		}
 
 		//adds new content of the content
-		addConcept(dataset, concept, true);
+		addConcept(namespace, concept, true);
 	}
 
 	/**
 	 * Add the concept to the dataset if it does not exist yet
 	 */
-	public synchronized void addConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept, boolean force) {
-		concept.setDataset(dataset.getId());
+	public synchronized void addConcept(@NonNull Namespace namespace, @NonNull Concept<?> concept, boolean force) {
+		NamespaceStorage namespaceStorage = namespace.getStorage();
 
 		ValidatorHelper.failOnError(log, environment.getValidator().validate(concept));
 
-		if (datasetRegistry.get(dataset.getId()).getStorage().hasConcept(concept.getId())) {
+		if (namespaceStorage.hasConcept(concept.getId())) {
 			if (!force) {
 				throw new WebApplicationException("Can't replace already existing concept " + concept.getId(), Response.Status.CONFLICT);
 			}
@@ -242,7 +230,7 @@ public class AdminDatasetProcessor {
 		}
 
 		// Register the Concept in the ManagerNode and Workers
-		datasetRegistry.get(dataset.getId()).getStorage().updateConcept(concept);
+		namespaceStorage.updateConcept(concept);
 		storageListener.onAddConcept(concept);
 	}
 
@@ -349,12 +337,21 @@ public class AdminDatasetProcessor {
 	}
 
 	/**
-	 * Issues a postprocessing of the imported data for initializing certain internal modules that are either expensive or need the whole data present.
+	 * Schedules collection of matching statistics for the dataset.
 	 */
-	public void postprocessNamespace(DatasetId dataset) {
+	public void updateMatchingStats(DatasetId dataset) {
 		final Namespace ns = getDatasetRegistry().get(dataset);
 
-		ns.postprocessData();
+		ns.scheduleMatchingStatsUpdate();
+	}
+
+	/**
+	 * Schedules regeneration of the filter search for the dataset.
+	 */
+	public void updateFilterSearch(DatasetId dataset) {
+		final Namespace ns = getDatasetRegistry().get(dataset);
+
+		ns.scheduleFilterSearchUpdate();
 	}
 
 	public EntityIdMap getIdMapping(Namespace namespace) {
@@ -362,7 +359,8 @@ public class AdminDatasetProcessor {
 	}
 
 	public void addInternToExternMapping(Namespace namespace, InternToExternMapper internToExternMapper) {
-		internToExternMapper.setDataset(namespace.getDataset().getId());
+		// TODO Use DatasetParamInjector on admin-api to avoid manual setup of dataset/storage
+		internToExternMapper.setStorage(namespace.getStorage());
 
 		ValidatorHelper.failOnError(log, environment.getValidator().validate(internToExternMapper));
 
@@ -447,5 +445,13 @@ public class AdminDatasetProcessor {
 
 	public void deletePreviewConfig(Namespace namespace) {
 		namespace.getStorage().removePreviewConfig();
+	}
+
+	public List<SearchIndexId> listSearchIndexes(Namespace namespace) {
+		return namespace.getStorage().getSearchIndexIds().sorted(Comparator.comparing(SearchIndexId::getName)).toList();
+	}
+
+	public SearchIndex getSearchIndex(Namespace namespace, SearchIndexId id) {
+		return namespace.getStorage().getSearchIndex(id);
 	}
 }

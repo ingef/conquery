@@ -1,9 +1,12 @@
-import startOfYear from "date-fns/startOfYear";
-import subYears from "date-fns/subYears";
+import { startOfYear, subYears } from "date-fns";
 import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
+import {
+  type ActionType,
+  createAction,
+  createAsyncAction,
+} from "typesafe-actions";
 
 import {
   useGetEntityHistory,
@@ -19,7 +22,10 @@ import type {
 } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { useGetAuthorizedUrl } from "../authorization/useAuthorizedUrl";
-import { ErrorObject, errorPayload } from "../common/actions/genericActions";
+import {
+  type ErrorObject,
+  errorPayload,
+} from "../common/actions/genericActions";
 import {
   formatStdDate,
   getFirstAndLastDateOfRange,
@@ -29,7 +35,8 @@ import { useDatasetId } from "../dataset/selectors";
 import { loadCSV, parseCSVWithHeaderToObj } from "../file/csv";
 import { setMessage } from "../snack-message/actions";
 
-import { EntityEvent, EntityId } from "./reducer";
+import { collectEntityIds } from "./entityIds";
+import type { EntityEvent, EntityId } from "./reducer";
 import { isDateColumn, isSourceColumn } from "./timeline/util/util";
 
 export type EntityHistoryActions = ActionType<
@@ -108,23 +115,6 @@ export const loadHistoryData = createAsyncAction(
   ErrorObject
 >();
 
-// HARD-CODED values that make sense with our particular data.
-// TODO: Make this configurable / get a preferred id kind list from backend
-export const PREFERRED_ID_KINDS = ["EGK", "PID"];
-export const DEFAULT_ID_KIND = "EGK";
-
-function getPreferredIdColumns(columns: ColumnDescription[]) {
-  const findColumnIdxWithIdKind = (kind: string) =>
-    columns.findIndex((col) =>
-      col.semantics.some((s) => s.type === "ID" && s.kind === kind),
-    );
-
-  return PREFERRED_ID_KINDS.map((kind) => ({
-    columnIdx: findColumnIdxWithIdKind(kind),
-    idKind: kind,
-  }));
-}
-
 async function onLoadHistoryData(url: string, columns: ColumnDescription[]) {
   try {
     const result = await loadCSV(url);
@@ -146,6 +136,9 @@ async function onLoadHistoryData(url: string, columns: ColumnDescription[]) {
 export function useNewHistorySession() {
   const dispatch = useDispatch();
   const { updateHistorySession } = useUpdateHistorySession();
+  const prioritizedIdColumns = useSelector<StateT, string[]>(
+    (state) => state.entityHistory.defaultParams.prioritizedIdColumns,
+  );
 
   return async (url: string, columns: ColumnDescription[], label: string) => {
     dispatch(loadHistoryData.request());
@@ -159,27 +152,11 @@ export function useNewHistorySession() {
       return;
     }
 
-    const preferredIdColumns = getPreferredIdColumns(columns);
-    if (preferredIdColumns.length === 0) {
-      dispatch(loadHistoryData.failure(new Error("No valid ID columns found")));
-      return;
-    }
-
-    const entityIds = result.csv
-      .slice(1)
-      .map((row) => {
-        for (const col of preferredIdColumns) {
-          // some values might be empty, search for defined values
-          if (row[col.columnIdx]) {
-            return {
-              id: row[col.columnIdx],
-              kind: col.idKind,
-            };
-          }
-          return null;
-        }
-      })
-      .filter(exists);
+    const entityIds = collectEntityIds(
+      result.csv.slice(1),
+      columns,
+      prioritizedIdColumns,
+    );
 
     if (entityIds.length === 0) {
       dispatch(loadHistoryData.failure(new Error("No entity IDs found")));
@@ -204,7 +181,7 @@ export function useUpdateHistorySession() {
   const getAuthorizedUrl = useGetAuthorizedUrl();
   const { t } = useTranslation();
 
-  const loadingIdTimeout = useRef<NodeJS.Timeout>();
+  const loadingIdTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
   const [loadingId, setLoadingId] = useState<string>();
 
   const defaultEntityHistoryParams = useSelector<
@@ -346,6 +323,7 @@ interface DateRow {
   from: Date;
   to: Date;
 }
+
 const transformEntityData = (
   data: { [key: string]: unknown }[],
   {

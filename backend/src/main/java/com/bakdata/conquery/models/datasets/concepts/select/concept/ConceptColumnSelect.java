@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.bakdata.conquery.sql.conversion.model.select.ConceptColumnSelectConverter;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Data;
@@ -78,5 +79,10 @@ public class ConceptColumnSelect extends UniversalSelect {
 	public SelectConverter<ConceptColumnSelect> createConverter() {
 		//TODO bind Select to converter here
 		return new ConceptColumnSelectConverter();
+	}
+
+	@Override
+	public ResultSetProcessor.Reader<?> createResultSetReader(ResultSetProcessor processor) {
+		return isAsIds() ? processor::getIntegerList : processor::getStringList;
 	}
 }

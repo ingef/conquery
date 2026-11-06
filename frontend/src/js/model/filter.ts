@@ -7,11 +7,11 @@ import type {
 import { exists } from "../common/helpers/exists";
 import type { FilterWithValueType } from "../standard-query-editor/types";
 
-import { NodeResetConfig } from "./node";
+import type { NodeResetConfig } from "./node";
 
 const resetFilter =
   (config: NodeResetConfig = {}) =>
-  (filter: FilterWithValueType): FilterWithValueType => {
+  (filter: FilterT): FilterWithValueType => {
     switch (filter.type) {
       case "MULTI_SELECT":
       case "BIG_MULTI_SELECT":
@@ -30,8 +30,8 @@ const resetFilter =
           value: config.useDefaults
             ? filter.defaultValue || null
             : filter.options.length > 0
-            ? filter.options[0].value
-            : null,
+              ? filter.options[0].value
+              : null,
         };
       default:
         return {
@@ -41,7 +41,7 @@ const resetFilter =
     }
   };
 
-const filterHasValue = (filter: FilterWithValueType) => {
+export const filterHasValue = (filter: FilterWithValueType) => {
   switch (filter.type) {
     case "MULTI_SELECT":
     case "BIG_MULTI_SELECT":
@@ -82,7 +82,7 @@ export const filterValueDiffersFromDefault = (
 };
 
 export const resetFilters = (
-  filters?: FilterWithValueType[],
+  filters?: FilterT[],
   config: NodeResetConfig = {},
 ) => (filters ? filters.map(resetFilter(config)) : []);
 

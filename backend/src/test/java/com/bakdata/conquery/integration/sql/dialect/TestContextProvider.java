@@ -1,14 +1,11 @@
 package com.bakdata.conquery.integration.sql.dialect;
 
-import com.bakdata.conquery.models.config.DatabaseConfig;
-import com.bakdata.conquery.sql.DSLContextWrapper;
+import com.bakdata.conquery.models.config.DatabaseConnectionConfig;
 
 public interface TestContextProvider {
 
-	DatabaseConfig getDatabaseConfig();
+	DatabaseConnectionConfig getDatabaseConfig();
 
 	TestSqlConnectorConfig getSqlConnectorConfig();
-
-	DSLContextWrapper getDslContextWrapper();
 
 }

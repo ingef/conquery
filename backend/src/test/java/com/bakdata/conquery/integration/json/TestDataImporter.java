@@ -3,6 +3,8 @@ package com.bakdata.conquery.integration.json;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
@@ -52,6 +54,8 @@ public interface TestDataImporter {
 		runnable.run();
 		support.waitUntilWorkDone();
 	}
+
+	void importDataset(Client client, UriBuilder uriBuilder, String name);
 
 	@FunctionalInterface
 	interface CheckedRunnable<E extends Exception> extends Runnable {

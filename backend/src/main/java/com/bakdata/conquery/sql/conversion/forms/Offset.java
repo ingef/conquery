@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
  */
 @Getter
 @RequiredArgsConstructor
-enum Offset {
+public enum Offset {
 	MINUS_ONE(-1),
 	NONE(0),
 	ONE(1);

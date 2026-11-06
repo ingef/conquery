@@ -15,6 +15,7 @@ import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
+import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -34,12 +35,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.github.powerlibraries.io.In;
 import com.univocity.parsers.csv.CsvWriter;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 
 @Slf4j
 @Getter
@@ -78,7 +79,7 @@ public class FormTest extends ConqueryTestSpec {
 	public void executeTest(StandaloneSupport support) throws Exception {
 
 
-		final ManagedExecutionId managedExecutionId = IntegrationUtils.assertQueryResult(support, form, -1, ExecutionState.DONE, support.getTestUser(), 201);
+		final ManagedExecutionId managedExecutionId = IntegrationUtils.assertQueryResult(support, form, null, -1, ExecutionState.DONE, support.getTestUser(), 201);
 
 		log.info("{} QUERIES EXECUTED", getLabel());
 
@@ -93,7 +94,7 @@ public class FormTest extends ConqueryTestSpec {
 	}
 
 	private Form parseForm(StandaloneSupport support) throws IOException {
-		return parseSubTree(support, rawForm, Form.class, true);
+		return LoadingUtil.parseSubTree(support, rawForm, Form.class, false);
 	}
 
 	private void checkResults(StandaloneSupport standaloneSupport, ManagedInternalForm<?> managedForm, User user) throws IOException {
@@ -108,7 +109,7 @@ public class FormTest extends ConqueryTestSpec {
 		final ConqueryConfig config = standaloneSupport.getConfig();
 		PrintSettings
 				printSettings =
-				new PrintSettings(false, Locale.ENGLISH, standaloneSupport.getNamespace(), config, idPrinter::createId, null);
+				new PrintSettings(false, Locale.ENGLISH, config, idPrinter::createId, null);
 
 		checkSingleResult(managedForm, config, printSettings);
 
@@ -127,18 +128,17 @@ public class FormTest extends ConqueryTestSpec {
 
 			renderer.toCSV(
 					config.getIdColumns().getIdResultInfos(),
-					managedForm.getResultInfos(),
+					managedForm.collectResultInfos(),
 					managedForm.streamResults(OptionalLong.empty()), printSettings, StandardCharsets.UTF_8
 			);
 
 			writer.close();
 
-			assertThat(In.stream(new ByteArrayInputStream(output.toByteArray())).withUTF8().readLines())
+
+			assertThat(IOUtils.readLines(new ByteArrayInputStream(output.toByteArray()), StandardCharsets.UTF_8))
 					.as("Checking result " + managedForm.getLabelWithoutAutoLabelSuffix())
 					.containsExactlyInAnyOrderElementsOf(
-							In.stream(expectedCsv.values().iterator().next().stream())
-							  .withUTF8()
-							  .readLines()
+							IOUtils.readLines(expectedCsv.values().iterator().next().stream(), StandardCharsets.UTF_8)
 					);
 		}
 

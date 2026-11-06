@@ -74,7 +74,7 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 
 		Field<BigDecimal> rangeIndex =
 				DSL.sum(
-						   DSL.when(daterange.getStart().greaterThan(previousEnd), DSL.val(1))
+						   DSL.when(daterange.getStart().greaterThan(previousEnd), DSL.inline(1))
 							  .otherwise(DSL.inline(null, Integer.class)))
 				   .over(DSL.partitionBy(ids.toFields())
 							.orderBy(daterange.getStart(), daterange.getEnd())

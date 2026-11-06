@@ -11,8 +11,12 @@
       },
       "columns": [
         {
-          "name": "datum",
-          "type": "DATE_RANGE"
+          "name": "start",
+          "type": "DATE"
+        },
+        {
+          "name": "end",
+          "type": "DATE"
         }
       ]
     }
@@ -20,12 +24,14 @@
   "connector": {
     "validityDates": [
       {
-        "label": "Dauer",
-        "column": "table.datum"
+        "label": "dauer",
+        "startColumn": "table.start",
+        "endColumn": "table.end"
       }
     ],
     "filters": {
-      "column": "table.datum",
+      "startColumn": "table.start",
+      "endColumn": "table.end",
       "type": "DURATION_SUM"
     }
   },

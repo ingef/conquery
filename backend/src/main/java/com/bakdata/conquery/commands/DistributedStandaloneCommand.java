@@ -1,6 +1,7 @@
 package com.bakdata.conquery.commands;
 
 import java.nio.file.Path;
+import java.time.Clock;
 import java.util.List;
 import java.util.Vector;
 
@@ -13,6 +14,7 @@ import com.bakdata.conquery.util.io.ConqueryMDC;
 import io.dropwizard.core.cli.ServerCommand;
 import io.dropwizard.core.setup.Environment;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.argparse4j.inf.Namespace;
 
@@ -23,6 +25,9 @@ public class DistributedStandaloneCommand extends ServerCommand<ConqueryConfig> 
 	private final ManagerNode managerNode = new ManagerNode();
 	private final List<ShardNode> shardNodes = new Vector<>();
 	private ClusterManager manager;
+
+	@Setter
+	private Clock clock = Clock.systemDefaultZone();
 
 	public DistributedStandaloneCommand() {
 		super(new NoOpConquery(), "standalone", "starts a manager node and shard node(s) at the same time in a single JVM.");
@@ -46,6 +51,7 @@ public class DistributedStandaloneCommand extends ServerCommand<ConqueryConfig> 
 		for (int id = 0; id < configuration.getStandalone().getNumberOfShardNodes(); id++) {
 
 			ShardNode sc = new ShardNode(ShardNode.DEFAULT_NAME + id);
+			sc.setClock(clock);
 
 			shardNodes.add(sc);
 

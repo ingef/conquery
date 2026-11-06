@@ -15,11 +15,6 @@ public class InvertedCondition implements WhereCondition {
 	}
 
 	@Override
-	public ConditionType type() {
-		return filterCondition.type();
-	}
-
-	@Override
 	public WhereCondition negate() {
 		return filterCondition;
 	}

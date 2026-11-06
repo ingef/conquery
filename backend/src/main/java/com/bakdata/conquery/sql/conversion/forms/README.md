@@ -353,11 +353,11 @@ from "quarters"
 ## Feature conversion
 
 After we got our full stratification table, containing all stratification windows for each ID, we want to convert all
-the features of the form, while using our stratification table as a starting point:
-
-1. When converting a concept and creating the `PREPROCESSING` CTE, which is the starting point of each concept
-   conversion, we join the concepts or respectively the connectors table with the stratification table for all IDs from
-   the stratification table.
+the features of the form, while using our stratification table as a starting point:  
+When converting a concept and creating the `PREPROCESSING` CTE, which is the starting point of each concept 
+conversion, we join the concepts or respectively the connectors table with the stratification table for all IDs from
+the stratification table. In the same step, we filter all entries where the stratification range and the subject's
+validity date do not overlap. This is important because we only want to compute aggregations for overlapping ranges.
 
 **CTE:** `preprocessing`
 
@@ -373,26 +373,8 @@ select "full_stratification"."primary_id",
 from "vers_stamm"
          join "full_stratification"
               on "full_stratification"."primary_id" = "vers_stamm"."pid"
-```
-
-2. In the `EVENT_FILTER` step, we filter all entries where the stratification range and the subjects validity date do
-   not overlap. This is important because we only want to compute aggregations for those ranges that satisfy this
-   condition.
-
-**CTE:** `event_filter`
-
-```sql
-select "primary_id",
-       "resolution",
-       "index",
-       "stratification_range_start",
-       "stratification_range_end",
-       "validity_date_start",
-       "validity_date_end",
-       "date_of_birth"
-from "preprocessing"
-where "stratification_range_start" < "validity_date_end"
-  and "stratification_range_end" > "validity_date_start"
+where "full_stratification"."stratification_range_start" < ADD_DAYS("vers_stamm"."date_end", 1)
+  and "full_stratification"."stratification_range_end" > "vers_stamm"."date_start"
 ```
 
 Besides grouping by ID, resolution, index and stratification range, the remaining concept conversion CTE process
@@ -401,8 +383,8 @@ remains as usual. If we have multiple features, we'll join the respective conver
 ## Left-join converted features with the full stratification table for the final select
 
 For an absolute form, we expect the final result to contain all stratification ranges for each ID of the respective
-chosen resolutions. Because we filter all entries where stratification range and validity date do not overlap in each
-concept conversion's event filter step, the converted feature(s) table might not contain all stratification ranges.
+chosen resolutions. Because we filter all entries where stratification range and validity date do not overlap during
+each concept conversion's preprocessing step, the converted feature(s) table might not contain all stratification ranges.
 Thus, we left-join the table with the converted feature(s) back with the full stratification table. 
 
 ## Full export form

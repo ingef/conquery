@@ -9,8 +9,8 @@ import jakarta.validation.Validator;
 import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
+import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
-import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
@@ -28,7 +28,6 @@ import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
-import com.github.powerlibraries.io.In;
 import io.dropwizard.jersey.validation.Validators;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -157,7 +156,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		}
 
 		List<OverviewExecutionStatus> allQueries = IntegrationUtils.getAllQueries(support, 200);
-		assertThat(allQueries).size().isEqualTo(1);
+		assertThat(allQueries).size().isEqualTo(2);
 
 		log.info("Reexecute tests after restart.");
 		test1.executeTest(support);
@@ -207,8 +206,8 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 	private static @NotNull ConqueryTestSpec setupTestQuery(DatasetId dataset, Validator validator, StandaloneSupport conquery, String testPath) throws Exception {
 		//read test specification
-		String testJson = In.resource(testPath).withUTF8().readAll();
-		ConqueryTestSpec test = JsonIntegrationTest.readJson(dataset, testJson);
+		String testJson = LoadingUtil.readResource(testPath);
+		ConqueryTestSpec test = ConqueryTestSpec.readJson(dataset, testJson);
 		ValidatorHelper.failOnError(log, validator.validate(test));
 
 		test.importRequiredData(conquery);

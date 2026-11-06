@@ -18,7 +18,7 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This message returns the result of the {@link CollectColumnValuesJob} to the namespace on the manager.
+ * This message returns the result of the {@link CollectColumnValuesMessage} to the namespace on the manager.
  */
 @CPSType(id = "REGISTER_COLUMN_VALUES", base = NamespacedMessage.class)
 @AllArgsConstructor(onConstructor_ = @JsonCreator)

@@ -5,6 +5,7 @@ import java.util.List;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.aggregation.DateAggregationDates;
+import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 
@@ -22,6 +23,8 @@ public interface SqlDateAggregator {
 			DateAggregationAction dateAggregationAction,
 			ConversionContext conversionContext
 	);
+
+	ColumnDateRange getAggregatedValidityDate(DateAggregationDates dateAggregationDates, DateAggregationAction dateAggregationAction);
 
 	/**
 	 * Inverts the validity date of the given base step.

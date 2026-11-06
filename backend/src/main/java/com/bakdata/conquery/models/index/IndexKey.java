@@ -22,6 +22,6 @@ public interface IndexKey {
 
 	List<String> getExternalTemplates();
 
-	Index<?> createIndex(String defaultEmptyLabel);
+	Index<?> createIndex();
 
 }

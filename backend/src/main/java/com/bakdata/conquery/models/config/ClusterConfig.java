@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.mina.MdcFilter;
 import com.bakdata.conquery.io.mina.jackson.AsyncJacksonProtocolFilter;
+import com.bakdata.conquery.models.messages.namespaces.specific.CollectColumnValuesMessage;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.core.Configuration;
@@ -48,7 +49,7 @@ public class ClusterConfig extends Configuration {
 	private DataSize initialIoBufferSize = DataSize.bytes(64);
 
 	/**
-	 * @see com.bakdata.conquery.models.messages.namespaces.specific.CollectColumnValuesJob
+	 * @see CollectColumnValuesMessage
 	 * <p>
 	 * Number of values to batch for chunking of unique column-values. Lower numbers reduce relative performance but reduce memory demand, avoiding OOM issues.
 	 */

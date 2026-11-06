@@ -1,28 +1,20 @@
-import { FC } from "react";
 import { useTranslation } from "react-i18next";
 
-import DeleteModal from "../../modal/DeleteModal";
+import { DeleteModal } from "../../ui-components/DeleteModal";
 
-import { useDeleteProjectItemFolder } from "./useDeleteProjectItemFolder";
-
-interface PropsT {
-  folder: string;
-  onClose: () => void;
-  onDeleteSuccess: () => void;
-}
-
-const DeleteFolderModal: FC<PropsT> = ({
+const DeleteFolderModal = ({
   folder,
-  onClose,
+  onDeleteFolder,
   onDeleteSuccess,
+}: {
+  folder: string;
+  onDeleteFolder: (folder: string) => Promise<unknown>;
+  onDeleteSuccess: () => void;
 }) => {
   const { t } = useTranslation();
 
-  const onDeleteFolder = useDeleteProjectItemFolder();
-
   return (
     <DeleteModal
-      onClose={onClose}
       headline={t("deletePreviousQueryFolderModal.areYouSure")}
       description={t("deletePreviousQueryFolderModal.description", { folder })}
       onDelete={async () => {

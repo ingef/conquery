@@ -4,6 +4,7 @@ import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import lombok.Getter;
@@ -23,17 +24,26 @@ public class DateRestrictingNode extends QPChainNode {
 	}
 
 	@Override
+	public void init(Entity entity, QueryExecutionContext context) {
+		super.init(entity, context);
+		getChild().init(entity, contextWithDateRestriction(context));
+	}
+
+	@Override
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
+		super.nextTable(contextWithDateRestriction(ctx), currentTable);
+	}
+
+	private QueryExecutionContext contextWithDateRestriction(QueryExecutionContext ctx) {
 		//if there was no date restriction we can just use the restriction CDateSet
+
 		if (ctx.getDateRestriction().isAll()) {
-			ctx = ctx.withDateRestriction(CDateSet.create(restriction));
+			return ctx.withDateRestriction(CDateSet.create(restriction));
 		}
-		else {
-			final CDateSet dateRestriction = CDateSet.create(ctx.getDateRestriction());
-			dateRestriction.retainAll(restriction);
-			ctx = ctx.withDateRestriction(dateRestriction);
-		}
-		super.nextTable(ctx, currentTable);
+
+		final CDateSet dateRestriction = CDateSet.create(ctx.getDateRestriction());
+		dateRestriction.retainAll(restriction);
+		return ctx.withDateRestriction(dateRestriction);
 	}
 
 	@Override

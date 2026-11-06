@@ -2,10 +2,11 @@ import { useMemo } from "react";
 
 import type { SelectOptionT, SelectorResultType } from "../api/types";
 import { isSelectDisabled, isValidSelect, sortSelects } from "../model/select";
-import { SelectedSelectorT } from "../standard-query-editor/types";
-import InputMultiSelect from "../ui-components/InputMultiSelect/InputMultiSelect";
+import type { SelectedSelectorT } from "../standard-query-editor/types";
+import { ComboBoxMultiField } from "../ui-components/ComboBoxMultiField";
 
 interface PropsT {
+  label: string;
   selects: SelectedSelectorT[];
   blocklistedSelects?: SelectorResultType[];
   allowlistedSelects?: SelectorResultType[];
@@ -14,6 +15,7 @@ interface PropsT {
 }
 
 const TableSelects = ({
+  label,
   selects,
   blocklistedSelects,
   allowlistedSelects,
@@ -39,11 +41,12 @@ const TableSelects = ({
 
   return (
     <div>
-      <InputMultiSelect
+      <ComboBoxMultiField
+        label={label}
         onChange={onSelectTableSelects}
         value={value}
         options={options}
-        disabled={excludeTable}
+        isDisabled={excludeTable}
       />
     </div>
   );

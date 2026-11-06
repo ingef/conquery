@@ -54,19 +54,17 @@
       "children": [
         {
           "label": "test_child1",
-          "description": " ",
           "condition": {
-            "type": "PREFIX_LIST",
-            "prefixes": "A"
+            "type": "EQUAL",
+            "values": "A"
           },
           "children": []
         },
         {
           "label": "test_child2",
-          "description": " ",
           "condition": {
-            "type": "PREFIX_LIST",
-            "prefixes": "B"
+            "type": "EQUAL",
+            "values": "B"
           },
           "children": []
         }
@@ -95,19 +93,17 @@
       "children": [
         {
           "label": "test_child1",
-          "description": " ",
           "condition": {
-            "type": "PREFIX_LIST",
-            "prefixes": "1"
+            "type": "EQUAL",
+            "values": "1"
           },
           "children": []
         },
         {
           "label": "test_child2",
-          "description": " ",
           "condition": {
-            "type": "PREFIX_LIST",
-            "prefixes": "2"
+            "type": "EQUAL",
+            "values": "2"
           },
           "children": []
         }

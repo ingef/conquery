@@ -47,7 +47,7 @@ public class ParquetResultGenerationTest {
 	public static final ConqueryConfig CONFIG = new ConqueryConfig();
 	private static final PrintSettings
 			PRINT_SETTINGS =
-			new PrintSettings(false, Locale.ROOT, null, CONFIG, null, (selectInfo) -> selectInfo.getSelect().getLabel());
+			new PrintSettings(false, Locale.ROOT, CONFIG, null, (selectInfo) -> selectInfo.getSelect().getLabel());
 
 
 	@Test
@@ -105,8 +105,7 @@ public class ParquetResultGenerationTest {
 		// Prepare every input data
 		PrintSettings printSettings = new PrintSettings(false,
 														Locale.ROOT,
-														null,
-														CONFIG,
+                CONFIG,
 														(cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
 														(selectInfo) -> selectInfo.getSelect().getLabel()
 		);
@@ -117,7 +116,7 @@ public class ParquetResultGenerationTest {
 
 		// First we write to the buffer, than we read from it and parse it as TSV
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		ParquetRenderer.writeToStream(output, getIdFields(), managedQuery.getResultInfos(), printSettings, managedQuery.streamResults(OptionalLong.empty()));
+		ParquetRenderer.writeToStream(output, getIdFields(), managedQuery.collectResultInfos(), printSettings, managedQuery.streamResults(OptionalLong.empty()));
 
 		final byte[] buf = output.toByteArray();
 
@@ -139,7 +138,7 @@ public class ParquetResultGenerationTest {
 
 		log.info("\n{}", actual);
 
-		assertThat(actual).isEqualTo(ArrowResultGenerationTest.generateExpectedTSV(results, managedQuery.getResultInfos()));
+		assertThat(actual).isEqualTo(ArrowResultGenerationTest.generateExpectedTSV(results, managedQuery.collectResultInfos()));
 
 	}
 

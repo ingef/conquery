@@ -4,16 +4,18 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 
 import com.bakdata.conquery.io.jackson.Initializing;
+import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.mode.ValidationMode;
-import com.bakdata.conquery.models.config.DatabaseConfig;
+import com.bakdata.conquery.models.config.DatabaseConnectionConfig;
 import com.bakdata.conquery.models.identifiable.LabeledNamespaceIdentifiable;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
@@ -23,9 +25,13 @@ import com.bakdata.conquery.util.validation.ValidSqlTable;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.annotations.VisibleForTesting;
 import io.dropwizard.validation.ValidationMethod;
+import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -35,14 +41,23 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @JsonDeserialize(converter = Table.Initializer.class)
 @ValidSqlTable(groups = {ValidationMode.Local.class})
+@EqualsAndHashCode(callSuper=false)
 public class Table extends LabeledNamespaceIdentifiable<TableId> implements Initializing {
 
-	@JacksonInject(useInput = OptBoolean.TRUE)
-	private DatasetId dataset;
+	/**
+	 * Needed for SQL-Validation
+	 */
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	@JsonIgnore
+	@Setter(AccessLevel.PRIVATE)
+	@EqualsAndHashCode.Exclude
+	private Namespace namespace;
 
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	@JsonIgnore
-	private Namespace namespace;
+	@Getter(AccessLevel.PRIVATE)
+	@EqualsAndHashCode.Exclude
+	private NamespacedStorageProvider namespacedStorageProvider;
 
 	@NotNull
 	@Valid
@@ -50,11 +65,15 @@ public class Table extends LabeledNamespaceIdentifiable<TableId> implements Init
 	private Column[] columns = new Column[0];
 	/**
 	 * Defines the primary key/column of this table. Only required for SQL mode.
-	 * If unset {@link DatabaseConfig#getPrimaryColumn()} is assumed.
+	 * If unset {@link DatabaseConnectionConfig#getPrimaryColumn()} is assumed.
 	 */
 	@Nullable
 	@JsonManagedReference
 	private Column primaryColumn;
+
+	@JsonView(View.InternalCommunication.class)
+	@Setter(value = AccessLevel.PUBLIC, onMethod_ = @VisibleForTesting)
+	private DatasetId dataset;
 
 
 	@ValidationMethod(message = "More than one column map to the same secondaryId")
@@ -88,7 +107,7 @@ public class Table extends LabeledNamespaceIdentifiable<TableId> implements Init
 
 	@Override
 	public TableId createId() {
-		return new TableId(dataset, getName());
+		return new TableId(getDataset(), getName());
 	}
 
 	public Stream<Import> findImports(NamespacedStorage storage) {
@@ -123,8 +142,9 @@ public class Table extends LabeledNamespaceIdentifiable<TableId> implements Init
 
 	@Override
 	public void init() {
-		if (this.dataset == null) {
-			this.dataset = namespace.getDataset().getId();
+
+		if (this.dataset == null && namespacedStorageProvider != null) {
+			this.dataset = namespacedStorageProvider.getStorage(null).getDataset().getId();
 		}
 
 		for (Column column : columns) {

@@ -21,8 +21,8 @@ import org.jooq.TableLike;
  * Joins the {@link ConceptCteStep#AGGREGATION_SELECT} with the interval packing branch for the aggregated validity date and optional validity date selects
  * {@link IntervalPackingSelectsCte} as well as optional additional predecessors.
  * <p>
- * Joining is optional - if a validity date is not present, the node is excluded from time aggregation or if there is no additional predecessor, no join will
- * take place. See {@link SumSqlAggregator} with distinct-by columns for an example of additional predecessors.
+ * Joining is optional. If interval packing is not required and there is no additional predecessor, no join will take place. See {@link SumSqlAggregator} with
+ * distinct-by columns for an example of additional predecessors.
  *
  * <pre>
  *     {@code
@@ -63,7 +63,7 @@ class JoinBranchesCte extends ConnectorCte {
 		}
 		else {
 			IntervalPackingContext intervalPackingContext = createIntervalPackingContext(tableContext);
-			IntervalPacker intervalPacker = tableContext.getConversionContext().getSqlDialect().getIntervalPacker();
+			IntervalPacker intervalPacker = tableContext.getConversionContext().getDialectBundle().getIntervalPacker();
 			QueryStep lastIntervalPackingStep = intervalPacker.aggregateAsValidityDate(intervalPackingContext);
 			queriesToJoin.add(lastIntervalPackingStep);
 			validityDate = lastIntervalPackingStep.getQualifiedSelects().getValidityDate();
@@ -80,7 +80,7 @@ class JoinBranchesCte extends ConnectorCte {
 					.forEach(queriesToJoin::add);
 
 		Selects selects = collectSelects(validityDate, queriesToJoin, tableContext);
-		TableLike<Record> fromTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, ConqueryJoinType.INNER_JOIN, tableContext.getConversionContext());
+		TableLike<Record> fromTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, ConqueryJoinType.OUTER_JOIN, tableContext.getConversionContext());
 
 		return QueryStep.builder()
 						.selects(selects)
@@ -92,7 +92,7 @@ class JoinBranchesCte extends ConnectorCte {
 		Selects predcessorSelects = tableContext.getPrevious().getQualifiedSelects();
 		return IntervalPackingContext.builder()
 									 .ids(predcessorSelects.getIds())
-									 .daterange(tableContext.getValidityDate().get())
+									 .daterange(tableContext.getValidityDate())
 									 .tables(tableContext.getConnectorTables())
 									 .build();
 	}

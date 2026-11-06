@@ -8,7 +8,7 @@ import jakarta.validation.ConstraintValidatorContext;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.worker.LocalNamespace;
-import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
+import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
 import com.google.common.base.Stopwatch;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraintvalidation.HibernateConstraintValidator;
@@ -29,8 +29,8 @@ public class SqlTableValidator implements HibernateConstraintValidator<ValidSqlT
 
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		final LocalNamespace localNamespace = (LocalNamespace) value.getNamespace();
-		final DSLContext dslContext = localNamespace.getDslContextWrapper().getDslContext();
-		final SqlDialect dialect = localNamespace.getDialect();
+		final DSLContext dslContext = localNamespace.getDslContext();
+		final DialectBundle dialect = localNamespace.getDialect();
 
 		final Result<Record> result;
 		try {
@@ -41,6 +41,8 @@ public class SqlTableValidator implements HibernateConstraintValidator<ValidSqlT
 							   .fetch();
 		}
 		catch (DataAccessException e) {
+			log.trace("Failed to test for table {}", value.getName(), e);
+
 			context.buildConstraintViolationWithTemplate("SQL table %s does not exist".formatted(value.getName()))
 				   .addPropertyNode("name")
 				   .addConstraintViolation();

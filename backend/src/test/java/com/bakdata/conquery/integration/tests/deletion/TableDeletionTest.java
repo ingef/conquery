@@ -14,7 +14,7 @@ import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
-import com.bakdata.conquery.integration.json.JsonIntegrationTest;
+import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
@@ -33,7 +33,6 @@ import com.bakdata.conquery.resources.admin.rest.AdminTablesResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
-import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -47,14 +46,14 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 		final StandaloneSupport conquery = testConquery.getSupport(name);
 
-		final String testJson = In.resource("/tests/query/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
+		final String testJson = LoadingUtil.readResource("/tests/query/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json");
 
 		final DatasetId dataset = conquery.getDataset();
 		final Namespace namespace = conquery.getNamespace();
 
 		final TableId tableId = TableId.Parser.INSTANCE.parse(dataset.getName(), "test_table2");
 
-		final QueryTest test = JsonIntegrationTest.readJson(dataset, testJson);
+		final QueryTest test = ConqueryTestSpec.readJson(dataset, testJson);
 
 		// Manually import data, so we can do our own work.
 		final RequiredData content = test.getContent();
@@ -108,7 +107,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 			log.info("Executing query before deletion");
 
-			IntegrationUtils.assertQueryResult(conquery, query, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
+			IntegrationUtils.assertQueryResult(conquery, query, null, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
 		}
 
 		// Delete the import.
@@ -194,9 +193,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 				}
 			}
 
-			log.info("Executing query after deletion. Expecting a failure here.");
-
-			IntegrationUtils.assertQueryResult(conquery, query, 0L, ExecutionState.FAILED, conquery.getTestUser(), 404);
+			IntegrationUtils.assertQueryResult(conquery, query, null, 0L, ExecutionState.FAILED, conquery.getTestUser(), 422);
 		}
 
 		conquery.waitUntilWorkDone();
@@ -261,7 +258,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 			log.info("Executing query after re-import");
 
 			// Issue a query and assert that it has the same content as the first time around.
-			IntegrationUtils.assertQueryResult(conquery, query, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
+			IntegrationUtils.assertQueryResult(conquery, query, null, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
 		}
 
 		// Finally, restart conquery and assert again, that the data is correct.
@@ -301,7 +298,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 				log.info("Executing query after re-import and restart");
 
 				// Issue a query and assert that it has the same content as the first time around.
-				IntegrationUtils.assertQueryResult(conquery2, query, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
+				IntegrationUtils.assertQueryResult(conquery2, query, null, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
 			}
 		}
 	}

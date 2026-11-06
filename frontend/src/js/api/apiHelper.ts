@@ -6,7 +6,7 @@
 // Some keys are added (e.g. the query type attribute)
 import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
-import { EditorV2Query, Tree } from "../editor-v2/types";
+import type { EditorV2Query, Tree, TreeChildrenTime } from "../editor-v2/types";
 import { nodeIsConceptQueryNode } from "../model/node";
 import { isLabelPristine } from "../standard-query-editor/helper";
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
@@ -18,16 +18,12 @@ import type {
   StandardQueryNodeT,
   TableWithFilterValueT,
 } from "../standard-query-editor/types";
-import type {
-  ValidatedTimebasedConditionT,
-  ValidatedTimebasedQueryStateT,
-} from "../timebased-query-editor/reducer";
 
-import { ConceptIdT, DateRangeT } from "./types";
+import type { ConceptIdT, DateRangeT, FilterConfigT } from "./types";
 
 export const transformFilterValueToApi = (
   filter: FilterWithValueType,
-): NonNullable<unknown> | null /* aka: "not undefined", to ensure a type error when a new filter.type is added */ => {
+): FilterConfigT["value"] | null => {
   switch (filter.type) {
     case "BIG_MULTI_SELECT":
     case "MULTI_SELECT":
@@ -37,17 +33,12 @@ export const transformFilterValueToApi = (
     case "INTEGER_RANGE":
     case "MONEY_RANGE":
     case "REAL_RANGE":
-      return !exists(filter.mode) || filter.mode === "range"
-        ? filter.value
-        : filter.value
-        ? { min: filter.value.exact, max: filter.value.exact }
-        : null;
     case "SELECT":
       return filter.value;
   }
 };
 
-export const transformSelectsToApi = (selects?: SelectedSelectorT[] | null) => {
+const transformSelectsToApi = (selects?: SelectedSelectorT[] | null) => {
   if (!selects) return [];
 
   return selects
@@ -55,7 +46,7 @@ export const transformSelectsToApi = (selects?: SelectedSelectorT[] | null) => {
     : [];
 };
 
-export const transformDateColumnToApi = (dateColumn?: SelectedDateColumnT) => {
+const transformDateColumnToApi = (dateColumn?: SelectedDateColumnT) => {
   if (!dateColumn) return null;
 
   return {
@@ -63,7 +54,7 @@ export const transformDateColumnToApi = (dateColumn?: SelectedDateColumnT) => {
   };
 };
 
-export const transformTablesToApi = (tables: TableWithFilterValueT[]) => {
+const transformTablesToApi = (tables: TableWithFilterValueT[]) => {
   if (!tables) return [];
 
   return tables
@@ -169,59 +160,41 @@ const createQueryConcepts = (query: StandardQueryStateT) => {
   });
 };
 
-// TODO: Use, once feature is complete
-const getDays = (condition: ValidatedTimebasedConditionT) => {
-  switch (condition.operator) {
-    case "DAYS_BEFORE":
+const createTimeMode = (timeNode: TreeChildrenTime) => {
+  switch (timeNode.operator) {
+    case "AFTER":
+    case "BEFORE":
+      if (!timeNode.interval) {
+        return {
+          type: timeNode.operator,
+          days: { min: undefined, max: undefined },
+        };
+      }
+
       return {
+        type: timeNode.operator,
         days: {
-          min: condition.minDays,
-          max: condition.maxDays,
+          min: timeNode.interval.min === null ? 1 : timeNode.interval.min,
+          max:
+            timeNode.interval.max === null ? undefined : timeNode.interval.max,
         },
       };
-    case "DAYS_OR_NO_EVENT_BEFORE":
-      return {
-        days: condition.minDaysOrNoEvent,
-      };
-    default:
-      return {};
+    case "WHILE":
+      return { type: "WHILE" };
   }
 };
-
-const transformTimebasedQueryToApi = (query: ValidatedTimebasedQueryStateT) =>
-  createConceptQuery(
-    createAnd(
-      query.conditions.map((condition: ValidatedTimebasedConditionT) => {
-        const days = getDays(condition);
-
-        return {
-          type: condition.operator,
-          ...days,
-          preceding: {
-            sampler: condition.result0.timestamp,
-            child: createSavedQuery(condition.result0.id),
-          },
-          index: {
-            sampler: condition.result1.timestamp,
-            child: createSavedQuery(condition.result1.id),
-          },
-        };
-      }),
-    ),
-  );
-
 const transformTreeToApi = (tree: Tree): unknown => {
-  let dateRestriction;
+  let dateRestriction: ReturnType<typeof createDateRestriction> | undefined;
   if (tree.dates?.restriction) {
     dateRestriction = createDateRestriction(tree.dates.restriction, null);
   }
 
-  let negation;
+  let negation: ReturnType<typeof createNegation> | undefined;
   if (tree.negation) {
     negation = createNegation(null);
   }
 
-  let node;
+  let node: unknown;
   if (!tree.children) {
     if (!tree.data) {
       throw new Error(
@@ -239,30 +212,15 @@ const transformTreeToApi = (tree: Tree): unknown => {
         node = createOr(tree.children.items.map(transformTreeToApi));
         break;
       case "time":
+        const timeNode = tree.children as TreeChildrenTime;
+
         node = {
-          type: "BEFORE", // SHOULD BE: tree.children.operator,
-          days: {
-            min: tree.children.interval
-              ? tree.children.interval.min === null
-                ? 1
-                : tree.children.interval.max
-              : undefined,
-            max: tree.children.interval
-              ? tree.children.interval.max === null
-                ? undefined
-                : tree.children.interval.max
-              : undefined,
-          },
-          // TODO: improve this to be more flexible with the "preceding" and "index" keys
-          // based on the operator, which would be "before" | "after" | "while"
-          preceding: {
-            sampler: "EARLIEST", // SHOULD BE: tree.children.timestamps[0],
-            child: transformTreeToApi(tree.children.items[0]),
-          },
-          index: {
-            sampler: "EARLIEST", // SHOULD BE: tree.children.timestamps[1]
-            child: transformTreeToApi(tree.children.items[1]),
-          },
+          type: "TEMPORAL",
+          mode: createTimeMode(timeNode),
+          index: transformTreeToApi(tree.children.items[0]),
+          indexSelector: timeNode.timestamps[0],
+          compare: transformTreeToApi(tree.children.items[1]),
+          compareSelector: timeNode.timestamps[1],
         };
         break;
     }
@@ -301,14 +259,10 @@ const transformEditorV2QueryToApi = (query: EditorV2Query) => {
 // But small additions are made (properties allowlisted), empty things filtered out
 // to make it compatible with the backend API
 export const transformQueryToApi = (
-  query: StandardQueryStateT | ValidatedTimebasedQueryStateT | EditorV2Query,
+  query: StandardQueryStateT | EditorV2Query,
   options: { queryType: string; selectedSecondaryId?: string | null },
 ) => {
   switch (options.queryType) {
-    case "timebased":
-      return transformTimebasedQueryToApi(
-        query as ValidatedTimebasedQueryStateT,
-      );
     case "standard":
       return transformStandardQueryToApi(
         query as StandardQueryStateT,

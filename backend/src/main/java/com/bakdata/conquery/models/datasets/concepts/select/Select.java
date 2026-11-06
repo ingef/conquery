@@ -21,6 +21,7 @@ import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -120,6 +121,8 @@ public abstract class Select extends LabeledNamespaceIdentifiable<SelectId> {
 	public Printer createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
 		return printerFactory.printerFor(getResultType(), printSettings);
 	}
+
+	public abstract ResultSetProcessor.Reader<?> createResultSetReader(ResultSetProcessor processor);
 
 	@JsonIgnore
 	public abstract ResultType getResultType();

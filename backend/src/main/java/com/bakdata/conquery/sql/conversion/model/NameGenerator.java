@@ -59,9 +59,10 @@ public class NameGenerator {
 	}
 
 	public String conceptConnectorName(CQConcept concept, Connector connector, Locale locale) {
+		//TODO consider reworking this (only name with disambiguation or label should be sufficient)
 		String conceptLabel = lowerAndReplaceWhitespace(concept.userLabel(locale));
-		String connectorLabel = lowerAndReplaceWhitespace(connector.getName());
-		return ensureValidLength("concept_%s_%s-%d".formatted(conceptLabel, connectorLabel, conceptCount));
+		String connectorName = lowerAndReplaceWhitespace(connector.getName());
+		return ensureValidLength("concept_%s_%s-%d".formatted(conceptLabel, connectorName, conceptCount));
 	}
 
 	public String joinedNodeName(ConqueryJoinType logicalOperation) {

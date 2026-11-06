@@ -1,6 +1,12 @@
 {
   "type": "QUERY_TEST",
   "label": "AND NEGATION DATE LOGIC Test",
+  "sqlSpec": {
+    "isEnabled": false,
+    "supportedDialects": [
+       "HANA"
+    ]
+  },
   "expectedCsv": "tests/query/LOGICAL/AND_NEGATION_RESTRICTION_DATE_LOGICAL/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",

@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector;
 
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
@@ -28,6 +29,8 @@ public class FirstValueSelect extends MappableSingleColumnSelect {
 	public Aggregator<?> createAggregator() {
 		return new FirstValueAggregator<>(getColumn().resolve(), getSubstringRange());
 	}
+
+
 
 	@Override
 	public SelectConverter<FirstValueSelect> createConverter() {

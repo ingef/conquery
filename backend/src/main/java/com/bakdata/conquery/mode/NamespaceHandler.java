@@ -9,11 +9,12 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.mode.cluster.InternalMapperFactory;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.jobs.JobManager;
-import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.util.search.SearchProcessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.core.setup.Environment;
 
@@ -33,13 +34,10 @@ public interface NamespaceHandler<N extends Namespace> {
 		injectables.add(storage);
 
 		ObjectMapper persistenceMapper = internalMapperFactory.createNamespacePersistenceMapper(storage, datasetRegistry);
-		ObjectMapper communicationMapper = internalMapperFactory.createNamespaceCommunicationMapper(storage, datasetRegistry);
 		ObjectMapper preprocessMapper = internalMapperFactory.createPreprocessMapper(storage, datasetRegistry);
 
-		// Todo remove these
 		injectables.forEach(i -> {
 			i.injectInto(persistenceMapper);
-			i.injectInto(communicationMapper);
 			i.injectInto(preprocessMapper);
 		});
 
@@ -53,10 +51,11 @@ public interface NamespaceHandler<N extends Namespace> {
 			storage.loadData();
 		}
 
-		JobManager jobManager = new JobManager(storage.getDataset().getName(), config.isFailOnError());
-		FilterSearch filterSearch = new FilterSearch(config.getIndex());
+		Dataset dataset = storage.getDataset();
+		JobManager jobManager = new JobManager(dataset.getName(), config.isFailOnError());
+		SearchProcessor filterSearch = config.getSearch().createSearchProcessor(environment, dataset.getId());
 
-		return new NamespaceSetupData(communicationMapper, preprocessMapper, jobManager, filterSearch);
+		return new NamespaceSetupData(preprocessMapper, jobManager, filterSearch);
 	}
 
 	N createNamespace(NamespaceStorage namespaceStorage, MetaStorage metaStorage, DatasetRegistry<N> datasetRegistry, Environment environment);

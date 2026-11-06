@@ -14,7 +14,7 @@
             "number"
           ],
           "type": "CONCEPT",
-          "excludeFromSecondaryId" : false,
+          "excludeFromSecondaryId": false,
           "label": "vs",
           "tables": [
             {
@@ -37,7 +37,7 @@
             "number"
           ],
           "type": "CONCEPT",
-          "excludeFromSecondaryId" : false,
+          "excludeFromSecondaryId": false,
           "label": "vs",
           "tables": [
             {
@@ -68,7 +68,8 @@
           "table": "table1",
           "validityDates": {
             "label": "datum",
-            "column": "table1.datum"
+            "startColumn": "table1.start",
+            "endColumn": "table1.end"
           },
           "filters": {
             "label": "value",
@@ -82,7 +83,8 @@
           "table": "table12",
           "validityDates": {
             "label": "datum",
-            "column": "table12.datum"
+            "startColumn": "table12.start",
+            "endColumn": "table12.end"
           },
           "filters": {
             "label": "value",
@@ -122,8 +124,12 @@
             "type": "REAL"
           },
           {
-            "name": "datum",
-            "type": "DATE_RANGE"
+            "name": "start",
+            "type": "DATE"
+          },
+          {
+            "name": "end",
+            "type": "DATE"
           }
         ]
       },
@@ -145,8 +151,12 @@
             "type": "REAL"
           },
           {
-            "name": "datum",
-            "type": "DATE_RANGE"
+            "name": "start",
+            "type": "DATE"
+          },
+          {
+            "name": "end",
+            "type": "DATE"
           }
         ]
       }

@@ -26,6 +26,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -38,6 +39,7 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id = "ARRAY_CONCEPT_QUERY", base = QueryDescription.class)
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE, onConstructor_ = {@JsonCreator})
+@ToString
 public class ArrayConceptQuery extends Query {
 
 	@NotEmpty
@@ -81,7 +83,7 @@ public class ArrayConceptQuery extends Query {
 	public ArrayConceptQueryPlan createQueryPlan(QueryPlanContext context) {
 		// Make sure the constructor and the adding is called with the same context.
 		ArrayConceptQueryPlan aq = new ArrayConceptQueryPlan(resolvedDateAggregationMode != DateAggregationMode.NONE);
-		aq.addChildPlans(childQueries, context);
+		aq.addChildQueries(childQueries, context);
 		return aq;
 	}
 
@@ -104,7 +106,7 @@ public class ArrayConceptQuery extends Query {
 		childQueries.forEach(q -> resultInfos.addAll(q.getResultInfos()));
 
 		if(!resultInfos.isEmpty()) {
-			// Remove DateInfo from each childQuery			
+			// Remove DateInfo from each childQuery
 			resultInfos.subList(lastIndex, resultInfos.size())
 					   .removeIf(resultInfo -> resultInfo.getSemantics().contains(new SemanticType.EventDateT()));
 		}

@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.external.DateFormat;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
@@ -17,12 +19,11 @@ import com.bakdata.conquery.models.query.resultinfo.FixedLabelResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Functions;
 import com.google.common.collect.MoreCollectors;
 import io.dropwizard.validation.ValidationMethod;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -138,6 +139,11 @@ public class IdColumnConfig {
 							// fall backs
 							labels.size() == 1 ? labels.values().stream().collect(MoreCollectors.onlyElement()) : col.getField()
 					), col.getField());
+				}
+
+				@Override
+				public ResultSetProcessor.Reader<?> createReader(ResultSetProcessor resultSetProcessor) {
+					return resultSetProcessor::getString;
 				}
 			};
 		}).collect(Collectors.toUnmodifiableList());

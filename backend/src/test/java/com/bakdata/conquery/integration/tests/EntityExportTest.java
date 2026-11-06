@@ -20,7 +20,7 @@ import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
-import com.bakdata.conquery.integration.json.JsonIntegrationTest;
+import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
@@ -41,7 +41,6 @@ import com.bakdata.conquery.resources.api.EntityPreviewRequest;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
-import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.description.LazyTextDescription;
 
@@ -54,11 +53,11 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 
 		final StandaloneSupport conquery = testConquery.getSupport(name);
 
-		final String testJson = In.resource("/tests/query/ENTITY_EXPORT_TESTS/SIMPLE_TREECONCEPT_Query.json").withUTF8().readAll();
+		final String testJson = LoadingUtil.readResource("/tests/query/ENTITY_EXPORT_TESTS/SIMPLE_TREECONCEPT_Query.json");
 
 		final DatasetId dataset = conquery.getDataset();
 
-		final QueryTest test = JsonIntegrationTest.readJson(dataset, testJson);
+		final QueryTest test = ConqueryTestSpec.readJson(dataset, testJson);
 
 		final Range<LocalDate> dateRange = Range.of(LocalDate.of(2010, 1, 11), LocalDate.of(2022, 12, 31));
 

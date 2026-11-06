@@ -1,6 +1,10 @@
 import { useCallback } from "react";
 import { useDispatch } from "react-redux";
-import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
+import {
+  type ActionType,
+  createAction,
+  createAsyncAction,
+} from "typesafe-actions";
 
 import { useGetConcept, useGetConcepts } from "../api/api";
 import type {
@@ -10,7 +14,7 @@ import type {
   GetConceptsResponseT,
 } from "../api/types";
 import {
-  ErrorObject,
+  type ErrorObject,
   errorPayload,
   successPayload,
 } from "../common/actions/genericActions";

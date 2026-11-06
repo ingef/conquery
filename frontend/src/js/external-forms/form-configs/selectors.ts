@@ -1,6 +1,6 @@
 import { exists } from "../../common/helpers/exists";
 import type { ProjectItemsFilterStateT } from "../../previous-queries/filter/reducer";
-import { FormConfigT } from "../../previous-queries/list/reducer";
+import type { FormConfigT } from "../../previous-queries/list/reducer";
 
 const configHasOwner = (config: FormConfigT, searchTerm: string) => {
   return (

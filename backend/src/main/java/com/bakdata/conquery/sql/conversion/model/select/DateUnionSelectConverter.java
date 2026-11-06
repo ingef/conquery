@@ -7,9 +7,9 @@ public class DateUnionSelectConverter implements SelectConverter<DateUnionSelect
 
 	@Override
 	public ConnectorSqlSelects connectorSelect(DateUnionSelect select, SelectContext<ConnectorSqlTables> selectContext) {
-		return DaterangeSelectUtil.createConnectorSqlSelects(
+		return DaterangeSelectUtil.createForSelect(
 				select,
-				(daterange, alias, functionProvider) -> new FieldWrapper<>(functionProvider.daterangeStringAggregation(daterange).as(alias)),
+				(daterange, alias, functionProvider) -> new FieldWrapper<>(functionProvider.dateRangeAggregation(daterange).as(alias)),
 				selectContext
 		);
 	}

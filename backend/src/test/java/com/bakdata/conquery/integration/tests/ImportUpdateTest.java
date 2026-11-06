@@ -14,10 +14,9 @@ import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.RequiredTable;
-import com.bakdata.conquery.integration.json.JsonIntegrationTest;
+import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -30,7 +29,6 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
-import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
@@ -40,16 +38,16 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 	public void execute(String name, TestConquery testConquery) throws Exception {
 
 		final StandaloneSupport conquery = testConquery.getSupport(name);
-		MetaStorage storage = conquery.getMetaStorage();
 
-		String testJson = In.resource("/tests/query/UPDATE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.json").withUTF8().readAll();
+
+		String testJson = LoadingUtil.readResource("/tests/query/UPDATE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.json");
 
 		final DatasetId dataset = conquery.getDataset();
 		final Namespace namespace = conquery.getNamespace();
 
 		final ImportId importId1 = ImportId.Parser.INSTANCE.parse(dataset.getName(), "table1", "table1");
 
-		QueryTest test = JsonIntegrationTest.readJson(dataset, testJson);
+		QueryTest test = ConqueryTestSpec.readJson(dataset, testJson);
 
 		final List<RequiredTable> tables = test.getContent().getTables();
 		assertThat(tables.size()).isEqualTo(2);
@@ -118,7 +116,7 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 			assertThat(namespace.getNumberOfEntities()).isEqualTo(4);
 
 			//assert that the query can be executed after the import
-			IntegrationUtils.assertQueryResult(conquery, query, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
+			IntegrationUtils.assertQueryResult(conquery, query, null, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
 
 		}
 
@@ -139,8 +137,8 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 			final String path = importTable.getCsv().getPath();
 
 			//copy new content of the importTable into the csv-File used by the preprocessor to avoid creating multiple files withe same names
-			FileUtils.copyInputStreamToFile(In.resource(path.substring(0, path.lastIndexOf('/')) + "/" + csvName.replace(".csv", ".update.csv"))
-											  .asStream(), new File(conquery.getTmpDir(), csvName)
+			FileUtils.copyInputStreamToFile(LoadingUtil.openResource(path.substring(0, path.lastIndexOf('/')) + "/" + csvName.replace(".csv", ".update.csv"))
+					, new File(conquery.getTmpDir(), csvName)
 			);
 
 			File descriptionFile = new File(conquery.getTmpDir(), importTable.getName() + ConqueryConstants.EXTENSION_DESCRIPTION);
@@ -209,7 +207,7 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 			}
 			assertThat(namespace.getNumberOfEntities()).isEqualTo(9);
 			// Issue a query and assert that it has more content.
-			IntegrationUtils.assertQueryResult(conquery, query, 4L, ExecutionState.DONE, conquery.getTestUser(), 201);
+			IntegrationUtils.assertQueryResult(conquery, query, null, 4L, ExecutionState.DONE, conquery.getTestUser(), 201);
 		}
 	}
 }

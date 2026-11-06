@@ -12,6 +12,7 @@ import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.io.storage.StoreMappings;
 import com.bakdata.conquery.io.storage.WorkerStorage;
+import com.bakdata.conquery.io.storage.WorkerStorageImpl;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
@@ -180,6 +181,15 @@ public class NonPersistentStoreFactory implements StoreFactory {
 	@Override
 	public Store<String, Integer> createEntity2BucketStore(String pathName, ObjectMapper objectMapper) {
 		return entity2Bucket.computeIfAbsent(pathName, ignored -> new NonPersistentStore<>());
+	}
+
+	/**
+	 * @implNote intended for Unit-tests
+	 */
+	public WorkerStorageImpl createWorkerStorage() {
+		final WorkerStorageImpl workerStorage = new WorkerStorageImpl(this, "worker_storage");
+		workerStorage.openStores(null);
+		return workerStorage;
 	}
 
 	/**

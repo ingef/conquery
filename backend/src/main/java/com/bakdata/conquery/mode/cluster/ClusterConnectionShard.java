@@ -20,6 +20,7 @@ import com.bakdata.conquery.models.worker.ShardWorkers;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Throwables;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.util.Duration;
@@ -163,7 +164,7 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 
 	@NotNull
 	private NioSocketConnector getClusterConnector() {
-		ObjectMapper om = internalMapperFactory.createShardCommunicationMapper(workers);
+		ObjectMapper om = internalMapperFactory.createInternalCommunicationMapper(workers);
 
 		return config.getCluster().getClusterConnector(om, this, "Shard");
 	}
@@ -174,8 +175,10 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 	}
 
 	@Override
-	public void exceptionCaught(IoSession session, Throwable cause) {
-		log.error("Exception caught", cause);
+	public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
+		// Rethrow
+		Throwables.throwIfInstanceOf(cause, Exception.class);
+		throw new RuntimeException("Encountered problem in %s".formatted(session.toString()), cause);
 	}
 
 	@Override

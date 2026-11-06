@@ -24,7 +24,7 @@ class NodeNoOverlapCte extends DateAggregationCte {
 	}
 
 	@Override
-	protected QueryStep.QueryStepBuilder convertStep(DateAggregationContext context) {
+	protected QueryStep.QueryStepBuilder convertStep(DateAggregationContext context, String predecessor) {
 
 		// we create a no-overlap node for each query step we need to aggregate
 		DateAggregationDates dateAggregationDates = context.getDateAggregationDates();

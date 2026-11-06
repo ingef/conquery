@@ -15,7 +15,7 @@ import lombok.NonNull;
  * An interface for classes that facade a user or represent a user.
  *
  * This interface allows realms to present a user different (usually reduced) set of permissions/abilities.
- * 
+ *
  **/
 public interface Subject extends Principal {
 

@@ -12,7 +12,7 @@ public class ReactingJob<MESSAGE extends NetworkMessage<CTX>, CTX extends Networ
 	private MESSAGE message;
 	@ToString.Exclude
 	private CTX context;
-	
+
 	@Override
 	public void execute() {
 		try {

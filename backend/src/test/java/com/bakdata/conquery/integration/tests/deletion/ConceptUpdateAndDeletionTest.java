@@ -11,7 +11,7 @@ import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
-import com.bakdata.conquery.integration.json.JsonIntegrationTest;
+import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
@@ -25,7 +25,6 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
-import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -42,8 +41,8 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 		StandaloneSupport conquery = testConquery.getSupport(name);
 
 		// Read two JSONs with different Trees
-		final String testJson = In.resource("/tests/query/UPDATE_CONCEPT_TESTS/SIMPLE_TREECONCEPT_Query.json").withUTF8().readAll();
-		final String testJson2 = In.resource("/tests/query/UPDATE_CONCEPT_TESTS/SIMPLE_TREECONCEPT_2_Query.json").withUTF8().readAll();
+		final String testJson = LoadingUtil.readResource("/tests/query/UPDATE_CONCEPT_TESTS/SIMPLE_TREECONCEPT_Query.json");
+		final String testJson2 = LoadingUtil.readResource("/tests/query/UPDATE_CONCEPT_TESTS/SIMPLE_TREECONCEPT_2_Query.json");
 
 		final DatasetId dataset = conquery.getDataset();
 		final Namespace namespace = conquery.getNamespace();
@@ -51,8 +50,8 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 		final ConceptId conceptId = new ConceptId(dataset, "test_tree");
 
-		final QueryTest test = JsonIntegrationTest.readJson(dataset, testJson);
-		final QueryTest test2 = JsonIntegrationTest.readJson(dataset, testJson2);
+		final QueryTest test = ConqueryTestSpec.readJson(dataset, testJson);
+		final QueryTest test2 = ConqueryTestSpec.readJson(dataset, testJson2);
 
 		// Manually import data, so we can do our own work.
 		{
@@ -105,7 +104,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 				}
 			}
 			log.info("Executing query before update");
-			IntegrationUtils.assertQueryResult(conquery, query, 1L, ExecutionState.DONE, conquery.getTestUser(), 201);
+			IntegrationUtils.assertQueryResult(conquery, query, null, 1L, ExecutionState.DONE, conquery.getTestUser(), 201);
 			conquery.waitUntilWorkDone();
 			log.info("Query before update executed");
 		}
@@ -153,7 +152,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			log.info("Executing query after update");
 
 			// Assert that it now contains 2 instead of 1.
-			IntegrationUtils.assertQueryResult(conquery, query, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
+			IntegrationUtils.assertQueryResult(conquery, query, null, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
 			conquery.waitUntilWorkDone();
 			log.info("Query after update executed");
 		}
@@ -201,7 +200,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 				log.info("Executing query after restart.");
 				// Re-assert state.
-				IntegrationUtils.assertQueryResult(conquery, query, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
+				IntegrationUtils.assertQueryResult(conquery, query, null, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
 				conquery.waitUntilWorkDone();
 			}
 		}
@@ -245,10 +244,8 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 					});
 
 
-			log.info("Executing query after deletion (EXPECTING AN EXCEPTION IN THE LOGS!)");
-
 			// Issue a query and assert that it is failing.
-			IntegrationUtils.assertQueryResult(conquery, query, 0L, ExecutionState.FAILED, conquery.getTestUser(), 404);
+			IntegrationUtils.assertQueryResult(conquery, query, null, 0L, ExecutionState.FAILED, conquery.getTestUser(), 422);
 		}
 
 
@@ -286,10 +283,8 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 																 .anyMatch(cBlock -> cBlock.getConnector().getConcept().equals(conceptId)));
 
 
-				log.info("Executing query after restart (EXPECTING AN EXCEPTION IN THE LOGS!)");
-
 				// Issue a query and assert that it is failing.
-				IntegrationUtils.assertQueryResult(conquery, query, 0L, ExecutionState.FAILED, conquery.getTestUser(), 404);
+				IntegrationUtils.assertQueryResult(conquery, query, null, 0L, ExecutionState.FAILED, conquery.getTestUser(), 422);
 			}
 		}
 	}

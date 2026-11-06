@@ -15,6 +15,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.zip.GZIPInputStream;
+import jakarta.validation.ValidationException;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -30,10 +32,7 @@ import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jakewharton.byteunits.BinaryByteUnit;
 import io.dropwizard.core.setup.Environment;
-import jakarta.validation.ValidationException;
-import jakarta.validation.Validator;
 import lombok.SneakyThrows;
 import lombok.experimental.FieldNameConstants;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +43,7 @@ import net.sourceforge.argparse4j.impl.type.StringArgumentType;
 import net.sourceforge.argparse4j.inf.ArgumentGroup;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
+import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
 
 @Slf4j
@@ -260,7 +260,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 								   .mapToLong(PreprocessingJob::estimateTotalCsvSizeBytes)
 								   .sum();
 
-		log.info("Required to preprocess {} in total", BinaryByteUnit.format(totalSize));
+		log.info("Required to preprocess {} in total", FileUtils.byteCountToDisplaySize(totalSize));
 
 		final ProgressBar totalProgress = new ProgressBar(totalSize);
 

@@ -20,7 +20,7 @@ public class LoginResource {
 
 	@Context
 	private ContainerRequestContext request;
-	
+
 	@GET
 	public View getLoginPage(@QueryParam(RedirectingAuthFilter.REDIRECT_URI) URI redirectUri) {
 		final String requestAuthority = request.getUriInfo().getBaseUri().getAuthority();

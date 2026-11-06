@@ -1,24 +1,23 @@
 import { useCallback, useContext, useEffect, useRef } from "react";
-
-import { EditorV2Query } from "../editor-v2/types";
-import { EntityId } from "../entity-history/reducer";
+import { AuthTokenContext } from "../authorization/AuthTokenProvider";
+import type { EditorV2Query } from "../editor-v2/types";
+import type { EntityId } from "../entity-history/reducer";
 import { apiUrl } from "../environment";
 import type {
   FormConfigT,
   PreviousQueryT,
 } from "../previous-queries/list/reducer";
 import type { QueryToUploadT } from "../previous-queries/upload/CSVColumnPicker";
-import { StandardQueryStateT } from "../standard-query-editor/queryReducer";
-import { ValidatedTimebasedQueryStateT } from "../timebased-query-editor/reducer";
-
-import { AuthTokenContext } from "../authorization/AuthTokenProvider";
+import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import { transformQueryToApi } from "./apiHelper";
 import type {
   ConceptIdT,
   DatasetT,
+  FilterConfigT,
   GetConceptResponseT,
   GetConceptsResponseT,
   GetDatasetsResponseT,
+  GetDefaultFoldersResponseT,
   GetEntityHistoryDefaultParamsResponse,
   GetEntityHistoryResponse,
   GetFormConfigResponseT,
@@ -26,6 +25,7 @@ import type {
   GetFormQueriesResponseT,
   GetFrontendConfigResponseT,
   GetMeResponseT,
+  GetNewsResponseT,
   GetQueriesResponseT,
   GetQueryResponseT,
   HistorySources,
@@ -101,10 +101,7 @@ export const usePostQueries = () => {
   return useCallback(
     (
       datasetId: DatasetT["id"],
-      query:
-        | StandardQueryStateT
-        | ValidatedTimebasedQueryStateT
-        | EditorV2Query,
+      query: StandardQueryStateT | EditorV2Query,
       options: { queryType: string; selectedSecondaryId?: string | null },
     ) =>
       api({
@@ -212,6 +209,18 @@ export const useGetQueries = () => {
   );
 };
 
+export const useGetDefaultFolders = () => {
+  const api = useApi<GetDefaultFoldersResponseT>();
+
+  return useCallback(
+    (datasetId: DatasetT["id"]) =>
+      api({
+        url: getProtectedUrl(`/datasets/${datasetId}/queries/default-tags`),
+      }),
+    [api],
+  );
+};
+
 export const usePatchQuery = () => {
   const api = useApi<null>();
 
@@ -274,6 +283,18 @@ export const usePostFilterValuesResolve = () => {
   );
 };
 
+export const useGetNews = () => {
+  const api = useApi<GetNewsResponseT>();
+
+  return useCallback(
+    (datasetId: DatasetT["id"]) =>
+      api({
+        url: getProtectedUrl(`/datasets/${datasetId}/news`),
+      }),
+    [api],
+  );
+};
+
 export const useGetMe = () => {
   const api = useApi<GetMeResponseT>();
   return useCallback(() => api({ url: getProtectedUrl(`/me`) }), [api]);
@@ -281,7 +302,7 @@ export const useGetMe = () => {
 
 export const usePostLogin = () => {
   const api = useApiUnauthorized<PostLoginResponseT>({
-    url: apiUrl + "/auth",
+    url: `${apiUrl}/auth`,
     method: "POST",
   });
 
@@ -391,14 +412,7 @@ export const usePostResolveEntities = () => {
   const api = useApi<PostResolveEntitiesResponse>();
 
   return useCallback(
-    (
-      datasetId: DatasetT["id"],
-      filterValues: {
-        filter: string; // id
-        type: "MULTI_SELECT" | "BIG_MULTI_SELECT";
-        value: string[];
-      }[],
-    ) =>
+    (datasetId: DatasetT["id"], filterValues: FilterConfigT[]) =>
       api({
         url: getProtectedUrl(`/datasets/${datasetId}/queries/resolve-entities`),
         method: "POST",
@@ -417,20 +431,17 @@ export const useGetResult = () => {
     },
     [authToken],
   );
-  return useCallback(
-    (queryId: string, limit: number) => {
-      const url =
-        `/result/arrow/${queryId}.arrs?` +
-        new URLSearchParams({ limit: limit.toString() });
-      const res = fetch(getProtectedUrl(url), {
-        headers: {
-          Authorization: `Bearer ${authTokenRef.current}`,
-        },
-      });
-      return res;
-    },
-    [authTokenRef],
-  );
+  return useCallback((queryId: string, limit: number) => {
+    const url =
+      `/result/arrow/${queryId}.arrs?` +
+      new URLSearchParams({ limit: limit.toString() });
+    const res = fetch(getProtectedUrl(url), {
+      headers: {
+        Authorization: `Bearer ${authTokenRef.current}`,
+      },
+    });
+    return res;
+  }, []);
 };
 
 export const usePreviewStatistics = () => {

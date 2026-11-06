@@ -1,95 +1,81 @@
 package com.bakdata.conquery.models.datasets.concepts;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.google.common.hash.HashFunction;
+import com.google.common.hash.Hashing;
+import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
+import lombok.*;
+import org.bouncycastle.util.Strings;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class MatchingStats {
 
-    private Map<WorkerId, Entry> entries = new HashMap<>();
-    @JsonIgnore
-    private transient CDateRange span;
+	private Map<String, Entry> entries = new HashMap<>();
+	@JsonIgnore
+	private CDateRange span;
 
-    @JsonIgnore
-    private transient long numberOfEvents = -1L;
+	@JsonIgnore
+	private long numberOfEvents = -1L;
 
-    @JsonIgnore
-    private transient long numberOfEntities = -1L;
+	@JsonIgnore
+	private long numberOfEntities = -1L;
 
-    public long countEvents() {
-        if (numberOfEvents == -1L) {
-            synchronized (this) {
-                if (numberOfEvents == -1L) {
-                    numberOfEvents = entries.values().stream().mapToLong(Entry::getNumberOfEvents).sum();
-                }
-            }
-        }
-        return numberOfEvents;
-    }
+	public static MatchingStats singleEntry(String source, Entry entry) {
+		MatchingStats matchingStats = new MatchingStats();
+		matchingStats.entries = Map.of(source, entry);
+		return matchingStats;
+	}
+
+	public synchronized long countEvents() {
+		if (numberOfEvents == -1L) {
+			numberOfEvents = entries.values().stream().mapToLong(Entry::getNumberOfEvents).sum();
+		}
+		return numberOfEvents;
+	}
 
 
-    public long countEntities() {
-        if (numberOfEntities == -1L) {
-            synchronized (this) {
-                if (numberOfEntities == -1L) {
-                    numberOfEntities = entries.values().stream().mapToLong(Entry::getNumberOfEntities).sum();
-                }
-            }
-        }
-        return numberOfEntities;
-    }
+	public synchronized long countEntities() {
+		if (numberOfEntities == -1L) {
+			numberOfEntities = entries.values().stream().mapToLong(Entry::getNumberOfEntities).sum();
+		}
+		return numberOfEntities;
+	}
 
-    public CDateRange spanEvents() {
-        if (span == null) {
-            synchronized (this) {
-                if (span == null) {
-                    span = entries.values().stream().map(Entry::getSpan).reduce(CDateRange.all(), CDateRange::spanClosed);
-                }
-            }
-        }
-        return span;
+	public synchronized CDateRange spanEvents() {
+		if (span == null) {
+			span = entries.values().stream().map(Entry::getSpan).reduce(CDateRange.all(), CDateRange::spanClosed);
+		}
+		return span;
 
-    }
+	}
 
-    public void putEntry(WorkerId source, Entry entry) {
-        synchronized (this) {
-            entries.put(source, entry);
-            span = null;
-            numberOfEntities = -1L;
-            numberOfEvents = -1L;
-        }
-    }
+	public synchronized void addEntry(String source, Entry entry) {
+		entries.put(source, entry);
+		span = null;
+		numberOfEntities = -1L;
+		numberOfEvents = -1L;
+	}
 
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class Entry {
-        private long numberOfEvents;
 
-        @JsonIgnore
-        private final Set<String> foundEntities = new HashSet<>();
-        private long numberOfEntities;
+	@Data
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class Entry {
+		private long numberOfEvents;
+		private long numberOfEntities;
 		private int minDate = Integer.MAX_VALUE;
 		private int maxDate = Integer.MIN_VALUE;
 
 		@JsonIgnore
 		public CDateRange getSpan() {
-			if(minDate == Integer.MAX_VALUE && maxDate == Integer.MIN_VALUE) {
+			if (minDate == Integer.MAX_VALUE && maxDate == Integer.MIN_VALUE) {
 				return null;
 			}
 
@@ -99,32 +85,61 @@ public class MatchingStats {
 			);
 		}
 
-        public void addEvent(Table table, Bucket bucket, int event, String entityForEvent) {
-            numberOfEvents++;
-            if (foundEntities.add(entityForEvent)) {
-                numberOfEntities++;
-            }
+	}
 
-            for (Column c : table.getColumns()) {
-                if (!c.getType().isDateCompatible()) {
-                    continue;
-                }
+	/**
+	 * Mutable state used only while matching statistics are being calculated.
+	 *
+	 * <p>The potentially large set of entity ids deliberately does not live in {@link Entry}, because entries are attached to
+	 * concept elements and retained for the lifetime of the loaded dataset.</p>
+	 */
+	public static class Accumulator {
+		private static final HashFunction hash = Hashing.fingerprint2011();
 
-                if (!bucket.has(event, c)) {
-                    continue;
-                }
+		private LongSet foundEntities = new LongLinkedOpenHashSet();
+		private long numberOfEvents;
+		private long numberOfEntities;
+		private int minDate = Integer.MAX_VALUE;
+		private int maxDate = Integer.MIN_VALUE;
 
-                final CDateRange time = bucket.getAsDateRange(event, c);
+		public static long hashEntity(String entity){
+			return hash.hashBytes(Strings.toByteArray(entity)).asLong();
+		}
 
-				if (time.hasUpperBound()){
-					maxDate = Math.max(time.getMaxValue(), maxDate);
-				}
+		public void addEvents(long hashedEntity, int nEvents, CDateRange span) {
+			addEvents(
+					hashedEntity, nEvents,
+					span != null && span.hasLowerBound() ? span.getMinValue() : Integer.MAX_VALUE,
+					span != null && span.hasUpperBound() ? span.getMaxValue() : Integer.MIN_VALUE
+			);
+		}
 
-				if (time.hasLowerBound()){
-					minDate = Math.min(time.getMinValue(), minDate);
-				}
-            }
-        }
-    }
+		public void addEvents(long hashedEntity, int nEvents, int eventMinDate, int eventMaxDate) {
+			if (foundEntities == null) {
+				throw new IllegalStateException("Matching stats accumulator was already finished");
+			}
+
+			numberOfEvents += nEvents;
+
+			// This is not perfectly distinct but has low memory and CPU footprint which is overall more important.
+			if (foundEntities.add(hashedEntity)) {
+				numberOfEntities++;
+			}
+
+			if (eventMaxDate != Integer.MIN_VALUE) {
+				maxDate = Math.max(eventMaxDate, maxDate);
+			}
+
+			if (eventMinDate != Integer.MAX_VALUE) {
+				minDate = Math.min(eventMinDate, minDate);
+			}
+		}
+
+		public Entry toEntry() {
+			Entry entry = new Entry(numberOfEvents, numberOfEntities, minDate, maxDate);
+			foundEntities = null;
+			return entry;
+		}
+	}
 
 }

@@ -35,19 +35,20 @@ public abstract class AbstractSerializationTest {
 	private NamespacedStorageProvider shardNamespacedStorageProvider;
 
 	private ObjectMapper managerInternalMapper;
-	private ObjectMapper namespaceInternalMapper;
-	private ObjectMapper shardInternalMapper;
+	private ObjectMapper namespacePersistenceMapper;
+	private ObjectMapper internalCommunicationMapper;
+	private ObjectMapper workerPersistenceMapper;
 	private ObjectMapper apiMapper;
 
 
 	@BeforeEach
 	public void before() {
 		final InternalMapperFactory internalMapperFactory = new InternalMapperFactory(config, validator);
-		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings(), "emptyDefaultLabel");
+		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings());
 		NonPersistentStoreFactory storageFactory = new NonPersistentStoreFactory();
 		metaStorage = storageFactory.createMetaStorage();
 		namespaceStorage = storageFactory.createNamespaceStorage();
-		workerStorage = new WorkerStorageImpl(storageFactory, "serializationTestWorker");
+		workerStorage = storageFactory.createWorkerStorage();
 
 		final ClusterNamespaceHandler clusterNamespaceHandler = new ClusterNamespaceHandler(new ClusterState(), config, internalMapperFactory);
 		datasetRegistry = new DatasetRegistry<>(config, internalMapperFactory, clusterNamespaceHandler, indexService) {
@@ -57,19 +58,18 @@ public abstract class AbstractSerializationTest {
 			}
 		};
 
-
 		managerInternalMapper = internalMapperFactory.createManagerPersistenceMapper(datasetRegistry, metaStorage);
 		metaStorage.openStores(managerInternalMapper);
 
-		namespaceInternalMapper = internalMapperFactory.createNamespacePersistenceMapper(namespaceStorage, datasetRegistry);
-		namespaceStorage.openStores(namespaceInternalMapper);
-
-		// Prepare worker persistence mapper
-		workerStorage.openStores(shardInternalMapper);
+		namespacePersistenceMapper = internalMapperFactory.createNamespacePersistenceMapper(namespaceStorage, datasetRegistry);
+		namespaceStorage.openStores(namespacePersistenceMapper);
 
 		shardNamespacedStorageProvider = new TestNamespacedStorageProvider(getWorkerStorage());
 
-		shardInternalMapper = internalMapperFactory.createWorkerPersistenceMapper(shardNamespacedStorageProvider);
+		workerPersistenceMapper = internalMapperFactory.createWorkerPersistenceMapper(workerStorage);
+		workerStorage.openStores(workerPersistenceMapper);
+
+		internalCommunicationMapper = internalMapperFactory.createInternalCommunicationMapper(datasetRegistry);
 
 		// Prepare api response mapper
 		apiMapper = Jackson.copyMapperAndInjectables(Jackson.MAPPER);

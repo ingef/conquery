@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.QuartersInYearAggregator;
 import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 /**
@@ -31,6 +32,11 @@ public class QuartersInYearSelect extends SingleColumnSelect {
 	@Override
 	public Aggregator<?> createAggregator() {
 		return new QuartersInYearAggregator(getColumn().resolve());
+	}
+
+	@Override
+	public ResultSetProcessor.Reader<Integer> createResultSetReader(ResultSetProcessor processor) {
+		return processor::getInteger;
 	}
 
 	@Override

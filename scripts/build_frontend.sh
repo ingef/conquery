@@ -1,6 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+set -e
 
 pushd ./frontend
-npm ci
-npm run build
+pnpm install --frozen-lockfile
+pnpm build
 popd

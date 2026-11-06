@@ -7,6 +7,8 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Size;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
@@ -33,6 +35,9 @@ import lombok.ToString;
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
 @ToString(onlyExplicitlyIncluded = true)
 public class FilterResource extends HAuthorized {
+
+	public static final int MAX_AUTOCOMPLETE_TEXT_LENGTH = 500;
+	public static final int MAX_AUTOCOMPLETE_PAGE_SIZE = 500;
 
 	private final ConceptsProcessor processor;
 
@@ -62,7 +67,7 @@ public class FilterResource extends HAuthorized {
 
 
 		try {
-			return processor.autocompleteTextFilter(filter, request.text(), request.page(), request.pageSize());
+			return processor.autocompleteTextFilter(filter, request.text().orElse(null), request.page(), request.pageSize());
 		}
 		catch (IllegalArgumentException e) {
 			throw new BadRequestException(e);
@@ -72,6 +77,10 @@ public class FilterResource extends HAuthorized {
 	public record FilterValues(List<String> values) {
 	}
 
-	public record AutocompleteRequest(@NonNull Optional<String> text, @NonNull OptionalInt page, @NonNull OptionalInt pageSize) {
+	public record AutocompleteRequest(
+			@NonNull Optional<@Size(max = MAX_AUTOCOMPLETE_TEXT_LENGTH) String> text,
+			@NonNull OptionalInt page,
+			@NonNull @Max(MAX_AUTOCOMPLETE_PAGE_SIZE) OptionalInt pageSize
+	) {
 	}
 }

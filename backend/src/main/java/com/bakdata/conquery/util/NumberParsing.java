@@ -5,9 +5,9 @@ import java.math.BigDecimal;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 
 public class NumberParsing {
-	
+
 	//see #150  parse with ConqueryConfig.getInstance().getLocale()
-	
+
 	public static long parseLong(String value) throws ParsingException {
 		try {
 			return Long.valueOf(value);
@@ -31,7 +31,7 @@ public class NumberParsing {
 			throw ParsingException.of(value, "BigDecimal", e);
 		}
 	}
-	
+
 	public static BigDecimal parseMoney(String value) throws ParsingException {
 		try {
 			return parseBig(value).stripTrailingZeros();

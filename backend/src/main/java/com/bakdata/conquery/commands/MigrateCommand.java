@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.powerlibraries.io.In;
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
 import groovy.lang.Tuple;
@@ -128,7 +127,7 @@ public class MigrateCommand extends ConqueryCommand {
 		config.setScriptBaseClass(MigrationScriptFactory.class.getName());
 		final GroovyShell groovy = new GroovyShell(config);
 
-		final MigrationScriptFactory factory = (MigrationScriptFactory) groovy.parse(In.file((File) namespace.get("script")).readAll());
+		final MigrationScriptFactory factory = (MigrationScriptFactory) groovy.parse(namespace.<File>get("script"));
 
 		final Function4<String, String, JsonNode, JsonNode, Tuple<JsonNode>> migrator = factory.run();
 
@@ -139,6 +138,9 @@ public class MigrateCommand extends ConqueryCommand {
 			  .forEach(xenv ->
 					   {
 						   final File environmentDirectory = new File(outStoreDirectory, xenv.getName());
+						   if (environmentDirectory.exists()) {
+							   throw new IllegalArgumentException("File or folder already exists. Cannot create environment: " + environmentDirectory.getAbsolutePath());
+						   }
 						   if (!environmentDirectory.mkdirs()) {
 							   throw new IllegalArgumentException("Cannot create environment directory: " + environmentDirectory.getAbsolutePath());
 						   }

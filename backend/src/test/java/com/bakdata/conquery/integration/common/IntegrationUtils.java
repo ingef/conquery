@@ -6,19 +6,20 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import javax.annotation.Nullable;
 
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
 import com.bakdata.conquery.apiv1.query.Query;
-import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.events.Bucket;
@@ -44,19 +45,24 @@ public class IntegrationUtils {
 
 
 	public static Query parseQuery(StandaloneSupport support, JsonNode rawQuery) throws JSONException, IOException {
-		return ConqueryTestSpec.parseSubTree(support, rawQuery, Query.class, true);
+		return LoadingUtil.parseSubTree(support, rawQuery, Query.class, false);
 	}
 
 	/**
 	 * Send a query onto the conquery instance and assert the result's size.
 	 */
-	public static ManagedExecutionId assertQueryResult(StandaloneSupport conquery, Object query, long expectedSize, ExecutionState expectedState, @Nullable User user, int expectedResponseCode) {
+	public static ManagedExecutionId assertQueryResult(StandaloneSupport conquery, Object query, UUID uuid, long expectedSize, ExecutionState expectedState, @Nullable User user, int expectedResponseCode) {
 		final URI postQueryURI = getPostQueryURI(conquery);
 
-
 		// Submit Query
-		Invocation.Builder request = conquery.getClient()
-											 .target(postQueryURI)
+		WebTarget webTarget = conquery.getClient()
+				.target(postQueryURI);
+
+		if (uuid != null) {
+			webTarget = webTarget.queryParam("queryId", uuid);
+		}
+
+		Invocation.Builder request = webTarget
 											 .request(MediaType.APPLICATION_JSON_TYPE);
 
 		if (user != null) {
@@ -80,10 +86,11 @@ public class IntegrationUtils {
 			}
 
 			// TODO implement this properly: ExecutionStatus status = response.readEntity(ExecutionStatus.Full.class);
-			final JsonNode jsonNode = response.readEntity(JsonNode.class);
-			final String id = jsonNode.get(ExecutionStatus.Fields.id).asText();
+			final FullExecutionStatus executionStatus = response.readEntity(FullExecutionStatus.class);
 
-			final JsonNode execStatusRaw = getRawExecutionStatus(id, conquery, user);
+			final ManagedExecutionId id = executionStatus.getId();
+
+			final JsonNode execStatusRaw = getRawExecutionStatus(id.toString(), conquery, user);
 
 			final String status = execStatusRaw.get(ExecutionStatus.Fields.status).asText();
 			final long numberOfResults = execStatusRaw.get(ExecutionStatus.Fields.numberOfResults).asLong(0);
@@ -96,7 +103,7 @@ public class IntegrationUtils {
 						.isEqualTo(expectedSize);
 			}
 
-			return ManagedExecutionId.Parser.INSTANCE.parse(id);
+			return id;
 		}
 	}
 

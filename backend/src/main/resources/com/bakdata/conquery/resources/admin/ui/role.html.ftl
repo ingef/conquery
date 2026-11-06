@@ -53,7 +53,7 @@
 									<#list c.users as user>
 										<tr>
 											<td>
-												<a href="/admin/users/${user.id}">${user.label}</a>
+												<a href="/admin-ui/users/${user.id}">${user.label}</a>
 											</td>
 										</tr>
 									</#list>
@@ -72,7 +72,7 @@
 									<#list c.groups as group>
 										<tr>
 											<td>
-												<a href="/admin/groups/${group.id}">${group.label}</a>
+												<a href="/admin-ui/groups/${group.id}">${group.label}</a>
 											</td>
 										</tr>
 									</#list>

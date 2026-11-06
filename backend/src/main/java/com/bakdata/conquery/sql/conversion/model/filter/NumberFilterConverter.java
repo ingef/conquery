@@ -1,11 +1,8 @@
 package com.bakdata.conquery.sql.conversion.model.filter;
 
-import java.util.List;
-
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.NumberFilter;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.model.NumberMapUtil;
@@ -26,15 +23,12 @@ public class NumberFilterConverter<RANGE extends IRange<? extends Number, ?>> im
 		Class<? extends Number> numberClass = NumberMapUtil.getType(column);
 		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(tables.getRootTable(), column.getName(), numberClass);
 
-		Field<? extends Number> eventFilterCtePredecessor = rootSelect.qualify(tables.getPredecessor(ConceptCteStep.EVENT_FILTER)).select();
 		IRange<? extends Number, ?> filterValue = filterContext.getValue();
-		NumberCondition condition = new NumberCondition(eventFilterCtePredecessor, filterValue);
-
-		ConnectorSqlSelects selects = ConnectorSqlSelects.builder().preprocessingSelects(List.of(rootSelect)).build();
+		NumberCondition condition = new NumberCondition(rootSelect.select(), filterValue);
 
 		WhereClauses whereClauses = WhereClauses.builder().eventFilter(condition).build();
 
-		return new SqlFilters(selects, whereClauses);
+		return new SqlFilters(ConnectorSqlSelects.none(), whereClauses);
 	}
 
 	@Override
@@ -42,7 +36,9 @@ public class NumberFilterConverter<RANGE extends IRange<? extends Number, ?>> im
 		Column column = filter.getColumn().resolve();
 		String tableName = column.getTable().getName();
 		String columnName = column.getName();
-		Field<Number> field = DSL.field(DSL.name(tableName, columnName), Number.class);
+		Class<? extends Number> numberClass = NumberMapUtil.getType(column);
+
+		Field<? extends Number> field = DSL.field(DSL.name(tableName, columnName), numberClass);
 		IRange<? extends Number, ?> range = filterContext.getValue();
 
 		return new NumberCondition(field, range).condition();

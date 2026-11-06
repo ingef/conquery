@@ -1,13 +1,13 @@
 import { useCallback } from "react";
 
 import {
-  PostPrefixForSuggestionsParams,
+  type PostPrefixForSuggestionsParams,
   usePostPrefixForSuggestions,
 } from "../../api/api";
-import { SelectOptionT } from "../../api/types";
+import type { SelectOptionT } from "../../api/types";
 import { exists } from "../../common/helpers/exists";
 import { mergeFilterOptions } from "../../model/filter";
-import { NodeResetConfig } from "../../model/node";
+import type { NodeResetConfig } from "../../model/node";
 import { resetSelects } from "../../model/select";
 import {
   resetTables,
@@ -15,9 +15,7 @@ import {
   tableWithDefaults,
 } from "../../model/table";
 import QueryNodeEditor from "../../query-node-editor/QueryNodeEditor";
-import { filterSuggestionToSelectOption } from "../../query-node-editor/suggestionsHelper";
-import { DragItemConceptTreeNode } from "../../standard-query-editor/types";
-import { ModeT } from "../../ui-components/InputRange";
+import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
 
 export const EditorV2QueryNodeEditor = ({
   node,
@@ -111,20 +109,6 @@ export const EditorV2QueryNodeEditor = ({
     [setFilterProperties],
   );
 
-  const onSwitchFilterMode = useCallback(
-    (tableIdx: number, filterIdx: number, mode: ModeT) => {
-      const tables = [...node.tables];
-      tables[tableIdx] = {
-        ...tables[tableIdx],
-        filters: tables[tableIdx].filters.map((filter, idx) =>
-          idx === filterIdx ? { ...filter, mode } : filter,
-        ),
-      };
-      onChange({ ...node, tables });
-    },
-    [node, onChange],
-  );
-
   const postPrefixForSuggestions = usePostPrefixForSuggestions();
   const onLoadFilterSuggestions = useCallback(
     async (
@@ -136,9 +120,7 @@ export const EditorV2QueryNodeEditor = ({
       const suggestions = await postPrefixForSuggestions(params);
 
       if (!config?.returnOnly) {
-        const newOptions: SelectOptionT[] = suggestions.values.map(
-          filterSuggestionToSelectOption,
-        );
+        const newOptions: SelectOptionT[] = suggestions.values;
 
         const filter = node.tables[tableIdx].filters[filterIdx];
         const options =
@@ -194,6 +176,10 @@ export const EditorV2QueryNodeEditor = ({
     [node, onChange],
   );
 
+  const onToggleTimeStamps = useCallback(() => {
+    onChange({ ...node, excludeTimestamps: !node.excludeTimestamps });
+  }, [node, onChange]);
+
   return (
     <QueryNodeEditor
       name={`editorv2`}
@@ -205,10 +191,10 @@ export const EditorV2QueryNodeEditor = ({
       onDropConcept={onDropConcept}
       onRemoveConcept={onRemoveConcept}
       onToggleTable={onToggleTable}
+      onToggleTimestamps={onToggleTimeStamps}
       onSelectSelects={onSelectSelects}
       onSelectTableSelects={onSelectTableSelects}
       onSetFilterValue={onSetFilterValue}
-      onSwitchFilterMode={onSwitchFilterMode}
       onResetTable={onResetTable}
       onResetAllSettings={onResetAllSettings}
       onSetDateColumn={onSetDateColumn}

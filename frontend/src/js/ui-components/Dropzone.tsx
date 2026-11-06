@@ -1,10 +1,10 @@
-import styled from "@emotion/styled";
-import { ForwardedRef, forwardRef, ReactNode } from "react";
-import { DropTargetMonitor, useDrop } from "react-dnd";
+import type { ReactNode, Ref } from "react";
+import { type DropTargetMonitor, useDrop } from "react-dnd";
+import { tv } from "tailwind-variants";
 
 import { DNDType } from "../common/constants/dndTypes";
 import { exists } from "../common/helpers/exists";
-import { DragItemFormConfig } from "../external-forms/types";
+import type { DragItemFormConfig } from "../external-forms/types";
 import type {
   DragItemConceptTreeNode,
   DragItemQuery,
@@ -12,43 +12,31 @@ import type {
 
 import type { DragItemFile } from "./DropzoneWithFileInput";
 
-const Root = styled("div")<{
-  isOver?: boolean;
-  naked?: boolean;
-  bare?: boolean;
-  transparent?: boolean;
-  canDrop?: boolean;
-  invisible?: boolean;
-}>`
-  border: ${({ theme, isOver, canDrop, naked }) =>
-    naked
-      ? "none"
-      : isOver && !canDrop
-      ? `3px solid ${theme.col.red}`
-      : isOver
-      ? `3px solid ${theme.col.black}`
-      : `3px dashed ${theme.col.grayMediumLight}`};
-  border-radius: ${({ theme }) => theme.borderRadius};
-  padding: ${({ bare }) => (bare ? "0" : "10px")};
-  display: ${({ invisible }) => (invisible ? "none" : "flex")};
-  align-items: center;
-  justify-content: center;
-  background-color: ${({ theme, canDrop, naked, isOver, transparent }) =>
-    naked && isOver && canDrop
-      ? theme.col.grayLight
-      : canDrop
-      ? theme.col.grayVeryLight
-      : transparent
-      ? "transparent"
-      : theme.col.bg};
-  width: 100%;
-  color: ${({ theme, isOver, canDrop }) =>
-    isOver && !canDrop
-      ? theme.col.red
-      : isOver
-      ? theme.col.black
-      : theme.col.gray};
-`;
+const root = tv({
+  base: [
+    "flex items-center justify-center",
+    "w-full",
+    "p-[10px]",
+    "rounded",
+    "border-[3px] border-transparent",
+    "dashed-frame [--dash-color:var(--color-gray-400)]",
+    "bg-bg-50",
+    "text-gray-600",
+  ],
+  variants: {
+    bare: { true: "p-0" },
+    invisible: { true: "hidden" },
+    // later wins when several are set
+    transparent: { true: "bg-transparent" },
+    canDrop: { true: "bg-gray-50" },
+    isOver: { true: "bg-none border-gray-800 text-gray-800" },
+    naked: { true: "bg-none border-none" },
+  },
+  compoundVariants: [
+    { isOver: true, canDrop: false, class: "border-red text-red" },
+    { naked: true, isOver: true, canDrop: true, class: "bg-gray-100" },
+  ],
+});
 
 export interface ChildArgs<DroppableObject> {
   isOver: boolean;
@@ -95,21 +83,19 @@ export const isMovedObject = (
   }
 };
 
-const Dropzone = <DroppableObject extends PossibleDroppableObject>(
-  {
-    className,
-    acceptedDropTypes,
-    naked,
-    transparent,
-    bare,
-    canDrop,
-    onDrop,
-    onClick,
-    invisible,
-    children,
-  }: DropzoneProps<DroppableObject>,
-  ref?: ForwardedRef<HTMLDivElement>,
-) => {
+const Dropzone = <DroppableObject extends PossibleDroppableObject>({
+  className,
+  acceptedDropTypes,
+  naked,
+  transparent,
+  bare,
+  canDrop,
+  onDrop,
+  onClick,
+  invisible,
+  children,
+  ref,
+}: DropzoneProps<DroppableObject> & { ref?: Ref<HTMLDivElement> }) => {
   /*  actually, not "any", but ChildArgs<DroppableObject>. But I can't get that to work in JSX */
   const [{ canDrop: canDropResult, isOver, item }, dropRef] = useDrop<
     DroppableObject,
@@ -131,7 +117,9 @@ const Dropzone = <DroppableObject extends PossibleDroppableObject>(
   });
 
   return (
-    <Root
+    // biome-ignore lint/a11y/noStaticElementInteractions: drop target, click opens a file dialog
+    // biome-ignore lint/a11y/useKeyWithClickEvents: drop target, click opens a file dialog
+    <div
       ref={(instance) => {
         dropRef(instance);
 
@@ -144,29 +132,24 @@ const Dropzone = <DroppableObject extends PossibleDroppableObject>(
           }
         }
       }}
-      isOver={isOver}
-      invisible={invisible && !canDropResult}
-      canDrop={canDropResult}
-      className={className}
+      className={root({
+        isOver,
+        invisible: !!invisible && !canDropResult,
+        canDrop: canDropResult,
+        naked,
+        transparent,
+        bare,
+        className,
+      })}
       onClick={onClick}
-      naked={naked}
-      transparent={transparent}
-      bare={bare}
     >
-      {children &&
-        children({
-          isOver,
-          canDrop: canDropResult,
-          item: item as DroppableObject, // Casting because see comment above
-        })}
-    </Root>
+      {children?.({
+        isOver,
+        canDrop: canDropResult,
+        item: item as DroppableObject, // Casting because see comment above
+      })}
+    </div>
   );
 };
 
-export default forwardRef(Dropzone) as <
-  DroppableObject extends PossibleDroppableObject,
->(
-  props: DropzoneProps<DroppableObject> & {
-    ref?: ForwardedRef<HTMLDivElement>;
-  },
-) => JSX.Element;
+export default Dropzone;

@@ -21,11 +21,10 @@ import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.common.ResourceFile;
-import com.bakdata.conquery.integration.json.JsonIntegrationTest;
+import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -42,7 +41,6 @@ import com.bakdata.conquery.resources.admin.rest.AdminTablesResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
-import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
@@ -58,16 +56,16 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 
 		final StandaloneSupport conquery = testConquery.getSupport(name);
-		MetaStorage storage = conquery.getMetaStorage();
 
-		final String testJson = In.resource("/tests/query/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
+
+		final String testJson = LoadingUtil.readResource("/tests/query/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json");
 
 		final DatasetId dataset = conquery.getDataset();
 		final Namespace namespace = conquery.getNamespace();
 
 		final ImportId importId = ImportId.Parser.INSTANCE.parse(dataset.getName(), "test_table2", "test_table2");
 
-		final QueryTest test = JsonIntegrationTest.readJson(dataset, testJson);
+		final QueryTest test = ConqueryTestSpec.readJson(dataset, testJson);
 
 		// Manually import data, so we can do our own work.
 		final RequiredData content = test.getContent();
@@ -134,7 +132,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 			log.info("Executing query before deletion");
 
-			IntegrationUtils.assertQueryResult(conquery, query, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
+			IntegrationUtils.assertQueryResult(conquery, query, null, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
 		}
 
 		// Delete the import.
@@ -201,7 +199,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			log.info("Executing query after deletion");
 
 			// Issue a query and assert that it has less content.
-			IntegrationUtils.assertQueryResult(conquery, query, 1L, ExecutionState.DONE, conquery.getTestUser(), 201);
+			IntegrationUtils.assertQueryResult(conquery, query, null, 1L, ExecutionState.DONE, conquery.getTestUser(), 201);
 		}
 
 		conquery.waitUntilWorkDone();
@@ -221,8 +219,9 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 			//copy csv to tmp folder
 			// Content 2.2 contains an extra entry of a value that hasn't been seen before.
-			FileUtils.copyInputStreamToFile(In.resource(path.substring(0, path.lastIndexOf('/')) + "/" + "content2.2.csv")
-											  .asStream(), new File(conquery.getTmpDir(), csv.getName()));
+			FileUtils.copyInputStreamToFile(LoadingUtil.openResource(path.substring(0, path.lastIndexOf('/')) + "/" + "content2.2.csv"),
+											new File(conquery.getTmpDir(), csv.getName())
+			);
 
 			File descriptionFile = new File(conquery.getTmpDir(), import2Table.getName() + ConqueryConstants.EXTENSION_DESCRIPTION);
 			File preprocessedFile =  new File(conquery.getTmpDir(), import2Table.getName() + ConqueryConstants.EXTENSION_PREPROCESSED);
@@ -279,7 +278,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			log.info("Executing query after re-import");
 
 			// Issue a query and assert that it has the same content as the first time around.
-			IntegrationUtils.assertQueryResult(conquery, query, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
+			IntegrationUtils.assertQueryResult(conquery, query, null, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
 		}
 
 		// Finally, restart conquery and assert again, that the data is correct.
@@ -318,7 +317,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 				log.info("Executing query after re-import");
 
 				// Issue a query and assert that it has the same content as the first time around.
-				IntegrationUtils.assertQueryResult(conquery2, query, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
+				IntegrationUtils.assertQueryResult(conquery2, query, null, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
 			}
 		}
 	}

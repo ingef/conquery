@@ -1,5 +1,6 @@
 package com.bakdata.conquery.commands;
 
+import java.time.Clock;
 import java.util.List;
 
 import com.bakdata.conquery.mode.Manager;
@@ -14,5 +15,8 @@ public interface StandaloneCommand {
 	ManagerNode getManagerNode();
 
 	Environment getEnvironment();
+
+	void setClock(Clock clock);
+	Clock getClock();
 
 }

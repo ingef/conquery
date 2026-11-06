@@ -27,7 +27,7 @@ class RowNumberCte extends DateAggregationCte {
 	}
 
 	@Override
-	protected QueryStep.QueryStepBuilder convertStep(DateAggregationContext context) {
+	protected QueryStep.QueryStepBuilder convertStep(DateAggregationContext context, String predecessor) {
 
 		SqlIdColumns ids = context.getIds();
 

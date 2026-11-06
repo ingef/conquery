@@ -1,6 +1,6 @@
-import { ActionType, createAction } from "typesafe-actions";
+import { type ActionType, createAction } from "typesafe-actions";
 
-import { SnackMessageStateT } from "./reducer";
+import type { SnackMessageStateT } from "./reducer";
 
 export type SnackMessageActions = ActionType<
   typeof setMessage | typeof resetMessage

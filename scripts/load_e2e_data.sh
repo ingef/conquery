@@ -1,4 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+set -e
 
 admin_api="http://localhost:8081/admin"
 h_ct="content-type:application/json"
@@ -59,5 +61,6 @@ sleep 3
 
 echo "Init Matching Stats and Search"
 curl --fail -X POST  "$admin_api/datasets/dataset1/update-matching-stats" -H "$h_ct" -H "$h_auth"
+curl --fail -X POST  "$admin_api/datasets/dataset1/update-filter-search" -H "$h_ct" -H "$h_auth"
 
 echo "Done loading data"

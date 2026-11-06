@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.messages.namespaces.specific;
 
-import static com.bakdata.conquery.models.error.ConqueryError.asConqueryError;
 
 import java.util.Map;
 import java.util.Map.Entry;
@@ -8,7 +7,6 @@ import java.util.Set;
 
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
@@ -61,15 +59,14 @@ public class ExecuteForm extends WorkerMessage {
 				query.createQueryPlan(new QueryPlanContext(worker.getStorage(), queryExecutor.getSecondaryIdSubPlanLimit()));
 			}
 			catch (Exception e) {
-				ConqueryError err = asConqueryError(e);
-				log.warn("Failed to create query plans for {}.", formId, err);
-				queryExecutor.sendFailureToManagerNode(result, err, worker);
+				log.warn("Failed to create query plans for {}.", formId, e);
+				queryExecutor.sendFailureToManagerNode(e, formId);
 				return;
 			}
 
 			final QueryExecutionContext
 					subQueryContext =
-					new QueryExecutionContext(formId, queryExecutor, worker.getStorage(), worker.getBucketManager());
+					new QueryExecutionContext(formId, queryExecutor, worker.getStorage(), worker.getBucketManager(), worker.getClock());
 
 			Set<Entity> entities = query.collectRequiredEntities(subQueryContext).resolve(worker.getBucketManager());
 

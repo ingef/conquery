@@ -34,7 +34,7 @@ public class AbsoluteFormQueryConverter implements NodeConverter<AbsoluteFormQue
 
 		QueryStep convertedPrerequisite = convertPrerequisite(form, context);
 		StratificationTableFactory tableFactory = new StratificationTableFactory(convertedPrerequisite, context);
-		QueryStep stratificationTable = tableFactory.createAbsoluteStratificationTable(form.getResolutionsAndAlignmentMap());
+		QueryStep stratificationTable = tableFactory.createAbsoluteStratificationTable(form.getResolutionsAndAlignmentMap(), context);
 
 		return formHelper.convertForm(
 				FormType.ABSOLUTE,
@@ -55,7 +55,7 @@ public class AbsoluteFormQueryConverter implements NodeConverter<AbsoluteFormQue
 		Preconditions.checkArgument(withConvertedPrerequisite.getQuerySteps().size() == 1, "Base query conversion should produce exactly 1 QueryStep");
 		QueryStep convertedPrerequisite = withConvertedPrerequisite.getLastConvertedStep();
 
-		ColumnDateRange bounds = context.getSqlDialect()
+		ColumnDateRange bounds = context.getDialectBundle()
 										.getFunctionProvider()
 										.forCDateRange(CDateRange.of(absoluteForm.getDateRange())).as(SharedAliases.STRATIFICATION_BOUNDS.getAlias());
 

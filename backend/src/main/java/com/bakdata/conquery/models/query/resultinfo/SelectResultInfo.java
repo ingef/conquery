@@ -9,6 +9,7 @@ import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.google.common.collect.Sets;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -37,6 +38,11 @@ public class SelectResultInfo extends ResultInfo {
 	@Override
 	public Printer createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
 		return select.createPrinter(printerFactory, printSettings);
+	}
+
+	@Override
+	public ResultSetProcessor.Reader<?> createReader(ResultSetProcessor resultSetProcessor) {
+		return select.createResultSetReader(resultSetProcessor);
 	}
 
 	@Override

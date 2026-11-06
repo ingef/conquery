@@ -7,8 +7,8 @@
   },
   "columns": [
     {
-      "name": "datum",
-      "type": "DATE"
+      "name": "empty",
+      "type": "STRING"
     }
   ]
 }

@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAg
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.conversion.model.select.ExistsSelectConverter;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 
@@ -25,6 +26,11 @@ public class ExistsSelect extends UniversalSelect {
 	@Override
 	public ExistsAggregator createAggregator() {
 		return new ExistsAggregator(getRequiredTables());
+	}
+
+	@Override
+	public ResultSetProcessor.Reader<Boolean> createResultSetReader(ResultSetProcessor processor) {
+		return processor::getBoolean;
 	}
 
 	@Override

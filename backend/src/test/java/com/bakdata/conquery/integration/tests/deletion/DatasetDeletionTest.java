@@ -12,7 +12,7 @@ import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
-import com.bakdata.conquery.integration.json.JsonIntegrationTest;
+import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
@@ -25,7 +25,6 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
-import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -40,8 +39,8 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 		final StandaloneSupport conquery = testConquery.getSupport(name);
 		final DatasetId dataset = conquery.getDataset();
 		Namespace namespace = conquery.getNamespace();
-		final String testJson = In.resource("/tests/query/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
-		final QueryTest test = JsonIntegrationTest.readJson(dataset, testJson);
+		final String testJson = LoadingUtil.readResource("/tests/query/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json");
+		final QueryTest test = ConqueryTestSpec.readJson(dataset, testJson);
 
 		// Manually import data, so we can do our own work.
 		final RequiredData content = test.getContent();
@@ -95,7 +94,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 			log.info("Executing query before deletion");
 
-			IntegrationUtils.assertQueryResult(conquery, query, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
+			IntegrationUtils.assertQueryResult(conquery, query, null, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
 		}
 
 		// Delete Dataset.
@@ -144,7 +143,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 
 					// Try to execute the query after deletion
-					IntegrationUtils.assertQueryResult(conquery, query, 0, ExecutionState.FAILED, conquery.getTestUser(), 404);
+					IntegrationUtils.assertQueryResult(conquery, query, null, 0, ExecutionState.FAILED, conquery.getTestUser(), 404);
 				}
 			}
 
@@ -185,7 +184,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 				final Query query2 = IntegrationUtils.parseQuery(conqueryReimport, test.getRawQuery());
 
 				// Issue a query and assert that it has the same content as the first time around.
-				IntegrationUtils.assertQueryResult(conqueryReimport, query2, 2L, ExecutionState.DONE, conqueryReimport.getTestUser(), 201);
+				IntegrationUtils.assertQueryResult(conqueryReimport, query2, null, 2L, ExecutionState.DONE, conqueryReimport.getTestUser(), 201);
 			}
 
 
@@ -221,9 +220,8 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 				final Query query3 = IntegrationUtils.parseQuery(conqueryRestart, test.getRawQuery());
 
 				// Issue a query and assert that it has the same content as the first time around.
-				IntegrationUtils.assertQueryResult(conqueryRestart, query3, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
+				IntegrationUtils.assertQueryResult(conqueryRestart, query3, null, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
 			}
 		}
 	}
 }
-

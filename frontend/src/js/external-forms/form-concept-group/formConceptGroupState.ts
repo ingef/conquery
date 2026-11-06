@@ -9,19 +9,17 @@ import {
   getConceptById,
   getConceptsByIdsWithTablesAndSelects,
 } from "../../concept-trees/globalTreeStoreHelper";
-import { TreesT } from "../../concept-trees/reducer";
+import type { TreesT } from "../../concept-trees/reducer";
 import { mergeFilterOptions } from "../../model/filter";
-import { NodeResetConfig } from "../../model/node";
-import { SelectConfig, resetSelects } from "../../model/select";
+import type { NodeResetConfig } from "../../model/node";
+import { resetSelects, type SelectConfig } from "../../model/select";
 import { resetTables, tableWithDefaults } from "../../model/table";
-import { filterSuggestionToSelectOption } from "../../query-node-editor/suggestionsHelper";
 import type {
   DragItemConceptTreeNode,
   FilterWithValueType,
   SelectedSelectorT,
   TableWithFilterValueT,
 } from "../../standard-query-editor/types";
-import type { ModeT } from "../../ui-components/InputRange";
 import type { ConceptListDefaults as ConceptListDefaultsType } from "../config-types";
 import {
   initSelectsWithDefaults,
@@ -123,7 +121,7 @@ export const setConceptProperties = (
     : value;
 };
 
-export const setTableProperties = (
+const setTableProperties = (
   value: FormConceptGroupT[],
   valueIdx: number,
   conceptIdx: number,
@@ -148,7 +146,7 @@ export const setTableProperties = (
   });
 };
 
-export const setFilterProperties = (
+const setFilterProperties = (
   value: FormConceptGroupT[],
   valueIdx: number,
   conceptIdx: number,
@@ -188,7 +186,7 @@ export const onToggleIncludeSubnodes = (
 
   const conceptData = getConceptById(concept.ids[0]);
 
-  if (!conceptData || !conceptData.children) return value;
+  if (!conceptData?.children) return value;
 
   const childIds: string[] = [];
   const elements: FormConceptGroupT[] = conceptData.children
@@ -246,7 +244,7 @@ export const onToggleIncludeSubnodes = (
   );
 };
 
-export const createQueryNodeFromConceptListUploadResult = (
+const createQueryNodeFromConceptListUploadResult = (
   label: string,
   rootConcepts: TreesT,
   resolvedConcepts: string[],
@@ -485,20 +483,6 @@ export const resetAllSettings = (
   });
 };
 
-export const switchFilterMode = (
-  value: FormConceptGroupT[],
-  valueIdx: number,
-  conceptIdx: number,
-  tableIdx: number,
-  filterIdx: number,
-  mode: ModeT,
-) => {
-  return setFilterProperties(value, valueIdx, conceptIdx, tableIdx, filterIdx, {
-    mode: mode,
-    value: null,
-  });
-};
-
 export const copyConcept = (item: FormConceptNodeT | null) => {
   return JSON.parse(JSON.stringify(item));
 };
@@ -518,9 +502,7 @@ export const updateFilterOptionsWithSuggestions = (
 
   const filter = concept.tables[tableIdx].filters[filterIdx];
 
-  const newOptions: SelectOptionT[] = data.values.map(
-    filterSuggestionToSelectOption,
-  );
+  const newOptions: SelectOptionT[] = data.values;
 
   const options =
     page === 0 ? newOptions : mergeFilterOptions(filter, newOptions);
