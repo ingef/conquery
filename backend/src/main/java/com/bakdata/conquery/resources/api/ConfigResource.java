@@ -30,7 +30,7 @@ public class ConfigResource {
 
 		return new FrontendConfiguration(
 				VersionInfo.INSTANCE.getVersions(),
-				frontendConfig.getCurrency(),
+				config.getPreprocessor().getParsers().getCurrency().getCurrencyCode(),
 				idColumns,
 				frontendConfig.getManualUrl(),
 				frontendConfig.getContactEmail(),

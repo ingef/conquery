@@ -2,9 +2,6 @@
 
 import type { ConceptIdT, ConceptT } from "./js/api/types";
 
-declare const __BUILD_GIT_DESCRIBE__: string;
-declare const __BUILD_TIMESTAMP__: string;
-
 declare namespace NodeJS {
   interface ProcessEnv {
     NODE_ENV: "development" | "production";
@@ -16,6 +13,10 @@ declare namespace NodeJS {
 }
 
 declare global {
+  // build-time constants, see `define` in vite.config.ts
+  const __BUILD_GIT_DESCRIBE__: string;
+  const __BUILD_TIMESTAMP__: string;
+
   interface Window {
     datasetId: string | null;
     conceptTrees: Record<ConceptIdT, Record<ConceptIdT, ConceptT>>;

@@ -165,7 +165,7 @@ const FilterListMultiSelect = ({
 
     if (!hasSomethingToInsert) return;
 
-    const value = includeUnresolved
+    const added = includeUnresolved
       ? [
           ...resolvedResponse.resolvedFilter!.value,
           ...resolvedResponse.unknownCodes.map((item) => ({
@@ -175,7 +175,7 @@ const FilterListMultiSelect = ({
         ]
       : resolvedResponse.resolvedFilter!.value;
 
-    onChange(value);
+    onChange(withoutDuplicates(value, added));
   };
 
   return (

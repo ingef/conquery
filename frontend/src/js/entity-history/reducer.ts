@@ -41,6 +41,7 @@ export type EntityHistoryStateT = {
     searchConcept: string | null;
     searchConnector: string | null;
     searchFilters: string[];
+    prioritizedIdColumns: string[];
   };
   isLoading: boolean;
   isOpen: boolean;
@@ -63,6 +64,7 @@ const initialState: EntityHistoryStateT = {
     searchConcept: null,
     searchConnector: null,
     searchFilters: [],
+    prioritizedIdColumns: [],
   },
   label: "",
   columns: {},
@@ -92,6 +94,7 @@ export default function reducer(
           searchConcept: action.payload.searchConcept,
           searchConnector: action.payload.searchConnector,
           searchFilters: action.payload.searchFilters || [],
+          prioritizedIdColumns: action.payload.prioritizedIdColumns,
         },
       };
     case getType(loadHistoryData.request):

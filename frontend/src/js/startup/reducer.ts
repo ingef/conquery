@@ -19,12 +19,7 @@ const initialState: StartupStateT = {
     queryUpload: {
       ids: [],
     },
-    currency: {
-      unit: "€",
-      thousandSeparator: ".",
-      decimalSeparator: ",",
-      decimalScale: 2,
-    },
+    currency: "EUR",
   },
 };
 

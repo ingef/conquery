@@ -96,7 +96,7 @@ public class MoneyIntStore implements MoneyStore, Initializing {
 			return;
 		}
 
-		decimalShift = config.getFrontend().getCurrency().getDecimalScale();
+		decimalShift = config.getPreprocessor().getParsers().getCurrency().getDefaultFractionDigits();
 	}
 
 	public static class MoneyIntStoreInitializer extends Initializing.Converter<MoneyIntStore> {}
