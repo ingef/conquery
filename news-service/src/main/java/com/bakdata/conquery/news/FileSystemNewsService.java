@@ -54,6 +54,8 @@ public class FileSystemNewsService implements NewsService {
 		this.newsItemReader = om.readerFor(FileSystemNewsItem.class);
 		this.newsItemWriter = om.writerFor(FileSystemNewsItem.class);
 
+		Files.createDirectories(newsFolder);
+
 		Path lockfilePath = newsFolder.resolve(".lock");
 		try{
 
