@@ -1,9 +1,9 @@
-import { type Ref, useRef } from "react";
+import type { Ref } from "react";
+import { useObjectRef } from "react-aria";
 import {
   TextField as RacTextField,
   type TextFieldProps as RacTextFieldProps,
 } from "react-aria-components";
-import { mergeRefs } from "react-merge-refs";
 
 import { exists } from "../common/helpers/exists";
 import { FieldError } from "./FieldError";
@@ -48,7 +48,7 @@ export const TextField = ({
   onChange,
   ...props
 }: TextFieldProps) => {
-  const ownInputRef = useRef<HTMLInputElement>(null);
+  const ownInputRef = useObjectRef(inputRef);
 
   return (
     <RacTextField
@@ -67,7 +67,7 @@ export const TextField = ({
             </Label>
           )}
           <Input
-            ref={mergeRefs([ownInputRef, inputRef])}
+            ref={ownInputRef}
             placeholder={placeholder}
             isDisabled={isDisabled}
             isInvalid={isInvalid}

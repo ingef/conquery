@@ -15,6 +15,7 @@ import {
   ListBoxItem,
   ListBoxLoadMoreItem,
   ListStateContext,
+  Button as RacButton,
   ComboBox as RacComboBox,
   Input as RacInput,
   Tag,
@@ -27,7 +28,7 @@ import type { SelectOptionT } from "../api/types";
 import { exists } from "../common/helpers/exists";
 import { getFileRows } from "../common/helpers/fileHelper";
 import { useDebounce } from "../common/helpers/useDebounce";
-import { Button } from "./Button";
+import { Button, buttonStyle } from "./Button";
 import {
   ComboBoxStateBridge,
   type ComboBoxStateRef,
@@ -46,10 +47,11 @@ import { InputAddons, InputButton, inputControl, inputFrame } from "./Input";
 import { type FieldLabelProps, Label } from "./Label";
 import { Popover } from "./Popover";
 import SelectEmptyPlaceholder from "./SelectEmptyPlaceholder";
-import TooManyValues from "./TooManyValues";
 import { C3, textStyle } from "./Typography";
 
-const MAX_SELECTED_ITEMS_LIMIT = 200;
+// above this the tags collapse into one that only clears them all
+const MAX_TAGS = 20;
+const SUMMARY_TAG = "__summary__";
 
 // tags and the input share the lines inside the frame
 const content = tv({
@@ -59,6 +61,7 @@ const content = tv({
 const tag = tv({
   base: [
     "flex items-center",
+    "h-5 gap-0.5",
     "rounded",
     "bg-gray-50",
     "px-[5px]",
@@ -69,6 +72,14 @@ const tag = tv({
     // react-markdown wraps the label in a paragraph
     "[&_p]:m-0",
   ],
+});
+
+// the tertiary icon button, shrunk to the chip's line where the sm size would stick out
+const tagRemove = buttonStyle({
+  intent: "tertiary",
+  size: "sm",
+  iconOnly: true,
+  class: "size-4 rounded-sm hover:bg-gray-100 [&_svg]:[--icon-size:12px]",
 });
 
 const actionBar = tv({
@@ -153,13 +164,26 @@ export const ComboBoxMultiField = ({
   const [isOpen, setOpen] = useState(false);
   const stateRef: ComboBoxStateRef = useRef(null);
   const selectedKeys = useSelectedKeys(value);
+  const collapsed = value.length > MAX_TAGS;
+  const tags: SelectOptionT[] = collapsed
+    ? [
+        {
+          value: SUMMARY_TAG,
+          label: t("inputMultiSelect.selectedCount", { count: value.length }),
+        },
+      ]
+    : value;
 
+  // not for a value that is already selected: react-aria would toggle it off
   const createRow = useMemo(
     () =>
-      creatable && query && !options.some((o) => String(o.value) === query)
+      creatable &&
+      query &&
+      !options.some((o) => String(o.value) === query) &&
+      !value.some((item) => String(item.value) === query)
         ? { value: query, label: `${t("common.create")}: "${query}"` }
         : null,
-    [creatable, query, options, t],
+    [creatable, query, options, value, t],
   );
 
   const listed = useMemo(
@@ -190,8 +214,9 @@ export const ComboBoxMultiField = ({
   const onSelectionChange = (keys: Key[]) => {
     const selected = new Set(keys);
     const kept = value.filter((item) => selected.has(item.value));
+    const existing = new Set(value.map((item) => item.value));
     const added = [...selected]
-      .filter((key) => !value.some((item) => item.value === key))
+      .filter((key) => !existing.has(key))
       .map((key) =>
         createRow && key === createRow.value
           ? { value: query, label: query }
@@ -261,13 +286,17 @@ export const ComboBoxMultiField = ({
                       className="contents"
                       aria-label={t("inputMultiSelect.selectedValues")}
                       disabledKeys={
-                        isDisabled ? value.map((item) => item.value) : []
+                        isDisabled ? tags.map((item) => item.value) : []
                       }
                       onRemove={(keys) =>
-                        onChange(value.filter((item) => !keys.has(item.value)))
+                        onChange(
+                          collapsed
+                            ? []
+                            : value.filter((item) => !keys.has(item.value)),
+                        )
                       }
                     >
-                      <TagList className="contents" items={value}>
+                      <TagList className="contents" items={tags}>
                         {(item) => (
                           <Tag
                             id={item.value}
@@ -275,9 +304,9 @@ export const ComboBoxMultiField = ({
                             className={tag()}
                           >
                             <OptionLabel option={item} />
-                            <Button slot="remove" intent="tertiary" size="sm">
+                            <RacButton slot="remove" className={tagRemove}>
                               <XIcon />
-                            </Button>
+                            </RacButton>
                           </Tag>
                         )}
                       </TagList>
@@ -295,7 +324,12 @@ export const ComboBoxMultiField = ({
                 maxLength={maxInputLength}
                 {...inputPointerHandlers(stateRef)}
                 onKeyDown={(e) => {
-                  if (e.key === "Backspace" && !query && value.length > 0) {
+                  if (
+                    e.key === "Backspace" &&
+                    !query &&
+                    value.length > 0 &&
+                    !collapsed
+                  ) {
                     onChange(value.slice(0, -1));
                   }
                 }}
@@ -379,19 +413,6 @@ export const ComboBoxMultiField = ({
       )}
     </RacComboBox>
   );
-
-  if (value.length > MAX_SELECTED_ITEMS_LIMIT) {
-    return (
-      <div>
-        {label && (
-          <Label elementType="span" indexPrefix={indexPrefix} tooltip={tooltip}>
-            {label}
-          </Label>
-        )}
-        <TooManyValues count={value.length} onClear={() => onChange([])} />
-      </div>
-    );
-  }
 
   if (!onResolve) return field;
 

@@ -16,18 +16,14 @@
   "rightPane": {
     "tabs": "Editoren",
     "queryEditor": "Editor",
-    "timebasedQueryEditor": "Zeit-Editor",
     "externalForms": "Formular-Editor",
     "editorV2": "Wissenschaftlicher Editor"
   },
   "conceptTreeList": {
     "loading": "Lade Konzepte",
-    "loadingTree": "Lade Konzept: {{tree}}",
     "error": "Konnte Konzept {{tree}} nicht laden.",
     "noTrees": "Keine Konzepte",
     "noTreesExplanation": "Wahrscheinlich ist beim Laden etwas schiefgelaufen. Bitte erneut laden.",
-    "openAll": "Alle aufklappen",
-    "closeAll": "Einzeln aufklappen",
     "searchPlaceholder": "Konzepte durchsuchen ...",
     "showMismatches": "Vollständig anzeigen",
     "showMatchesOnly": "Nur Treffer anzeigen",
@@ -42,7 +38,6 @@
     "startSuccess": "Anfrage gestartet.",
     "endSuccess": "Anfrage erfolgreich",
     "startError": "Anfrage starten fehlgeschlagen.",
-    "resultError": "Anfrageergebnis konnte nicht geladen werden.",
     "resultCount": "Ergebnisse",
     "resultCountSecondaryIdQuery": "Analyse-Ergebnisse",
     "queryFailed": "Anfrage ist fehlgeschlagen.",
@@ -50,8 +45,6 @@
   },
   "queryEditor": {
     "couldNotExpandNode": "Konzept nicht gefunden",
-    "couldNotInsertConceptList": "Fehler beim Einfügen der Konzeptliste",
-    "edit": "Bearbeiten",
     "exclude": "Nicht",
     "date": "Datum",
     "expand": "Expandieren",
@@ -75,7 +68,6 @@
   },
   "dropzone": {
     "dragElementPlease": "Füge ein Element hinzu",
-    "dragQuery": "Füge eine Anfrage hinzu",
     "explanation": "In diesem Bereich erstellst Du eine Anfrage",
     "dropIntoThisArea": "Zum Starten, ziehe Folgendes hinein",
     "aConcept": "ein Konzept",
@@ -84,20 +76,15 @@
   },
   "datasetSelector": {
     "label": "Datensatz",
-    "pleaseChoose": "Datensatz auswählen",
     "error": "Konnte Datensätze nicht laden",
     "disabled": "Der Datensatz kann gerade nicht verändert werden."
   },
   "queryNodeEditor": {
-    "conceptTree": "Konzept",
-    "queryNode": "Abfrageknoten",
-    "conceptNodes": "Konzeptknoten",
     "conceptNodeTables": "Quellen",
     "sections": "Abschnitte",
     "includeTable": "{{table}} einbeziehen",
     "properties": "Allgemeine Einstellungen",
     "reset": "Zurücksetzen",
-    "resetSettings": "Auf Standard zurücksetzen",
     "clearAllSettings": "Alle Felder leeren",
     "clearAllSettingsConfirm": "Jetzt leeren",
     "clearSettings": "Felder leeren",
@@ -105,12 +92,7 @@
     "excludingTimestamps": "Von Zeitberechnung ausgeschlossen",
     "excludeFromSecondaryId": "Von Analyse-Ebene ausschließen",
     "excludingFromSecondaryId": "Von Analyse-Ebene ausgeschlossen",
-    "description": "Beschreibung",
-    "noDescriptionProvided": "Keine Beschreibung verfügbar.",
-    "selectAFilter": "Kein Filter ausgewählt.",
     "dropConcept": "Füge weitere Elemente des selben Konzeptes hinzu",
-    "includeSubnodes": "Untergeordnete Konzepte einbeziehen",
-    "tooManyValues": "{{count}} Werte ausgewählt",
     "filters": "Filter",
     "selects": "Ausgabewerte",
     "commonSelects": "Allgemeine Ausgabewerte",
@@ -143,7 +125,6 @@
     "contact": "Kontakt",
     "confirm": "Bestätigen",
     "back": "Zurück",
-    "any": "Beliebig",
     "save": "Speichern",
     "saveAndCloseEsc": "Speichern und Schließen (ESC)",
     "edit": "Bearbeiten",
@@ -153,22 +134,11 @@
     "and": "und",
     "or": "oder",
     "clear": "Zurücksetzen",
-    "timeUnitDays": "Tage",
-    "title": "Titel",
-    "description": "Beschreibung",
     "clearValue": "Wert entfernen",
     "close": "Schließen",
     "create": "Erstellen",
-    "addTag": "Zu Ordner hinzufügen",
     "share": "Freigeben",
     "shared": "Freigegeben",
-    "loading": "Lade ...",
-    "average": "Mittel",
-    "median": "Median",
-    "min": "Min",
-    "max": "Max",
-    "std": "Std.",
-    "sum": "Summe",
     "logout": "Ausloggen",
     "dateInvalid": "Ungültiges Datum",
     "missingLabel": "Unbenannt",
@@ -188,7 +158,6 @@
     "collapse": "Info-Bereich ausblenden",
     "placeholder": "Weitere Informationen zu Konzepten ...",
     "date": {
-      "daterange": "Zeitraum",
       "from": "Von",
       "to": "Bis"
     }
@@ -200,9 +169,7 @@
   "inputDateRange": {
     "from": "Von",
     "to": "Bis",
-    "placeholder": "Datum wählen",
     "openCalendar": "Kalender öffnen",
-    "today": "Heute",
     "dateFormat": "dd.MM.yyyy",
     "tooltip": {
       "possiblePattern": "Folgende Abkürzungen sind erlaubt <table><tr><td>m8.2020</td><td>von 01.08.2020<br/>bis 31.08.2020</td></tr><tr><td>q2.2020</td><td>von 01.04.2020<br/>bis 30.06.2020</td></tr><tr><td>j2020 j.2020</td><td>von 01.01.2020<br/>bis 31.12.2020</td></tr></table>"
@@ -220,6 +187,7 @@
     "ofTotal": " von {{count}}",
     "tagPlaceholder": "Ordner ...",
     "folders": "Ordner",
+    "selectedCount": "{{count}} Werte ausgewählt",
     "selectedValues": "Ausgewählte Werte"
   },
   "previousQueries": {
@@ -253,26 +221,6 @@
     "queries": "Nur Anfragen",
     "configs": "Nur Formulare"
   },
-  "formConfigsFilter": {
-    "activeForm": "Aktives Formular"
-  },
-  "timebasedQueryEditor": {
-    "headline": "Anfragen in Relation",
-    "opBefore": "VOR",
-    "opBeforeOrSame": "VOR ODER GLEICH",
-    "opDays": "TAGE VOR",
-    "opSame": "GLEICH",
-    "opDaysOrNoEventBefore": "KEIN EREIGNIS IN TAGE VOR",
-    "timestampFirst": "ERSTER",
-    "timestampLast": "LETZTER",
-    "timestampRandom": "ZUFÄLLIG",
-    "timestamp": "Zeitpunkt",
-    "condition": "Bedingung",
-    "timestampResultsFrom": "Nutze als Ergebnis-Zeitstempel",
-    "addCondition": "Bedingung hinzufügen",
-    "minDaysLabel": "Beginn Tage",
-    "maxDaysLabel": "Ende Tage"
-  },
   "externalForms": {
     "manualButton": "Hilfe zum Formular im Handbuch öffnen",
     "forms": "Formular",
@@ -283,8 +231,7 @@
       "validSelectRequired": "Für folgende Konzepte ist ein kompatibler Ausgabewert erforderlich"
     },
     "default": {
-      "conceptDropzoneLabel": "Füge ein Konzept oder eine Konzeptliste hinzu",
-      "conceptColumnDropzoneLabel": "Füge ein Konzept oder eine Konzeptliste hinzu"
+      "conceptDropzoneLabel": "Füge ein Konzept oder eine Konzeptliste hinzu"
     },
     "copyModal": {
       "headline": "Kopieren von Konzepten aus anderem Feld",
@@ -294,31 +241,6 @@
     },
     "common": {
       "connectedWith": "Verknüpfung",
-      "relativeToIndex": "Relativ zum Indexdatum",
-      "timespan": "Zeitraum",
-      "dateMinLabel": "Von",
-      "dateMaxLabel": "Bis",
-      "timeInterval": "Zeitintervall",
-      "indexDate": {
-        "label": "Indexdatum",
-        "before": "DAVOR",
-        "neutral": "GLEICH",
-        "after": "DANACH"
-      },
-      "timeUnit": {
-        "label": "Zeiteinheit",
-        "days": "Tage",
-        "quarters": "Quartale",
-        "years": "Jahre",
-        "complete": "Gesamter Zeitraum"
-      },
-      "timestamp": {
-        "label": "Zeitstempel",
-        "first": "ERSTES",
-        "last": "LETZTES",
-        "random": "ZUFÄLLIG"
-      },
-      "edit": "Bearbeiten",
       "concept": {
         "expand": "Untergeordnete Attribute einbeziehen / wieder ausschließen.",
         "copyFrom": "Kopieren von ...",
@@ -349,13 +271,11 @@
     "semicolon": "Semikolon",
     "colon": "Doppelpunkt",
     "comma": "Komma",
-    "id": "ID",
     "dateSet": "Datumswerte",
     "startDate": "Startdatum",
     "endDate": "Enddatum",
     "extra": "Zusatzspalte",
     "ignore": "Ignorieren",
-    "partialSuccess": "Hochladen teilweise erfolgreich.",
     "resolved_one": "1 Zeile aufgelöst.",
     "resolved_other": "{{count}} Zeilen aufgelöst.",
     "unreadableDate_one": "Datum nicht lesbar in der folgenden Zeile",
@@ -368,13 +288,11 @@
     "label": "Name der Liste",
     "selectConceptRootNode": "Welche Werte sind in der Liste enthalten?",
     "insertNode": "Jetzt einfügen",
-    "result": "Ergebnis",
     "resolvedCodes_one": "1 Wert aufgelöst.",
     "resolvedCodes_other": "{{count}} Werte aufgelöst.",
     "unknownCodes_one": "1 Wert nicht aufgelöst",
     "unknownCodes_other": "{{count}} Werte nicht aufgelöst",
     "error": "Beim Auflösen der Werte ist ein Fehler aufgetreten.",
-    "nothingResolved": "Kein Konzept konnte aufgelöst werden.",
     "filterValuesFrom": "Filterwerte aus",
     "conceptValuesFrom": "Konzepte aus",
     "includeUnresolved": "Nicht aufgelöste Werte mit einfügen",
@@ -384,21 +302,13 @@
   "uploadFilterListModal": {
     "headline": "Filter-Werte aus Liste einfügen"
   },
-  "conceptListDetailsModal": {
-    "conceptTreeRoot": "Konzept",
-    "conceptCodes": "Konzeptcodes"
-  },
   "uploadQueryResults": {
     "uploadResults": "Lade Anfrageergebnis hoch"
   },
   "previousQueriesFolderButton": {
     "tooltip": "Ordner anzeigen / verstecken"
   },
-  "authorization": {
-    "unauthorized": "Authorisierung fehlgeschlagen. Ein Authorisierungs-Token fehlt, oder ist abgelaufen"
-  },
   "search": {
-    "placeholder": "Suchen ...",
     "resultLabel": "{{totalResults}} Ergebnisse ({{duration}} s)"
   },
   "inputDate": {
@@ -437,9 +347,7 @@
     "submit": "Starten"
   },
   "formConfigs": {
-    "loading": "Lade Formular-Konfigurationen",
-    "error": "Konnte Formular-Konfigurationen nicht laden",
-    "noneFound": "Keine Formular-Konfigurationen gefunden"
+    "error": "Konnte Formular-Konfigurationen nicht laden"
   },
   "formConfig": {
     "loadSuccess": "Formular-Konfiguration <strong>{{label}}</strong> wurde erfolgreich geladen.",
@@ -455,7 +363,6 @@
     "closeAll": "Alle Konzepte schließen"
   },
   "folders": {
-    "headline": "Ordner",
     "noFolders": "ohne",
     "allQueries": "Alle",
     "add": "Neuer Ordner",
@@ -473,7 +380,6 @@
     "tabConceptTrees": "Auswahl der Konzepte zur Verwendung im Editor oder Formular-Editor.",
     "tabPreviousQueries": "Auswahl der getätigten Anfragen zur Verwendung im Editor, Zeit-Editor oder Formular-Editor. Auswahl der gespeicherten Formulare zur Verwendung im Formular-Editor.",
     "tabQueryEditor": "Hier kann eine Anfrage gestellt werden.",
-    "tabTimebasedEditor": "Hier kann eine Zeit-Anfrage gestellt werden. Das heißt, dass mehrere Anfragen in zeitlichen Bezug gesetzt werden können.",
     "tabFormEditor": "Hier können Auswertungen und Analysen zu bestehenden Anfragen erstellt werden.",
     "tabEditorV2": "Erweiterter Editor. Hier kann eine komplexe Anfrage gestellt werden.",
     "datasetSelector": "Auswahl des Datensatzes – die jeweiligen Konzepte, Anfragen und Formulare werden geladen.",
@@ -483,8 +389,7 @@
     "queryEditorExclude": "Auswahl führt dazu dass Ergebnisse selektiert werden, die die Konzepte in dieser Spalte nicht enthalten.",
     "queryEditorDate": "Auswahl des Datumsbereiches für alle Konzepte in dieser Spalte.",
     "editorDropzoneAnd": "Konzepte hier ablegen um sie per UND zu verknüpfen. Via Klick kann eine Konzeptliste ausgewählt werden.",
-    "editorDropzoneOr": "Konzepte hier ablegen um sie per ODER zu verknüpfen. Via Klick kann eine Konzeptliste ausgewählt werden.",
-    "queryNodeDetails": "Detail-Einstellungen bearbeiten"
+    "editorDropzoneOr": "Konzepte hier ablegen um sie per ODER zu verknüpfen. Via Klick kann eine Konzeptliste ausgewählt werden."
   },
   "history": {
     "infoTabs": "Info-Kategorien",
@@ -511,7 +416,6 @@
     "nextButtonLabel": "Weiterblättern",
     "prevButtonLabel": "Zurückblättern",
     "downloadEntityData": "Einzelhistorie herunterladen",
-    "differencesTooltip": "Unterschiede aus den einzelnen Einträgen",
     "closeAll": "Alle schließen",
     "openAll": "Alle aufklappen",
     "searchEntitiesButton": "Historie starten",
@@ -527,7 +431,6 @@
     },
     "content": {
       "money": "Geldbeträge",
-      "secondaryId": "IDs aus Analyse-Ebene",
       "concept": "Konzepte",
       "rest": "Zusatzinfos",
       "fingerprint": "IDs"
@@ -541,8 +444,6 @@
       "selectStatusTooltip": "Hier werden die möglichen Status-Werte festgelegt, die danach an die einzelnen Entitäten vergeben werden können."
     },
     "load": {
-      "importDescription": "Bitte CSV-Format mit folgenden Spalten verwenden:<br /><code><strong>ID-Art</strong>;<strong>ID</strong> (+ optional: ;<strong>Status 1</strong>;<strong>Status 2</strong>;...)</code>",
-      "importPlaceholder": "{{idkind}};A0123456788;auffällig;\n{{idkind}};A0123456789;;unauffällig",
       "error": "Konnte Historie für diese Datei nicht laden."
     },
     "searchResultLabel": "Gefundene IDs",
@@ -564,7 +465,6 @@
     "flip": "Drehen",
     "dates": "Datum",
     "negate": "Nicht",
-    "connector": "Verknüpfung",
     "timeConnection": "Zeitverknüpfung",
     "editTimeConnection": "Zeitverknüpfung bearbeiten",
     "timestamp": "Zeitpunkt",
@@ -575,7 +475,6 @@
     "delete": "Löschen",
     "expand": "Expandieren",
     "edit": "Details",
-    "initialDropText": "Ziehe ein Konzept oder eine Anfrage hier hinein.",
     "datesExcluded": "Keine Datumswerte",
     "outputSection": "Ausgabewerte",
     "filtersSection": "Filter",

@@ -1,8 +1,12 @@
 import { useId } from "react";
+import { useLocale } from "react-aria";
 import { Group } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import type { CurrencyConfigT } from "../api/types";
+import {
+  currencyFractionDigits,
+  currencySymbol,
+} from "../common/helpers/currency";
 import { exists } from "../common/helpers/exists";
 import { Label } from "./Label";
 import { NumberField } from "./NumberField";
@@ -26,14 +30,15 @@ interface PropsType {
   isDisabled?: boolean;
   stepSize?: number;
   tooltip?: string;
-  currencyConfig?: CurrencyConfigT;
+  /** ISO 4217 code, for a money range */
+  currency?: string;
 }
 
 /** Two bounds, each optional: one alone is an open range, equal bounds an exact value. */
 export const NumberRangeField = ({
   limits,
   stepSize,
-  currencyConfig,
+  currency,
   moneyRange,
   isDisabled,
   label,
@@ -44,12 +49,19 @@ export const NumberRangeField = ({
   onChange,
 }: PropsType) => {
   const { t } = useTranslation();
+  const { locale } = useLocale();
   const labelId = useId();
   const min = value?.min ?? null;
   const max = value?.max ?? null;
 
   // money is stored in the smallest unit and shown in the major one
-  const money = moneyRange && currencyConfig ? currencyConfig : null;
+  const money =
+    moneyRange && currency
+      ? {
+          decimalScale: currencyFractionDigits(currency),
+          unit: currencySymbol(locale, currency),
+        }
+      : null;
   const factor = money ? 10 ** money.decimalScale : 1;
 
   const numberProps = {

@@ -19,11 +19,11 @@ import type {
   TableWithFilterValueT,
 } from "../standard-query-editor/types";
 
-import type { ConceptIdT, DateRangeT } from "./types";
+import type { ConceptIdT, DateRangeT, FilterConfigT } from "./types";
 
 export const transformFilterValueToApi = (
   filter: FilterWithValueType,
-): NonNullable<unknown> | null /* aka: "not undefined", to ensure a type error when a new filter.type is added */ => {
+): FilterConfigT["value"] | null => {
   switch (filter.type) {
     case "BIG_MULTI_SELECT":
     case "MULTI_SELECT":

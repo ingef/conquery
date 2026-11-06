@@ -1,14 +1,12 @@
 import { memo } from "react";
-import { useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
 
 import type {
-  CurrencyConfigT,
   FilterT,
   PostFilterSuggestionsResponseT,
   RangeFilterValueT,
 } from "../api/types";
-import type { StateT } from "../app/reducers";
+import { useCurrency } from "../common/useMoneyFormatter";
 import type { FilterWithValueType } from "../standard-query-editor/types";
 import { ComboBoxField } from "../ui-components/ComboBoxField";
 import { NumberRangeField } from "../ui-components/NumberRangeField";
@@ -47,9 +45,7 @@ const TableFilter = ({
   onLoadFilterSuggestions,
   onSetFilterValue,
 }: TableFilterProps) => {
-  const currencyConfig = useSelector<StateT, CurrencyConfigT>(
-    (state) => state.startup.config.currency,
-  );
+  const currency = useCurrency();
 
   const filterComponent = (() => {
     switch (filter.type) {
@@ -156,7 +152,7 @@ const TableFilter = ({
             label={filter.label}
             tooltip={filter.tooltip}
             isDisabled={!!excludeTable}
-            currencyConfig={currencyConfig}
+            currency={currency}
           />
         );
       default:

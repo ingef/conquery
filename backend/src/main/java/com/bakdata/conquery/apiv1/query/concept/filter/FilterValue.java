@@ -172,7 +172,7 @@ public abstract class FilterValue<VALUE> {
 
 		@Override
 		public MoneyRange readValue() {
-			return MoneyRange.fromNumberRange((LongRange) getValue(), config.getFrontend().getCurrency());
+			return MoneyRange.fromNumberRange((LongRange) getValue(), config.getPreprocessor().getParsers().getCurrency());
 		}
 	}
 
