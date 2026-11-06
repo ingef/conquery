@@ -8,6 +8,8 @@ context("Admin UI News", () => {
     const customNewsId = `custom-news-${suffix}`;
     const olderTitle = `Older Cypress News ${suffix}`;
     const olderNewsId = olderTitle.toLowerCase().replaceAll(" ", "-");
+    const scheduledTitle = `Scheduled Cypress News ${suffix}`;
+    const scheduledNewsId = scheduledTitle.toLowerCase().replaceAll(" ", "-");
 
     visitAdminUI("datasets");
     cy.get('[data-test-id="entity-name"]').type(`News Dataset ${suffix}`);
@@ -47,6 +49,17 @@ context("Admin UI News", () => {
     cy.get('[data-test-id="create-news-btn"]').click();
     cy.get(`[data-test-id="news-row-${olderNewsId}"]`).should("exist");
 
+    cy.get('[data-test-id="news-title"]').type(scheduledTitle);
+    cy.get('[data-test-id="news-id"]').should("have.value", scheduledNewsId);
+    cy.get('[data-test-id="news-description"]').type("Scheduled news item");
+    cy.get('[data-test-id="news-date"]').type("2999-12-31");
+    cy.get('[data-test-id="create-news-btn"]').click();
+    cy.get(`[data-test-id="news-row-${scheduledNewsId}"]`)
+      .should("exist")
+      .and("have.class", "table-warning");
+    cy.get(`[data-test-id="news-publication-status-${scheduledNewsId}"]`)
+      .should("have.text", "Not published yet");
+
     dismissVisibleToasts();
     cy.get(`[data-test-id="news-row-${customNewsId}"]`).then(($newerRow) => {
       cy.get(`[data-test-id="news-row-${olderNewsId}"]`).then(($olderRow) => {
@@ -58,6 +71,9 @@ context("Admin UI News", () => {
     cy.on("window:confirm", () => true);
     cy.get(`[data-test-id="delete-news-${olderNewsId}"]`).click();
     cy.get(`[data-test-id="news-row-${olderNewsId}"]`).should("not.exist");
+    dismissVisibleToasts();
+    cy.get(`[data-test-id="delete-news-${scheduledNewsId}"]`).click();
+    cy.get(`[data-test-id="news-row-${scheduledNewsId}"]`).should("not.exist");
     dismissVisibleToasts();
     cy.get(`[data-test-id="delete-news-${customNewsId}"]`).click();
     cy.get(`[data-test-id="news-row-${customNewsId}"]`).should("not.exist");

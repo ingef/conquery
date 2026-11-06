@@ -4,7 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.net.URI;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +28,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(DropwizardExtensionsSupport.class)
 class AdminNewsResourceTest {
+	private static final NewsPublicationPolicy PUBLICATION_POLICY = new NewsPublicationPolicy(Clock.fixed(
+			Instant.parse("2026-10-27T12:00:00Z"),
+			ZoneId.of("Europe/Berlin")
+	));
 
 	private static final NewsItem NEWS_ITEM = new NewsItem(
 			"release-1",
@@ -34,9 +41,17 @@ class AdminNewsResourceTest {
 			LocalDate.of(2026, 9, 30),
 			Set.of("dataset-a")
 	);
+	private static final NewsItem SCHEDULED_NEWS_ITEM = new NewsItem(
+			"release-2",
+			"Release 2",
+			"The second release",
+			URI.create("https://example.com/releases/2"),
+			LocalDate.of(2026, 10, 28),
+			Set.of("dataset-a")
+	);
 	private static final InMemoryNewsService NEWS_SERVICE = new InMemoryNewsService();
 	private static final ResourceExtension EXT = ResourceExtension.builder()
-			.addResource(new AdminNewsResource(NEWS_SERVICE))
+			.addResource(new AdminNewsResource(NEWS_SERVICE, PUBLICATION_POLICY))
 			.setRegisterDefaultExceptionMappers(false)
 			.addProvider(JsonValidationExceptionMapper.class)
 			.addProvider(NoSuchElementExceptionMapper.class)
@@ -51,13 +66,17 @@ class AdminNewsResourceTest {
 	@Test
 	void listsAllNewsItems() throws IOException {
 		NEWS_SERVICE.addNewsItem(NEWS_ITEM);
+		NEWS_SERVICE.addNewsItem(SCHEDULED_NEWS_ITEM);
 
 		try(Response response = EXT.target("/news").request().get()) {
 			assertThat(response.getStatus()).isEqualTo(Response.Status.OK.getStatusCode());
 			JsonNode body = response.readEntity(JsonNode.class);
-			assertThat(body).hasSize(1);
+			assertThat(body).hasSize(2);
 			assertThat(body.get(0).get("id").asText()).isEqualTo("release-1");
 			assertThat(body.get(0).get("categories").get(0).asText()).isEqualTo("dataset-a");
+			assertThat(body.get(0).get("publicationStatus").asText()).isEqualTo("PUBLISHED");
+			assertThat(body.get(1).get("id").asText()).isEqualTo("release-2");
+			assertThat(body.get(1).get("publicationStatus").asText()).isEqualTo("SCHEDULED");
 		}
 	}
 
@@ -66,7 +85,9 @@ class AdminNewsResourceTest {
 		try(Response response = EXT.target("/news").request()
 				.post(Entity.entity(newsJson(NEWS_ITEM), MediaType.APPLICATION_JSON_TYPE))) {
 			assertThat(response.getStatus()).isEqualTo(Response.Status.CREATED.getStatusCode());
-			assertThat(response.readEntity(JsonNode.class).get("id").asText()).isEqualTo("release-1");
+			JsonNode body = response.readEntity(JsonNode.class);
+			assertThat(body.get("id").asText()).isEqualTo("release-1");
+			assertThat(body.get("publicationStatus").asText()).isEqualTo("PUBLISHED");
 		}
 
 		assertThat(NEWS_SERVICE.getNews(null)).containsExactly(NEWS_ITEM);
