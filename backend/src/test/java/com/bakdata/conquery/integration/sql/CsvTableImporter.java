@@ -148,7 +148,7 @@ public class CsvTableImporter {
 			case BOOLEAN -> SQLDataType.BOOLEAN;
 			// TODO (ja) how do we handle REAL and DECIMAL properly?
 			case REAL, DECIMAL, MONEY -> SQLDataType.DECIMAL(10, 2);
-			case DATE -> SQLDataType.DATE.nullable(true);
+			case DATE -> testSqlDialect.getTestFunctionProvider().getDateType().nullable(true);
 			default -> throw new IllegalArgumentException("Unsupported data type: " + requiredColumn.getType());
 		};
 
@@ -231,7 +231,7 @@ public class CsvTableImporter {
 			case INTEGER -> record.getInt(column);
 			case REAL -> record.getDouble(column);
 			case DECIMAL, MONEY -> record.getBigDecimal(column);
-			case DATE -> dateReader.parseToLocalDate(record.getString(column));
+			case DATE -> testSqlDialect.getTestFunctionProvider().toDateValue(dateReader.parseToLocalDate(record.getString(column)));
 			default -> throw new IllegalArgumentException("Unsupported data type: " + type);
 		};
 	}
