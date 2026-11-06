@@ -7,7 +7,7 @@ interface ContextT {
   datasetId?: string;
 }
 
-export function selectPermissions(
+function selectPermissions(
   state: StateT,
 ): Record<DatasetT["id"], PermissionsT> | null {
   return state.user.me?.datasetAbilities

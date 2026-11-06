@@ -1,9 +1,8 @@
-import { faCalendarMinus } from "@fortawesome/free-regular-svg-icons";
 import { createId } from "@paralleldrive/cuid2";
+import { CalendarMinusIcon } from "lucide-react";
 import { type DOMAttributes, memo } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-
 import { DNDType } from "../common/constants/dndTypes";
 import { nodeIsConceptQueryNode, useActiveState } from "../model/node";
 import { getRootNodeLabel } from "../standard-query-editor/helper";
@@ -15,12 +14,12 @@ import Dropzone, {
   type DropzoneProps,
   type PossibleDroppableObject,
 } from "../ui-components/Dropzone";
-import { Icon } from "../ui-components/Icon";
 import {
   Tooltip,
   TooltipTarget,
   TooltipTrigger,
 } from "../ui-components/Tooltip";
+import { C2, C3 } from "../ui-components/Typography";
 import { EDITOR_DROP_TYPES } from "./config";
 import { DateRange } from "./date-restriction/DateRange";
 import { Connector, Grid } from "./EditorLayout";
@@ -105,30 +104,7 @@ const InvisibleDropzone = (
   );
 };
 
-const previousQueryLabel = tv({
-  base: [
-    "leading-[1.2]",
-    "text-xs",
-    "uppercase",
-    "font-bold",
-    "text-primary-500",
-  ],
-});
-
-const rootNode = tv({
-  base: [
-    "leading-none",
-    "text-xs",
-    "uppercase",
-    "font-bold",
-    "text-primary-500",
-    "[word-break:break-word]",
-  ],
-});
-
-const dates = tv({
-  base: ["text-right", "text-xs", "uppercase", "font-normal"],
-});
+const dates = tv({ base: "text-right" });
 
 export function TreeNode({
   tree,
@@ -301,28 +277,23 @@ export function TreeNode({
                 )}
                 {tree.dates?.excluded && (
                   <div className={dates()}>
-                    <Icon
-                      icon={faCalendarMinus}
-                      className="mr-[10px] text-red"
-                    />
-                    {t("editorV2.datesExcluded")}
+                    <CalendarMinusIcon className="mr-[10px] text-red" />
+                    <C3 as="span">{t("editorV2.datesExcluded")}</C3>
                   </div>
                 )}
                 {(!tree.children || tree.data) && (
                   <div className="flex flex-col gap-1">
                     {tree.data?.type !== DNDType.CONCEPT_TREE_NODE && (
-                      <p className={previousQueryLabel()}>
+                      <C3 tone="muted" strong>
                         {t("queryEditor.previousQuery")}
-                      </p>
+                      </C3>
                     )}
                     {rootNodeLabel && (
-                      <p className={rootNode()}>{rootNodeLabel}</p>
+                      <C3 tone="muted" strong>
+                        {rootNodeLabel}
+                      </C3>
                     )}
-                    {tree.data?.label && (
-                      <div className="text-sm font-normal text-gray-800">
-                        {tree.data.label}
-                      </div>
-                    )}
+                    {tree.data?.label && <C2>{tree.data.label}</C2>}
                     {tree.data && nodeIsConceptQueryNode(tree.data) && (
                       <TreeNodeConcept
                         node={tree.data}

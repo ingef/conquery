@@ -4,18 +4,10 @@ import { tv } from "tailwind-variants";
 
 import { exists } from "../common/helpers/exists";
 import type { DragItemConceptTreeNode } from "../standard-query-editor/types";
-
-const sectionHeading = tv({
-  base: ["font-bold", "text-primary-500", "uppercase", "text-xs"],
-});
+import { C3, H5 } from "../ui-components/Typography";
 
 const description = tv({
-  base: [
-    "flex items-center flex-wrap",
-    "gap-x-[5px] gap-y-0",
-    "text-xs",
-    "text-gray-800",
-  ],
+  base: ["flex items-center flex-wrap", "gap-x-[5px] gap-y-0"],
 });
 
 export const TreeNodeConcept = ({
@@ -44,15 +36,15 @@ export const TreeNodeConcept = ({
   return (
     <>
       {node.description && (
-        <div className={description()}>{node.description}</div>
+        <div className={description()}>
+          <C3 as="span">{node.description}</C3>
+        </div>
       )}
       {showAppendix && (
         <div className="mt-2 flex flex-col gap-[6px]">
           {selectedSelects.length > 0 && (
             <div>
-              <h4 className={sectionHeading()}>
-                {t("editorV2.outputSection")}
-              </h4>
+              <H5 as="h4">{t("editorV2.outputSection")}</H5>
               <div className={description()}>
                 <Value value={selectedSelects} />
               </div>
@@ -60,12 +52,10 @@ export const TreeNodeConcept = ({
           )}
           {filtersWithValues.length > 0 && (
             <div>
-              <h4 className={sectionHeading()}>
-                {t("editorV2.filtersSection")}
-              </h4>
+              <H5 as="h4">{t("editorV2.filtersSection")}</H5>
               {filtersWithValues.map((f) => (
                 <div key={f.label} className={description()}>
-                  <span className="font-normal">{f.label}:</span>
+                  <C3 as="span">{f.label}:</C3>
                   <Value value={f.value} />
                 </div>
               ))}
@@ -86,13 +76,13 @@ const Value = ({
 }) => {
   if (typeof value === "string" || typeof value === "number") {
     return (
-      <span>
+      <C3 as="span">
         {value}
         {isElement && ","}
-      </span>
+      </C3>
     );
   } else if (typeof value === "boolean") {
-    return <span>{value ? "✔" : "✗"}</span>;
+    return <C3 as="span">{value ? "✔" : "✗"}</C3>;
   } else if (Array.isArray(value)) {
     return (
       <>
@@ -101,7 +91,7 @@ const Value = ({
             <Value key={idx} value={v} isElement={idx < value.length - 1} />
           </>
         ))}
-        {value.length > 10 && <span>{`... +${value.length - 10}`}</span>}
+        {value.length > 10 && <C3 as="span">{`... +${value.length - 10}`}</C3>}
       </>
     );
   } else if (
@@ -110,10 +100,10 @@ const Value = ({
     typeof value.label === "string"
   ) {
     return (
-      <span>
+      <C3 as="span">
         {value.label}
         {isElement && ","}
-      </span>
+      </C3>
     );
   } else if (value instanceof Object) {
     return (
@@ -128,8 +118,8 @@ const Value = ({
       </>
     );
   } else if (value === null) {
-    return <span></span>;
+    return <C3 as="span"></C3>;
   } else {
-    return <span>{JSON.stringify(value)}</span>;
+    return <C3 as="span">{JSON.stringify(value)}</C3>;
   }
 };

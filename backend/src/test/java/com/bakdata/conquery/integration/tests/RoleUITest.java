@@ -51,13 +51,13 @@ public class RoleUITest extends IntegrationTest.Simple implements ProgrammaticIn
 
 			URI classBase = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder(), RoleUIResource.class, "getRole")
 				.buildFromMap(Map.of(ROLE_ID, mandatorId.toString()));
-	
+
 			Response response = conquery
 				.getClient()
 				.target(classBase)
 				.request()
 				.get();
-	
+
 			assertThat(response.getStatus()).isEqualTo(200);
 			// Check for Freemarker Errors
 			assertThat(response.readEntity(String.class).toLowerCase()).doesNotContain(List.of("freemarker", "debug"));

@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 public class RemoveWorker extends MessageToShardNode.Slow {
 
 	private final DatasetId dataset;
-	
+
 	@Override
 	public void react(ShardNodeNetworkContext context) throws Exception {
 		log.info("Removing worker {}", dataset);

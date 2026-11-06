@@ -2,8 +2,6 @@ package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
 import java.math.BigDecimal;
 import java.util.List;
-
-import com.bakdata.conquery.models.common.ColumnUtils;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
@@ -26,10 +24,11 @@ import com.bakdata.conquery.models.query.filter.event.number.RealFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.bakdata.conquery.sql.conversion.model.filter.NumberFilterConverter;
+import com.bakdata.conquery.util.validation.ResolvableId;
+import com.bakdata.conquery.util.validation.SupportedColumnTypes;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
-import io.dropwizard.validation.ValidationMethod;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -46,6 +45,8 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Eve
 
 	@Valid
 	@NotNull
+	@ResolvableId
+	@SupportedColumnTypes(numericTypes = true)
 	private ColumnId column;
 
 	@JsonIgnore
@@ -92,10 +93,4 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Eve
 		return new NumberFilterConverter<>();
 	}
 
-
-	@JsonIgnore
-	@ValidationMethod(message = "Columns do not match required Type.")
-	public boolean isValidColumnType() {
-		return ColumnUtils.assertValidColumnTypes(getColumn(), MajorTypeId.NUMERIC);
-	}
 }

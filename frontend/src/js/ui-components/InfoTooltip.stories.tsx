@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
 import InfoTooltip from "./InfoTooltip";
-import Label from "./Label";
+import { Label } from "./Label";
 
 export default {
   title: "UiComponents/InfoTooltip",

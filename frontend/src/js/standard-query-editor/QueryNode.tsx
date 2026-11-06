@@ -14,7 +14,7 @@ import {
   useActiveState,
 } from "../model/node";
 import { isQueryExpandable } from "../model/query";
-import { HoverNavigatable } from "../small-tab-navigation/HoverNavigatable";
+import { HoverNavigatable } from "../ui-components/HoverNavigatable";
 import { getRootNodeLabel } from "./helper";
 import QueryNodeActions from "./QueryNodeActions";
 import QueryNodeContent from "./QueryNodeContent";
@@ -28,7 +28,6 @@ const root = tv({
     "mx-auto",
     "p-[7px]",
     "rounded",
-    "text-sm",
     "text-left",
     "cursor-pointer",
     "transition-[background-color] duration-100",

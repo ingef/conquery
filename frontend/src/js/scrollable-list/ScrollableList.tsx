@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { tv } from "tailwind-variants";
 import { IncrementalList } from "../ui-components/IncrementalList";
+import { C2 } from "../ui-components/Typography";
 
 interface PropsType {
   items: ReactNode[];
@@ -24,14 +25,7 @@ const root = tv({
 });
 
 const item = tv({
-  base: [
-    "max-w-full",
-    "px-[10px]",
-    "border-b border-gray-50",
-    "overflow-hidden text-ellipsis whitespace-nowrap",
-    "text-sm",
-    "leading-6",
-  ],
+  base: ["max-w-full", "px-[10px]", "border-b border-gray-50", "py-0.5"],
 });
 
 const ScrollableList = ({
@@ -43,7 +37,7 @@ const ScrollableList = ({
   const renderItem = (index: number) => {
     return (
       <div key={index} className={item({ className: "scrollable-list-item" })}>
-        {items[index]}
+        <C2 truncate>{items[index]}</C2>
       </div>
     );
   };

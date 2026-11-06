@@ -1,9 +1,6 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
-import java.util.EnumSet;
 import java.util.List;
-
-import com.bakdata.conquery.models.common.ColumnUtils;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
@@ -17,8 +14,8 @@ import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.filter.event.PrefixTextFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.dropwizard.validation.ValidationMethod;
+import com.bakdata.conquery.util.validation.ResolvableId;
+import com.bakdata.conquery.util.validation.SupportedColumnTypes;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +28,8 @@ public class PrefixTextFilter extends EventFilter<String> {
 
 	@Valid
 	@NotNull
+	@ResolvableId
+	@SupportedColumnTypes(MajorTypeId.STRING)
 	private ColumnId column;
 
 
@@ -42,13 +41,6 @@ public class PrefixTextFilter extends EventFilter<String> {
 	@Override
 	public List<ColumnId> getRequiredColumns() {
 		return List.of(getColumn());
-	}
-
-
-	@JsonIgnore
-	@ValidationMethod(message = "Columns do not match required Type.")
-	public boolean isValidColumnType() {
-		return ColumnUtils.assertValidColumnTypes(getColumn(), EnumSet.of(MajorTypeId.STRING));
 	}
 
 	@Override

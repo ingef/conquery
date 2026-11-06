@@ -1,5 +1,12 @@
 package com.bakdata.conquery.sql.conversion.query;
 
+import static org.jooq.impl.DSL.*;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
@@ -17,13 +24,6 @@ import com.google.common.base.Preconditions;
 import lombok.RequiredArgsConstructor;
 import org.jooq.*;
 import org.jooq.Record;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static org.jooq.impl.DSL.*;
 
 @RequiredArgsConstructor
 public class FormConversionHelper {

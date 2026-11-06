@@ -1,19 +1,14 @@
-import { faCaretDown, faCaretRight } from "@fortawesome/free-solid-svg-icons";
+import { ChevronDownIcon, ChevronRightIcon } from "lucide-react";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
-import type {
-  ColumnDescription,
-  ConceptIdT,
-  CurrencyConfigT,
-} from "../../api/types";
-import { Icon } from "../../ui-components/Icon";
+import type { ColumnDescription, ConceptIdT } from "../../api/types";
+import { C3, H4 } from "../../ui-components/Typography";
 import type { ContentFilterValue } from "../ContentControl";
 import type { DetailLevel } from "../DetailControl";
 import type { EntityEvent } from "../reducer";
 import EventCard from "./EventCard";
-import { SmallHeading } from "./SmallHeading";
 import type { ColumnBuckets } from "./util/useColumnInformation";
 
 const eventTimeline = tv({
@@ -34,19 +29,11 @@ const verticalLine = tv({
 });
 
 const quarterHead = tv({
-  base: [
-    "sticky top-0",
-    "z-2",
-    "bg-bg-100",
-    "-ml-[6px]",
-    "w-[calc(100%+8px)]",
-    "text-xs",
-    "leading-none",
-  ],
+  base: ["sticky top-0", "z-2", "bg-bg-100", "-ml-[6px]", "w-[calc(100%+8px)]"],
   variants: {
     empty: {
       true: "text-gray-100",
-      false: "text-gray-500",
+      false: "text-gray-600",
     },
   },
 });
@@ -75,7 +62,6 @@ export const Quarter = memo(
     dateColumn,
     sourceColumn,
     columnBuckets,
-    currencyConfig,
     rootConceptIdsByColumn,
     contentFilter,
   }: {
@@ -92,7 +78,6 @@ export const Quarter = memo(
     sourceColumn: ColumnDescription;
     columnBuckets: ColumnBuckets;
     contentFilter: ContentFilterValue;
-    currencyConfig: CurrencyConfigT;
     rootConceptIdsByColumn: Record<string, ConceptIdT>;
   }) => {
     const { t } = useTranslation();
@@ -109,17 +94,18 @@ export const Quarter = memo(
             className={inlineGrid()}
             onClick={() => toggleOpenQuarter(year, quarter)}
           >
-            <Icon
-              icon={isOpen ? faCaretDown : faCaretRight}
-              className="text-gray-500"
-            />
-            <SmallHeading className="leading-none">Q{quarter} </SmallHeading>
-            <span>
+            {isOpen ? (
+              <ChevronDownIcon className="text-gray-500" />
+            ) : (
+              <ChevronRightIcon className="text-gray-500" />
+            )}
+            <H4 as="span">Q{quarter} </H4>
+            <C3 as="span">
               – {totalEventsPerQuarter}{" "}
               {t("history.events", {
                 count: totalEventsPerQuarter,
               })}
-            </span>
+            </C3>
             {detailLevel === "summary" && (
               <MemoizedBoxes totalEventsPerQuarter={totalEventsPerQuarter} />
             )}
@@ -152,7 +138,6 @@ export const Quarter = memo(
                       contentFilter={contentFilter}
                       rootConceptIdsByColumn={rootConceptIdsByColumn}
                       row={evt}
-                      currencyConfig={currencyConfig}
                     />
                   ));
                 } else {
@@ -176,7 +161,6 @@ export const Quarter = memo(
                       contentFilter={contentFilter}
                       rootConceptIdsByColumn={rootConceptIdsByColumn}
                       row={firstRowWithoutDifferences}
-                      currencyConfig={currencyConfig}
                       groupedRows={group}
                       groupedRowsKeysWithDifferentValues={groupDifferences}
                     />

@@ -1,10 +1,10 @@
-import { faFolder } from "@fortawesome/free-solid-svg-icons";
+import { FolderIcon } from "lucide-react";
 import { memo } from "react";
 import { tv } from "tailwind-variants";
 import type { ConceptIdT, ConceptT } from "../../api/types";
 import { getConceptById } from "../../concept-trees/globalTreeStoreHelper";
 import { Highlighter } from "../../ui-components/Highlighter";
-import { Icon } from "../../ui-components/Icon";
+import { C2 } from "../../ui-components/Typography";
 import { useTimelineSearch } from "../timeline-search/timelineSearchState";
 
 const conceptRoot = tv({
@@ -34,7 +34,7 @@ const ConceptLabel = ({
     : conceptId;
 
   return (
-    <span className="font-normal">
+    <C2 as="span">
       {searchTerm && searchTerm.length > 0 ? (
         <Highlighter
           searchWords={searchTerm.split(" ")}
@@ -43,7 +43,7 @@ const ConceptLabel = ({
       ) : (
         label
       )}
-    </span>
+    </C2>
   );
 };
 
@@ -54,13 +54,17 @@ const RootConceptLabel = ({
   rootConcept: ConceptT;
   searchTerm?: string;
 }) => {
-  return searchTerm && searchTerm.length > 0 ? (
-    <Highlighter
-      searchWords={searchTerm.split(" ")}
-      textToHighlight={`${rootConcept.label} `}
-    />
-  ) : (
-    `${rootConcept.label} `
+  return (
+    <C2 as="span">
+      {searchTerm && searchTerm.length > 0 ? (
+        <Highlighter
+          searchWords={searchTerm.split(" ")}
+          textToHighlight={`${rootConcept.label} `}
+        />
+      ) : (
+        `${rootConcept.label} `
+      )}
+    </C2>
   );
 };
 
@@ -71,7 +75,7 @@ const ConceptName = ({ className, title, rootConceptId, conceptId }: Props) => {
   if (!concept) {
     return (
       <span className={className} title={title}>
-        {conceptId}
+        <C2 as="span">{conceptId}</C2>
       </span>
     );
   }
@@ -92,7 +96,7 @@ const ConceptName = ({ className, title, rootConceptId, conceptId }: Props) => {
 
   return (
     <div title={title} className={conceptRoot({ className })}>
-      <Icon icon={faFolder} className="text-primary-500" />
+      <FolderIcon data-filled className="text-primary-500" />
       <span>
         {rootConcept && (
           <RootConceptLabel rootConcept={rootConcept} searchTerm={searchTerm} />

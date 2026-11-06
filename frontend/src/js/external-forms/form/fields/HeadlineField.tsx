@@ -1,11 +1,7 @@
 import type { ComponentProps } from "react";
 import { exists } from "../../../common/helpers/exists";
 import type { Headline } from "../../config-types";
-import {
-  getHeadlineFieldAs,
-  Headline as HeadlineComponent,
-  HeadlineIndex,
-} from "../../form-components/Headline";
+import { Headline as HeadlineComponent } from "../../form-components/Headline";
 import type Field from "../Field";
 
 export const HeadlineField = ({
@@ -14,11 +10,11 @@ export const HeadlineField = ({
 }: {
   field: Headline;
   commonProps: Omit<ComponentProps<typeof Field>, "field">;
-}) => {
-  return (
-    <HeadlineComponent as={getHeadlineFieldAs(field)} size={field.style?.size}>
-      {exists(h1Index) && <HeadlineIndex>{h1Index + 1}</HeadlineIndex>}
-      {field.label[locale]}
-    </HeadlineComponent>
-  );
-};
+}) => (
+  <HeadlineComponent
+    size={field.style?.size}
+    index={exists(h1Index) ? h1Index + 1 : undefined}
+  >
+    {field.label[locale]}
+  </HeadlineComponent>
+);

@@ -11,7 +11,7 @@ import {
 } from "react-aria-components";
 import { tv } from "tailwind-variants";
 
-import { Icon } from "./Icon";
+import { textStyle } from "./Typography";
 
 export const buttonStyle = tv({
   base: [
@@ -19,10 +19,11 @@ export const buttonStyle = tv({
     "shrink-0",
     "rounded",
     "border",
-    "leading-none font-medium whitespace-nowrap",
+    "whitespace-nowrap",
     "cursor-pointer",
     "transition-[color,background-color,border-color,opacity] duration-100",
     "disabled:cursor-not-allowed disabled:opacity-40",
+    "outline-none data-focus-visible:outline-2 data-focus-visible:outline-primary-500",
   ],
   variants: {
     intent: {
@@ -41,15 +42,15 @@ export const buttonStyle = tv({
       // reads as a text link, see the compound variant for how it flows with text
       link: [
         "bg-transparent border-transparent",
-        "text-gray-500",
-        "hover:text-gray-800 hover:underline",
+        "text-primary-500",
+        "hover:underline",
       ],
     },
-    // every size is a fixed height, so text and icon-only buttons line up
+    // every size is a fixed height, so text and icon-only buttons line up;
     size: {
-      sm: "h-6 px-2 gap-2 text-xs",
-      md: "h-[30px] px-[15px] gap-2 text-sm",
-      lg: "h-9 px-[18px] gap-3 text-base",
+      sm: [textStyle({ size: 3, strong: true }), "h-6 px-2 gap-2"],
+      md: [textStyle({ size: 2, strong: true }), "h-[30px] px-3 gap-2"],
+      lg: [textStyle({ size: 1, strong: true }), "h-9 px-4 gap-3"],
     },
     // an icon-only button is a square
     iconOnly: { true: "px-0" },
@@ -57,12 +58,10 @@ export const buttonStyle = tv({
     danger: { true: "" },
   },
   compoundVariants: [
-    // a link sits in flowing text: no box, no padding, no fixed height,
-    // the surrounding text's size and line-height (after the size variant)
+    // a link sits in flowing text: no box, no padding, no fixed height
     {
       intent: "link",
-      class:
-        "h-auto px-0 gap-1 leading-[inherit] text-[length:inherit] align-baseline",
+      class: "h-auto px-0 gap-1 align-baseline",
     },
     {
       danger: true,
@@ -86,22 +85,23 @@ interface CommonProps
 }
 
 /** what the button does in its context; the look follows */
-export type ButtonProps = CommonProps &
-  (
-    | {
-        intent?: "secondary" | "tertiary";
-        /** a destructive or warning action: red, in the look of the intent */
-        danger?: boolean;
-      }
-    | { intent: "primary" | "link"; danger?: never }
-  );
+export type ButtonLook =
+  | {
+      intent?: "secondary" | "tertiary";
+      /** a destructive or warning action: red, in the look of the intent */
+      danger?: boolean;
+    }
+  | { intent: "primary" | "link"; danger?: never };
 
-const isIconOnly = (children: ReactNode) => {
+export type ButtonProps = CommonProps & ButtonLook;
+
+// lucide icons are forwardRef components, an object type; ours are functions
+const isIcon = (child: ReactNode) =>
+  isValidElement(child) && typeof child.type === "object";
+
+export const isIconOnly = (children: ReactNode) => {
   const items = Children.toArray(children);
-  return (
-    items.length > 0 &&
-    items.every((child) => isValidElement(child) && child.type === Icon)
-  );
+  return items.length > 0 && items.every(isIcon);
 };
 
 /**
@@ -111,8 +111,8 @@ const isIconOnly = (children: ReactNode) => {
  *
  * An icon goes in as a child and takes the button's text color:
  *
- *   <Button intent="primary" onPress={save}><Icon icon={faCheck} />Save</Button>
- *   <Button intent="tertiary" aria-label="Delete"><Icon icon={faTrash} /></Button>
+ *   <Button intent="primary" onPress={save}><CheckIcon />Save</Button>
+ *   <Button intent="tertiary" aria-label="Delete"><TrashIcon /></Button>
  *
  * A button whose only children are icons is square; give it an `aria-label`.
  * `link` is for a button that reads as a text link and sits in flowing text.

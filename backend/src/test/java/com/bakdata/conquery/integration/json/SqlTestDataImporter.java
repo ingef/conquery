@@ -1,25 +1,19 @@
 package com.bakdata.conquery.integration.json;
 
+
 import java.util.Collection;
 import java.util.List;
-
-import com.bakdata.conquery.integration.json.filter.FilterTest;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.integration.common.LoadingUtil;
-import com.bakdata.conquery.integration.common.LoadingUtil;
-import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.sql.CsvTableImporter;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import lombok.Data;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-
-import static com.bakdata.conquery.ConqueryConstants.ALL_IDS_TABLE;
 
 @Slf4j
 @Data

@@ -13,9 +13,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = false)
+@Getter
 public class SearchIndexId extends NamespacedId<SearchIndex> {
-	@Getter
 	private final DatasetId dataset;
 	private final String name;
 

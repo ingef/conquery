@@ -1,7 +1,5 @@
 package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
 
-import static org.jooq.impl.DSL.field;
-import static org.jooq.impl.DSL.inline;
 
 import java.sql.Date;
 import java.util.List;
