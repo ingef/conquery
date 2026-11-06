@@ -48,7 +48,6 @@ import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.F
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.SumSelect;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.conversion.model.ModelMapper;
 import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
 import com.bakdata.conquery.sql.model.operation.BuiltInConditions;
@@ -136,7 +135,7 @@ public class ResolvedOperationAdapter {
 
 	public static List<ResultColumn> resultColumns(List<ResultInfo> infos) {
 		return java.util.stream.IntStream.range(0, infos.size())
-				.mapToObj(index -> new ResultColumn("result-%d".formatted(index), resultType(infos.get(index).getType())))
+				.mapToObj(index -> new ResultColumn("result-%d".formatted(index), infos.get(index).getType()))
 				.toList();
 	}
 
@@ -206,14 +205,4 @@ public class ResolvedOperationAdapter {
 				MajorTypeId.STRING, true);
 	}
 
-	private static com.bakdata.conquery.sql.model.result.ResultType resultType(ResultType type) {
-		if (type instanceof ResultType.ListT<?> list) {
-			return new com.bakdata.conquery.sql.model.result.ResultType.ListType(primitive((ResultType.Primitive) list.getElementType()));
-		}
-		return primitive((ResultType.Primitive) type);
-	}
-
-	private static com.bakdata.conquery.sql.model.result.ResultType.Primitive primitive(ResultType.Primitive type) {
-		return com.bakdata.conquery.sql.model.result.ResultType.Primitive.valueOf(type.name());
-	}
 }

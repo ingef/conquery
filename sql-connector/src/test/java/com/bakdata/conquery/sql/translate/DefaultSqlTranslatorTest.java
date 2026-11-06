@@ -11,6 +11,7 @@ import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.models.query.DateAggregationAction;
+import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.mapping.ConceptIdMappingSelection;
 import com.bakdata.conquery.sql.mapping.ConceptIdMappingSource;
 import com.bakdata.conquery.sql.mapping.ConceptIdMappingTable;
@@ -24,7 +25,6 @@ import com.bakdata.conquery.sql.model.node.OrNode;
 import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
 import com.bakdata.conquery.sql.model.operation.ResolvedSelect;
 import com.bakdata.conquery.sql.model.result.ResultColumn;
-import com.bakdata.conquery.sql.model.result.ResultType;
 import com.bakdata.conquery.sql.model.schema.EntitySchema;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.model.schema.ResolvedConnector;
@@ -130,7 +130,7 @@ class DefaultSqlTranslatorTest {
 						DateAggregationAction.BLOCK
 				),
 				false,
-				List.of(new ResultColumn("concept-ids", new ResultType.ListType(ResultType.Primitive.STRING)))
+				List.of(new ResultColumn("concept-ids", new ResultType.ListT(ResultType.Primitive.STRING)))
 		);
 
 		TranslatedQuery compiled = new DefaultSqlTranslator(DSL.using(SQLDialect.DEFAULT))
@@ -269,7 +269,7 @@ class DefaultSqlTranslatorTest {
 	void shouldCompileConceptEventDateUnionWithBlockedDateAggregation() {
 		assertConceptEventDateSelectCompiles(
 				new BuiltInSelects.EventDateUnion("event dates"),
-				new ResultType.ListType(ResultType.Primitive.DATE_RANGE)
+				new ResultType.ListT(ResultType.Primitive.DATE_RANGE)
 		);
 	}
 

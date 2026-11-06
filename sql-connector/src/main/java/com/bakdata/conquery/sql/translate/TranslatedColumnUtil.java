@@ -3,8 +3,8 @@ package com.bakdata.conquery.sql.translate;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.model.result.ResultColumn;
-import com.bakdata.conquery.sql.model.result.ResultType;
 import com.bakdata.conquery.sql.model.schema.EntitySchema;
 import lombok.experimental.UtilityClass;
 import org.jooq.Field;

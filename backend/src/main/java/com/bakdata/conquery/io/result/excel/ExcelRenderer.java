@@ -227,7 +227,7 @@ public class ExcelRenderer {
 	}
 
 	private static TypeWriter writer(ResultType type, Printer printer, PrintSettings settings) {
-		if (type instanceof ResultType.ListT<?>) {
+		if (type instanceof ResultType.ListT) {
 			//Excel cannot handle LIST types so we just toString them.
 			return (value, cell, styles) -> writeStringCell(cell, value, printer);
 		}

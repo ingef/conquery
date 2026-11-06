@@ -68,6 +68,6 @@ public class FlagSelect extends Select {
 
 	@Override
 	public ResultType getResultType() {
-		return new ResultType.ListT<>(ResultType.Primitive.STRING);
+		return new ResultType.ListT(ResultType.Primitive.STRING);
 	}
 }

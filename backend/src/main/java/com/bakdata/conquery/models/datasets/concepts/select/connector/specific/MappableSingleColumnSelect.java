@@ -82,7 +82,7 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 		InternToExternMapper resolved = mapping.resolve();
 
 		if (resolved.isAllowMultiple()) {
-			return new ResultType.ListT<>(STRING);
+			return new ResultType.ListT(STRING);
 		}
 
 		return STRING;

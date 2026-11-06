@@ -70,7 +70,7 @@ public class ConceptColumnSelect extends UniversalSelect {
 
 	@Override
 	public ResultType getResultType() {
-		return new ResultType.ListT<>(ResultType.Primitive.STRING);
+		return new ResultType.ListT(ResultType.Primitive.STRING);
 	}
 
 	@Override

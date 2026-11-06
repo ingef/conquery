@@ -4,7 +4,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-import com.bakdata.conquery.sql.model.result.ResultType;
+import com.bakdata.conquery.models.types.ResultType;
 
 /**
  * Ordered description of one column produced by a {@link TranslatedQuery}.

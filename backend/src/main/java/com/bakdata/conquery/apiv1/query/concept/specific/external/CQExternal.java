@@ -213,7 +213,7 @@ public class CQExternal extends CQElement {
 		}
 		final ResultType type = onlySingles
 				? ResultType.Primitive.STRING
-				: new ResultType.ListT<>(ResultType.Primitive.STRING);
+				: new ResultType.ListT(ResultType.Primitive.STRING);
 		return getExtraHeaders().stream()
 				.<ResultInfo>map(column -> new ExternalResultInfo(column, type))
 				.toList();

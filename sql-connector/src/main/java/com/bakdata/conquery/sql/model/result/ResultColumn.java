@@ -4,6 +4,8 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+import com.bakdata.conquery.models.types.ResultType;
+
 /**
  * Backend-independent identity and logical type of a requested result column.
  *

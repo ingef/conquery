@@ -143,7 +143,7 @@ public class ArrowResultGenerationTest {
 		}
 		if (obj instanceof Collection<?> col) {
             // Workaround: Arrow deserializes lists as a JsonStringArrayList which has a JSON String method
-			ResultType elemType = ((ResultType.ListT<?>) type).getElementType();
+			ResultType elemType = ((ResultType.ListT) type).getElementType();
 			return col.stream().map(v -> getPrintValue(v, elemType)).collect(Collectors.joining(",", "[", "]"));
 		}
 		return obj.toString();

@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.bakdata.conquery.sql.model.result.ResultType;
+import com.bakdata.conquery.models.types.ResultType;
 import org.junit.jupiter.api.Test;
 
 class TranslatedQueryTest {
