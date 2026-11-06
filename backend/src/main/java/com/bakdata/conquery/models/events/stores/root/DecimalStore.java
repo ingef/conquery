@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.events.stores.root;
 
 import java.math.BigDecimal;
 
-import com.bakdata.conquery.models.events.MajorTypeId;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 
 /**
  * {@link ColumnStore}  for {@link BigDecimal} values.

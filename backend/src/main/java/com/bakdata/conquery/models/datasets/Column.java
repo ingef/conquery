@@ -5,7 +5,6 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
-import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.LabeledNamespaceIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;

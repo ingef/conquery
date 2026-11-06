@@ -13,9 +13,9 @@ import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.models.datasets.concepts.filters.AggregationFilter;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
-import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
@@ -30,8 +30,6 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.Inte
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.MoneySumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.RealSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.AggregationFilterNode;
-import com.bakdata.conquery.sql.conversion.model.aggregator.SumSqlAggregator;
-import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.bakdata.conquery.util.validation.ResolvableId;
 import com.bakdata.conquery.util.validation.SupportedColumnTypes;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -112,11 +110,6 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Aggreg
 		return new RangeFilterNode(range, getAggregator());
 	}
 
-	@Override
-	public FilterConverter<? extends SumFilter<RANGE>, RANGE> createConverter() {
-		return new SumSqlAggregator<>();
-	}
-
 	@JsonIgnore
 	private ColumnAggregator<?> getAggregator() {
 		final Column resolvedColumn = getColumn().resolve();
@@ -141,4 +134,5 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Aggreg
 			default -> throw new IllegalStateException("No Sum Filter for type " + typeId.name());
 		};
 	}
+
 }

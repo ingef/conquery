@@ -45,7 +45,7 @@ public class ExternalResultInfo extends ResultInfo {
 
 	@Override
 	public ResultSetProcessor.Reader<?> createReader(ResultSetProcessor resultSetProcessor) {
-		if (type instanceof ResultType.ListT<?> list && list.getElementType().equals(ResultType.Primitive.STRING)) {
+		if (type instanceof ResultType.ListT list && list.getElementType().equals(ResultType.Primitive.STRING)) {
 			return resultSetProcessor::getStringList;
 		}
 

@@ -12,19 +12,20 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.Range.LongRange;
 import com.bakdata.conquery.models.common.Range.MoneyRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.query.QueryResolveContext;
-import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
-import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
-import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.bakdata.conquery.util.validation.ResolvableId;
-import com.fasterxml.jackson.annotation.*;
-import lombok.*;
+import com.fasterxml.jackson.annotation.JacksonInject;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.OptBoolean;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Setter;
+import lombok.ToString;
 import org.jetbrains.annotations.TestOnly;
-import org.jooq.Condition;
 
 /**
  * @implNote The {@link JsonCreator} annos are necessary. Otherwise, Jackson will deserilaize all values as generic objects.
@@ -50,19 +51,6 @@ public abstract class FilterValue<VALUE> {
 
 	public VALUE readValue() {
 		return ((VALUE) value);
-	}
-
-	public SqlFilters convertToSqlFilter(SqlIdColumns ids, ConversionContext context, ConnectorSqlTables tables) {
-		FilterContext<VALUE> filterContext = FilterContext.forConceptConversion(ids, readValue(), context, tables);
-		final Filter<VALUE> resolve = (Filter<VALUE>) filter.resolve();
-		SqlFilters sqlFilters = resolve.createConverter().convertToSqlFilter(resolve, filterContext);
-		return sqlFilters;
-	}
-
-	public Condition convertForTableExport(SqlIdColumns ids, ConversionContext context) {
-		FilterContext<VALUE> filterContext = FilterContext.forTableExport(ids, readValue(), context);
-		final Filter<VALUE> resolve = (Filter<VALUE>) filter.resolve();
-		return resolve.createConverter().convertForTableExport(resolve, filterContext);
 	}
 
 	@CPSType(id = FrontendFilterType.Fields.MULTI_SELECT, base = FilterValue.class)

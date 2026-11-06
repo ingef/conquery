@@ -17,9 +17,9 @@ import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.identifiable.mapping.ExternalId;
-import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
+import com.bakdata.conquery.sql.translate.ir.SharedAliases;
 import com.bakdata.conquery.util.DateReader;
 import com.bakdata.conquery.util.io.IdColumnUtil;
 import lombok.RequiredArgsConstructor;
@@ -152,7 +152,7 @@ public class SqlEntityResolver implements EntityResolver {
 		SelectConditionStep<Record3<Integer, String, Boolean>> resolveIdsQuery =
 				context.with(unresolvedCte)
 					   .select(rowIndex, externalPrimaryColumn, isResolved)
-					   .from(dialect.getFunctionProvider().innerJoin(allIdsTable, unresolvedCte, List.of(externalPrimaryColumn.eq(innerPrimaryColumn))))
+					   .from(allIdsTable.innerJoin(unresolvedCte).on(externalPrimaryColumn.eq(innerPrimaryColumn)))
 					   .where(externalPrimaryColumn.eq(innerPrimaryColumn));
 
 		return executionService.fetchStream(resolveIdsQuery)

@@ -21,7 +21,7 @@ import lombok.experimental.UtilityClass;
 public class ResultHeaders {
 	public static ResultInfo datesInfo() {
 
-		final ResultType.ListT<Object> type = new ResultType.ListT<>(ResultType.Primitive.DATE_RANGE);
+		final ResultType.ListT type = new ResultType.ListT(ResultType.Primitive.DATE_RANGE);
 
 		return new FixedLabelResultInfo(type, Set.of(new SemanticType.EventDateT())){
 			@Override
@@ -38,7 +38,7 @@ public class ResultHeaders {
 
 	public static ResultInfo historyDatesInfo() {
 
-		final ResultType.ListT<Object> type = new ResultType.ListT<>(ResultType.Primitive.DATE_RANGE);
+		final ResultType.ListT type = new ResultType.ListT(ResultType.Primitive.DATE_RANGE);
 
 		return new FixedLabelResultInfo(type, Set.of(new SemanticType.EventDateT(), new SemanticType.GroupT())) {
 			@Override

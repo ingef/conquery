@@ -1,0 +1,78 @@
+package com.bakdata.conquery.sql.conversion;
+
+import java.time.Clock;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+
+import com.bakdata.conquery.apiv1.query.TableExportQuery;
+import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
+import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
+import com.bakdata.conquery.sql.conversion.model.ModelMapper;
+import com.bakdata.conquery.sql.model.ResolvedQuerySource;
+import com.bakdata.conquery.sql.model.export.ResolvedExportTable;
+import com.bakdata.conquery.sql.model.export.ResolvedTableExportQuery;
+import com.bakdata.conquery.sql.model.range.DateRange;
+import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
+import com.bakdata.conquery.sql.model.schema.SqlTable;
+import com.bakdata.conquery.util.TablePrimaryColumnUtil;
+import lombok.RequiredArgsConstructor;
+
+/** Resolves backend table-export DTOs into the connector-owned export model. */
+@RequiredArgsConstructor
+public final class ResolvedTableExportMapper {
+
+	private final Clock clock;
+	private final String defaultPrimaryColumn;
+
+	public ResolvedTableExportQuery map(TableExportQuery query, ResolvedQuerySource prerequisite) {
+		DateRange restriction = new DateRange(Optional.ofNullable(query.getDateRange().getMin()),
+				Optional.ofNullable(query.getDateRange().getMax()));
+		LocalDate endDate = restriction.endInclusive().orElseGet(() -> LocalDate.now(clock));
+		List<ResolvedExportTable> tables = query.getConcepts().stream()
+				.flatMap(concept -> concept.getTables().stream().map(table -> table(
+						concept, table, query.getPositions(), endDate)))
+				.toList();
+		return new ResolvedTableExportQuery(
+				prerequisite,
+				restriction,
+				tables,
+				ResolvedOperationAdapter.resultColumns(query.getResultInfos())
+		);
+	}
+
+	private ResolvedExportTable table(CQConcept concept, CQTable table, Map<ColumnId, Integer> positions,
+			LocalDate endDate) {
+		Connector connector = table.getConnector().resolve();
+		SqlTable sqlTable = ModelMapper.map(connector.getResolvedTable());
+		org.jooq.Field<String> primary = TablePrimaryColumnUtil.findPrimaryColumn(
+				connector.getResolvedTable(), defaultPrimaryColumn);
+		ResolvedColumn primaryId = new ResolvedColumn(sqlTable.logicalId() + ".primary-id", sqlTable,
+				primary.getName(), MajorTypeId.STRING, false);
+		int width = TableExportQuery.calculateWidth(positions) - 1;
+		List<Optional<ResolvedColumn>> output = new ArrayList<>(java.util.Collections.nCopies(width, Optional.empty()));
+		for (Column column : connector.getResolvedTable().getColumns()) {
+			Integer position = positions.get(column.getId());
+			if (position != null) {
+				output.set(position - 1, Optional.of(ModelMapper.map(column)));
+			}
+		}
+		return new ResolvedExportTable(
+				concept.userLabel(Locale.ROOT),
+				connector.getName(),
+				sqlTable,
+				primaryId,
+				ResolvedQueryMapper.validityDate(table.findValidityDate()),
+				connector.getResolvedTable().getName(),
+				output,
+				table.getFilters().stream().map(filter -> ResolvedOperationAdapter.filter(filter, endDate)).toList()
+		);
+	}
+}

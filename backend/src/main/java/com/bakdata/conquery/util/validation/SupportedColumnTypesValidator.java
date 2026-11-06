@@ -7,7 +7,7 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.events.MajorTypeId;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 
 public class SupportedColumnTypesValidator implements ConstraintValidator<SupportedColumnTypes, ColumnId> {

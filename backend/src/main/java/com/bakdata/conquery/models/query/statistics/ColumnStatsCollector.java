@@ -21,7 +21,7 @@ public abstract class ColumnStatsCollector {
 	public static ColumnStatsCollector getStatsCollector(String name, String description, ResultType type, PrintSettings printSettings, FrontendConfig config) {
 
 		// List recursion must be done before assigning uniqueNames
-		if (type instanceof ResultType.ListT<?> listT) {
+		if (type instanceof ResultType.ListT listT) {
 
 			final ColumnStatsCollector columnStatsCollector = getStatsCollector(name, description, listT.getElementType(), printSettings, config);
 			return new ListColumnStatsCollector(columnStatsCollector, printSettings);

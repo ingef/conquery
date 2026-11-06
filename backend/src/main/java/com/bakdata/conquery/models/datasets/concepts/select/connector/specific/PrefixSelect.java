@@ -3,9 +3,9 @@ package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 import java.util.EnumSet;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.SingleColumnSelect;
-import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.PrefixTextAggregator;
@@ -45,6 +45,6 @@ public class PrefixSelect extends SingleColumnSelect {
 
 	@Override
 	public ResultType getResultType() {
-		return new ResultType.ListT<>(ResultType.Primitive.STRING);
+		return new ResultType.ListT(ResultType.Primitive.STRING);
 	}
 }
