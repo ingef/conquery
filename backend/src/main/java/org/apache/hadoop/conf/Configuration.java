@@ -9,7 +9,7 @@ public class Configuration {
 
 	}
 
-	public Configuration(String _unused) {
+	public Configuration(boolean _loadDefaults) {
 
 	}
 
