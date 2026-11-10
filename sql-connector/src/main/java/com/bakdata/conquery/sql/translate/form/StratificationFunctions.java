@@ -21,10 +21,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.models.forms.util.CalendarUnit;
+import com.bakdata.conquery.models.forms.util.IndexSelector;
+import com.bakdata.conquery.models.forms.util.IndexPlacement;
 import com.bakdata.conquery.models.forms.util.ResolutionAndAlignment;
-import com.bakdata.conquery.sql.model.form.FormCalendarUnit;
-import com.bakdata.conquery.sql.model.form.FormIndexPlacement;
-import com.bakdata.conquery.sql.model.form.FormIndexSelector;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.translate.ir.SharedAliases;
 import com.bakdata.conquery.sql.translate.ir.SqlIdColumns;
@@ -117,7 +117,7 @@ public abstract class StratificationFunctions {
 	/**
 	 * Generates a date field representing the selected index strategy using the given validity date range.
 	 */
-	public abstract Field<Date> indexSelectorField(FormIndexSelector indexSelector, ColumnDateRange validityDate);
+	public abstract Field<Date> indexSelectorField(IndexSelector indexSelector, ColumnDateRange validityDate);
 
 	/**
 	 * Shift's a start date by an interval times an amount. The offset will we added to the amount before multiplying.
@@ -127,7 +127,7 @@ public abstract class StratificationFunctions {
 	/**
 	 * Generates the start and end field for the respective index placement and time unit.
 	 */
-	public List<Field<Date>> indexStartFields(FormIndexPlacement indexPlacement, FormCalendarUnit timeUnit) {
+	public List<Field<Date>> indexStartFields(IndexPlacement indexPlacement, CalendarUnit timeUnit) {
 
 		Field<Date> positiveStart;
 		Field<Date> negativeStart;

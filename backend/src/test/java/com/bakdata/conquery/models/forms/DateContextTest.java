@@ -9,12 +9,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
-import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.forms.util.CalendarUnit;
 import com.bakdata.conquery.models.forms.util.DateContext;
+import com.bakdata.conquery.models.forms.util.IndexPlacement;
 import com.bakdata.conquery.models.forms.util.ResolutionAndAlignment;
 import org.junit.jupiter.api.Test;
 

@@ -2,10 +2,10 @@ package com.bakdata.conquery.models.datasets.concepts.select.concept.specific;
 
 import jakarta.validation.constraints.NotNull;
 
-import com.bakdata.conquery.apiv1.query.TemporalSamplerFactory;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSelect;
+import com.bakdata.conquery.models.forms.util.IndexSelector;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.QuarterAggregator;
 import com.bakdata.conquery.models.types.ResultType;
@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class QuarterSelect extends UniversalSelect {
 
 	@NotNull
-	private final TemporalSamplerFactory sample;
+	private final IndexSelector sample;
 
 	@Override
 	public Aggregator<?> createAggregator() {

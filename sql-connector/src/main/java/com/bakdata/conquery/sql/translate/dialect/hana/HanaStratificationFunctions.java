@@ -5,7 +5,7 @@ import static com.bakdata.conquery.sql.translate.form.Interval.MONTHS_PER_QUARTE
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
 
-import com.bakdata.conquery.sql.model.form.FormIndexSelector;
+import com.bakdata.conquery.models.forms.util.IndexSelector;
 import com.bakdata.conquery.sql.translate.form.Interval;
 import com.bakdata.conquery.sql.translate.form.Offset;
 import com.bakdata.conquery.sql.translate.form.StratificationFunctions;
@@ -129,7 +129,7 @@ public class HanaStratificationFunctions extends StratificationFunctions {
 	}
 
 	@Override
-	public Field<Date> indexSelectorField(FormIndexSelector indexSelector, ColumnDateRange validityDate) {
+	public Field<Date> indexSelectorField(IndexSelector indexSelector, ColumnDateRange validityDate) {
 		return switch (indexSelector) {
 			case EARLIEST -> DSL.min(validityDate.getStart());
 			case LATEST -> DSL.max(inclusiveUpper(validityDate));

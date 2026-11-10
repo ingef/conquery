@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.models.forms.util.CalendarUnit;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.forms.util.ResolutionAndAlignment;
-import com.bakdata.conquery.sql.model.form.FormCalendarUnit;
 import com.bakdata.conquery.sql.model.form.RelativeFormSettings;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.translate.ir.QueryStep;
@@ -301,7 +301,7 @@ class RelativeStratification {
 	 * @return The interval expression which will be multiplied by the {@link StratificationFunctions#intSeriesField()} and added to the
 	 * {@link SharedAliases#INDEX_START_NEGATIVE} or {@link SharedAliases#INDEX_START_POSITIVE}.
 	 */
-	private static Interval getInterval(FormCalendarUnit timeUnit, Resolution resolution) {
+	private static Interval getInterval(CalendarUnit timeUnit, Resolution resolution) {
 		return switch (timeUnit) {
 			case QUARTERS -> switch (resolution) {
 				case COMPLETE, QUARTERS -> Interval.QUARTER_INTERVAL;

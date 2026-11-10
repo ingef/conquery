@@ -35,11 +35,11 @@ public final class ResolvedFormMapper {
 
 	public ResolvedFormQuery map(RelativeFormQuery form, ResolvedQuerySource prerequisite) {
 		RelativeFormSettings settings = new RelativeFormSettings(
-				FormIndexSelector.valueOf(form.getIndexSelector().name()),
-				FormIndexPlacement.valueOf(form.getIndexPlacement().name()),
+				form.getIndexSelector(),
+				form.getIndexPlacement(),
 				form.getTimeCountBefore(),
 				form.getTimeCountAfter(),
-				FormCalendarUnit.valueOf(form.getTimeUnit().name()),
+				form.getTimeUnit(),
 				form.getResolutionsAndAlignmentMap()
 		);
 		return create(prerequisite, form.getFeatures().getChildQueries(),

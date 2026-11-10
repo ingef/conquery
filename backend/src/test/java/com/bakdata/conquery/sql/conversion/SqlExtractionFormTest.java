@@ -14,12 +14,10 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
-import com.bakdata.conquery.apiv1.query.TemporalSamplerFactory;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
@@ -27,13 +25,12 @@ import com.bakdata.conquery.models.forms.managed.EntityDateQuery;
 import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
 import com.bakdata.conquery.models.forms.util.Alignment;
 import com.bakdata.conquery.models.forms.util.CalendarUnit;
+import com.bakdata.conquery.models.forms.util.IndexSelector;
+import com.bakdata.conquery.models.forms.util.IndexPlacement;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.forms.util.ResolutionAndAlignment;
 import com.bakdata.conquery.sql.model.ResolvedQuery;
 import com.bakdata.conquery.sql.model.ResolvedQuerySource;
-import com.bakdata.conquery.sql.model.form.FormCalendarUnit;
-import com.bakdata.conquery.sql.model.form.FormIndexPlacement;
-import com.bakdata.conquery.sql.model.form.FormIndexSelector;
 import com.bakdata.conquery.sql.model.form.ResolvedFormMode;
 import com.bakdata.conquery.sql.model.form.ResolvedFormQuery;
 import org.junit.jupiter.api.BeforeEach;
@@ -96,7 +93,7 @@ class SqlExtractionFormTest {
 		RelativeFormQuery relative = mock(RelativeFormQuery.class);
 		when(relative.getQuery()).thenReturn(prerequisite);
 		when(relative.getFeatures()).thenReturn(features);
-		when(relative.getIndexSelector()).thenReturn(TemporalSamplerFactory.LATEST);
+		when(relative.getIndexSelector()).thenReturn(IndexSelector.LATEST);
 		when(relative.getIndexPlacement()).thenReturn(IndexPlacement.NEUTRAL);
 		when(relative.getTimeCountBefore()).thenReturn(4);
 		when(relative.getTimeCountAfter()).thenReturn(2);
@@ -107,9 +104,9 @@ class SqlExtractionFormTest {
 		ResolvedFormMode.Relative mode = assertInstanceOf(
 				ResolvedFormMode.Relative.class, mapper.map(relative, prerequisiteSource).mode());
 
-		assertEquals(FormIndexSelector.LATEST, mode.settings().indexSelector());
-		assertEquals(FormIndexPlacement.NEUTRAL, mode.settings().indexPlacement());
-		assertEquals(FormCalendarUnit.QUARTERS, mode.settings().timeUnit());
+		assertSame(IndexSelector.LATEST, mode.settings().indexSelector());
+		assertSame(IndexPlacement.NEUTRAL, mode.settings().indexPlacement());
+		assertSame(CalendarUnit.QUARTERS, mode.settings().timeUnit());
 		assertEquals(4, mode.settings().timeCountBefore());
 		assertEquals(2, mode.settings().timeCountAfter());
 		assertEquals(Resolution.YEARS, mode.settings().resolutions().getFirst().getResolution());

@@ -7,7 +7,6 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
-import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.daterange.CDateRange;

@@ -11,15 +11,15 @@ import java.util.function.Function;
 
 import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.models.forms.util.Alignment;
+import com.bakdata.conquery.models.forms.util.CalendarUnit;
+import com.bakdata.conquery.models.forms.util.IndexSelector;
+import com.bakdata.conquery.models.forms.util.IndexPlacement;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.forms.util.ResolutionAndAlignment;
 import com.bakdata.conquery.models.query.DateAggregationAction;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.model.ResolvedQuery;
 import com.bakdata.conquery.sql.model.ResolvedQuerySource;
-import com.bakdata.conquery.sql.model.form.FormCalendarUnit;
-import com.bakdata.conquery.sql.model.form.FormIndexPlacement;
-import com.bakdata.conquery.sql.model.form.FormIndexSelector;
 import com.bakdata.conquery.sql.model.form.RelativeFormSettings;
 import com.bakdata.conquery.sql.model.form.ResolvedFormMode;
 import com.bakdata.conquery.sql.model.form.ResolvedFormQuery;
@@ -80,11 +80,11 @@ class FormSqlTranslatorTest {
 				new ResolvedQuerySource.Standard(datedPrerequisite),
 				features,
 				new ResolvedFormMode.Relative(new RelativeFormSettings(
-						FormIndexSelector.EARLIEST,
-						FormIndexPlacement.NEUTRAL,
+						IndexSelector.EARLIEST,
+						IndexPlacement.NEUTRAL,
 						1,
 						1,
-						FormCalendarUnit.DAYS,
+						CalendarUnit.DAYS,
 						List.of(ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN)))),
 				formResults(true)
 		);
@@ -119,11 +119,11 @@ class FormSqlTranslatorTest {
 						ENTITY_SCHEMA, new AllEntitiesNode(), false, List.of())),
 				List.of(feature(), feature("outcome")),
 				new ResolvedFormMode.Relative(new RelativeFormSettings(
-						FormIndexSelector.EARLIEST,
-						FormIndexPlacement.NEUTRAL,
+						IndexSelector.EARLIEST,
+						IndexPlacement.NEUTRAL,
 						1,
 						1,
-						FormCalendarUnit.DAYS,
+						CalendarUnit.DAYS,
 						List.of(ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN)))),
 				formResults(true)
 		);
