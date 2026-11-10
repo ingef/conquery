@@ -2,11 +2,7 @@ import { Fragment, memo } from "react";
 import { useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
 
-import type {
-  CurrencyConfigT,
-  EntityInfo,
-  TimeStratifiedInfo,
-} from "../api/types";
+import type { EntityInfo, TimeStratifiedInfo } from "../api/types";
 import type { StateT } from "../app/reducers";
 
 import type { ContentFilterValue } from "./ContentControl";
@@ -26,7 +22,7 @@ const root = tv({
     "[-webkit-overflow-scrolling:touch]",
     "pt-0 pr-5 pb-5 pl-[10px]",
     "inline-grid",
-    "grid-cols-[280px_auto]",
+    "grid-cols-[360px_auto]",
     "gap-x-[4px] gap-y-5",
     "w-full",
     "h-full",
@@ -69,9 +65,6 @@ export const Timeline = memo(
   }) => {
     const data = useSelector<StateT, EntityHistoryStateT["currentEntityData"]>(
       (state) => state.entityHistory.currentEntityData,
-    );
-    const currencyConfig = useSelector<StateT, CurrencyConfigT>(
-      (state) => state.startup.config.currency,
     );
 
     const { searchTerm } = useTimelineSearch();
@@ -129,7 +122,6 @@ export const Timeline = memo(
                   toggleOpenYear={toggleOpenYear}
                   toggleOpenQuarter={toggleOpenQuarter}
                   detailLevel={detailLevel}
-                  currencyConfig={currencyConfig}
                   rootConceptIdsByColumn={rootConceptIdsByColumn}
                   columnBuckets={columnBuckets}
                   contentFilter={contentFilter}

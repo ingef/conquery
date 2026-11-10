@@ -15,7 +15,7 @@ Conquery supplies a powerful interface to group event types in a hierarchical *c
 
 ## Requirements
 - Maven 3 (optional for building)
-- Java JDK 11
+- Java JDK 21
 - Node.js 24
 - pnpm 11
 - curl (to import the test data)

@@ -9,6 +9,7 @@ import config from "./config.json" with { type: "json" };
 import EXPORT_FORM_CONFIG from "./forms/export-form.json" with { type: "json" };
 
 import mockAuthMiddleware from "./mockAuthMiddleware.js";
+import { getNews } from "./news.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -210,6 +211,19 @@ export default function mockApi(app: Application) {
       ]),
     );
   });
+
+  /*
+    NEWS
+  */
+  app.get(
+    "/api/datasets/:id/news",
+    mockAuthMiddleware,
+    function response(req, res) {
+      res.setHeader("Content-Type", "application/json");
+
+      res.send(JSON.stringify(getNews(String(req.params.id))));
+    },
+  );
 
   /*
     QUERY RESULT DOWNLOAD

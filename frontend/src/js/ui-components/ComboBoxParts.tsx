@@ -33,7 +33,6 @@ export const listBoxItem = tv({
     // explicit: through the portal an item would inherit body's styles
     textStyle({ size: 2, tone: "default" }),
     "outline-none",
-    "transition-[background-color] duration-100",
     // hover like a menu item; a selected option keeps its tint, one step darker under the pointer
     "data-focused:bg-gray-50",
     "data-selected:bg-primary-50 data-selected:text-primary-500",
@@ -69,12 +68,15 @@ export const optionMatchesQuery = (option: SelectOptionT, query?: string) => {
 export const withoutDuplicates = (
   existing: SelectOptionT[],
   added: SelectOptionT[],
-) => [
-  ...existing,
-  ...added.filter(
-    (option) => !existing.some((item) => item.value === option.value),
-  ),
-];
+) => {
+  const seen = new Set(existing.map((item) => item.value));
+  const fresh = added.filter((option) => {
+    if (seen.has(option.value)) return false;
+    seen.add(option.value);
+    return true;
+  });
+  return fresh.length === 0 ? existing : [...existing, ...fresh];
+};
 
 export type ComboBoxStateRef = RefObject<
   ContextType<typeof ComboBoxStateContext>
