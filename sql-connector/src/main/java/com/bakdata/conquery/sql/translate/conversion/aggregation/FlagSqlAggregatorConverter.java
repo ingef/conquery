@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.sql.model.operation.FlagsAggregation;
+import com.bakdata.conquery.sql.model.operation.aggregation.FlagsAggregation;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.translate.ir.SqlTables;

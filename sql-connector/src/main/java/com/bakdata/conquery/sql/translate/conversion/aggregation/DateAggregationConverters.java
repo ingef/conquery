@@ -6,8 +6,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import com.bakdata.conquery.models.datasets.MajorTypeId;
-import com.bakdata.conquery.sql.model.operation.CountQuartersAggregation;
-import com.bakdata.conquery.sql.model.operation.DurationSumAggregation;
+import com.bakdata.conquery.sql.model.operation.aggregation.CountQuartersAggregation;
+import com.bakdata.conquery.sql.model.operation.aggregation.DurationSumAggregation;
 import com.bakdata.conquery.sql.model.schema.DateColumns;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;

@@ -12,6 +12,7 @@ import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.sql.model.internal.ModelNormalization;
+import com.bakdata.conquery.sql.model.operation.aggregation.FlagsAggregation;
 import com.bakdata.conquery.sql.model.range.NumberRange;
 import com.bakdata.conquery.sql.model.range.SubstringRange;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;

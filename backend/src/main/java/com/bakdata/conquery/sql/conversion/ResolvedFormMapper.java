@@ -8,6 +8,7 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
 import com.bakdata.conquery.models.forms.managed.EntityDateQuery;
 import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.sql.model.ResolvedQuery;
 import com.bakdata.conquery.sql.model.ResolvedQuerySource;
 import com.bakdata.conquery.sql.model.form.*;
@@ -56,7 +57,7 @@ public final class ResolvedFormMapper {
 			ResolvedQuerySource prerequisite,
 			List<ConceptQuery> featureQueries,
 			ResolvedFormMode mode,
-			List<com.bakdata.conquery.models.query.resultinfo.ResultInfo> resultInfos
+			List<ResultInfo> resultInfos
 	) {
 		List<ResolvedQuery> features = featureQueries.stream()
 				.map(feature -> queryMapper.map(feature, Optional.empty(), feature.getResultInfos()))

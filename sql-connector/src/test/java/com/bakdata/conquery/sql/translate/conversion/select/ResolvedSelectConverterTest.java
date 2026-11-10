@@ -12,9 +12,9 @@ import java.util.Optional;
 
 import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
-import com.bakdata.conquery.sql.model.operation.FlagsAggregation;
+import com.bakdata.conquery.sql.model.operation.aggregation.FlagsAggregation;
 import com.bakdata.conquery.sql.model.operation.ResolvedSelect;
-import com.bakdata.conquery.sql.model.operation.SumAggregation;
+import com.bakdata.conquery.sql.model.operation.aggregation.SumAggregation;
 import com.bakdata.conquery.sql.model.range.SubstringRange;
 import com.bakdata.conquery.sql.model.schema.DateColumns;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;

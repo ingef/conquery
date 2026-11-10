@@ -1,4 +1,4 @@
-package com.bakdata.conquery.sql.model.operation;
+package com.bakdata.conquery.sql.model.operation.aggregation;
 
 import java.util.List;
 import java.util.Optional;
@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.sql.model.internal.ModelNormalization;
+import com.bakdata.conquery.sql.model.operation.ResolvedAggregation;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.validation.AllowedColumnTypes;
 

@@ -3,7 +3,7 @@ package com.bakdata.conquery.sql.translate.conversion.aggregation;
 import java.util.List;
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.sql.model.operation.CountAggregation;
+import com.bakdata.conquery.sql.model.operation.aggregation.CountAggregation;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.translate.ir.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.translate.ir.select.FieldWrapper;

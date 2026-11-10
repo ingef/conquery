@@ -1,4 +1,4 @@
-package com.bakdata.conquery.sql.model.operation;
+package com.bakdata.conquery.sql.model.operation.aggregation;
 
 import java.util.ArrayList;
 import java.util.Collection;

@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.bakdata.conquery.sql.model.operation.SumAggregation;
+import com.bakdata.conquery.sql.model.operation.aggregation.SumAggregation;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.translate.ir.CteStep;
 import com.bakdata.conquery.sql.translate.ir.QueryStep;

@@ -8,8 +8,8 @@ import java.util.Optional;
 
 import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.sql.model.operation.BuiltInFilters;
-import com.bakdata.conquery.sql.model.operation.CountAggregation;
-import com.bakdata.conquery.sql.model.operation.SumAggregation;
+import com.bakdata.conquery.sql.model.operation.aggregation.CountAggregation;
+import com.bakdata.conquery.sql.model.operation.aggregation.SumAggregation;
 import com.bakdata.conquery.sql.model.range.NumberRange;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.model.schema.SqlTable;

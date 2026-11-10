@@ -5,13 +5,13 @@ import java.sql.Date;
 import java.util.List;
 
 import com.bakdata.conquery.sql.model.operation.BuiltInFilters;
-import com.bakdata.conquery.sql.model.operation.CountAggregation;
-import com.bakdata.conquery.sql.model.operation.CountQuartersAggregation;
-import com.bakdata.conquery.sql.model.operation.DurationSumAggregation;
-import com.bakdata.conquery.sql.model.operation.FlagsAggregation;
+import com.bakdata.conquery.sql.model.operation.aggregation.CountAggregation;
+import com.bakdata.conquery.sql.model.operation.aggregation.CountQuartersAggregation;
+import com.bakdata.conquery.sql.model.operation.aggregation.DurationSumAggregation;
+import com.bakdata.conquery.sql.model.operation.aggregation.FlagsAggregation;
 import com.bakdata.conquery.sql.model.operation.ResolvedAggregation;
 import com.bakdata.conquery.sql.model.operation.ResolvedFilter;
-import com.bakdata.conquery.sql.model.operation.SumAggregation;
+import com.bakdata.conquery.sql.model.operation.aggregation.SumAggregation;
 import com.bakdata.conquery.sql.model.range.NumberRange;
 import com.bakdata.conquery.sql.model.range.SubstringRange;
 import com.bakdata.conquery.sql.model.schema.DateColumns;
