@@ -9,7 +9,6 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
-import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
@@ -20,6 +19,7 @@ import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.forms.util.CalendarUnit;
+import com.bakdata.conquery.models.forms.util.ResolutionAndAlignment;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -53,7 +53,7 @@ public class RelativeFormQuery extends Query {
 	@NotNull
 	private final CalendarUnit timeUnit;
 	@NotNull
-	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap;
+	private final List<ResolutionAndAlignment> resolutionsAndAlignmentMap;
 
 	@Override
 	public void resolve(QueryResolveContext context) {

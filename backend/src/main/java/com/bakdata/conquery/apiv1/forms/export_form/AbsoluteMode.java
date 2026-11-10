@@ -13,6 +13,7 @@ import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
 import com.bakdata.conquery.models.forms.util.Alignment;
+import com.bakdata.conquery.models.forms.util.ResolutionAndAlignment;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -42,7 +43,7 @@ public class AbsoluteMode extends Mode {
 	@Override
 	public Query createSpecializedQuery() {
 
-		List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments =
+		final List<ResolutionAndAlignment> resolutionsAndAlignments =
 				ExportForm.getResolutionAlignmentMap(getForm().getResolvedResolutions(), getAlignmentHint());
 
 		Query prerequisite = getForm().getPrerequisite();

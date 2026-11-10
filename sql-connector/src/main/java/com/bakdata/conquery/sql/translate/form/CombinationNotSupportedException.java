@@ -1,16 +1,16 @@
 package com.bakdata.conquery.sql.translate.form;
 
+import com.bakdata.conquery.models.forms.util.Resolution;
+import com.bakdata.conquery.models.forms.util.ResolutionAndAlignment;
 import com.bakdata.conquery.sql.model.form.FormCalendarUnit;
 import com.bakdata.conquery.sql.model.form.FormIndexPlacement;
-import com.bakdata.conquery.sql.model.form.FormResolution;
-import com.bakdata.conquery.sql.model.form.ResolutionAndAlignment;
 
 class CombinationNotSupportedException extends RuntimeException {
 
 	public CombinationNotSupportedException(ResolutionAndAlignment resolutionAndAlignment) {
 		super("Alignment %s does not fit the resolution %s.".formatted(
-				resolutionAndAlignment.alignment(),
-				resolutionAndAlignment.resolution()
+				resolutionAndAlignment.getAlignment(),
+				resolutionAndAlignment.getResolution()
 		));
 	}
 
@@ -18,7 +18,7 @@ class CombinationNotSupportedException extends RuntimeException {
 		super("Combination of index placement %s and time unit %s not supported".formatted(indexPlacement, timeUnit));
 	}
 
-	public CombinationNotSupportedException(FormCalendarUnit timeUnit, FormResolution resolution) {
+	public CombinationNotSupportedException(FormCalendarUnit timeUnit, Resolution resolution) {
 		super("Combination of time unit %s and resolution %s not supported".formatted(timeUnit, resolution));
 	}
 

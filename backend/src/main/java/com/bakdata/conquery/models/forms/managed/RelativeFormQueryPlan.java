@@ -7,12 +7,12 @@ import java.util.OptionalInt;
 
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
-import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.TemporalSamplerFactory;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.forms.util.CalendarUnit;
 import com.bakdata.conquery.models.forms.util.DateContext;
+import com.bakdata.conquery.models.forms.util.ResolutionAndAlignment;
 import com.bakdata.conquery.models.forms.util.ResultModifier;
 import com.bakdata.conquery.models.query.DateAggregationAction;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -52,7 +52,7 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	private final int timeCountBefore;
 	private final int timeCountAfter;
 	private final CalendarUnit timeUnit;
-	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap;
+	private final List<ResolutionAndAlignment> resolutionsAndAlignmentMap;
 
 	private FormQueryPlan featureSubquery = null;
 	private FormQueryPlan outcomeSubquery = null;

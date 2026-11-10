@@ -3,8 +3,8 @@ package com.bakdata.conquery.sql.translate.form;
 import java.util.List;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.models.forms.util.ResolutionAndAlignment;
 import com.bakdata.conquery.sql.model.form.RelativeFormSettings;
-import com.bakdata.conquery.sql.model.form.ResolutionAndAlignment;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.translate.ir.QueryStep;
 import com.bakdata.conquery.sql.translate.naming.SqlNameGenerator;

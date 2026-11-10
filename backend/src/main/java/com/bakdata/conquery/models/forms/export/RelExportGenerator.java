@@ -10,6 +10,7 @@ import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.TemporalSamplerFactory;
 import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
 import com.bakdata.conquery.models.forms.util.CalendarUnit;
+import com.bakdata.conquery.models.forms.util.ResolutionAndAlignment;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -17,7 +18,7 @@ public class RelExportGenerator {
 
 	public static RelativeFormQuery generate(RelativeMode mode) {
 
-		List<ExportForm.ResolutionAndAlignment>
+		final List<ResolutionAndAlignment>
 				resolutionsAndAlignments =
 				ExportForm.getResolutionAlignmentMap(mode.getForm().getResolvedResolutions(), mode.getTimeUnit().getAlignment());
 
@@ -25,7 +26,7 @@ public class RelExportGenerator {
 							.getPrerequisite(), mode.getResolvedFeatures(), mode.getIndexSelector(), mode.getIndexPlacement(), mode.getTimeCountBefore(), mode.getTimeCountAfter(), mode.getTimeUnit(), resolutionsAndAlignments);
 	}
 
-	public static RelativeFormQuery generate(Query query, ArrayConceptQuery features, TemporalSamplerFactory indexSelector, IndexPlacement indexPlacement, int timeCountBefore, int timeCountAfter, CalendarUnit timeUnit, List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments) {
+	public static RelativeFormQuery generate(Query query, ArrayConceptQuery features, TemporalSamplerFactory indexSelector, IndexPlacement indexPlacement, int timeCountBefore, int timeCountAfter, CalendarUnit timeUnit, List<ResolutionAndAlignment> resolutionsAndAlignments) {
 
 		return new RelativeFormQuery(
 				query,

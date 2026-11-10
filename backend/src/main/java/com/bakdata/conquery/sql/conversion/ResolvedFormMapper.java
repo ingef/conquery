@@ -3,7 +3,6 @@ package com.bakdata.conquery.sql.conversion;
 import java.util.List;
 import java.util.Optional;
 
-import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
@@ -11,15 +10,7 @@ import com.bakdata.conquery.models.forms.managed.EntityDateQuery;
 import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
 import com.bakdata.conquery.sql.model.ResolvedQuery;
 import com.bakdata.conquery.sql.model.ResolvedQuerySource;
-import com.bakdata.conquery.sql.model.form.FormAlignment;
-import com.bakdata.conquery.sql.model.form.FormCalendarUnit;
-import com.bakdata.conquery.sql.model.form.FormIndexPlacement;
-import com.bakdata.conquery.sql.model.form.FormIndexSelector;
-import com.bakdata.conquery.sql.model.form.FormResolution;
-import com.bakdata.conquery.sql.model.form.RelativeFormSettings;
-import com.bakdata.conquery.sql.model.form.ResolutionAndAlignment;
-import com.bakdata.conquery.sql.model.form.ResolvedFormMode;
-import com.bakdata.conquery.sql.model.form.ResolvedFormQuery;
+import com.bakdata.conquery.sql.model.form.*;
 import com.bakdata.conquery.sql.model.range.DateRange;
 import lombok.RequiredArgsConstructor;
 
@@ -36,7 +27,7 @@ public final class ResolvedFormMapper {
 				new ResolvedFormMode.Absolute(
 						new DateRange(Optional.ofNullable(form.getDateRange().getMin()),
 								Optional.ofNullable(form.getDateRange().getMax())),
-						resolutions(form.getResolutionsAndAlignmentMap())),
+						form.getResolutionsAndAlignmentMap()),
 				form.getResultInfos()
 		);
 	}
@@ -48,7 +39,7 @@ public final class ResolvedFormMapper {
 				form.getTimeCountBefore(),
 				form.getTimeCountAfter(),
 				FormCalendarUnit.valueOf(form.getTimeUnit().name()),
-				resolutions(form.getResolutionsAndAlignmentMap())
+				form.getResolutionsAndAlignmentMap()
 		);
 		return create(prerequisite, form.getFeatures().getChildQueries(),
 				new ResolvedFormMode.Relative(settings), form.getResultInfos());
@@ -57,7 +48,7 @@ public final class ResolvedFormMapper {
 	public ResolvedFormQuery map(EntityDateQuery form, ResolvedQuerySource prerequisite) {
 		Optional<DateRange> bounds = Optional.ofNullable(form.getDateRange()).map(ResolvedFormMapper::dateRange);
 		return create(prerequisite, form.getFeatures().getChildQueries(),
-				new ResolvedFormMode.EntityDate(bounds, resolutions(form.getResolutionsAndAlignments())),
+				new ResolvedFormMode.EntityDate(bounds, form.getResolutionsAndAlignments()),
 				form.getResultInfos());
 	}
 
@@ -76,14 +67,6 @@ public final class ResolvedFormMapper {
 				mode,
 				ResolvedOperationAdapter.resultColumns(resultInfos)
 		);
-	}
-
-	private static List<ResolutionAndAlignment> resolutions(
-			List<ExportForm.ResolutionAndAlignment> values
-	) {
-		return values.stream().map(value -> new ResolutionAndAlignment(
-				FormResolution.valueOf(value.getResolution().name()),
-				FormAlignment.valueOf(value.getAlignment().name()))).toList();
 	}
 
 	private static DateRange dateRange(CDateRange value) {

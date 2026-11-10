@@ -10,17 +10,17 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import com.bakdata.conquery.models.datasets.MajorTypeId;
+import com.bakdata.conquery.models.forms.util.Alignment;
+import com.bakdata.conquery.models.forms.util.Resolution;
+import com.bakdata.conquery.models.forms.util.ResolutionAndAlignment;
 import com.bakdata.conquery.models.query.DateAggregationAction;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.model.ResolvedQuery;
 import com.bakdata.conquery.sql.model.ResolvedQuerySource;
-import com.bakdata.conquery.sql.model.form.FormAlignment;
 import com.bakdata.conquery.sql.model.form.FormCalendarUnit;
 import com.bakdata.conquery.sql.model.form.FormIndexPlacement;
 import com.bakdata.conquery.sql.model.form.FormIndexSelector;
-import com.bakdata.conquery.sql.model.form.FormResolution;
 import com.bakdata.conquery.sql.model.form.RelativeFormSettings;
-import com.bakdata.conquery.sql.model.form.ResolutionAndAlignment;
 import com.bakdata.conquery.sql.model.form.ResolvedFormMode;
 import com.bakdata.conquery.sql.model.form.ResolvedFormQuery;
 import com.bakdata.conquery.sql.model.node.AllEntitiesNode;
@@ -53,7 +53,7 @@ class FormSqlTranslatorTest {
 				List.of(feature()),
 				new ResolvedFormMode.Absolute(
 						new DateRange(Optional.of(LocalDate.of(2020, 1, 1)), Optional.of(LocalDate.of(2020, 12, 31))),
-						List.of(new ResolutionAndAlignment(FormResolution.COMPLETE, FormAlignment.NO_ALIGN))),
+						List.of(ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN))),
 				List.of(
 						new ResultColumn("resolution", ResultType.Primitive.STRING),
 						new ResultColumn("index", ResultType.Primitive.INTEGER),
@@ -85,7 +85,7 @@ class FormSqlTranslatorTest {
 						1,
 						1,
 						FormCalendarUnit.DAYS,
-						List.of(new ResolutionAndAlignment(FormResolution.COMPLETE, FormAlignment.NO_ALIGN)))),
+						List.of(ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN)))),
 				formResults(true)
 		);
 		ResolvedFormQuery entityDate = new ResolvedFormQuery(
@@ -93,7 +93,7 @@ class FormSqlTranslatorTest {
 				features,
 				new ResolvedFormMode.EntityDate(
 						Optional.of(new DateRange(Optional.of(LocalDate.of(2020, 1, 1)), Optional.empty())),
-						List.of(new ResolutionAndAlignment(FormResolution.COMPLETE, FormAlignment.NO_ALIGN))),
+						List.of(ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN))),
 				formResults(false)
 		);
 
@@ -124,7 +124,7 @@ class FormSqlTranslatorTest {
 						1,
 						1,
 						FormCalendarUnit.DAYS,
-						List.of(new ResolutionAndAlignment(FormResolution.COMPLETE, FormAlignment.NO_ALIGN)))),
+						List.of(ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN)))),
 				formResults(true)
 		);
 
@@ -188,7 +188,7 @@ class FormSqlTranslatorTest {
 				List.of(feature),
 				new ResolvedFormMode.Absolute(
 						new DateRange(Optional.of(LocalDate.of(2012, 1, 16)), Optional.of(LocalDate.of(2012, 12, 17))),
-						List.of(new ResolutionAndAlignment(FormResolution.COMPLETE, FormAlignment.NO_ALIGN))),
+						List.of(ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN))),
 				List.of(
 						new ResultColumn("resolution", ResultType.Primitive.STRING),
 						new ResultColumn("index", ResultType.Primitive.INTEGER),

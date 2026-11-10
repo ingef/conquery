@@ -68,6 +68,7 @@ import com.bakdata.conquery.models.forms.managed.ExternalExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.forms.util.Alignment;
 import com.bakdata.conquery.models.forms.util.Resolution;
+import com.bakdata.conquery.models.forms.util.ResolutionAndAlignment;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.IdResolvingException;
@@ -648,8 +649,8 @@ public class SerializationTests extends AbstractSerializationTest {
 				CDateRange.exactly(LocalDate.now()).toSimpleRange(),
 				ArrayConceptQuery.createFromFeatures(Collections.singletonList(features)),
 				List.of(
-						ExportForm.ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN),
-						ExportForm.ResolutionAndAlignment.of(Resolution.QUARTERS, Alignment.QUARTER)
+						ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN),
+						ResolutionAndAlignment.of(Resolution.QUARTERS, Alignment.QUARTER)
 				)
 		);
 

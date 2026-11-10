@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.sql.model.form.FormResolution;
-import com.bakdata.conquery.sql.model.form.ResolutionAndAlignment;
+import com.bakdata.conquery.models.forms.util.Resolution;
+import com.bakdata.conquery.models.forms.util.ResolutionAndAlignment;
 import com.bakdata.conquery.sql.translate.ir.QueryStep;
 import com.bakdata.conquery.sql.translate.ir.Selects;
 import com.bakdata.conquery.sql.translate.ir.SharedAliases;
@@ -112,7 +112,7 @@ class AbsoluteStratification {
 			QueryStep intSeriesStep,
 			ResolutionAndAlignment resolutionAndAlignment
 	) {
-		return switch (resolutionAndAlignment.resolution()) {
+		return switch (resolutionAndAlignment.getResolution()) {
 			case COMPLETE -> createCompleteTable();
 			case YEARS, QUARTERS, DAYS -> createIntervalTable(indexStartStep, intSeriesStep, resolutionAndAlignment);
 		};
@@ -125,7 +125,7 @@ class AbsoluteStratification {
 		// complete range shall have a null index because it spans the complete range, but we set it to 1 to ensure we can join tables on index,
 		// because a condition involving null in a join (e.g., null = some_value or null = null) always evaluates to false
 		Field<Integer> index = field(inline(1)).as(SharedAliases.INDEX.getAlias());
-		SqlIdColumns ids = baseStepSelects.getIds().withStratification(FormResolution.COMPLETE.name(), index);
+		final SqlIdColumns ids = baseStepSelects.getIds().withStratification(Resolution.COMPLETE.name(), index);
 
 		ColumnDateRange completeRange = baseStepSelects.getStratificationDate().get();
 
@@ -159,7 +159,7 @@ class AbsoluteStratification {
 		);
 
 		Field<Integer> index = stratificationFunctions.index(countsCteSelects.getIds(), countsCte.getQualifiedSelects().getStratificationDate());
-		SqlIdColumns ids = countsCteSelects.getIds().withStratification(resolutionAndAlignment.resolution().name(), index);
+		final SqlIdColumns ids = countsCteSelects.getIds().withStratification(resolutionAndAlignment.getResolution().name(), index);
 
 		Selects selects = Selects.builder()
 								 .ids(ids)
@@ -170,7 +170,7 @@ class AbsoluteStratification {
 
 		return QueryStep.builder()
 						.cteName(names.reusableStepName(
-								FormCteStep.stratificationCte(resolutionAndAlignment.resolution()).getSuffix()))
+								FormCteStep.stratificationCte(resolutionAndAlignment.getResolution()).getSuffix()))
 						.selects(selects)
 						.fromTable(QueryStep.toTableLike(countsCte.getCteName()))
 						.fromTable(QueryStep.toTableLike(intSeriesStep.getCteName()))
@@ -197,7 +197,7 @@ class AbsoluteStratification {
 
 		return QueryStep.builder()
 						.cteName(names.reusableStepName(
-								FormCteStep.countsCte(resolutionAndAlignment.resolution()).getSuffix()))
+								FormCteStep.countsCte(resolutionAndAlignment.getResolution()).getSuffix()))
 						.selects(selects)
 						.fromTable(QueryStep.toTableLike(indexStartStep.getCteName()))
 						.build();

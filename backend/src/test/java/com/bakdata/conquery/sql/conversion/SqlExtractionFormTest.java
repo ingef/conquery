@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Optional;
 
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
-import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
@@ -29,13 +28,12 @@ import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
 import com.bakdata.conquery.models.forms.util.Alignment;
 import com.bakdata.conquery.models.forms.util.CalendarUnit;
 import com.bakdata.conquery.models.forms.util.Resolution;
+import com.bakdata.conquery.models.forms.util.ResolutionAndAlignment;
 import com.bakdata.conquery.sql.model.ResolvedQuery;
 import com.bakdata.conquery.sql.model.ResolvedQuerySource;
-import com.bakdata.conquery.sql.model.form.FormAlignment;
 import com.bakdata.conquery.sql.model.form.FormCalendarUnit;
 import com.bakdata.conquery.sql.model.form.FormIndexPlacement;
 import com.bakdata.conquery.sql.model.form.FormIndexSelector;
-import com.bakdata.conquery.sql.model.form.FormResolution;
 import com.bakdata.conquery.sql.model.form.ResolvedFormMode;
 import com.bakdata.conquery.sql.model.form.ResolvedFormQuery;
 import org.junit.jupiter.api.BeforeEach;
@@ -62,7 +60,7 @@ class SqlExtractionFormTest {
 
 	@Test
 	void shouldMapAbsoluteAndEntityDateBoundsWithoutChangingResolutionSettings() {
-		ExportForm.ResolutionAndAlignment resolution = ExportForm.ResolutionAndAlignment.of(
+		final ResolutionAndAlignment resolution = ResolutionAndAlignment.of(
 				Resolution.COMPLETE, Alignment.NO_ALIGN);
 		AbsoluteFormQuery absolute = mock(AbsoluteFormQuery.class);
 		when(absolute.getQuery()).thenReturn(prerequisite);
@@ -83,8 +81,8 @@ class SqlExtractionFormTest {
 				ResolvedFormMode.Absolute.class, absoluteResolved.mode());
 		assertEquals(Optional.of(LocalDate.of(2020, 1, 1)), absoluteMode.bounds().startInclusive());
 		assertEquals(Optional.of(LocalDate.of(2020, 12, 31)), absoluteMode.bounds().endInclusive());
-		assertEquals(FormResolution.COMPLETE, absoluteMode.resolutions().getFirst().resolution());
-		assertEquals(FormAlignment.NO_ALIGN, absoluteMode.resolutions().getFirst().alignment());
+		assertEquals(Resolution.COMPLETE, absoluteMode.resolutions().getFirst().getResolution());
+		assertEquals(Alignment.NO_ALIGN, absoluteMode.resolutions().getFirst().getAlignment());
 		ResolvedFormMode.EntityDate entityMode = assertInstanceOf(
 				ResolvedFormMode.EntityDate.class, entityDateResolved.mode());
 		assertEquals(Optional.of(LocalDate.of(2021, 1, 1)), entityMode.bounds().orElseThrow().startInclusive());
@@ -104,7 +102,7 @@ class SqlExtractionFormTest {
 		when(relative.getTimeCountAfter()).thenReturn(2);
 		when(relative.getTimeUnit()).thenReturn(CalendarUnit.QUARTERS);
 		when(relative.getResolutionsAndAlignmentMap()).thenReturn(List.of(
-				ExportForm.ResolutionAndAlignment.of(Resolution.YEARS, Alignment.QUARTER)));
+				ResolutionAndAlignment.of(Resolution.YEARS, Alignment.QUARTER)));
 
 		ResolvedFormMode.Relative mode = assertInstanceOf(
 				ResolvedFormMode.Relative.class, mapper.map(relative, prerequisiteSource).mode());
@@ -114,8 +112,8 @@ class SqlExtractionFormTest {
 		assertEquals(FormCalendarUnit.QUARTERS, mode.settings().timeUnit());
 		assertEquals(4, mode.settings().timeCountBefore());
 		assertEquals(2, mode.settings().timeCountAfter());
-		assertEquals(FormResolution.YEARS, mode.settings().resolutions().getFirst().resolution());
-		assertEquals(FormAlignment.QUARTER, mode.settings().resolutions().getFirst().alignment());
+		assertEquals(Resolution.YEARS, mode.settings().resolutions().getFirst().getResolution());
+		assertEquals(Alignment.QUARTER, mode.settings().resolutions().getFirst().getAlignment());
 		verify(queryMapper).map(same(feature), eq(Optional.empty()), eq(List.of()));
 	}
 }

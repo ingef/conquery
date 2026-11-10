@@ -3,6 +3,7 @@ package com.bakdata.conquery.sql.model.form;
 import java.util.List;
 import java.util.Optional;
 
+import com.bakdata.conquery.models.forms.util.ResolutionAndAlignment;
 import com.bakdata.conquery.sql.model.range.DateRange;
 
 public sealed interface ResolvedFormMode {

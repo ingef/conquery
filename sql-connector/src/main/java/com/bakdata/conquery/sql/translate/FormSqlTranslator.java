@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.query.DateAggregationAction;
-import com.bakdata.conquery.sql.model.form.FormResolution;
 import com.bakdata.conquery.sql.model.form.ResolvedFormMode;
 import com.bakdata.conquery.sql.model.form.ResolvedFormQuery;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
@@ -218,7 +218,7 @@ public final class FormSqlTranslator {
 					.build();
 		}
 		Selects.SelectsBuilder selects = Selects.builder()
-				.ids(stratificationSelects.getIds().forFinalSelect(FormResolution.COMPLETE.name()))
+				.ids(stratificationSelects.getIds().forFinalSelect(Resolution.COMPLETE.name()))
 				.validityDate(featureSelects.getValidityDate())
 				.stratificationDate(stratificationSelects.getStratificationDate());
 		if (mode instanceof ResolvedFormMode.Relative) {

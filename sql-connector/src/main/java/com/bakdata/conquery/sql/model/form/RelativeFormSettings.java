@@ -2,6 +2,8 @@ package com.bakdata.conquery.sql.model.form;
 
 import java.util.List;
 
+import com.bakdata.conquery.models.forms.util.ResolutionAndAlignment;
+
 public record RelativeFormSettings(
 		FormIndexSelector indexSelector,
 		FormIndexPlacement indexPlacement,

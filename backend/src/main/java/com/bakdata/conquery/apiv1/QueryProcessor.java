@@ -372,7 +372,7 @@ public class QueryProcessor {
 		final Namespace namespace = datasetRegistry.get(dataset);
 		final PreviewConfig previewConfig = namespace.getPreviewConfig();
 		final EntityPreviewForm form =
-				EntityPreviewForm.create(entity, idKind, dateRange, sources, previewConfig.getSelects(), previewConfig.getTimeStratifiedSelects(), datasetRegistry);
+				EntityPreviewForm.create(entity, idKind, dateRange, sources, previewConfig.getSelects(), previewConfig.getTimeStratifiedSelects());
 
 		// Validate our own form because we provide it directly to the processor, which does not validate.
 		ValidatorHelper.failOnError(log, validator.validate(form));

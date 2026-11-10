@@ -4,7 +4,6 @@ import java.util.Set;
 
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.internationalization.ResultHeadersC10n;
-import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.query.C10nCache;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.FixedLabelResultInfo;
@@ -12,6 +11,7 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.LocalizedEnumPrinter;
+import com.bakdata.conquery.models.query.resultinfo.printers.common.ResolutionPrinter;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
@@ -102,7 +102,7 @@ public class ResultHeaders {
 		return new FixedLabelResultInfo(ResultType.Primitive.STRING, Set.of()) {
 			@Override
 			public Printer createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
-				return new LocalizedEnumPrinter<>(printSettings, Resolution.class);
+				return new ResolutionPrinter(printSettings);
 			}
 
 			@Override
