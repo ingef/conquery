@@ -7,8 +7,9 @@ import java.util.List;
 import java.util.Optional;
 
 import com.bakdata.conquery.models.datasets.MajorTypeId;
-import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
 import com.bakdata.conquery.sql.model.operation.BuiltInFilters;
+import com.bakdata.conquery.sql.model.operation.CountAggregation;
+import com.bakdata.conquery.sql.model.operation.SumAggregation;
 import com.bakdata.conquery.sql.model.range.NumberRange;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.model.schema.SqlTable;
@@ -31,7 +32,7 @@ class ResolvedTableExportFilterConverterTest {
 	@Test
 	void shouldApplySubtractionToIndividualRows() {
 		var filter = new BuiltInFilters.AggregationRange("sum",
-				new BuiltInAggregations.Sum(VALUE, Optional.of(SUBTRACT), List.of()), RANGE);
+				new SumAggregation(VALUE, Optional.of(SUBTRACT), List.of()), RANGE);
 
 		String sql = DSL.using(SQLDialect.DEFAULT).renderInlined(
 				converter.convert(filter, new HanaTranslatorDialect()));
@@ -43,7 +44,7 @@ class ResolvedTableExportFilterConverterTest {
 	@Test
 	void shouldTreatCountAsOneForEachExportedRow() {
 		var filter = new BuiltInFilters.AggregationRange("count",
-				new BuiltInAggregations.Count(VALUE, List.of()), RANGE);
+				new CountAggregation(VALUE, List.of()), RANGE);
 
 		String sql = DSL.using(SQLDialect.DEFAULT).renderInlined(
 				converter.convert(filter, new HanaTranslatorDialect()));

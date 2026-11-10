@@ -17,13 +17,17 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.MajorTypeId;
-import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
 import com.bakdata.conquery.sql.model.operation.BuiltInConditions;
 import com.bakdata.conquery.sql.model.operation.BuiltInFilters;
 import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
+import com.bakdata.conquery.sql.model.operation.CountAggregation;
+import com.bakdata.conquery.sql.model.operation.CountQuartersAggregation;
+import com.bakdata.conquery.sql.model.operation.DurationSumAggregation;
+import com.bakdata.conquery.sql.model.operation.FlagsAggregation;
 import com.bakdata.conquery.sql.model.operation.ResolvedCondition;
 import com.bakdata.conquery.sql.model.operation.ResolvedFilter;
 import com.bakdata.conquery.sql.model.operation.ResolvedSelect;
+import com.bakdata.conquery.sql.model.operation.SumAggregation;
 import com.bakdata.conquery.sql.model.range.NumberRange;
 import com.bakdata.conquery.sql.model.range.SubstringRange;
 import com.bakdata.conquery.sql.model.schema.DateColumns;
@@ -50,7 +54,7 @@ class BuiltInOperationsTest {
 		ResolvedFilter number = new BuiltInFilters.NumericColumnRange("number", AMOUNT, NumberRange.closed(1, 10));
 		ResolvedFilter aggregation = new BuiltInFilters.AggregationRange(
 				"aggregation",
-				new BuiltInAggregations.Sum(AMOUNT, Optional.empty(), List.of()),
+				new SumAggregation(AMOUNT, Optional.empty(), List.of()),
 				NumberRange.atLeast(BigDecimal.TEN)
 		);
 		ResolvedFilter distance = new BuiltInFilters.DateDistanceRange(
@@ -75,12 +79,12 @@ class BuiltInOperationsTest {
 	@Test
 	void shouldRepresentStandardSelectsWithResolvedInputs() {
 		List<ResolvedSelect> selects = List.of(
-				new BuiltInSelects.Aggregation("count", new BuiltInAggregations.Count(CODE, List.of(CODE))),
-				new BuiltInSelects.Aggregation("quarters", new BuiltInAggregations.CountQuarters(new DateColumns.Pair(START, END))),
+				new BuiltInSelects.Aggregation("count", new CountAggregation(CODE, List.of(CODE))),
+				new BuiltInSelects.Aggregation("quarters", new CountQuartersAggregation(new DateColumns.Pair(START, END))),
 				new BuiltInSelects.Aggregation(
-						"duration", new BuiltInAggregations.DurationSum(new DateColumns.Pair(START, END), List.of(CODE))
+						"duration", new DurationSumAggregation(new DateColumns.Pair(START, END), List.of(CODE))
 				),
-				new BuiltInSelects.Aggregation("flags", new BuiltInAggregations.Flags(Map.of("A", FLAG_A, "B", FLAG_B))),
+				new BuiltInSelects.Aggregation("flags", new FlagsAggregation(Map.of("A", FLAG_A, "B", FLAG_B))),
 				new BuiltInSelects.Values(
 						"values", CODE, BuiltInSelects.ValueOperation.DISTINCT, Optional.of(SubstringRange.between(0, 3))
 				),
@@ -112,13 +116,13 @@ class BuiltInOperationsTest {
 	@Test
 	void shouldDefensivelyCopyOperationCollections() {
 		List<ResolvedColumn> distinctBy = new ArrayList<>(List.of(CODE));
-		BuiltInAggregations.Count count = new BuiltInAggregations.Count(AMOUNT, distinctBy);
+		final CountAggregation count = new CountAggregation(AMOUNT, distinctBy);
 		distinctBy.clear();
 
 		Map<String, ResolvedColumn> flagColumns = new LinkedHashMap<>();
 		flagColumns.put("A", FLAG_A);
 		flagColumns.put("B", FLAG_B);
-		BuiltInAggregations.Flags flags = new BuiltInAggregations.Flags(flagColumns);
+		final FlagsAggregation flags = new FlagsAggregation(flagColumns);
 		flagColumns.clear();
 
 		assertEquals(List.of(CODE), count.distinctBy());
@@ -132,7 +136,7 @@ class BuiltInOperationsTest {
 				"other.code", OTHER_EVENTS, "code", MajorTypeId.STRING, true
 		);
 
-		assertInvalid(new BuiltInAggregations.Count(CODE, List.of(otherColumn)));
+		assertInvalid(new CountAggregation(CODE, List.of(otherColumn)));
 		assertInvalid(new DateColumns.Pair(START, new ResolvedColumn(
 						"other.end", OTHER_EVENTS, "end_date", MajorTypeId.DATE, true
 		)));
@@ -140,7 +144,7 @@ class BuiltInOperationsTest {
 
 	@Test
 	void shouldRejectInvalidColumnTypes() {
-		assertInvalid(new BuiltInAggregations.Sum(CODE, Optional.empty(), List.of()));
+		assertInvalid(new SumAggregation(CODE, Optional.empty(), List.of()));
 		assertInvalid(new BuiltInFilters.DateDistanceRange(
 						"distance", CODE, ChronoUnit.DAYS, LocalDate.of(2026, 8, 27), NumberRange.unbounded()
 		));

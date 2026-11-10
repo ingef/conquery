@@ -49,14 +49,18 @@ import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.M
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.SumSelect;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.sql.conversion.model.ModelMapper;
-import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
 import com.bakdata.conquery.sql.model.operation.BuiltInConditions;
 import com.bakdata.conquery.sql.model.operation.BuiltInFilters;
 import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
+import com.bakdata.conquery.sql.model.operation.CountAggregation;
+import com.bakdata.conquery.sql.model.operation.CountQuartersAggregation;
+import com.bakdata.conquery.sql.model.operation.DurationSumAggregation;
+import com.bakdata.conquery.sql.model.operation.FlagsAggregation;
 import com.bakdata.conquery.sql.model.operation.ResolvedAggregation;
 import com.bakdata.conquery.sql.model.operation.ResolvedCondition;
 import com.bakdata.conquery.sql.model.operation.ResolvedFilter;
 import com.bakdata.conquery.sql.model.operation.ResolvedSelect;
+import com.bakdata.conquery.sql.model.operation.SumAggregation;
 import com.bakdata.conquery.sql.model.range.NumberRange;
 import com.bakdata.conquery.sql.model.range.SubstringRange;
 import com.bakdata.conquery.sql.model.result.ResultColumn;
@@ -79,8 +83,8 @@ public class ResolvedOperationAdapter {
 			case LastValueSelect value -> values(value, BuiltInSelects.ValueOperation.LAST);
 			case RandomValueSelect value -> values(value, BuiltInSelects.ValueOperation.RANDOM);
 			case CountSelect value -> aggregation(value.getName(), count(value.getColumn().resolve(), value.isDistinct()));
-			case CountQuartersSelect value -> aggregation(value.getName(), new BuiltInAggregations.CountQuarters(ModelMapper.map(value)));
-			case DurationSumSelect value -> aggregation(value.getName(), new BuiltInAggregations.DurationSum(
+			case CountQuartersSelect value -> aggregation(value.getName(), new CountQuartersAggregation(ModelMapper.map(value)));
+			case DurationSumSelect value -> aggregation(value.getName(), new DurationSumAggregation(
 					ModelMapper.map(value), List.of()));
 			case SumSelect value -> aggregation(value.getName(), sum(
 					value.getColumn().resolve(), value.getSubtractColumn(), value.getDistinctByColumn()));
@@ -104,9 +108,9 @@ public class ResolvedOperationAdapter {
 			case CountFilter countFilter -> aggregationFilter(filter.getName(),
 					count(countFilter.getColumn().resolve(), countFilter.isDistinct()), value);
 			case CountQuartersFilter quartersFilter -> aggregationFilter(filter.getName(),
-					new BuiltInAggregations.CountQuarters(ModelMapper.map(quartersFilter)), value);
+					new CountQuartersAggregation(ModelMapper.map(quartersFilter)), value);
 			case DurationSumFilter durationFilter -> aggregationFilter(filter.getName(),
-					new BuiltInAggregations.DurationSum(ModelMapper.map(durationFilter), List.of()), value);
+					new DurationSumAggregation(ModelMapper.map(durationFilter), List.of()), value);
 			case SumFilter<?> sumFilter -> aggregationFilter(filter.getName(),
 					sum(sumFilter.getColumn().resolve(), sumFilter.getSubtractColumn(), sumFilter.getDistinctByColumn()), value);
 			case FlagFilter flagFilter -> new BuiltInFilters.Flags(filter.getName(), flags(flagFilter.getFlags()), (Set<String>) value);
@@ -159,24 +163,24 @@ public class ResolvedOperationAdapter {
 		return Optional.of(new SubstringRange(range.getMin() == null ? 0 : range.getMin(), Optional.ofNullable(range.getMax())));
 	}
 
-	private static BuiltInAggregations.Count count(com.bakdata.conquery.models.datasets.Column column, boolean distinct) {
-		ResolvedColumn resolved = ModelMapper.map(column);
-		return new BuiltInAggregations.Count(resolved, distinct ? List.of(resolved) : List.of());
+	private static CountAggregation count(com.bakdata.conquery.models.datasets.Column column, boolean distinct) {
+		final ResolvedColumn resolved = ModelMapper.map(column);
+		return new CountAggregation(resolved, distinct ? List.of(resolved) : List.of());
 	}
 
-	private static BuiltInAggregations.Sum sum(
+	private static SumAggregation sum(
 			com.bakdata.conquery.models.datasets.Column column,
 			com.bakdata.conquery.models.identifiable.ids.specific.ColumnId subtract,
 			List<com.bakdata.conquery.models.identifiable.ids.specific.ColumnId> distinctBy
 	) {
-		return new BuiltInAggregations.Sum(ModelMapper.map(column),
+		return new SumAggregation(ModelMapper.map(column),
 				Optional.ofNullable(subtract).map(id -> ModelMapper.map(id.resolve())), columns(distinctBy));
 	}
 
-	private static BuiltInAggregations.Flags flags(Map<String, com.bakdata.conquery.models.identifiable.ids.specific.ColumnId> flags) {
-		Map<String, ResolvedColumn> resolved = new LinkedHashMap<>();
+	private static FlagsAggregation flags(Map<String, com.bakdata.conquery.models.identifiable.ids.specific.ColumnId> flags) {
+		final Map<String, ResolvedColumn> resolved = new LinkedHashMap<>();
 		flags.forEach((name, column) -> resolved.put(name, ModelMapper.map(column.resolve())));
-		return new BuiltInAggregations.Flags(resolved);
+		return new FlagsAggregation(resolved);
 	}
 
 	private static List<ResolvedColumn> columns(List<com.bakdata.conquery.models.identifiable.ids.specific.ColumnId> columns) {

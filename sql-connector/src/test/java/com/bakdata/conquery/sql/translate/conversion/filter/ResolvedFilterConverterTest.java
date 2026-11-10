@@ -19,10 +19,12 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.MajorTypeId;
-import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
 import com.bakdata.conquery.sql.model.operation.BuiltInFilters;
+import com.bakdata.conquery.sql.model.operation.CountAggregation;
+import com.bakdata.conquery.sql.model.operation.DurationSumAggregation;
 import com.bakdata.conquery.sql.model.operation.ResolvedAggregation;
 import com.bakdata.conquery.sql.model.operation.ResolvedFilter;
+import com.bakdata.conquery.sql.model.operation.SumAggregation;
 import com.bakdata.conquery.sql.model.range.NumberRange;
 import com.bakdata.conquery.sql.model.range.SubstringRange;
 import com.bakdata.conquery.sql.model.schema.DateColumns;
@@ -184,7 +186,7 @@ class ResolvedFilterConverterTest {
 	void shouldConvertAggregationRange() {
 		BuiltInFilters.AggregationRange filter = new BuiltInFilters.AggregationRange(
 				"event count",
-				new BuiltInAggregations.Count(STRING_COLUMN, List.of()),
+				new CountAggregation(STRING_COLUMN, List.of()),
 				NumberRange.atLeast(2)
 		);
 
@@ -227,7 +229,7 @@ class ResolvedFilterConverterTest {
 	@Test
 	void shouldFilterDistinctSumFromJoinedBranchWithoutRepeatingAggregation() {
 		SqlFilters result = converter.convert(new BuiltInFilters.AggregationRange(
-				"distinct total", new BuiltInAggregations.Sum(NUMBER_COLUMN, Optional.empty(), List.of(STRING_COLUMN)), NumberRange.closed(2, 8)
+				"distinct total", new SumAggregation(NUMBER_COLUMN, Optional.empty(), List.of(STRING_COLUMN)), NumberRange.closed(2, 8)
 		), CONTEXT);
 
 		assertTrue(result.getSelects().getAggregationSelects().isEmpty());
@@ -238,7 +240,7 @@ class ResolvedFilterConverterTest {
 	@Test
 	void shouldFilterDurationFromIntervalPackingBranch() {
 		SqlFilters result = converter.convert(new BuiltInFilters.AggregationRange(
-				"duration", new BuiltInAggregations.DurationSum(new DateColumns.Single(DATE_COLUMN), List.of()), NumberRange.atMost(10)
+				"duration", new DurationSumAggregation(new DateColumns.Single(DATE_COLUMN), List.of()), NumberRange.atMost(10)
 		), CONTEXT);
 
 		assertTrue(result.getSelects().getAggregationSelects().isEmpty());

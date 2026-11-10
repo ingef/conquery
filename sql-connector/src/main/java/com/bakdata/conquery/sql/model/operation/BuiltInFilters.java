@@ -65,7 +65,7 @@ public final class BuiltInFilters {
 
 	public record Flags(
 			@NotBlank String name,
-			@NotNull @Valid BuiltInAggregations.Flags availableFlags,
+			@NotNull @Valid FlagsAggregation availableFlags,
 			@NotEmpty Set<@NotNull String> selectedFlags
 	) implements ResolvedFilter {
 
@@ -74,7 +74,7 @@ public final class BuiltInFilters {
 		}
 
 		public Flags(String name, java.util.Map<String, ResolvedColumn> availableFlags, Set<String> selectedFlags) {
-			this(name, new BuiltInAggregations.Flags(availableFlags), selectedFlags);
+			this(name, new FlagsAggregation(availableFlags), selectedFlags);
 		}
 
 		@AssertTrue(message = "selectedFlags must be defined by availableFlags")

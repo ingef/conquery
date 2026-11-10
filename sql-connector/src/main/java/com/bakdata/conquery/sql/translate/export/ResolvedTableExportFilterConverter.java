@@ -4,10 +4,14 @@ import java.math.BigDecimal;
 import java.sql.Date;
 import java.util.List;
 
-import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
 import com.bakdata.conquery.sql.model.operation.BuiltInFilters;
+import com.bakdata.conquery.sql.model.operation.CountAggregation;
+import com.bakdata.conquery.sql.model.operation.CountQuartersAggregation;
+import com.bakdata.conquery.sql.model.operation.DurationSumAggregation;
+import com.bakdata.conquery.sql.model.operation.FlagsAggregation;
 import com.bakdata.conquery.sql.model.operation.ResolvedAggregation;
 import com.bakdata.conquery.sql.model.operation.ResolvedFilter;
+import com.bakdata.conquery.sql.model.operation.SumAggregation;
 import com.bakdata.conquery.sql.model.range.NumberRange;
 import com.bakdata.conquery.sql.model.range.SubstringRange;
 import com.bakdata.conquery.sql.model.schema.DateColumns;
@@ -57,14 +61,14 @@ public final class ResolvedTableExportFilterConverter {
 
 	private static Field<? extends Number> rowValue(ResolvedAggregation aggregation, TranslatorDialect dialect) {
 		return switch (aggregation) {
-			case BuiltInAggregations.Count ignored -> DSL.inline(1);
-			case BuiltInAggregations.CountQuarters ignored -> DSL.inline(1);
-			case BuiltInAggregations.Sum sum -> sum.subtractColumn()
+			case CountAggregation ignored -> DSL.inline(1);
+			case CountQuartersAggregation ignored -> DSL.inline(1);
+			case SumAggregation sum -> sum.subtractColumn()
 					.<Field<? extends Number>>map(subtract -> SchemaSql.field(sum.column(), BigDecimal.class)
 							.minus(SchemaSql.field(subtract, BigDecimal.class)))
 					.orElseGet(() -> SchemaSql.field(sum.column(), BigDecimal.class));
-			case BuiltInAggregations.DurationSum duration -> duration(duration.dates(), dialect);
-			case BuiltInAggregations.Flags ignored -> throw new IllegalArgumentException(
+			case DurationSumAggregation duration -> duration(duration.dates(), dialect);
+			case FlagsAggregation ignored -> throw new IllegalArgumentException(
 					"Flag filters use the dedicated resolved flag operation");
 			default -> throw new UnsupportedOperationException(
 					"Table-export aggregation is not implemented for " + aggregation.getClass());

@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
+import com.bakdata.conquery.sql.model.operation.FlagsAggregation;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.translate.ir.SqlTables;
@@ -19,7 +19,7 @@ import org.jooq.Condition;
 import org.jooq.Field;
 
 final class FlagSqlAggregatorConverter {
-	static CommonAggregationSelect<?> convert(BuiltInAggregations.Flags aggregation, AggregationConversionContext context) {
+	static CommonAggregationSelect<?> convert(FlagsAggregation aggregation, AggregationConversionContext context) {
 		Map<String, SingleColumnSqlSelect> rootSelects = createFlagRootSelectMap(aggregation, context.tables().getRootTable());
 		return aggregation(rootSelects, createFlagSelect(context.alias(), context.tables(), context.dialect(), rootSelects));
 	}
@@ -27,7 +27,7 @@ final class FlagSqlAggregatorConverter {
 	private static <T> CommonAggregationSelect<T> aggregation(Map<String, SingleColumnSqlSelect> roots, FieldWrapper<T> grouped) {
 		return CommonAggregationSelect.<T>builder().rootSelects(roots.values()).groupBy(grouped).build();
 	}
-	private static Map<String, SingleColumnSqlSelect> createFlagRootSelectMap(BuiltInAggregations.Flags flagSelect, String rootTable) {
+	private static Map<String, SingleColumnSqlSelect> createFlagRootSelectMap(FlagsAggregation flagSelect, String rootTable) {
 		return flagSelect.columns()
 						 .entrySet().stream()
 						 .collect(Collectors.toMap(

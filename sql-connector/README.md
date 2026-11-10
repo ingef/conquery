@@ -50,9 +50,9 @@ physical metadata remains in `model.schema`.
 Implementations must be immutable and carry resolved columns and typed values. They must not carry unresolved repository
 identifiers or arbitrary SQL received from a query request.
 
-The `BuiltInFilters`, `BuiltInSelects`, `BuiltInConditions`, and `BuiltInAggregations` types define the normalized
-operations understood by the standard compiler. They intentionally describe semantics rather than the configuration
-classes used by a particular query-producing application.
+The `BuiltInFilters`, `BuiltInSelects`, and `BuiltInConditions` types and the aggregation records in `model.operation`
+define the normalized operations understood by the standard compiler. They intentionally describe semantics rather
+than the configuration classes used by a particular query-producing application.
 
 ## Aggregation compilation
 

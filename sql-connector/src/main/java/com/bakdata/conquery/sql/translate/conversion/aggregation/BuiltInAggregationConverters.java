@@ -3,8 +3,12 @@ package com.bakdata.conquery.sql.translate.conversion.aggregation;
 import java.util.List;
 import java.util.function.BiFunction;
 
-import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
+import com.bakdata.conquery.sql.model.operation.CountAggregation;
+import com.bakdata.conquery.sql.model.operation.CountQuartersAggregation;
+import com.bakdata.conquery.sql.model.operation.DurationSumAggregation;
+import com.bakdata.conquery.sql.model.operation.FlagsAggregation;
 import com.bakdata.conquery.sql.model.operation.ResolvedAggregation;
+import com.bakdata.conquery.sql.model.operation.SumAggregation;
 import com.bakdata.conquery.sql.translate.conversion.Converter;
 import com.bakdata.conquery.sql.translate.query.concept.CommonAggregationSelect;
 import lombok.experimental.UtilityClass;
@@ -14,11 +18,11 @@ class BuiltInAggregationConverters {
 
 	static List<Converter<? extends ResolvedAggregation, CommonAggregationSelect<?>, AggregationConversionContext>> create() {
 		return List.of(
-				converter(BuiltInAggregations.Count.class, CountAggregationConverter::convert),
-				converter(BuiltInAggregations.Sum.class, SumAggregationConverter::convert),
-				converter(BuiltInAggregations.Flags.class, FlagSqlAggregatorConverter::convert),
-				converter(BuiltInAggregations.CountQuarters.class, DateAggregationConverters::countQuarters),
-				converter(BuiltInAggregations.DurationSum.class, DateAggregationConverters::durationSum)
+				converter(CountAggregation.class, CountAggregationConverter::convert),
+				converter(SumAggregation.class, SumAggregationConverter::convert),
+				converter(FlagsAggregation.class, FlagSqlAggregatorConverter::convert),
+				converter(CountQuartersAggregation.class, DateAggregationConverters::countQuarters),
+				converter(DurationSumAggregation.class, DateAggregationConverters::durationSum)
 		);
 	}
 

@@ -3,7 +3,7 @@ package com.bakdata.conquery.sql.translate.conversion.aggregation;
 import java.util.List;
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
+import com.bakdata.conquery.sql.model.operation.CountAggregation;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.translate.ir.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.translate.ir.select.FieldWrapper;
@@ -16,7 +16,7 @@ import org.jooq.impl.DSL;
 final class CountAggregationConverter {
 
 	static CommonAggregationSelect<Integer> convert(
-			BuiltInAggregations.Count aggregation,
+			CountAggregation aggregation,
 			AggregationConversionContext context
 	) {
 		ExtractingSqlSelect<Object> countSelect = rootSelect(aggregation.column(), context);

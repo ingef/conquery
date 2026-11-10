@@ -6,7 +6,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import com.bakdata.conquery.models.datasets.MajorTypeId;
-import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
+import com.bakdata.conquery.sql.model.operation.CountQuartersAggregation;
+import com.bakdata.conquery.sql.model.operation.DurationSumAggregation;
 import com.bakdata.conquery.sql.model.schema.DateColumns;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
@@ -27,7 +28,7 @@ import org.jooq.impl.DSL;
 @UtilityClass
 final class DateAggregationConverters {
 
-	static CommonAggregationSelect<?> countQuarters(BuiltInAggregations.CountQuarters aggregation, AggregationConversionContext context) {
+	static CommonAggregationSelect<?> countQuarters(CountQuartersAggregation aggregation, AggregationConversionContext context) {
 		TranslatorDialect dialect = context.dialect();
 		String source = context.tables().getPredecessor(ConceptCteStep.AGGREGATION_SELECT);
 		if (aggregation.dates() instanceof DateColumns.Single single) {
@@ -52,7 +53,7 @@ final class DateAggregationConverters {
 				.build();
 	}
 
-	static CommonAggregationSelect<BigDecimal> durationSum(BuiltInAggregations.DurationSum aggregation, AggregationConversionContext context) {
+	static CommonAggregationSelect<BigDecimal> durationSum(DurationSumAggregation aggregation, AggregationConversionContext context) {
 		// Preserve the existing SQL path: intervals are packed without applying distinctBy.
 		TranslatorDialect dialect = context.dialect();
 		ColumnDateRange dates = dateRange(aggregation.dates(), context).as(context.alias());

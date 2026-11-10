@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
+import com.bakdata.conquery.sql.model.operation.SumAggregation;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.translate.ir.CteStep;
 import com.bakdata.conquery.sql.translate.ir.QueryStep;
@@ -25,7 +25,7 @@ final class SumAggregationConverter {
 
 	private static final String ROW_NUMBER = "row_number";
 
-	static CommonAggregationSelect<BigDecimal> convert(BuiltInAggregations.Sum aggregation, AggregationConversionContext context) {
+	static CommonAggregationSelect<BigDecimal> convert(SumAggregation aggregation, AggregationConversionContext context) {
 		String root = context.tables().getRootTable();
 		String source = context.tables().getPredecessor(ConceptCteStep.AGGREGATION_SELECT);
 		List<SingleColumnSqlSelect> roots = new ArrayList<>();
@@ -85,7 +85,7 @@ final class SumAggregationConverter {
 				.build();
 	}
 
-	private static Field<? extends Number> value(BuiltInAggregations.Sum aggregation, String source) {
+	private static Field<? extends Number> value(SumAggregation aggregation, String source) {
 		Field<? extends Number> value = field(aggregation.column(), source);
 		if (aggregation.subtractColumn().isEmpty()) {
 			return value;

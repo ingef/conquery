@@ -11,9 +11,10 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.bakdata.conquery.models.datasets.MajorTypeId;
-import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
 import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
+import com.bakdata.conquery.sql.model.operation.FlagsAggregation;
 import com.bakdata.conquery.sql.model.operation.ResolvedSelect;
+import com.bakdata.conquery.sql.model.operation.SumAggregation;
 import com.bakdata.conquery.sql.model.range.SubstringRange;
 import com.bakdata.conquery.sql.model.schema.DateColumns;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
@@ -153,7 +154,7 @@ class ResolvedSelectConverterTest {
 	@Test
 	void shouldCompileFlagsThroughAggregation() {
 		var flag = new ResolvedColumn("events.flag", VALUE.table(), "flag", MajorTypeId.BOOLEAN, true);
-		var result = converter.convert(new BuiltInSelects.Aggregation("value", new BuiltInAggregations.Flags(Map.of("A", flag))), context());
+		var result = converter.convert(new BuiltInSelects.Aggregation("value", new FlagsAggregation(Map.of("A", flag))), context());
 		assertEquals(1, result.getAggregationSelects().size());
 		assertTrue(render(result.getAggregationSelects().getFirst().toFields().getFirst()).contains("then 'a'"));
 	}
@@ -222,7 +223,7 @@ class ResolvedSelectConverterTest {
 	@Test
 	void shouldNotAggregateDistinctSumPredecessorAgain() {
 		var amount = new ResolvedColumn("events.amount", VALUE.table(), "amount", MajorTypeId.INTEGER, true);
-		var result = converter.convert(new BuiltInSelects.Aggregation("value", new BuiltInAggregations.Sum(amount, Optional.empty(), List.of(VALUE))), context());
+		var result = converter.convert(new BuiltInSelects.Aggregation("value", new SumAggregation(amount, Optional.empty(), List.of(VALUE))), context());
 		assertTrue(result.getAdditionalPredecessor().isPresent());
 		assertTrue(result.getAggregationSelects().isEmpty());
 		assertEquals("\"aggregation\".\"value\"", render(result.getFinalSelects().getFirst().toFields().getFirst()));

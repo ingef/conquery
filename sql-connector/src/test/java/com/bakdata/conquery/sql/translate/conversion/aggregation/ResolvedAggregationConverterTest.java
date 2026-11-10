@@ -14,7 +14,10 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.bakdata.conquery.models.datasets.MajorTypeId;
-import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
+import com.bakdata.conquery.sql.model.operation.CountAggregation;
+import com.bakdata.conquery.sql.model.operation.CountQuartersAggregation;
+import com.bakdata.conquery.sql.model.operation.DurationSumAggregation;
+import com.bakdata.conquery.sql.model.operation.SumAggregation;
 import com.bakdata.conquery.sql.model.schema.DateColumns;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.model.schema.SqlTable;
@@ -57,7 +60,7 @@ class ResolvedAggregationConverterTest {
 	@Test
 	void shouldConvertCount() {
 		CommonAggregationSelect<?> result = converter.convert(
-				new BuiltInAggregations.Count(VALUE, List.of()),
+				new CountAggregation(VALUE, List.of()),
 				CONTEXT
 		);
 
@@ -71,7 +74,7 @@ class ResolvedAggregationConverterTest {
 	@Test
 	void shouldCountDistinctValues() {
 		CommonAggregationSelect<?> result = converter.convert(
-				new BuiltInAggregations.Count(VALUE, List.of(PERSON)),
+				new CountAggregation(VALUE, List.of(PERSON)),
 				CONTEXT
 		);
 
@@ -90,7 +93,7 @@ class ResolvedAggregationConverterTest {
 
 	@Test
 	void shouldConvertSumWithoutReplacingMissingValuesWithZero() {
-		CommonAggregationSelect<?> result = converter.convert(new BuiltInAggregations.Sum(AMOUNT, Optional.empty(), List.of()), CONTEXT);
+		CommonAggregationSelect<?> result = converter.convert(new SumAggregation(AMOUNT, Optional.empty(), List.of()), CONTEXT);
 
 		assertEquals(List.of("\"events\".\"amount\""), renderRootSelects(result));
 		assertEquals("sum(\"preprocessing\".\"amount\") as \"event-count\"", render(result.getGroupBy().select()));
@@ -99,7 +102,7 @@ class ResolvedAggregationConverterTest {
 
 	@Test
 	void shouldSubtractWithZeroOnlyWhenAnOperandIsPresent() {
-		CommonAggregationSelect<?> result = converter.convert(new BuiltInAggregations.Sum(AMOUNT, Optional.of(DISCOUNT), List.of()), CONTEXT);
+		CommonAggregationSelect<?> result = converter.convert(new SumAggregation(AMOUNT, Optional.of(DISCOUNT), List.of()), CONTEXT);
 
 		assertEquals(List.of("\"events\".\"amount\"", "\"events\".\"discount\""), renderRootSelects(result));
 		String zero = "coalesce((\"preprocessing\".\"amount\" * 0), (\"preprocessing\".\"discount\" * 0))";
@@ -115,7 +118,7 @@ class ResolvedAggregationConverterTest {
 				new TestDialect(), new SqlNameGenerator(128), TABLES,
 				new SqlIdColumns(field(name("events", "id"), String.class), field(name("events", "secondary_id"), String.class)), "total"
 		);
-		CommonAggregationSelect<?> result = converter.convert(new BuiltInAggregations.Sum(AMOUNT, Optional.empty(), List.of(PERSON, AMOUNT)), context);
+		CommonAggregationSelect<?> result = converter.convert(new SumAggregation(AMOUNT, Optional.empty(), List.of(PERSON, AMOUNT)), context);
 		QueryStep summed = result.getAdditionalPredecessor().orElseThrow();
 		QueryStep numbered = summed.getPredecessors().getFirst();
 
@@ -132,7 +135,7 @@ class ResolvedAggregationConverterTest {
 
 	@Test
 	void shouldIgnoreSubtractionInsideDistinctSumLikeExistingBackend() {
-		CommonAggregationSelect<?> result = converter.convert(new BuiltInAggregations.Sum(AMOUNT, Optional.of(DISCOUNT), List.of(PERSON)), CONTEXT);
+		CommonAggregationSelect<?> result = converter.convert(new SumAggregation(AMOUNT, Optional.of(DISCOUNT), List.of(PERSON)), CONTEXT);
 		QueryStep numbered = result.getAdditionalPredecessor().orElseThrow().getPredecessors().getFirst();
 
 		assertEquals(2, numbered.getSelects().getSqlSelects().size());
@@ -153,7 +156,7 @@ class ResolvedAggregationConverterTest {
 			ResolvedColumn discount = column("discount", entry.getKey());
 			for (List<ResolvedColumn> distinctBy : List.of(List.<ResolvedColumn>of(), List.of(PERSON))) {
 				CommonAggregationSelect<?> result = converter.convert(
-						new BuiltInAggregations.Sum(amount, Optional.of(discount), distinctBy), CONTEXT);
+						new SumAggregation(amount, Optional.of(discount), distinctBy), CONTEXT);
 				assertEquals(entry.getValue(), result.getRootSelects().getFirst().select().getType(), entry.getKey().name());
 			}
 		}
@@ -161,7 +164,7 @@ class ResolvedAggregationConverterTest {
 
 	@Test
 	void shouldCountDistinctYearQuartersForSingleDates() {
-		CommonAggregationSelect<?> result = converter.convert(new BuiltInAggregations.CountQuarters(new DateColumns.Single(START)), CONTEXT);
+		CommonAggregationSelect<?> result = converter.convert(new CountQuartersAggregation(new DateColumns.Single(START)), CONTEXT);
 
 		assertEquals(List.of("\"events\".\"start_date\""), renderRootSelects(result));
 		assertEquals("nullif(count(distinct year_quarter(\"preprocessing\".\"start_date\")), 0) as \"event-count\"", render(result.getGroupBy().select()));
@@ -169,7 +172,7 @@ class ResolvedAggregationConverterTest {
 
 	@Test
 	void shouldSumQuarterCountsForDatePairs() {
-		CommonAggregationSelect<?> result = converter.convert(new BuiltInAggregations.CountQuarters(new DateColumns.Pair(START, END)), CONTEXT);
+		CommonAggregationSelect<?> result = converter.convert(new CountQuartersAggregation(new DateColumns.Pair(START, END)), CONTEXT);
 
 		assertEquals(List.of("(date_distance('months', quarter_start(\"events\".\"start_date\"), next_quarter_start(\"events\".\"end_date\")) / 3) as \"event-count\""), renderRootSelects(result));
 		assertEquals("nullif(sum(\"preprocessing\".\"event-count\"), 0) as \"event-count\"", render(result.getGroupBy().select()));
@@ -177,7 +180,7 @@ class ResolvedAggregationConverterTest {
 
 	@Test
 	void shouldPackIntervalsBeforeSummingDurationsAndExcludeInfiniteBounds() {
-		CommonAggregationSelect<?> result = converter.convert(new BuiltInAggregations.DurationSum(new DateColumns.Pair(START, END), List.of()), CONTEXT);
+		CommonAggregationSelect<?> result = converter.convert(new DurationSumAggregation(new DateColumns.Pair(START, END), List.of()), CONTEXT);
 		QueryStep sum = result.getAdditionalPredecessor().orElseThrow();
 
 		assertEquals(List.of(
@@ -195,14 +198,14 @@ class ResolvedAggregationConverterTest {
 
 	@Test
 	void shouldTreatSingleDateAsOneInclusiveDayForDuration() {
-		CommonAggregationSelect<?> result = converter.convert(new BuiltInAggregations.DurationSum(new DateColumns.Single(START), List.of()), CONTEXT);
+		CommonAggregationSelect<?> result = converter.convert(new DurationSumAggregation(new DateColumns.Single(START), List.of()), CONTEXT);
 		assertEquals("coalesce(add_days(\"events\".\"start_date\", 1), \"maximum_date\") as \"event-count_end\"", renderRootSelects(result).getLast());
 	}
 
 	@Test
 	void shouldIgnoreDurationDistinctKeysLikeExistingBackend() {
 		CommonAggregationSelect<?> result = converter.convert(
-				new BuiltInAggregations.DurationSum(new DateColumns.Pair(START, END), List.of(PERSON)), CONTEXT);
+				new DurationSumAggregation(new DateColumns.Pair(START, END), List.of(PERSON)), CONTEXT);
 		assertEquals(List.of(
 				"coalesce(\"events\".\"start_date\", \"minimum_date\") as \"event-count_start\"",
 				"coalesce(add_days(\"events\".\"end_date\", 1), \"maximum_date\") as \"event-count_end\""
@@ -213,7 +216,7 @@ class ResolvedAggregationConverterTest {
 	@Test
 	void shouldRequireDialectSupportForPhysicalRangeColumns() {
 		assertThrows(UnsupportedOperationException.class, () -> converter.convert(
-				new BuiltInAggregations.DurationSum(new DateColumns.Single(column("range", MajorTypeId.DATE_RANGE)), List.of()), CONTEXT
+				new DurationSumAggregation(new DateColumns.Single(column("range", MajorTypeId.DATE_RANGE)), List.of()), CONTEXT
 		));
 	}
 
