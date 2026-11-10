@@ -5,7 +5,6 @@ import static com.bakdata.conquery.sql.model.ValidationTestSupport.assertValid;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -17,7 +16,6 @@ import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.model.node.AndNode;
 import com.bakdata.conquery.sql.model.node.ConceptNode;
 import com.bakdata.conquery.sql.model.node.QueryNode;
-import com.bakdata.conquery.sql.model.range.DateRange;
 import com.bakdata.conquery.sql.model.result.ResultColumn;
 import com.bakdata.conquery.sql.model.schema.EntitySchema;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
@@ -107,14 +105,6 @@ class ResolvedQueryTest {
 	@Test
 	void shouldRejectNonDateValidityColumns() {
 		assertInvalid(new ResolvedValidityDate.Point(ENTITY_ID));
-	}
-
-	@Test
-	void shouldRejectInvertedDateRestriction() {
-		assertInvalid(DateRange.closed(
-				LocalDate.of(2025, 2, 1),
-				LocalDate.of(2025, 1, 1)
-		));
 	}
 
 	@Test

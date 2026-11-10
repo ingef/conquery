@@ -122,7 +122,7 @@ public final class ResolvedQueryMapper {
 		List<ResolvedColumn> conceptColumns = connectors.stream()
 				.map(Connector::getColumn).filter(java.util.Objects::nonNull)
 				.map(id -> ModelMapper.map(id.resolve())).toList();
-		LocalDate endDate = context.dateRestriction().flatMap(DateRange::endInclusive).orElseGet(() -> LocalDate.now(clock));
+		final LocalDate endDate = context.dateRestriction().flatMap(DateRange::maximum).orElseGet(() -> LocalDate.now(clock));
 		List<ResolvedSelect> conceptSelects = query.getSelects().stream().map(SelectId::resolve)
 				.map(select -> ResolvedOperationAdapter.select(select, conceptColumns, endDate)).toList();
 		boolean resolveConceptIds = query.getSelects().stream().map(SelectId::resolve)

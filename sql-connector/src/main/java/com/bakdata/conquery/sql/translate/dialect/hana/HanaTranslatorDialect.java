@@ -134,15 +134,15 @@ public class HanaTranslatorDialect implements TranslatorDialect {
 
   @Override
   public ColumnDateRange dateRangeLiteral(DateRange range) {
-    Field<Date> start =
+    final Field<Date> start =
         range
-            .startInclusive()
-            .<Field<Date>>map(value -> toDateField(value.toString()))
+            .minimum()
+            .map(value -> toDateField(value.toString()))
             .orElseGet(this::minimumDate);
-    Field<Date> end =
+    final Field<Date> end =
         range
-            .endInclusive()
-            .<Field<Date>>map(value -> toDateField(value.plusDays(1).toString()))
+            .maximum()
+            .map(value -> toDateField(value.plusDays(1).toString()))
             .orElseGet(this::maximumDate);
     return ColumnDateRange.of(start, end);
   }

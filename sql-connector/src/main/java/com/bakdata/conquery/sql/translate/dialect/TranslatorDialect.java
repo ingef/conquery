@@ -203,10 +203,10 @@ public interface TranslatorDialect {
 
 	/** Convert an inclusive resolved date range to the translate's half-open date-range representation. */
 	default ColumnDateRange dateRangeLiteral(DateRange dateRange) {
-		Field<Date> start = dateRange.startInclusive()
+		final Field<Date> start = dateRange.minimum()
 				.<Field<Date>>map(value -> DSL.inline(Date.valueOf(value)))
 				.orElseGet(this::minimumDate);
-		Field<Date> end = dateRange.endInclusive()
+		final Field<Date> end = dateRange.maximum()
 				.<Field<Date>>map(value -> DSL.inline(Date.valueOf(value.plusDays(1))))
 				.orElseGet(this::maximumDate);
 		return ColumnDateRange.of(start, end);

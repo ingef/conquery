@@ -35,7 +35,7 @@ public final class ResolvedTableExportMapper {
 	public ResolvedTableExportQuery map(TableExportQuery query, ResolvedQuerySource prerequisite) {
 		DateRange restriction = new DateRange(Optional.ofNullable(query.getDateRange().getMin()),
 				Optional.ofNullable(query.getDateRange().getMax()));
-		LocalDate endDate = restriction.endInclusive().orElseGet(() -> LocalDate.now(clock));
+		final LocalDate endDate = restriction.maximum().orElseGet(() -> LocalDate.now(clock));
 		List<ResolvedExportTable> tables = query.getConcepts().stream()
 				.flatMap(concept -> concept.getTables().stream().map(table -> table(
 						concept, table, query.getPositions(), endDate)))

@@ -76,14 +76,14 @@ class SqlExtractionFormTest {
 
 		ResolvedFormMode.Absolute absoluteMode = assertInstanceOf(
 				ResolvedFormMode.Absolute.class, absoluteResolved.mode());
-		assertEquals(Optional.of(LocalDate.of(2020, 1, 1)), absoluteMode.bounds().startInclusive());
-		assertEquals(Optional.of(LocalDate.of(2020, 12, 31)), absoluteMode.bounds().endInclusive());
+		assertEquals(Optional.of(LocalDate.of(2020, 1, 1)), absoluteMode.bounds().minimum());
+		assertEquals(Optional.of(LocalDate.of(2020, 12, 31)), absoluteMode.bounds().maximum());
 		assertEquals(Resolution.COMPLETE, absoluteMode.resolutions().getFirst().getResolution());
 		assertEquals(Alignment.NO_ALIGN, absoluteMode.resolutions().getFirst().getAlignment());
 		ResolvedFormMode.EntityDate entityMode = assertInstanceOf(
 				ResolvedFormMode.EntityDate.class, entityDateResolved.mode());
-		assertEquals(Optional.of(LocalDate.of(2021, 1, 1)), entityMode.bounds().orElseThrow().startInclusive());
-		assertEquals(Optional.empty(), entityMode.bounds().orElseThrow().endInclusive());
+		assertEquals(Optional.of(LocalDate.of(2021, 1, 1)), entityMode.bounds().orElseThrow().minimum());
+		assertEquals(Optional.empty(), entityMode.bounds().orElseThrow().maximum());
 		assertSame(prerequisiteSource, absoluteResolved.prerequisite());
 		assertEquals(List.of(resolvedFeature), absoluteResolved.features());
 	}

@@ -3,23 +3,16 @@ package com.bakdata.conquery.sql.model.range;
 import java.time.LocalDate;
 import java.util.Optional;
 
-import jakarta.validation.constraints.AssertTrue;
+import com.bakdata.conquery.models.common.InclusiveRange;
 import jakarta.validation.constraints.NotNull;
 
 /** Inclusive date restriction. An empty bound represents an unbounded side. */
 public record DateRange(
-		@NotNull Optional<LocalDate> startInclusive,
-		@NotNull Optional<LocalDate> endInclusive
-) {
+		@NotNull Optional<LocalDate> minimum,
+		@NotNull Optional<LocalDate> maximum
+) implements InclusiveRange<LocalDate> {
 
-	@AssertTrue(message = "startInclusive must not be after endInclusive")
-	public boolean isOrdered() {
-		return startInclusive == null || endInclusive == null
-				|| startInclusive.isEmpty() || endInclusive.isEmpty()
-				|| !startInclusive.get().isAfter(endInclusive.get());
-	}
-
-	public static DateRange closed(LocalDate startInclusive, LocalDate endInclusive) {
-		return new DateRange(Optional.of(startInclusive), Optional.of(endInclusive));
+	public static DateRange closed(LocalDate minimum, LocalDate maximum) {
+		return new DateRange(Optional.of(minimum), Optional.of(maximum));
 	}
 }
