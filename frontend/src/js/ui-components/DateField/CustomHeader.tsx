@@ -14,24 +14,15 @@ const root = tv({
 });
 
 const selectMenuContainer = tv({
-  base: ["absolute top-[40px] left-0", "w-full"],
-});
-
-const menu = tv({
-  base: [
-    "w-full",
-    "rounded-[4px]",
-    "shadow-[0_0_0_1px_hsl(0deg_0%_0%/10%),0_4px_11px_hsl(0deg_0%_0%/10%)]",
-    "bg-bg-50",
-  ],
+  base: ["absolute inset-x-0 top-[40px] bottom-0", "bg-bg-50"],
 });
 
 const optionList = tv({
-  base: ["gap-[5px]", "p-[3px]", "overscroll-contain"],
+  base: ["h-full", "gap-[5px]", "p-[3px]", "overflow-auto overscroll-contain"],
   variants: {
     layout: {
-      twoColumns: "grid grid-cols-[auto_auto]",
-      oneColumn: ["flex flex-col-reverse", "h-[200px]", "overflow-auto"],
+      twoColumns: "grid auto-rows-fr grid-cols-2 [&>*]:h-auto",
+      oneColumn: "flex flex-col-reverse",
     },
   },
 });
@@ -57,36 +48,41 @@ const SelectMenu = ({
 }) => {
   return (
     <div className={selectMenuContainer()}>
-      <div className={menu()}>
-        <div className={optionList({ layout })}>
-          {options.map((option) => (
-            <ToggleButton
-              intent="secondary"
-              size="sm"
-              key={option.value}
-              isSelected={
-                option.value === date.getFullYear() ||
-                option.value === date.getMonth()
-              }
-              onPress={() => onSelect(option.value as number)}
-            >
-              {option.label}
-            </ToggleButton>
-          ))}
-        </div>
+      <div className={optionList({ layout })}>
+        {options.map((option) => (
+          <ToggleButton
+            intent="secondary"
+            size="sm"
+            key={option.value}
+            isSelected={
+              option.value === date.getFullYear() ||
+              option.value === date.getMonth()
+            }
+            onPress={() => onSelect(option.value as number)}
+          >
+            {option.label}
+          </ToggleButton>
+        ))}
       </div>
     </div>
   );
 };
 
+type Picking = "year" | "month" | null;
+
 const YearMonthSelect = ({
   date,
   changeMonth,
   changeYear,
+  picking,
+  setPicking,
 }: Pick<
   ReactDatePickerCustomHeaderProps,
   "date" | "changeYear" | "changeMonth"
->) => {
+> & {
+  picking: Picking;
+  setPicking: (picking: Picking) => void;
+}) => {
   const yearOptions: SelectOptionT[] = [...Array(100).keys()]
     .map((n) => new Date().getFullYear() - n)
     .map((year) => ({ label: String(year), value: year }));
@@ -97,16 +93,7 @@ const YearMonthSelect = ({
     value: i,
   }));
 
-  const [yearSelectOpen, setYearSelectOpen] = useState(true);
-  const [monthSelectOpen, setMonthSelectOpen] = useState(false);
-  const handleClick = () => {
-    if (yearSelectOpen || monthSelectOpen) {
-      setYearSelectOpen(false);
-      setMonthSelectOpen(false);
-    } else {
-      setYearSelectOpen(true);
-    }
-  };
+  const handleClick = () => setPicking(picking ? null : "year");
 
   return (
     <>
@@ -115,26 +102,25 @@ const YearMonthSelect = ({
       <div className={monthYearLabel()} onClick={handleClick}>
         {useMonthName(date)} {date.getFullYear()}
       </div>
-      {yearSelectOpen && (
+      {picking === "year" && (
         <SelectMenu
           date={date}
           layout="oneColumn"
           options={yearOptions}
           onSelect={(year) => {
             changeYear(year);
-            setYearSelectOpen(false);
-            setMonthSelectOpen(true);
+            setPicking("month");
           }}
         />
       )}
-      {monthSelectOpen && (
+      {picking === "month" && (
         <SelectMenu
           date={date}
           layout="twoColumns"
           options={monthOptions}
           onSelect={(month) => {
             changeMonth(month);
-            setMonthSelectOpen(false);
+            setPicking(null);
           }}
         />
       )}
@@ -152,29 +138,39 @@ export const CustomHeader = ({
   nextMonthButtonDisabled,
 }: ReactDatePickerCustomHeaderProps) => {
   const { t } = useTranslation();
+  const [picking, setPicking] = useState<Picking>("year");
+  // the month arrows keep their space, so the label stays centered
+  const arrow = picking ? "invisible" : undefined;
+
   return (
     <div className={root()}>
-      <Button
-        intent="tertiary"
-        aria-label={t("inputDate.previousMonth")}
-        onPress={decreaseMonth}
-        isDisabled={prevMonthButtonDisabled}
-      >
-        <ChevronLeftIcon />
-      </Button>
+      <span className={arrow}>
+        <Button
+          intent="tertiary"
+          aria-label={t("inputDate.previousMonth")}
+          onPress={decreaseMonth}
+          isDisabled={prevMonthButtonDisabled}
+        >
+          <ChevronLeftIcon />
+        </Button>
+      </span>
       <YearMonthSelect
         date={date}
         changeYear={changeYear}
         changeMonth={changeMonth}
+        picking={picking}
+        setPicking={setPicking}
       />
-      <Button
-        intent="tertiary"
-        aria-label={t("inputDate.nextMonth")}
-        onPress={increaseMonth}
-        isDisabled={nextMonthButtonDisabled}
-      >
-        <ChevronRightIcon />
-      </Button>
+      <span className={arrow}>
+        <Button
+          intent="tertiary"
+          aria-label={t("inputDate.nextMonth")}
+          onPress={increaseMonth}
+          isDisabled={nextMonthButtonDisabled}
+        >
+          <ChevronRightIcon />
+        </Button>
+      </span>
     </div>
   );
 };

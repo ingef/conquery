@@ -1,7 +1,6 @@
 import { CalendarIcon } from "lucide-react";
 import { type ReactNode, useId, useRef } from "react";
 import { Group } from "react-aria-components";
-import type ReactDatePicker from "react-datepicker";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
@@ -13,7 +12,7 @@ import {
   parseDateToState,
 } from "../common/helpers/dateHelper";
 import { exists } from "../common/helpers/exists";
-import { DateField } from "./DateField/DateField";
+import { DateField, type DateFieldHandle } from "./DateField/DateField";
 import InfoTooltip from "./InfoTooltip";
 import { Label } from "./Label";
 import { C2 } from "./Typography";
@@ -111,7 +110,7 @@ export const DateRangeField = ({
   const min = getDisplayDate("min", value, displayDateFormat);
   const max = getDisplayDate("max", value, displayDateFormat);
 
-  const maxRef = useRef<ReactDatePicker>(null);
+  const maxRef = useRef<DateFieldHandle>(null);
 
   const isMinValid = exists(value.min && parseDate(min, displayDateFormat));
   const isMaxValid = exists(value.max && parseDate(max, displayDateFormat));
@@ -157,7 +156,7 @@ export const DateRangeField = ({
           }
           placeholder={displayDateFormat.toUpperCase()}
           onChange={(val) => onChangeRaw("min", val, displayDateFormat)}
-          onCalendarSelect={() => maxRef.current?.setOpen(true)}
+          onCalendarSelect={() => maxRef.current?.openCalendar()}
           onBlur={(e) => applyDate("min", e.target.value, displayDateFormat)}
           autoFocus={autoFocus}
         />
