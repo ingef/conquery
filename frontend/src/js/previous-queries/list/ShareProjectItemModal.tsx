@@ -1,4 +1,3 @@
-import { CheckIcon, LoaderCircleIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
@@ -6,8 +5,12 @@ import type { SelectOptionT, UserGroupT } from "../../api/types";
 import type { StateT } from "../../app/reducers";
 import { Button } from "../../ui-components/Button";
 import { ComboBoxMultiField } from "../../ui-components/ComboBoxMultiField";
-import { Modal, ModalBody, ModalHeader } from "../../ui-components/Modal";
-import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
+import {
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+} from "../../ui-components/Modal";
 import {
   useLoadFormConfig,
   useLoadQuery,
@@ -135,37 +138,33 @@ const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
       <ModalHeader subtitle={item.label}>
         {t("sharePreviousQueryModal.headline")}
       </ModalHeader>
-      <ModalBody>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            onShareClicked();
-          }}
-        >
-          <div className="flex w-full items-end">
-            <ComboBoxMultiField
-              autoFocus
-              value={userGroupsValue}
-              onChange={onSetUserGroupsValue}
-              label={groupsLabel}
-              options={userGroupOptions}
-            />
-            <div className="ml-[3px]">
-              <TooltipTrigger>
-                <Button
-                  aria-label={shareLabel}
-                  intent="secondary"
-                  type="submit"
-                  isDisabled={buttonDisabled}
-                >
-                  {loading ? <LoaderCircleIcon /> : <CheckIcon />}
-                </Button>
-                <Tooltip>{shareLabel}</Tooltip>
-              </TooltipTrigger>
-            </div>
-          </div>
-        </form>
-      </ModalBody>
+      <form
+        className="flex flex-col gap-5"
+        onSubmit={(e) => {
+          e.preventDefault();
+          onShareClicked();
+        }}
+      >
+        <ModalBody>
+          <ComboBoxMultiField
+            autoFocus
+            value={userGroupsValue}
+            onChange={onSetUserGroupsValue}
+            label={groupsLabel}
+            options={userGroupOptions}
+          />
+        </ModalBody>
+        <ModalFooter>
+          <Button slot="close">{t("common.cancel")}</Button>
+          <Button
+            intent="primary"
+            type="submit"
+            isDisabled={loading || buttonDisabled}
+          >
+            {shareLabel}
+          </Button>
+        </ModalFooter>
+      </form>
     </Modal>
   );
 };
