@@ -1,19 +1,23 @@
 
 package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
 
-import java.sql.Date;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import org.jooq.Condition;
-import org.jooq.Field;
 
+/**
+ * Collects joined rows whose validity-date ranges do not overlap into the shared no_overlap CTE.
+ * <p>
+ * This intermediate step is only necessary for MERGE: {@link MergeCte} reads it once and emits each non-null input range in a separate
+ * UNION ALL branch before interval packing. Overlapping rows are handled directly by {@link MergeCte}.
+ * INTERSECT calculates its result in the joined step and therefore does not use this CTE.
+ */
 class IntermediateTableCte extends DateAggregationCte {
 
 	@Override
@@ -31,18 +35,7 @@ class IntermediateTableCte extends DateAggregationCte {
 								 .build();
 
 		DateAggregationDates dateAggregationDates = context.getDateAggregationDates();
-		List<Field<Date>> allStarts = dateAggregationDates.allStarts();
-		List<Field<Date>> allEnds = dateAggregationDates.allEnds();
-
-		SqlFunctionProvider functionProvider = context.getFunctionProvider();
-		Condition startBeforeEnd = functionProvider.greatest(allStarts).lessThan(functionProvider.least(allEnds));
-
-		Condition startIsNull = allStarts.stream()
-										 .map(Field::isNull)
-										 .reduce(Condition::or)
-										 .orElseThrow();
-
-		Condition intermediateTableCondition = startIsNull.orNot(startBeforeEnd);
+		Condition intermediateTableCondition = DateAggregationConditions.overlapCondition(dateAggregationDates, context.getFunctionProvider()).not();
 
 		return QueryStep.builder()
 						.selects(selects)
