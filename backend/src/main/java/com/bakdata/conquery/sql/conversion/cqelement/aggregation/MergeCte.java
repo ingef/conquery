@@ -8,7 +8,6 @@ import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
-import org.jooq.Condition;
 import org.jooq.Field;
 
 class MergeCte extends DateAggregationCte {
@@ -51,7 +50,7 @@ class MergeCte extends DateAggregationCte {
 		return QueryStep.builder()
 						.selects(overlapSelects)
 						.fromTable(QueryStep.toTableLike(joinedTable))
-						.conditions(List.of(overlapCondition(allStarts, allEnds, functionProvider)))
+						.conditions(List.of(DateAggregationConditions.overlapCondition(context.getDateAggregationDates(), functionProvider)))
 						.build();
 	}
 
@@ -78,15 +77,6 @@ class MergeCte extends DateAggregationCte {
 						.fromTable(QueryStep.toTableLike(noOverlapTable))
 						.conditions(List.of(start.isNotNull()))
 						.build();
-	}
-
-	static Condition overlapCondition(List<Field<Date>> allStarts, List<Field<Date>> allEnds, SqlFunctionProvider functionProvider) {
-		Condition startBeforeEnd = functionProvider.greatest(allStarts).lessThan(functionProvider.least(allEnds));
-		Condition allStartsNotNull = allStarts.stream()
-												 .map(Field::isNotNull)
-												 .reduce(Condition::and)
-												 .orElseThrow();
-		return allStartsNotNull.and(startBeforeEnd);
 	}
 
 	@Override
