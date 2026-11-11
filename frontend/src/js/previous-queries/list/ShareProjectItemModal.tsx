@@ -164,6 +164,7 @@ const ShareProjectItemModalContent = ({ item, onClose }: PropsT) => {
   );
 };
 
+// opened by the list, not a DialogTrigger in the row: rows remount when the list reloads
 const ShareProjectItemModal = (props: PropsT) => (
   <Modal
     isOpen

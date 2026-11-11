@@ -86,6 +86,7 @@ const EditProjectItemFoldersModalContent = ({ item, onClose }: Props) => {
   );
 };
 
+// opened by the list, not a DialogTrigger in the row: rows remount when the list reloads
 const EditProjectItemFoldersModal = (props: Props) => (
   <Modal
     isOpen
