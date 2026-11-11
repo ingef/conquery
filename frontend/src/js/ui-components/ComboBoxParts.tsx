@@ -30,6 +30,8 @@ export const listBoxItem = tv({
     "rounded",
     "px-2 py-[3px]",
     "cursor-pointer",
+    // anywhere, not break-word: also lets an unbroken label shrink as a flex item
+    "wrap-anywhere",
     // explicit: through the portal an item would inherit body's styles
     textStyle({ size: 2, tone: "default" }),
     "outline-none",

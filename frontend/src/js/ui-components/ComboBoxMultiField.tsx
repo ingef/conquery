@@ -4,7 +4,7 @@ import {
   LoaderCircleIcon,
   XIcon,
 } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { type PointerEvent, useMemo, useRef, useState } from "react";
 import {
   ButtonContext,
   Collection,
@@ -61,7 +61,7 @@ const content = tv({
 const tag = tv({
   base: [
     "flex items-center",
-    "h-5 gap-0.5",
+    "h-5 min-w-0 max-w-full gap-0.5",
     "rounded",
     "bg-gray-50",
     "px-[5px]",
@@ -69,8 +69,8 @@ const tag = tv({
     "shadow-[0.5px_0.5px_1px_0_rgb(0_0_0/20%),inset_0_0_0_1px_#ccc]",
     "outline-none",
     "data-focus-visible:outline-2 data-focus-visible:outline-primary-500",
-    // react-markdown wraps the label in a paragraph
-    "[&_p]:m-0",
+    // react-markdown wraps the label in a paragraph, inline so the label's ellipsis applies
+    "[&_p]:inline",
   ],
 });
 
@@ -79,8 +79,16 @@ const tagRemove = buttonStyle({
   intent: "tertiary",
   size: "sm",
   iconOnly: true,
-  class: "size-4 rounded-sm hover:bg-gray-100 [&_svg]:[--icon-size:12px]",
+  class:
+    "size-4 shrink-0 rounded-sm hover:bg-gray-100 [&_svg]:[--icon-size:12px]",
 });
+
+// the rendered label as plain text, so markdown shows without its syntax
+const titleIfTruncated = (e: PointerEvent<HTMLElement>) => {
+  const label = e.currentTarget;
+  label.title =
+    label.scrollWidth > label.clientWidth ? (label.textContent ?? "") : "";
+};
 
 const actionBar = tv({
   base: [
@@ -199,6 +207,16 @@ export const ComboBoxMultiField = ({
     [createRow, listed],
   );
 
+  const insertable = useMemo(() => {
+    const selected = new Set(selectedKeys);
+    return listed.filter(
+      (option) => !option.disabled && !selected.has(option.value),
+    );
+  }, [listed, selectedKeys]);
+
+  const insertsFromServer =
+    exists(total) && total > listed.length && onLoadAndInsertAll !== undefined;
+
   useFocusFirstOption(stateRef, query, items);
 
   useDebounce(
@@ -232,10 +250,10 @@ export const ComboBoxMultiField = ({
   };
 
   const onInsertAll = () => {
-    if (onLoadAndInsertAll && exists(total) && total > listed.length) {
+    if (insertsFromServer) {
       onLoadAndInsertAll(query);
     } else {
-      onChange(withoutDuplicates(value, listed));
+      onChange(withoutDuplicates(value, insertable));
       stateRef.current?.setInputValue("");
     }
   };
@@ -303,7 +321,12 @@ export const ComboBoxMultiField = ({
                             textValue={optionText(item)}
                             className={tag()}
                           >
-                            <OptionLabel option={item} />
+                            <span
+                              className="min-w-0 truncate"
+                              onPointerEnter={titleIfTruncated}
+                            >
+                              <OptionLabel option={item} />
+                            </span>
                             <RacButton slot="remove" className={tagRemove}>
                               <XIcon />
                             </RacButton>
@@ -366,7 +389,7 @@ export const ComboBoxMultiField = ({
               <Button
                 intent="secondary"
                 size="sm"
-                isDisabled={listed.length === 0}
+                isDisabled={insertable.length === 0 && !insertsFromServer}
                 onPress={onInsertAll}
               >
                 {t("inputMultiSelect.insertAll")}
