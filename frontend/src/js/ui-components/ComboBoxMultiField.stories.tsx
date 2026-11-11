@@ -196,6 +196,44 @@ const ManyValues = () => {
 
 export const CollapsedTags: Story = { render: () => <ManyValues /> };
 
+const LONG_LABELS: SelectOptionT[] = [
+  { value: "short", label: "Short" },
+  {
+    value: "sentence",
+    label:
+      "Quarterly revenue broken down by region, product line and sales channel, including returns and discounts",
+  },
+  {
+    value: "token",
+    label:
+      "quarterly_revenue_by_region_product_line_and_sales_channel_2026_final",
+  },
+  {
+    value: "markdown",
+    label:
+      "**Archived** – reports from the previous fiscal year that were moved to cold storage and can only be restored on request",
+  },
+  {
+    value: "disabled",
+    label:
+      "Unavailable – a long option that cannot be picked while its source moves to the new warehouse",
+    disabled: true,
+  },
+  { value: "medium", label: "Weekly summary for all teams" },
+];
+
+export const LongLabels: Story = {
+  render: () => (
+    <Stateful
+      label="Reports"
+      tooltip="Labels with spaces, one without any break opportunity, markdown and a disabled one; typed text becomes a value with Enter."
+      options={LONG_LABELS}
+      defaultValue={[LONG_LABELS[1], LONG_LABELS[2]]}
+      creatable
+    />
+  ),
+};
+
 export const WithError: Story = {
   render: () => (
     <Stateful
