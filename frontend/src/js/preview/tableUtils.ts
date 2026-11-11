@@ -16,7 +16,7 @@ function getListRenderFunction(
   return (value) =>
     value
       ? (value as Vector)
-          .toArray() // This is somewhat slow, but for-loop produces bogus values
+          .toJSON() // This is somewhat slow, but for-loop produces bogus values
           .map(elementRenderFunction)
           .join(", ")
       : "";
