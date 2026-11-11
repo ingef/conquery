@@ -32,7 +32,7 @@ import org.apache.shiro.authc.pam.UnsupportedTokenException;
 import org.apache.shiro.realm.AuthenticatingRealm;
 import org.keycloak.TokenVerifier;
 import org.keycloak.common.VerificationException;
-import org.keycloak.jose.JOSEParser;
+import org.keycloak.jose.jws.JWSHeader;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.JsonWebToken;
 
@@ -97,31 +97,38 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 		final JwtPkceVerifyingRealmFactory.IdpConfiguration idpConfiguration = idpConfigurationOpt.get();
 		final BearerToken bearerToken = (BearerToken) token;
 
-		log.trace("Parsing token ({}) to extract key id from header", bearerToken.getToken());
-
-		final String keyId = JOSEParser.parse(bearerToken.getToken()).getHeader().getKeyId();
-
-		log.trace("Key id of token signer: {}", keyId);
-
-		final PublicKey publicKey = idpConfiguration.signingKeys().get(keyId);
-
-		if (publicKey == null) {
-			throw new UnsupportedTokenException("Token was signed by a key with an unknown Id: " + keyId);
-		}
-
 		log.trace("Creating token verifier");
-		final TokenVerifier<AccessToken>
-				verifier =
+		final TokenVerifier<AccessToken> verifier =
 				TokenVerifier.create(bearerToken.getToken(), AccessToken.class)
 							 .withChecks(new TokenVerifier.RealmUrlCheck(idpConfiguration.issuer()), TokenVerifier.SUBJECT_EXISTS_CHECK, activeVerifier)
 							 .withChecks(tokenChecks)
-							 .publicKey(publicKey)
 							 .audience(allowedAudience);
-
-		log.trace("Verifying token");
 
 		final AccessToken accessToken;
 		try {
+			log.trace("Parsing token to extract key id from header");
+			final JWSHeader header = verifier.getHeader();
+			if (header == null) {
+				throw new VerificationException("Token header is missing");
+			}
+
+			final String keyId = header.getKeyId();
+			if (keyId == null) {
+				throw new UnsupportedTokenException("Token is missing a key Id");
+			}
+
+			log.trace("Key id of token signer: {}", keyId);
+
+			final PublicKey publicKey = idpConfiguration.signingKeys().get(keyId);
+			if (publicKey == null) {
+				throw new UnsupportedTokenException("Token was signed by a key with an unknown Id: " + keyId);
+			}
+			if (header.getAlgorithm() == null) {
+				throw new VerificationException("Token header is missing an algorithm");
+			}
+
+			log.trace("Verifying token");
+			verifier.publicKey(publicKey);
 			verifier.verify();
 			accessToken = verifier.getToken();
 		}
