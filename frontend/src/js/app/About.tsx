@@ -106,7 +106,8 @@ export const About = memo(() => {
   const { isOpen, setOpen } = useAbout();
   const toggleOpen = useCallback(() => setOpen((open) => !open), [setOpen]);
 
-  useHotkeys("?", toggleOpen, { useKey: true }, [toggleOpen]);
+  // the library compares modifiers too, and "?" is a shifted key
+  useHotkeys("shift+?", toggleOpen, { useKey: true }, [toggleOpen]);
 
   return (
     <Modal isOpen={isOpen} onOpenChange={setOpen}>
