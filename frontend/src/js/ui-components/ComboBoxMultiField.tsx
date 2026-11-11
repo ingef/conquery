@@ -207,6 +207,16 @@ export const ComboBoxMultiField = ({
     [createRow, listed],
   );
 
+  const insertable = useMemo(() => {
+    const selected = new Set(selectedKeys);
+    return listed.filter(
+      (option) => !option.disabled && !selected.has(option.value),
+    );
+  }, [listed, selectedKeys]);
+
+  const insertsFromServer =
+    exists(total) && total > listed.length && onLoadAndInsertAll !== undefined;
+
   useFocusFirstOption(stateRef, query, items);
 
   useDebounce(
@@ -240,10 +250,10 @@ export const ComboBoxMultiField = ({
   };
 
   const onInsertAll = () => {
-    if (onLoadAndInsertAll && exists(total) && total > listed.length) {
+    if (insertsFromServer) {
       onLoadAndInsertAll(query);
     } else {
-      onChange(withoutDuplicates(value, listed));
+      onChange(withoutDuplicates(value, insertable));
       stateRef.current?.setInputValue("");
     }
   };
@@ -379,7 +389,7 @@ export const ComboBoxMultiField = ({
               <Button
                 intent="secondary"
                 size="sm"
-                isDisabled={listed.length === 0}
+                isDisabled={insertable.length === 0 && !insertsFromServer}
                 onPress={onInsertAll}
               >
                 {t("inputMultiSelect.insertAll")}
