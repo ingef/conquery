@@ -39,7 +39,7 @@ interface PropsT {
   onClose: () => void;
 }
 
-const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
+const ShareProjectItemModalContent = ({ item, onClose }: PropsT) => {
   const { t } = useTranslation();
   const userGroups = useSelector<StateT, UserGroupT[]>((state) =>
     state.user.me ? state.user.me.groups : [],
@@ -129,12 +129,7 @@ const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
   }
 
   return (
-    <Modal
-      isOpen
-      onOpenChange={(isOpen) => {
-        if (!isOpen) onClose();
-      }}
-    >
+    <>
       <ModalHeader subtitle={item.label}>
         {t("sharePreviousQueryModal.headline")}
       </ModalHeader>
@@ -165,8 +160,19 @@ const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
           </Button>
         </ModalFooter>
       </form>
-    </Modal>
+    </>
   );
 };
+
+const ShareProjectItemModal = (props: PropsT) => (
+  <Modal
+    isOpen
+    onOpenChange={(isOpen) => {
+      if (!isOpen) props.onClose();
+    }}
+  >
+    <ShareProjectItemModalContent {...props} />
+  </Modal>
+);
 
 export default ShareProjectItemModal;

@@ -59,9 +59,7 @@ const useVersion = () => {
   };
 };
 
-export const About = memo(() => {
-  const { isOpen, setOpen } = useAbout();
-  const toggleOpen = useCallback(() => setOpen((open) => !open), [setOpen]);
+const AboutContent = ({ close }: { close: () => void }) => {
   const { backendVersions, frontendTimestamp, frontendGitDescribe } =
     useVersion();
 
@@ -71,13 +69,11 @@ export const About = memo(() => {
         .map(({ name, version }) => `${name}: ${version}`)
         .join(" ")} Frontend: ${frontendGitDescribe}`,
     );
-    setOpen(false);
+    close();
   };
 
-  useHotkeys("?", toggleOpen, { useKey: true }, [toggleOpen]);
-
   return (
-    <Modal isOpen={isOpen} onOpenChange={setOpen}>
+    <>
       <ModalHeader>Version</ModalHeader>
       <ModalBody>
         <div className="grid grid-cols-[auto_1fr] gap-x-5 gap-y-1">
@@ -102,6 +98,19 @@ export const About = memo(() => {
           Copy version info
         </Button>
       </ModalFooter>
+    </>
+  );
+};
+
+export const About = memo(() => {
+  const { isOpen, setOpen } = useAbout();
+  const toggleOpen = useCallback(() => setOpen((open) => !open), [setOpen]);
+
+  useHotkeys("?", toggleOpen, { useKey: true }, [toggleOpen]);
+
+  return (
+    <Modal isOpen={isOpen} onOpenChange={setOpen}>
+      {({ close }) => <AboutContent close={close} />}
     </Modal>
   );
 });

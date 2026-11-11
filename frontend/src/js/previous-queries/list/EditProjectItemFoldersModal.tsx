@@ -19,13 +19,12 @@ const toOption = (folder: string): SelectOptionT => ({
   value: folder,
 });
 
-const EditProjectItemFoldersModal = ({
-  item,
-  onClose,
-}: {
+interface Props {
   item: ProjectItemT;
   onClose: () => void;
-}) => {
+}
+
+const EditProjectItemFoldersModalContent = ({ item, onClose }: Props) => {
   const { t } = useTranslation();
   const folders = useFolders();
   const [value, setValue] = useState(() => item.tags.map(toOption));
@@ -50,12 +49,7 @@ const EditProjectItemFoldersModal = ({
   };
 
   return (
-    <Modal
-      isOpen
-      onOpenChange={(isOpen) => {
-        if (!isOpen) onClose();
-      }}
-    >
+    <>
       <ModalHeader subtitle={item.label}>
         {t("editPreviousQueryFoldersModal.headline")}
       </ModalHeader>
@@ -88,8 +82,19 @@ const EditProjectItemFoldersModal = ({
           </Button>
         </ModalFooter>
       </form>
-    </Modal>
+    </>
   );
 };
+
+const EditProjectItemFoldersModal = (props: Props) => (
+  <Modal
+    isOpen
+    onOpenChange={(isOpen) => {
+      if (!isOpen) props.onClose();
+    }}
+  >
+    <EditProjectItemFoldersModalContent {...props} />
+  </Modal>
+);
 
 export default EditProjectItemFoldersModal;
