@@ -6,6 +6,7 @@ import type {
   UserGroupIdT,
 } from "../../api/types";
 import type { Action } from "../../app/actions";
+import { selectDatasetInput } from "../../dataset/actions";
 
 import {
   addFolder,
@@ -99,7 +100,7 @@ const updatePreviousQuery = (
       {
         ...item,
         ...attributes,
-        shared: attributes.groups ? attributes.groups.length > 0 : false,
+        ...(attributes.groups && { shared: attributes.groups.length > 0 }),
       },
       ...state.queries.slice(itemIdx + 1),
     ],
@@ -122,7 +123,7 @@ const updateFormConfig = (
       {
         ...item,
         ...attributes,
-        shared: attributes.groups ? attributes.groups.length > 0 : false,
+        ...(attributes.groups && { shared: attributes.groups.length > 0 }),
       },
       ...state.formConfigs.slice(itemIdx + 1),
     ],
@@ -228,6 +229,8 @@ const previousQueriesReducer = (
       };
     case getType(removeFolder):
       return removeLocalFolder(state, action.payload);
+    case getType(selectDatasetInput):
+      return { ...state, localFolders: [] };
     case getType(loadDefaultFoldersSuccess):
       return { ...state, defaultFolders: action.payload.folders };
     default:
