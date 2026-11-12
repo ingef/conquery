@@ -1,6 +1,8 @@
 package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
 
 
+import static org.jooq.impl.DSL.*;
+
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +23,6 @@ import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.Data;
 import org.jooq.Condition;
 import org.jooq.Field;
-import org.jooq.impl.DSL;
 
 @Data
 public class AnsiSqlDateAggregator implements SqlDateAggregator {
@@ -94,11 +95,11 @@ public class AnsiSqlDateAggregator implements SqlDateAggregator {
 		Condition overlapCondition = DateAggregationConditions.overlapCondition(dateAggregationDates, this.functionProvider);
 		Condition noOverlapCondition = overlapCondition.not();
 
-		Field<Date> rangeStart = DSL.when(overlapCondition, this.functionProvider.greatest(allStarts))
-				.otherwise(DSL.inline(null, Date.class))
+		Field<Date> rangeStart = when(overlapCondition, this.functionProvider.greatest(allStarts))
+				.otherwise(inline(null, Date.class))
 				.as(DateAggregationCte.RANGE_START);
-		Field<Date> rangeEnd = DSL.when(overlapCondition, this.functionProvider.least(allEnds))
-				.otherwise(DSL.inline(null, Date.class))
+		Field<Date> rangeEnd = when(overlapCondition, this.functionProvider.least(allEnds))
+				.otherwise(inline(null, Date.class))
 				.as(DateAggregationCte.RANGE_END);
 		ColumnDateRange intersectedValidityDate = ColumnDateRange.of(rangeStart, rangeEnd)
 				.asValidityDateRange(joinedStep.getCteName());

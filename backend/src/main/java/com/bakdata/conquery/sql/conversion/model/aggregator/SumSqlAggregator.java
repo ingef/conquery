@@ -1,5 +1,7 @@
 package com.bakdata.conquery.sql.conversion.model.aggregator;
 
+import static org.jooq.impl.DSL.*;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +30,6 @@ import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.bakdata.conquery.sql.conversion.model.select.SingleColumnSqlSelect;
 import org.jooq.Condition;
 import org.jooq.Field;
-import org.jooq.impl.DSL;
 
 /**
  * Conversion of a {@link SumSelect} by summing the {@link SumSelect#getColumn()} or, if present, the {@link SumSelect#getColumn()} minus the
@@ -136,9 +137,9 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 		String preprocessingCte = tables.cteName(ConceptCteStep.PREPROCESSING);
 		Field<? extends Number> qualifiedRootSelect = rootSelect.qualify(preprocessingCte).select();
 		Field<Integer> qualifiedRowNumber = rowNumber.qualify(preprocessingCte).select();
-		Field<? extends Number> sumValue = DSL.coalesce(qualifiedRootSelect, DSL.inline(0));
-		Field<? extends Number> distinctSumValue = DSL.when(qualifiedRowNumber.eq(DSL.inline(1)), sumValue);
-		FieldWrapper<BigDecimal> sumGroupBy = new FieldWrapper<>(DSL.sum(distinctSumValue).as(alias));
+		Field<? extends Number> sumValue = coalesce(qualifiedRootSelect, inline(0));
+		Field<? extends Number> distinctSumValue = when(qualifiedRowNumber.eq(inline(1)), sumValue);
+		FieldWrapper<BigDecimal> sumGroupBy = new FieldWrapper<>(sum(distinctSumValue).as(alias));
 
 		return CommonAggregationSelect.<BigDecimal>builder()
 									  .rootSelects(preprocessingSelects)
@@ -178,15 +179,15 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 
 			// This expression ensures that if there's any non-null field, we get a 0. But if there's only nulls we get a null:
 			// COALESCE would always result in 0 which is undesired to differentiate between missing-values and 0 sums.
-			Field<? extends Number> zeroIfAnyNonNull = DSL.coalesce(sumField.multiply(0), subtractField.multiply(0));
+			Field<? extends Number> zeroIfAnyNonNull = coalesce(sumField.multiply(0), subtractField.multiply(0));
 
-			sumGroupBy = new FieldWrapper<>(DSL.sum(DSL.coalesce(sumField, zeroIfAnyNonNull).minus(DSL.coalesce(subtractField, zeroIfAnyNonNull))).as(alias),
+			sumGroupBy = new FieldWrapper<>(sum(coalesce(sumField, zeroIfAnyNonNull).minus(coalesce(subtractField, zeroIfAnyNonNull))).as(alias),
 											sumColumn.getName(),
 											subtractColumn.getName()
 			);
 		}
 		else {
-			sumGroupBy = new FieldWrapper<>(DSL.sum(sumField).as(alias), sumColumn.getName());
+			sumGroupBy = new FieldWrapper<>(sum(sumField).as(alias), sumColumn.getName());
 		}
 
 		return CommonAggregationSelect.<BigDecimal>builder()
@@ -240,7 +241,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 		String tableName = column.getTable().getName();
 		String columnName = column.getName();
 		Class<? extends Number> numberClass = NumberMapUtil.getType(column);
-		Field<? extends Number> field = DSL.field(DSL.name(tableName, columnName), numberClass);
+		Field<? extends Number> field = field(name(tableName, columnName), numberClass);
 
 		ColumnId subtractColumn = filter.getSubtractColumn();
 		if (subtractColumn == null) {
@@ -250,7 +251,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 		Column resolvedSubtractionColumn = subtractColumn.resolve();
 		String subtractColumnName = resolvedSubtractionColumn.getName();
 		String subtractTableName = resolvedSubtractionColumn.getTable().getName();
-		Field<? extends Number> subtractField = DSL.field(DSL.name(subtractTableName, subtractColumnName), numberClass);
+		Field<? extends Number> subtractField = field(name(subtractTableName, subtractColumnName), numberClass);
 		return new SumCondition(field.minus(subtractField), filterContext.getValue()).condition();
 	}
 

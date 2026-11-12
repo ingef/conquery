@@ -1,5 +1,7 @@
 package com.bakdata.conquery.sql.conversion.model.aggregator;
 
+import static org.jooq.impl.DSL.*;
+
 import java.sql.Date;
 import java.util.List;
 
@@ -24,7 +26,6 @@ import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import org.jooq.Condition;
 import org.jooq.Field;
-import org.jooq.impl.DSL;
 
 public class QuartersInYearSqlAggregator implements
 		SelectConverter<QuartersInYearSelect>,
@@ -87,8 +88,8 @@ public class QuartersInYearSqlAggregator implements
 	public Condition convertForTableExport(QuartersInYearFilter filter, FilterContext<Range.LongRange> filterContext) {
 
 		Column column = filter.getColumn().resolve();
-		Field<Date> date = DSL.field(DSL.name(column.getTable().getName(), column.getName()), Date.class);
-		Condition oneQuarterMatches = new CountCondition(DSL.inline(1), filterContext.getValue()).condition();
+		Field<Date> date = field(name(column.getTable().getName(), column.getName()), Date.class);
+		Condition oneQuarterMatches = new CountCondition(inline(1), filterContext.getValue()).condition();
 
 		return date.isNotNull().and(oneQuarterMatches);
 	}
@@ -102,11 +103,11 @@ public class QuartersInYearSqlAggregator implements
 	) {
 		ExtractingSqlSelect<Date> rootSelect = new ExtractingSqlSelect<>(tables.getRootTable(), column.getName(), Date.class);
 		Field<Date> date = rootSelect.select();
-		final Field<Integer> denseRank = DSL.denseRank()
+		final Field<Integer> denseRank = denseRank()
 				.over(PartitioningUtil.partitionBy(ids, List.of(functionProvider.year(date)))
 						.orderBy(functionProvider.yearQuarter(date)));
 		FieldWrapper<Integer> quarterRank = new FieldWrapper<>(
-				DSL.when(
+				when(
 						date.isNotNull(),
 						denseRank
 				).as(alias),
@@ -115,7 +116,7 @@ public class QuartersInYearSqlAggregator implements
 
 		String preprocessingCte = tables.cteName(ConceptCteStep.PREPROCESSING);
 		Field<Integer> qualifiedQuarterRank = quarterRank.qualify(preprocessingCte).select();
-		FieldWrapper<Integer> maximumQuarters = new FieldWrapper<>(DSL.max(qualifiedQuarterRank).as(alias));
+		FieldWrapper<Integer> maximumQuarters = new FieldWrapper<>(max(qualifiedQuarterRank).as(alias));
 
 		return CommonAggregationSelect.<Integer>builder()
 				.rootSelect(quarterRank)
