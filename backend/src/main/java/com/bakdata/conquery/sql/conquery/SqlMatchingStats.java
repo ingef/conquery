@@ -4,7 +4,9 @@ import static org.jooq.impl.DSL.*;
 
 import java.sql.Date;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.datasets.Column;
@@ -47,6 +49,7 @@ public class SqlMatchingStats {
     private final int fetchBatchSize = 100;
     private final int matchingStatsWorkers;
     private final int matchingStatsRetries;
+    private final boolean reuseExistingConceptIdTables;
 
     private static void assignStatsToPath(
             ConceptElement<?> element,
@@ -85,14 +88,81 @@ public class SqlMatchingStats {
      * @param concept
      */
     public void createConceptIdJoinTable(TreeConcept concept) {
-        ConceptIdMapping mapping = new ConceptIdMapping(concept, functionProvider);
-        Name tableName = mapping.getTableName();
+        final ConceptIdMapping mapping = new ConceptIdMapping(concept, functionProvider);
+        final Name tableName = mapping.getTableName();
+
+        if (reuseExistingConceptIdTables && reuseExistingConceptIdJoinTable(mapping)) {
+            return;
+        }
 
         deleteConceptIdJoinTable(concept.getId());
-        List<Field<?>> fields = createConceptIdsTable(tableName, mapping.tableFields());
+        final List<Field<?>> fields = createConceptIdsTable(tableName, mapping.tableFields());
 
         insertConceptIdMappings(tableName, fields, mapping.getRows(), dslContext);
         createConceptIdIndexes(mapping);
+    }
+
+    private boolean reuseExistingConceptIdJoinTable(ConceptIdMapping mapping) {
+        final Name tableName = mapping.getTableName();
+        final List<Table<?>> existingTables = dslContext.meta().getTables(tableName);
+
+        if (existingTables.isEmpty()) {
+            return false;
+        }
+        if (existingTables.size() > 1) {
+            throw new IllegalStateException(
+                    "Concept id table %s resolved to multiple database tables: %s".formatted(tableName, existingTables)
+            );
+        }
+
+        validateConceptIdTableSchema(tableName, mapping.tableFields(), existingTables.getFirst().fields());
+        log.debug("Reusing existing concept id table {}", tableName);
+        return true;
+    }
+
+    static void validateConceptIdTableSchema(Name tableName, List<Field<?>> expectedFields, Field<?>[] actualFields) {
+        final Map<String, DataType<?>> expectedTypes = collectFieldTypes(expectedFields);
+        final Map<String, DataType<?>> actualTypes = collectFieldTypes(List.of(actualFields));
+
+        final List<String> missingColumns = expectedTypes.keySet().stream()
+                .filter(column -> !actualTypes.containsKey(column))
+                .toList();
+        final List<String> unexpectedColumns = actualTypes.keySet().stream()
+                .filter(column -> !expectedTypes.containsKey(column))
+                .toList();
+        final List<String> incompatibleColumns = expectedTypes.entrySet().stream()
+                .filter(entry -> actualTypes.containsKey(entry.getKey()))
+                .filter(entry -> !hasCompatibleType(entry.getValue(), actualTypes.get(entry.getKey())))
+                .map(entry -> "%s (expected %s, found %s)".formatted(
+                        entry.getKey(),
+                        entry.getValue().getTypeName(),
+                        actualTypes.get(entry.getKey()).getTypeName()
+                ))
+                .toList();
+
+        if (!missingColumns.isEmpty() || !unexpectedColumns.isEmpty() || !incompatibleColumns.isEmpty()) {
+            throw new IllegalStateException(
+                    "Existing concept id table %s has an incompatible schema: missing columns %s, unexpected columns %s, incompatible columns %s"
+                            .formatted(tableName, missingColumns, unexpectedColumns, incompatibleColumns)
+            );
+        }
+    }
+
+    private static Map<String, DataType<?>> collectFieldTypes(List<Field<?>> fields) {
+        final Map<String, DataType<?>> types = new LinkedHashMap<>();
+        for (Field<?> field : fields) {
+            final DataType<?> previous = types.put(field.getName(), field.getDataType());
+            if (previous != null) {
+                throw new IllegalStateException("Duplicate column %s in concept id table schema".formatted(field.getName()));
+            }
+        }
+        return types;
+    }
+
+    private static boolean hasCompatibleType(DataType<?> expected, DataType<?> actual) {
+        return expected.isString() == actual.isString()
+                && expected.isBoolean() == actual.isBoolean()
+                && expected.isNumeric() == actual.isNumeric();
     }
 
     private void createConceptIdIndexes(ConceptIdMapping mapping) {
@@ -289,7 +359,13 @@ public class SqlMatchingStats {
     }
 
     public void deleteConceptIdJoinTable(ConceptId concept) {
-        Name tableName = ConceptIdMapping.tableName(concept);
+        final Name tableName = ConceptIdMapping.tableName(concept);
+
+        if (reuseExistingConceptIdTables) {
+            log.debug("Preserving concept id table {}", tableName);
+            return;
+        }
+
         log.debug("Trying to delete id-table {}", tableName);
 
         try {

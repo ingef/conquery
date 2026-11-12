@@ -34,6 +34,11 @@ public class SqlConnectorConfig {
 	private boolean enabled;
 
 	/**
+	 * Reuse compatible concept id mapping tables instead of rebuilding them when concepts are added.
+	 */
+	private boolean reuseExistingConceptIdTables;
+
+	/**
 	 * Determines if generated SQL should be formatted.
 	 */
 	private boolean withPrettyPrinting;
