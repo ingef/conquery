@@ -4,14 +4,14 @@ import java.util.function.Consumer;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
-import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
-import com.bakdata.conquery.apiv1.query.TemporalSamplerFactory;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.forms.export.RelExportGenerator;
 import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
 import com.bakdata.conquery.models.forms.util.CalendarUnit;
+import com.bakdata.conquery.models.forms.util.IndexSelector;
+import com.bakdata.conquery.models.forms.util.IndexPlacement;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -33,7 +33,7 @@ public class RelativeMode extends Mode {
 	@NotNull
 	private IndexPlacement indexPlacement;
 	@NotNull
-	private TemporalSamplerFactory indexSelector;
+	private IndexSelector indexSelector;
 
 
 	@JsonView(View.InternalCommunication.class)

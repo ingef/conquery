@@ -6,18 +6,19 @@ import java.util.Optional;
 import java.util.OptionalInt;
 
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
-import com.bakdata.conquery.apiv1.forms.IndexPlacement;
-import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.TemporalSamplerFactory;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.forms.util.CalendarUnit;
 import com.bakdata.conquery.models.forms.util.DateContext;
+import com.bakdata.conquery.models.forms.util.IndexSelector;
+import com.bakdata.conquery.models.forms.util.IndexPlacement;
+import com.bakdata.conquery.models.forms.util.ResolutionAndAlignment;
 import com.bakdata.conquery.models.forms.util.ResultModifier;
+import com.bakdata.conquery.models.query.DateAggregationAction;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
-import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.models.query.queryplan.DateAggregator;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
@@ -45,14 +46,14 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	private final QueryPlan<?> query;
 	private final ArrayConceptQueryPlan featurePlan;
 
-	private final TemporalSamplerFactory indexSelectorFactory;
+	private final IndexSelector indexSelectorType;
 	private TemporalSamplerFactory.Sampler indexSelector;
 	private final IndexPlacement indexPlacement;
 
 	private final int timeCountBefore;
 	private final int timeCountAfter;
 	private final CalendarUnit timeUnit;
-	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap;
+	private final List<ResolutionAndAlignment> resolutionsAndAlignmentMap;
 
 	private FormQueryPlan featureSubquery = null;
 	private FormQueryPlan outcomeSubquery = null;
@@ -64,7 +65,7 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 		featurePlan.init(ctxt, entity);
 
-		indexSelector = indexSelectorFactory.sampler(ctxt.getToday());
+		indexSelector = TemporalSamplerFactory.sampler(indexSelectorType, ctxt.getToday());
 
 		featureSubquery = null;
 		outcomeSubquery = null;

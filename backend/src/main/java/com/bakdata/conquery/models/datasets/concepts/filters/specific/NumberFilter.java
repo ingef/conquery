@@ -12,9 +12,9 @@ import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.models.datasets.concepts.filters.EventFilter;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
-import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.filter.event.number.DecimalFilterNode;
@@ -22,8 +22,6 @@ import com.bakdata.conquery.models.query.filter.event.number.IntegerFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.MoneyFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.RealFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
-import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
-import com.bakdata.conquery.sql.conversion.model.filter.NumberFilterConverter;
 import com.bakdata.conquery.util.validation.ResolvableId;
 import com.bakdata.conquery.util.validation.SupportedColumnTypes;
 import com.fasterxml.jackson.annotation.JacksonInject;
@@ -86,11 +84,6 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Eve
 			case REAL -> new RealFilterNode(column, Range.DoubleRange.fromNumberRange(value));
 			default -> throw new IllegalStateException(String.format("Column type %s may not be used (Assignment should not have been possible)", column));
 		};
-	}
-
-	@Override
-	public FilterConverter<? extends NumberFilter<RANGE>, RANGE> createConverter() {
-		return new NumberFilterConverter<>();
 	}
 
 }

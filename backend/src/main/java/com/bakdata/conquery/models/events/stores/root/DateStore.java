@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.events.stores.root;
 import java.time.LocalDate;
 
 import com.bakdata.conquery.models.common.CDate;
-import com.bakdata.conquery.models.events.MajorTypeId;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 
 /**
  * {@link ColumnStore} for {@link CDate#ofLocalDate(LocalDate)} values.

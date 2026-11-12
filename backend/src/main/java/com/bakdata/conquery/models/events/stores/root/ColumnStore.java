@@ -3,8 +3,8 @@ package com.bakdata.conquery.models.events.stores.root;
 import java.util.Arrays;
 
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.events.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;

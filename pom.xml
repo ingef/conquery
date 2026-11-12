@@ -18,6 +18,7 @@
 
     <properties>
         <java.required>21</java.required>
+        <jooq.version>3.20.2</jooq.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>${java.required}</maven.compiler.source>
         <maven.compiler.target>${java.required}</maven.compiler.target>
@@ -29,6 +30,8 @@
     </properties>
 
     <modules>
+        <module>dataset-model</module>
+        <module>sql-connector</module>
         <module>backend</module>
         <module>executable</module>
         <module>autodoc</module>
@@ -54,6 +57,11 @@
     </dependencyManagement>
 
     <dependencies>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

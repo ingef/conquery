@@ -1,0 +1,265 @@
+package com.bakdata.conquery.sql.translate;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.function.Function;
+
+import com.bakdata.conquery.models.datasets.MajorTypeId;
+import com.bakdata.conquery.models.forms.util.Alignment;
+import com.bakdata.conquery.models.forms.util.CalendarUnit;
+import com.bakdata.conquery.models.forms.util.IndexSelector;
+import com.bakdata.conquery.models.forms.util.IndexPlacement;
+import com.bakdata.conquery.models.forms.util.Resolution;
+import com.bakdata.conquery.models.forms.util.ResolutionAndAlignment;
+import com.bakdata.conquery.models.query.DateAggregationAction;
+import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.sql.model.ResolvedQuery;
+import com.bakdata.conquery.sql.model.ResolvedQuerySource;
+import com.bakdata.conquery.sql.model.form.RelativeFormSettings;
+import com.bakdata.conquery.sql.model.form.ResolvedFormMode;
+import com.bakdata.conquery.sql.model.form.ResolvedFormQuery;
+import com.bakdata.conquery.sql.model.node.AllEntitiesNode;
+import com.bakdata.conquery.sql.model.node.ConceptNode;
+import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
+import com.bakdata.conquery.sql.model.operation.ResolvedSelect;
+import com.bakdata.conquery.sql.model.range.DateRange;
+import com.bakdata.conquery.sql.model.result.ResultColumn;
+import com.bakdata.conquery.sql.model.schema.EntitySchema;
+import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
+import com.bakdata.conquery.sql.model.schema.ResolvedConnector;
+import com.bakdata.conquery.sql.model.schema.ResolvedValidityDate;
+import com.bakdata.conquery.sql.model.schema.SqlTable;
+import com.bakdata.conquery.sql.translate.dialect.hana.HanaTranslatorDialect;
+import org.jooq.SQLDialect;
+import org.jooq.impl.DSL;
+import org.junit.jupiter.api.Test;
+
+class FormSqlTranslatorTest {
+
+	private static final SqlTable ENTITIES = SqlTable.of("entities", "catalog", "entities");
+	private static final ResolvedColumn ENTITY_ID = new ResolvedColumn(
+			"entity-id", ENTITIES, "person_id", MajorTypeId.STRING, false);
+	private static final EntitySchema ENTITY_SCHEMA = new EntitySchema(ENTITY_ID);
+
+	@Test
+	void shouldCompileAnAbsoluteFormThroughTheConnectorPipeline() {
+		ResolvedFormQuery form = new ResolvedFormQuery(
+				new ResolvedQuerySource.Standard(new ResolvedQuery(ENTITY_SCHEMA, new AllEntitiesNode(), false, List.of())),
+				List.of(feature()),
+				new ResolvedFormMode.Absolute(
+						new DateRange(Optional.of(LocalDate.of(2020, 1, 1)), Optional.of(LocalDate.of(2020, 12, 31))),
+						List.of(ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN))),
+				List.of(
+						new ResultColumn("resolution", ResultType.Primitive.STRING),
+						new ResultColumn("index", ResultType.Primitive.INTEGER),
+						new ResultColumn("range", ResultType.Primitive.DATE_RANGE),
+						new ResultColumn("feature", ResultType.Primitive.BOOLEAN))
+		);
+
+		TranslatedQuery compiled = new FormSqlTranslator(DSL.using(SQLDialect.DEFAULT))
+				.translate(form, new HanaTranslatorDialect());
+
+		assertTrue(compiled.sql().contains("full_stratification"), compiled.sql());
+		assertTrue(compiled.sql().contains("left outer join"), compiled.sql());
+		assertEquals(List.of("entity-id", "resolution", "index", "range", "feature"),
+				compiled.columns().stream().map(TranslatedColumn::outputId).toList());
+	}
+
+	@Test
+	void shouldCompileRelativeAndEntityDateForms() {
+		ResolvedQuery datedPrerequisite = datedQuery("prerequisite", false);
+		List<ResolvedQuery> features = List.of(feature("feature"), feature("outcome"));
+		FormSqlTranslator compiler = new FormSqlTranslator(DSL.using(SQLDialect.DEFAULT));
+		HanaTranslatorDialect dialect = new HanaTranslatorDialect();
+		ResolvedFormQuery relative = new ResolvedFormQuery(
+				new ResolvedQuerySource.Standard(datedPrerequisite),
+				features,
+				new ResolvedFormMode.Relative(new RelativeFormSettings(
+						IndexSelector.EARLIEST,
+						IndexPlacement.NEUTRAL,
+						1,
+						1,
+						CalendarUnit.DAYS,
+						List.of(ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN)))),
+				formResults(true)
+		);
+		ResolvedFormQuery entityDate = new ResolvedFormQuery(
+				new ResolvedQuerySource.Standard(datedPrerequisite),
+				features,
+				new ResolvedFormMode.EntityDate(
+						Optional.of(new DateRange(Optional.of(LocalDate.of(2020, 1, 1)), Optional.empty())),
+						List.of(ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN))),
+				formResults(false)
+		);
+
+		TranslatedQuery relativeCompiled = compiler.translate(relative, dialect);
+		TranslatedQuery entityDateCompiled = compiler.translate(entityDate, dialect);
+		String entityDateSql = entityDateCompiled.sql().replaceAll("\\s+", " ").toLowerCase(Locale.ROOT);
+
+		assertTrue(relativeCompiled.sql().contains("index_selector"), relativeCompiled.sql());
+		assertTrue(relativeCompiled.sql().contains("\"scope\""), relativeCompiled.sql());
+		assertTrue(entityDateSql.contains("greatest(to_date('2020-01-01', 'yyyy-mm-dd')"), entityDateCompiled.sql());
+		assertTrue(entityDateSql.contains("concept_prerequisite_claims-0_validity_date_start"), entityDateCompiled.sql());
+		assertTrue(entityDateSql.contains("overwrite_bounds-source-"), entityDateCompiled.sql());
+		assertEquals(formResults(true).stream().map(ResultColumn::outputId).toList(),
+				relativeCompiled.columns().stream().skip(1).map(TranslatedColumn::outputId).toList());
+		assertEquals(formResults(false).stream().map(ResultColumn::outputId).toList(),
+				entityDateCompiled.columns().stream().skip(1).map(TranslatedColumn::outputId).toList());
+	}
+
+	@Test
+	void shouldAliasEmptyPrerequisiteValidityBeforeFormProjection() {
+		ResolvedFormQuery form = new ResolvedFormQuery(
+				new ResolvedQuerySource.Standard(new ResolvedQuery(
+						ENTITY_SCHEMA, new AllEntitiesNode(), false, List.of())),
+				List.of(feature(), feature("outcome")),
+				new ResolvedFormMode.Relative(new RelativeFormSettings(
+						IndexSelector.EARLIEST,
+						IndexPlacement.NEUTRAL,
+						1,
+						1,
+						CalendarUnit.DAYS,
+						List.of(ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN)))),
+				formResults(true)
+		);
+
+		String sql = new FormSqlTranslator(DSL.using(SQLDialect.DEFAULT))
+				.translate(form, new HanaTranslatorDialect()).sql();
+
+		assertTrue(sql.matches("(?s).*null\\s+\"extract_ids-source-\\d+_validity_date_start\".*"), sql);
+		assertTrue(sql.matches("(?s).*null\\s+\"extract_ids-source-\\d+_validity_date_end\".*"), sql);
+		assertFalse(sql.contains(".\"null\""), sql);
+	}
+
+	@Test
+	void shouldUseStratificationEndForDateDistanceSelects() {
+		ResolvedQuery feature = connectorFeature(
+				"age",
+				table -> new BuiltInSelects.DateDistance(
+						"age",
+						new ResolvedColumn("events.birth-date", table, "birth_date", MajorTypeId.DATE, true),
+						ChronoUnit.YEARS,
+						LocalDate.of(2023, 3, 28)
+				),
+				ResultType.Primitive.INTEGER
+		);
+		String sql = translateAbsoluteForm(feature).sql().replaceAll("\\s+", " ").toLowerCase(Locale.ROOT);
+
+		assertTrue(sql.contains("years_between(\"events\".\"birth_date\", add_days("), sql);
+		assertTrue(sql.contains("\"stratification_bounds_end\", -1)"), sql);
+	}
+
+	@Test
+	void shouldCompileFirstValueSelectWithStratifiedIds() {
+		ResolvedQuery feature = connectorFeature(
+				"first-value",
+				table -> new BuiltInSelects.Values(
+						"first-value",
+						new ResolvedColumn("events.value", table, "value", MajorTypeId.STRING, true),
+						BuiltInSelects.ValueOperation.FIRST,
+						Optional.empty()
+				),
+				ResultType.Primitive.STRING
+		);
+
+		String sql = translateAbsoluteForm(feature).sql().toLowerCase(Locale.ROOT);
+
+		assertTrue(sql.contains("value_select_first_row_step"), sql);
+		assertTrue(sql.contains("\"resolution\""), sql);
+		assertTrue(sql.contains("\"index\""), sql);
+	}
+
+	private static ResolvedQuery feature() {
+		return feature("feature");
+	}
+
+	private static ResolvedQuery feature(String name) {
+		return datedQuery(name, true);
+	}
+
+	private static TranslatedQuery translateAbsoluteForm(ResolvedQuery feature) {
+		ResolvedFormQuery form = new ResolvedFormQuery(
+				new ResolvedQuerySource.Standard(new ResolvedQuery(ENTITY_SCHEMA, new AllEntitiesNode(), false, List.of())),
+				List.of(feature),
+				new ResolvedFormMode.Absolute(
+						new DateRange(Optional.of(LocalDate.of(2012, 1, 16)), Optional.of(LocalDate.of(2012, 12, 17))),
+						List.of(ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN))),
+				List.of(
+						new ResultColumn("resolution", ResultType.Primitive.STRING),
+						new ResultColumn("index", ResultType.Primitive.INTEGER),
+						new ResultColumn("range", ResultType.Primitive.DATE_RANGE),
+						feature.resultColumns().getFirst())
+		);
+		return new FormSqlTranslator(DSL.using(SQLDialect.DEFAULT)).translate(form, new HanaTranslatorDialect());
+	}
+
+	private static ResolvedQuery connectorFeature(
+			String name,
+			Function<SqlTable, ResolvedSelect> selectFactory,
+			ResultType.Primitive resultType
+	) {
+		SqlTable events = SqlTable.of("events", "catalog", "events");
+		ResolvedConnector connector = new ResolvedConnector(
+				"claims",
+				events,
+				new ResolvedColumn("events.entity-id", events, "person_id", MajorTypeId.STRING, false),
+				Optional.empty(),
+				new ResolvedValidityDate.Point(new ResolvedColumn(
+						"events.date", events, "event_date", MajorTypeId.DATE, true)),
+				List.of(),
+				List.of(selectFactory.apply(events)),
+				List.of()
+		);
+		return new ResolvedQuery(
+				ENTITY_SCHEMA,
+				new ConceptNode(name, List.of(connector), List.of(), DateAggregationAction.BLOCK),
+				false,
+				List.of(new ResultColumn(name, resultType))
+		);
+	}
+
+	private static ResolvedQuery datedQuery(String name, boolean withSelect) {
+		SqlTable events = SqlTable.of("events", "catalog", "events");
+		ResolvedConnector connector = new ResolvedConnector(
+				"claims",
+				events,
+				new ResolvedColumn("events.entity-id", events, "person_id", MajorTypeId.STRING, false),
+				Optional.empty(),
+				new ResolvedValidityDate.Point(new ResolvedColumn(
+						"events.date", events, "event_date", MajorTypeId.DATE, true)),
+				List.of(),
+				List.of(),
+				List.of()
+		);
+		return new ResolvedQuery(
+				ENTITY_SCHEMA,
+				new ConceptNode(name, List.of(connector),
+						withSelect ? List.of(new BuiltInSelects.Exists(name)) : List.of(),
+						withSelect ? DateAggregationAction.BLOCK : DateAggregationAction.MERGE),
+				!withSelect,
+				withSelect ? List.of(new ResultColumn(name, ResultType.Primitive.BOOLEAN)) : List.of()
+		);
+	}
+
+	private static List<ResultColumn> formResults(boolean relative) {
+		java.util.ArrayList<ResultColumn> results = new java.util.ArrayList<>(List.of(
+				new ResultColumn("resolution", ResultType.Primitive.STRING),
+				new ResultColumn("index", ResultType.Primitive.INTEGER)
+		));
+		if (relative) {
+			results.add(new ResultColumn("event-date", ResultType.Primitive.DATE));
+		}
+		results.add(new ResultColumn("range", ResultType.Primitive.DATE_RANGE));
+		if (relative) {
+			results.add(new ResultColumn("scope", ResultType.Primitive.STRING));
+		}
+		results.add(new ResultColumn("feature", ResultType.Primitive.BOOLEAN));
+		results.add(new ResultColumn("outcome", ResultType.Primitive.BOOLEAN));
+		return results;
+	}
+}

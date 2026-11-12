@@ -12,7 +12,6 @@ import jakarta.validation.Valid;
 
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.apiv1.forms.InternalForm;
-import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
@@ -30,6 +29,7 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
 import com.bakdata.conquery.models.forms.util.Alignment;
 import com.bakdata.conquery.models.forms.util.Resolution;
+import com.bakdata.conquery.models.forms.util.ResolutionAndAlignment;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -84,8 +84,7 @@ public class EntityPreviewForm extends Form implements InternalForm {
 			Range<LocalDate> dateRange,
 			List<ConnectorId> sources,
 			List<SelectId> infos,
-			List<PreviewConfig.TimeStratifiedSelects> timeStratifiedSelects,
-			DatasetRegistry<?> datasetRegistry) {
+			List<PreviewConfig.TimeStratifiedSelects> timeStratifiedSelects) {
 
 		// We use this query to filter for the single selected query.
 		final Query entitySelectQuery = new ConceptQuery(new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}}, true));
@@ -94,7 +93,7 @@ public class EntityPreviewForm extends Form implements InternalForm {
 
 		final AbsoluteFormQuery infoCardQuery = createInfoCardQuery(dateRange, infos, entitySelectQuery);
 
-		final Map<String, AbsoluteFormQuery> timeQueries = createTimeStratifiedQueries(dateRange, timeStratifiedSelects, datasetRegistry, entitySelectQuery);
+		final Map<String, AbsoluteFormQuery> timeQueries = createTimeStratifiedQueries(dateRange, timeStratifiedSelects, entitySelectQuery);
 
 		return new EntityPreviewForm(infoCardQuery, exportQuery, timeQueries);
 	}
@@ -119,12 +118,12 @@ public class EntityPreviewForm extends Form implements InternalForm {
 										   .map(CQConcept::forSelect)
 										   .collect(Collectors.toList())
 							  ),
-							 List.of(ExportForm.ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN))
+							 List.of(ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN))
 		);
 	}
 
 	@NotNull
-	private static Map<String, AbsoluteFormQuery> createTimeStratifiedQueries(Range<LocalDate> dateRange, List<PreviewConfig.TimeStratifiedSelects> timeStratifiedSelects, DatasetRegistry<?> datasetRegistry, Query entitySelectQuery) {
+	private static Map<String, AbsoluteFormQuery> createTimeStratifiedQueries(Range<LocalDate> dateRange, List<PreviewConfig.TimeStratifiedSelects> timeStratifiedSelects, Query entitySelectQuery) {
 		final Map<String, AbsoluteFormQuery> timeQueries = new HashMap<>();
 
 		// per group create an AbsoluteFormQuery on years and quarters.
@@ -137,9 +136,9 @@ public class EntityPreviewForm extends Form implements InternalForm {
 																				 .map(CQConcept::forSelect)
 																				 .collect(Collectors.toList())),
 																  List.of(
-																		  ExportForm.ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN),
-																		  ExportForm.ResolutionAndAlignment.of(Resolution.YEARS, Alignment.YEAR),
-																		  ExportForm.ResolutionAndAlignment.of(Resolution.QUARTERS, Alignment.QUARTER)
+																		  ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN),
+																		  ResolutionAndAlignment.of(Resolution.YEARS, Alignment.YEAR),
+																		  ResolutionAndAlignment.of(Resolution.QUARTERS, Alignment.QUARTER)
 																  )
 			);
 

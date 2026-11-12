@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.forms.util.DateContext;
+import com.bakdata.conquery.models.forms.util.ResolutionAndAlignment;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
@@ -29,7 +29,7 @@ public class EntityDateQueryPlan implements QueryPlan<MultilineEntityResult> {
 
     private final QueryPlan query;
     private final ArrayConceptQueryPlan features;
-    private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments;
+    private final List<ResolutionAndAlignment> resolutionsAndAlignments;
     private final CDateRange dateRestriction;
 
 

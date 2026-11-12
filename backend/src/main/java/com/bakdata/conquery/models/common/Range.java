@@ -16,7 +16,7 @@ import lombok.With;
 @With
 @Getter
 @EqualsAndHashCode
-public class Range<T extends Comparable> implements IRange<T, Range<T>> {
+public class Range<T extends Comparable<? super T>> implements IRange<T, Range<T>> {
 
 	private final T min;
 	private final T max;
@@ -42,24 +42,24 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>> {
 		return max == null || min == null;
 	}
 
-	public static <T extends Comparable<?>> Range<T> exactly(T exactly) {
+	public static <T extends Comparable<? super T>> Range<T> exactly(T exactly) {
 		return new Range<>(exactly, exactly);
 	}
 
 	@JsonCreator
-	public static <T extends Comparable<?>> Range<T> of(@JsonProperty("min") T min, @JsonProperty("max") T max) {
+	public static <T extends Comparable<? super T>> Range<T> of(@JsonProperty("min") T min, @JsonProperty("max") T max) {
 		return new Range<>(min, max);
 	}
 
-	public static <T extends Comparable<?>> Range<T> atMost(T bound) {
+	public static <T extends Comparable<? super T>> Range<T> atMost(T bound) {
 		return new Range<>(null, bound);
 	}
 
-	public static <T extends Comparable<?>> Range<T> atLeast(T bound) {
+	public static <T extends Comparable<? super T>> Range<T> atLeast(T bound) {
 		return new Range<>(bound, null);
 	}
 
-	public static <T extends Comparable<?>> Range<T> all() {
+	public static <T extends Comparable<? super T>> Range<T> all() {
 		return new Range<>(null, null);
 	}
 

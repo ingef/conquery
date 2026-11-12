@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts;
 
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.util.validation.ResolvableId;
 import com.bakdata.conquery.util.validation.SupportedColumnTypes;

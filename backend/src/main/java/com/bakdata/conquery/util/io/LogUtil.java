@@ -14,7 +14,7 @@ public class LogUtil {
 
 
 	/**
-	 * Helper method to avoid compiler warnings of either:
+	 * Helper method to avoid translate warnings of either:
 	 * <ul>
 	 *     <li><code>log.warn("Unable to get index: {} (enable TRACE for exception)", key, log.isTraceEnabled() ? e : null);</code> -> More arguments provided (2) than placeholders specified (1)</li>
 	 *     <li><code>log.warn("Unable to get index: {} (enable TRACE for exception)", key, (Exception) (log.isTraceEnabled() ? e : null));</code> -> Redundant cast</li>

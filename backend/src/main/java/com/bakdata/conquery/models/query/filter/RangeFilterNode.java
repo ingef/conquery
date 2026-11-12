@@ -9,7 +9,7 @@ import lombok.ToString;
  * Entity is included, when the result of the aggregator is contained in the range.
  */
 @ToString(callSuper = true)
-public class RangeFilterNode<TYPE extends Comparable<?>> extends AggregationFilterNode<Aggregator<TYPE>, IRange<TYPE, ?>> {
+public class RangeFilterNode<TYPE extends Comparable<? super TYPE>> extends AggregationFilterNode<Aggregator<TYPE>, IRange<TYPE, ?>> {
 
 
 	public RangeFilterNode(IRange<TYPE, ?> filterValue, Aggregator<TYPE> aggregator) {

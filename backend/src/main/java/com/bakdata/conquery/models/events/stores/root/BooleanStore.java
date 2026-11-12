@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.events.stores.root;
 
-import com.bakdata.conquery.models.events.MajorTypeId;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 
 /**
  * {@link ColumnStore} for boolean values.

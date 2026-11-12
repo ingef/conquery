@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.forms.util.IndexSelector;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
@@ -24,7 +25,7 @@ import lombok.ToString;
 @ToString(of = {"sampler", "validityDate"})
 public class QuarterAggregator extends Aggregator<String> {
 
-	private final TemporalSamplerFactory samplerFactory;
+	private final IndexSelector selector;
 	private TemporalSamplerFactory.Sampler sampler;
 
 	private CDateSet set = CDateSet.createEmpty();
@@ -34,15 +35,15 @@ public class QuarterAggregator extends Aggregator<String> {
 
 	private int realUpperBound;
 
-	public QuarterAggregator(TemporalSamplerFactory samplerFactory) {
-		this.samplerFactory = samplerFactory;
+	public QuarterAggregator(IndexSelector selector) {
+		this.selector = selector;
 	}
 
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
 		set.clear();
 		realUpperBound = context.getToday();
-		sampler = samplerFactory.sampler(realUpperBound);
+		sampler = TemporalSamplerFactory.sampler(selector, realUpperBound);
 	}
 
 	@Override
