@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.time.temporal.IsoFields;
 import java.util.*;
 import java.util.function.Function;
-
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
@@ -45,13 +44,13 @@ public class DateContext {
 	 */
 	@Getter
 	private Integer index = null;
-	
+
 	/**
 	 * The date from which the relative context were generated.
 	 */
 	@Getter @Setter
 	private LocalDate eventDate = null;
-	
+
 	/**
 	 * Indicates under which temporal subdivision mode this instance was created.
 	 */
@@ -203,7 +202,7 @@ public class DateContext {
 
 	/**
 	 * Calculates the feature range.
-	 * 
+	 *
 	 * @param event       The event date to which the range is relative.
 	 * @param indexPlacement  Indicates to which {@link FeatureGroup} the event index
 	 *                    belongs.
@@ -247,7 +246,7 @@ public class DateContext {
 
 	/**
 	 * Calculates the outcome range.
-	 * 
+	 *
 	 * @param event       The event date to which the range is relative.
 	 * @param indexPlacement  Indicates to which {@link FeatureGroup} the event index
 	 *                    belongs.
@@ -292,8 +291,8 @@ public class DateContext {
 
 			default:
 				throw new IllegalArgumentException("Unsupported index placement: " + indexPlacement);
-			
+
 		}
-		
+
 	}
 }

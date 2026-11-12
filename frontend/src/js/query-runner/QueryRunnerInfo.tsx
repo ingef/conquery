@@ -1,21 +1,10 @@
-import styled from "@emotion/styled";
-import { FC } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
+import { C2 } from "../ui-components/Typography";
 import type { QueryRunnerStateT } from "./reducer";
 
-const Status = styled("p")<{ success?: boolean; error?: boolean }>`
-  font-weight: 400;
-  margin: 0 10px;
-  font-size: ${({ theme }) => theme.font.sm};
-  color: ${({ theme, success, error }) =>
-    success ? theme.col.green : error ? theme.col.red : "initial"};
-`;
-
-interface PropsT {
-  className?: string;
-  queryRunner: QueryRunnerStateT;
-}
+const status = tv({ base: "text-right" });
 
 const useMessage = (queryRunner: QueryRunnerStateT) => {
   const { t } = useTranslation();
@@ -28,7 +17,7 @@ const useMessage = (queryRunner: QueryRunnerStateT) => {
     return { type: "error", value: t("queryRunner.startError") };
   } else if (queryRunner.stopQuery.error) {
     return { type: "error", value: t("queryRunner.stopError") };
-  } else if (!!queryRunner.queryResult && queryRunner.queryResult.error) {
+  } else if (queryRunner.queryResult?.error) {
     return {
       type: "error",
       value: queryRunner.queryResult.error,
@@ -42,7 +31,13 @@ const useMessage = (queryRunner: QueryRunnerStateT) => {
   return null;
 };
 
-const QueryRunnerInfo: FC<PropsT> = ({ queryRunner, className }) => {
+const QueryRunnerInfo = ({
+  queryRunner,
+  className,
+}: {
+  className?: string;
+  queryRunner: QueryRunnerStateT;
+}) => {
   const message = useMessage(queryRunner);
 
   const { queryResult } = queryRunner;
@@ -55,13 +50,11 @@ const QueryRunnerInfo: FC<PropsT> = ({ queryRunner, className }) => {
   }
 
   return (
-    <Status
-      className={className}
-      success={message.type === "success"}
-      error={message.type === "error"}
-    >
-      {message.value}
-    </Status>
+    <div className={status({ className })}>
+      <C2 tone={message.type === "error" ? "danger" : "success"}>
+        {message.value}
+      </C2>
+    </div>
   );
 };
 

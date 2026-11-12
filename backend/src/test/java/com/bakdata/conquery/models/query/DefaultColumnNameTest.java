@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.query;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,8 +34,6 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.types.ResultType;
-import com.bakdata.conquery.models.worker.LocalNamespace;
-import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.TestNamespacedStorageProvider;
@@ -49,8 +46,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 @Slf4j
 public class DefaultColumnNameTest {
-	private static final Namespace NAMESPACE = mock(LocalNamespace.class);
-	private static final PrintSettings SETTINGS = new PrintSettings(false, Locale.ENGLISH, NAMESPACE, new ConqueryConfig(), null, null);
+    private static final PrintSettings SETTINGS = new PrintSettings(false, Locale.ENGLISH, new ConqueryConfig(), null, null);
 	private static final Validator VALIDATOR = Validators.newValidator();
 
 

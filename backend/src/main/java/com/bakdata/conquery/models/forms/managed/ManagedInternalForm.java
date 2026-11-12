@@ -76,7 +76,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 		return null;
 	}
 
-	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
+	protected void setAdditionalStatusFields(Subject subject, FullExecutionStatus status) {
 		// Set the ColumnDescription if the Form only consits of a single subquery
 		if (subQueries == null) {
 			// If subqueries was not set the Execution was not initialized, do it manually

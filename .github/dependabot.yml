@@ -16,6 +16,10 @@ updates:
     directory: "/frontend"
     schedule:
       interval: "weekly"
+    # Version updates are done by hand (upgrades are cheap now, majors are migrations);
+    # dependabot only opens security PRs here, which ignore this limit. Note that a
+    # security fix younger than minimumReleaseAge (frontend/pnpm-workspace.yaml) needs a
+    # minimumReleaseAgeExclude before it installs.
     open-pull-requests-limit: 0
     assignees:
       - Kadrian

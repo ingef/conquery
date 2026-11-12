@@ -79,7 +79,7 @@ public class FormTest extends ConqueryTestSpec {
 	public void executeTest(StandaloneSupport support) throws Exception {
 
 
-		final ManagedExecutionId managedExecutionId = IntegrationUtils.assertQueryResult(support, form, -1, ExecutionState.DONE, support.getTestUser(), 201);
+		final ManagedExecutionId managedExecutionId = IntegrationUtils.assertQueryResult(support, form, null, -1, ExecutionState.DONE, support.getTestUser(), 201);
 
 		log.info("{} QUERIES EXECUTED", getLabel());
 
@@ -109,7 +109,7 @@ public class FormTest extends ConqueryTestSpec {
 		final ConqueryConfig config = standaloneSupport.getConfig();
 		PrintSettings
 				printSettings =
-				new PrintSettings(false, Locale.ENGLISH, standaloneSupport.getNamespace(), config, idPrinter::createId, null);
+				new PrintSettings(false, Locale.ENGLISH, config, idPrinter::createId, null);
 
 		checkSingleResult(managedForm, config, printSettings);
 

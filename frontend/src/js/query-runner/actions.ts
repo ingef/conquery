@@ -1,10 +1,14 @@
-import { TFunction } from "i18next";
+import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
-import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
+import {
+  type ActionType,
+  createAction,
+  createAsyncAction,
+} from "typesafe-actions";
 
 import {
-  FormQueryPostPayload,
+  type FormQueryPostPayload,
   useGetQuery,
   usePostFormQueries,
   usePostQueries,
@@ -19,18 +23,17 @@ import type {
   QueryIdT,
 } from "../api/types";
 import {
-  ErrorObject,
+  type ErrorObject,
   errorPayload,
   successPayload,
 } from "../common/actions/genericActions";
-import { EditorV2Query } from "../editor-v2/types";
+import type { EditorV2Query } from "../editor-v2/types";
+import { updateQueryId } from "../preview/actions";
 import {
   useLoadFormConfigs,
   useLoadQueries,
 } from "../previous-queries/list/actions";
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
-
-import { updateQueryId } from "../preview/actions";
 import { QUERY_AGAIN_TIMEOUT } from "./constants";
 
 export type QueryRunnerActions = ActionType<
@@ -252,7 +255,6 @@ const useQueryResult = (queryType: QueryTypeT) => {
               QUERY_AGAIN_TIMEOUT,
             );
             break;
-          case "NEW":
           default:
             break;
         }

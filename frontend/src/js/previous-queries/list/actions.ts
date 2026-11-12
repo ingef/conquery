@@ -1,11 +1,12 @@
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
-import { ActionType, createAction } from "typesafe-actions";
+import { type ActionType, createAction } from "typesafe-actions";
 
 import {
   useDeleteFormConfig,
   useDeleteQuery,
+  useGetDefaultFolders,
   useGetFormConfig,
   useGetFormConfigs,
   useGetQueries,
@@ -13,7 +14,7 @@ import {
   usePatchFormConfig,
   usePatchQuery,
 } from "../../api/api";
-import {
+import type {
   DatasetT,
   GetQueriesResponseT,
   GetQueryResponseT,
@@ -31,6 +32,7 @@ export type PreviousQueryListActions = ActionType<
   | typeof deleteQuerySuccess
   | typeof addFolder
   | typeof removeFolder
+  | typeof loadDefaultFoldersSuccess
   | typeof loadFormConfigsSuccess
   | typeof patchFormConfigSuccess
   | typeof deleteFormConfigSuccess
@@ -54,7 +56,7 @@ export const useLoadQueries = () => {
         const data = await getQueries(datasetId);
 
         dispatch(loadQueriesSuccess({ data }));
-      } catch (e) {
+      } catch {
         dispatch(
           setMessage({
             message: t("previousQueries.error"),
@@ -92,7 +94,7 @@ export const useLoadQuery = () => {
         const query = await getQuery(queryId);
 
         dispatch(loadQuerySuccess({ id: queryId, data: query }));
-      } catch (e) {
+      } catch {
         dispatch(
           setMessage({
             message: t("previousQuery.loadError"),
@@ -137,7 +139,7 @@ export const useUpdateQuery = () => {
       await patchQuery(id, attributes);
 
       dispatch(patchQuerySuccess({ id, data: attributes }));
-    } catch (e) {
+    } catch {
       dispatch(
         setMessage({
           message: errorMessage,
@@ -167,7 +169,7 @@ export const useRemoveQuery = () => {
       await deleteQuery(queryId);
 
       dispatch(deleteQuerySuccess({ queryId }));
-    } catch (e) {
+    } catch {
       dispatch(
         setMessage({
           message: t("previousQuery.deleteError"),
@@ -193,6 +195,33 @@ export const removeFolder = createAction("queries/REMOVE_FOLDER")<{
 }>();
 
 // ---------------------
+// Default folders
+// ---------------------
+
+export const loadDefaultFoldersSuccess = createAction(
+  "queries/LOAD_DEFAULT_FOLDERS_SUCCESS",
+)<{ folders: string[] }>();
+
+export const useLoadDefaultFolders = () => {
+  const dispatch = useDispatch();
+  const getDefaultFolders = useGetDefaultFolders();
+
+  return useCallback(
+    async (datasetId: DatasetT["id"]) => {
+      try {
+        const folders = await getDefaultFolders(datasetId);
+
+        dispatch(loadDefaultFoldersSuccess({ folders }));
+      } catch {
+        // a backend without the endpoint just has no default folders
+        dispatch(loadDefaultFoldersSuccess({ folders: [] }));
+      }
+    },
+    [dispatch, getDefaultFolders],
+  );
+};
+
+// ---------------------
 // FORM CONFIGS
 // ---------------------
 
@@ -213,7 +242,7 @@ export const useLoadFormConfigs = () => {
         const data = await getFormConfigs(datasetId);
 
         dispatch(loadFormConfigsSuccess({ data }));
-      } catch (e) {
+      } catch {
         dispatch(
           setMessage({
             message: t("formConfigs.error"),
@@ -252,7 +281,7 @@ export const useLoadFormConfig = () => {
         const data = await getFormConfig(id);
 
         dispatch(patchFormConfigSuccess({ id, data }));
-      } catch (e) {
+      } catch {
         dispatch(
           setMessage({
             message: t("formConfig.loadError"),
@@ -292,7 +321,7 @@ export const useUpdateFormConfig = () => {
       await patchFormConfig(configId, attributes);
 
       dispatch(patchFormConfigSuccess({ id: configId, data: attributes }));
-    } catch (e) {
+    } catch {
       dispatch(
         setMessage({
           message: errorMessage,
@@ -323,7 +352,7 @@ export const useRemoveFormConfig = () => {
       await deleteFormConfig(configId);
 
       dispatch(deleteFormConfigSuccess({ configId }));
-    } catch (e) {
+    } catch {
       dispatch(
         setMessage({
           message: t("formConfig.deleteError"),

@@ -143,6 +143,8 @@ public interface SqlFunctionProvider {
 	 */
 	ColumnDateRange allRange();
 
+	<T> Field<T> anyValue(Field<T> field);
+
 	/**
 	 * Creates a {@link ColumnDateRange} for a tables {@link CQTable}s validity date. The validity dates bounds will be restricted by the given date
 	 * restriction.

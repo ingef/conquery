@@ -1,98 +1,82 @@
-import styled from "@emotion/styled";
-import { faFile } from "@fortawesome/free-regular-svg-icons";
 import {
-  faArrowRight,
-  faDiagramProject,
-  faFolder,
-  faMinus,
-} from "@fortawesome/free-solid-svg-icons";
+  ArrowRightIcon,
+  FileIcon,
+  FolderIcon,
+  MinusIcon,
+  WorkflowIcon,
+} from "lucide-react";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
-import FaIcon from "../icon/FaIcon";
+import { C1, H2 } from "../ui-components/Typography";
 
-const TextInitial = styled("div")`
-  width: 100%;
-  font-size: ${({ theme }) => theme.font.lg};
-  padding: 30px;
-  font-weight: 400;
-  display: grid;
-  grid-template-areas: "free headline" "arrow description";
-  gap: 12px 20px;
+const textInitial = tv({
+  base: [
+    "grid",
+    "[grid-template-areas:'free_headline'_'arrow_description']",
+    "gap-y-3 gap-x-5",
+    "w-full",
+    "p-[30px]",
+  ],
+});
 
-  p {
-    margin: 0;
-  }
-`;
-const ArrowRight = styled(FaIcon)`
-  font-size: 140px;
-  color: ${({ theme }) => theme.col.grayLight};
-  grid-area: arrow;
-`;
-const Headline = styled("h2")`
-  grid-area: headline;
-`;
-const Grid = styled("div")`
-  display: grid;
-  gap: 5px;
-  align-items: center;
-  grid-template-columns: auto 1fr;
-  margin-top: 10px;
-`;
-const Row = styled("div")`
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  justify-content: flex-end;
-`;
-const Description = styled("div")`
-  grid-area: description;
-`;
-const IconInABox = styled("div")`
-  border: 1px solid ${({ theme }) => theme.col.grayLight};
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: ${({ theme }) => theme.borderRadius};
-`;
+const arrowRight = tv({
+  base: ["[grid-area:arrow]", "size-10", "text-gray-100"],
+});
+
+const grid = tv({
+  base: ["grid items-center", "grid-cols-[auto_1fr]", "gap-[5px]", "mt-[10px]"],
+});
+
+const row = tv({
+  base: ["flex items-center justify-end", "gap-[6px]"],
+});
+
+const iconInABox = tv({
+  base: [
+    "flex items-center justify-center",
+    "h-[30px] w-[30px]",
+    "border border-gray-100",
+    "rounded",
+  ],
+});
 
 export const EmptyQueryEditorDropzone = memo(() => {
   const { t } = useTranslation();
 
   return (
-    <TextInitial data-test-id="text-initial">
-      <Headline className="text-2xl leading-tight font-bold">
-        {t("dropzone.explanation")}
-      </Headline>
-      <ArrowRight icon={faArrowRight} />
-      <Description>
-        <p>{t("dropzone.dropIntoThisArea")}</p>
-        <Grid>
-          <Row>
-            <IconInABox>
-              <FaIcon icon={faFolder} active />
-            </IconInABox>
-            <IconInABox>
-              <FaIcon icon={faMinus} active />
-            </IconInABox>
-          </Row>
-          {t("dropzone.aConcept")}
-          <Row>
-            <IconInABox>
-              <FaIcon icon={faDiagramProject} active />
-            </IconInABox>
-          </Row>
-          {t("dropzone.aQuery")}
-          <Row>
-            <IconInABox>
-              <FaIcon icon={faFile} active />
-            </IconInABox>
-          </Row>
-          {t("dropzone.aConceptList")}
-        </Grid>
-      </Description>
-    </TextInitial>
+    <div className={textInitial()} data-test-id="text-initial">
+      <div className="[grid-area:headline]">
+        <H2>{t("dropzone.explanation")}</H2>
+      </div>
+      <ArrowRightIcon className={arrowRight()} />
+      <div className="[grid-area:description]">
+        <C1>{t("dropzone.dropIntoThisArea")}</C1>
+        <div className={grid()}>
+          <div className={row()}>
+            <div className={iconInABox()}>
+              <FolderIcon data-filled className="text-primary-500" />
+            </div>
+            <div className={iconInABox()}>
+              <MinusIcon className="text-primary-500" />
+            </div>
+          </div>
+          <C1 as="span">{t("dropzone.aConcept")}</C1>
+          <div className={row()}>
+            <div className={iconInABox()}>
+              <WorkflowIcon className="text-primary-500" />
+            </div>
+          </div>
+          <C1 as="span">{t("dropzone.aQuery")}</C1>
+          <div className={row()}>
+            <div className={iconInABox()}>
+              <FileIcon className="text-primary-500" />
+            </div>
+          </div>
+          <C1 as="span">{t("dropzone.aConceptList")}</C1>
+        </div>
+      </div>
+    </div>
   );
 });

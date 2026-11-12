@@ -30,7 +30,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.index.IndexService;
-import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.resources.api.ConceptsProcessor;
 import com.bakdata.conquery.resources.api.ConceptsProcessor.AutoCompleteResult;
 import com.bakdata.conquery.util.extensions.MockServerExtension;
@@ -112,7 +112,7 @@ public class SolrFilterValueTest {
 		return new SelectFilter<>() {
 
 			@Override
-			public FilterNode<?> createFilterNode(Object o) {
+			public EventFilterNode<?> createFilterNode(Object o) {
 				throw new UnsupportedOperationException();
 			}
 

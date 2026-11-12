@@ -1,104 +1,58 @@
-import styled from "@emotion/styled";
-import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
-
+import { tv } from "tailwind-variants";
 import type { StateT } from "../app/reducers";
-import { HistoryButton } from "../button/HistoryButton";
+import { useAppTheme } from "../app-theme-context";
 import DatasetSelector from "../dataset/DatasetSelector";
-import { canViewEntityPreview, useHideLogoutButton } from "../user/selectors";
+import { NewsButton } from "../news/NewsButton";
+import { HeaderMenu } from "./HeaderMenu";
 
-import { useTheme } from "@emotion/react";
-import { HelpMenu } from "./HelpMenu";
-import LogoutButton from "./LogoutButton";
+// position absolute: fix, so content can expand to 100% and scroll
+const root = tv({
+  base: [
+    "absolute top-0 left-0",
+    "z-3",
+    "flex flex-row items-center justify-between",
+    "h-header w-full",
+    "px-5",
+    "bg-bg-50",
+    "shadow-[0_0_1px_1px_rgba(0,0,0,0.3)]",
+  ],
+});
 
-const Root = styled("header")`
-  background-color: ${({ theme }) => theme.col.bg};
-  box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.3);
-  padding: 0 20px;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
+const overflowHidden = tv({
+  base: ["flex flex-row items-center", "shrink-0", "overflow-hidden"],
+});
 
-  // Fix, so content can expand to 100% and scroll
-  position: absolute;
-  z-index: 3;
-  width: 100%;
-  top: 0;
-  left: 0;
-`;
-
-const Right = styled("div")`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 5px;
-`;
-
-const OverflowHidden = styled("div")`
-  overflow: hidden;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-`;
-
-const Spacer = styled("span")`
-  margin: 0 5px;
-  height: 20px;
-`;
-
-const Logo = styled("div")`
-  height: 40px;
-  width: ${({ theme }) => theme.img.logoWidth};
-  background-repeat: no-repeat;
-  background-position-y: 50%;
-  background-size: ${({ theme }) => theme.img.logoBackgroundSize};
-`;
-
-const Headline = styled("h1")`
-  margin: 0 auto 0 0;
-  line-height: 2;
-  font-size: ${({ theme }) => theme.font.md};
-  font-weight: 700;
-  font-size: 12px;
-  opacity: 0.3;
-  text-transform: uppercase;
-  color: ${({ theme }) => theme.col.blueGrayDark};
-`;
+const logo = tv({
+  base: ["h-header", "bg-no-repeat", "[background-position-y:50%]"],
+});
 
 const Header = () => {
-  const { t } = useTranslation();
-  const canViewHistory = useSelector<StateT, boolean>(canViewEntityPreview);
-  const hideLogoutButton = useHideLogoutButton();
   const { manualUrl, contactEmail } = useSelector<
     StateT,
     StateT["startup"]["config"]
   >((state) => state.startup.config);
 
-  const theme = useTheme();
-  const logo = theme.img.logo;
+  const { img } = useAppTheme();
 
   return (
-    <Root>
-      <OverflowHidden>
-        <Logo
+    <header className={root()}>
+      <div className={overflowHidden()}>
+        <div
+          className={logo()}
           style={{
-            backgroundImage: `url(${logo})`,
+            width: img.logoWidth,
+            backgroundImage: `url(${img.logo})`,
+            backgroundSize: img.logoBackgroundSize,
           }}
         />
-        <Spacer />
-        <Headline>{t("headline")}</Headline>
-      </OverflowHidden>
-      <Right>
+      </div>
+      <div className="flex items-center gap-[5px]">
         <DatasetSelector />
-        {canViewHistory && <HistoryButton />}
-        {(manualUrl || contactEmail) && (
-          <HelpMenu manualUrl={manualUrl} contactEmail={contactEmail} />
-        )}
-        {!hideLogoutButton && <LogoutButton />}
-      </Right>
-    </Root>
+        <NewsButton />
+        <HeaderMenu manualUrl={manualUrl} contactEmail={contactEmail} />
+      </div>
+    </header>
   );
 };
 

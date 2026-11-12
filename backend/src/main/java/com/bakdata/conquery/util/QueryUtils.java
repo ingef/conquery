@@ -1,13 +1,6 @@
 package com.bakdata.conquery.util;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -17,6 +10,7 @@ import java.util.stream.Collectors;
 import c10n.C10N;
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
+import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQOr;
@@ -31,14 +25,12 @@ import com.bakdata.conquery.models.identifiable.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
-import com.bakdata.conquery.models.query.NamespacedIdentifiableHolding;
-import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.query.QueryExecutionContext;
-import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.query.*;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.google.common.base.Strings;
 import com.google.common.collect.MoreCollectors;
+import lombok.Data;
 import lombok.Getter;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
@@ -48,11 +40,13 @@ import lombok.extern.slf4j.Slf4j;
 public class QueryUtils {
 
 	private static final int MAX_CONCEPT_LABEL_CONCAT_LENGTH = 70;
+
 	/**
 	 * Provides a starting operator for consumer chains, that does nothing.
 	 */
 	public static <T> Consumer<T> getNoOpEntryPoint() {
-		return (whatever) -> {};
+		return (whatever) -> {
+		};
 	}
 
 	/**
@@ -66,8 +60,9 @@ public class QueryUtils {
 	 * Create label for children preferring the children's user label if provided.
 	 */
 	public static String createUserMultiLabel(List<CQElement> elements, String delimiter, String postfix, Locale locale) {
-		return elements.stream().map(elt -> elt.userLabel(locale)).collect(Collectors.joining(delimiter,"", postfix));
+		return elements.stream().map(elt -> elt.userLabel(locale)).collect(Collectors.joining(delimiter, "", postfix));
 	}
+
 	/**
 	 * Create label for children the children's default label ignoring user provided label.
 	 */
@@ -87,7 +82,7 @@ public class QueryUtils {
 
 		final Map<Class<? extends Visitable>, List<Visitable>> sortedContents =
 				Visitable.stream(query)
-						 .collect(Collectors.groupingBy(Visitable::getClass));
+						.collect(Collectors.groupingBy(Visitable::getClass));
 
 		int sbStartSize = sb.length();
 
@@ -118,15 +113,15 @@ public class QueryUtils {
 			final AtomicInteger length = new AtomicInteger();
 
 			sortedContents.get(CQConcept.class)
-						  .stream()
-						  .map(CQConcept.class::cast)
+					.stream()
+					.map(CQConcept.class::cast)
 
-						  .map(c -> makeLabelWithRootAndChild(c, cfg))
-						  .filter(Predicate.not(Strings::isNullOrEmpty))
-						  .distinct()
+					.map(c -> makeLabelWithRootAndChild(c, cfg))
+					.filter(Predicate.not(Strings::isNullOrEmpty))
+					.distinct()
 
-						  .takeWhile(elem -> length.addAndGet(elem.length()) < MAX_CONCEPT_LABEL_CONCAT_LENGTH)
-						  .forEach(label -> sb.append(label).append(" "));
+					.takeWhile(elem -> length.addAndGet(elem.length()) < MAX_CONCEPT_LABEL_CONCAT_LENGTH)
+					.forEach(label -> sb.append(label).append(" "));
 
 			// Last entry will output one Space that we don't want
 			if (!sb.isEmpty()) {
@@ -158,7 +153,7 @@ public class QueryUtils {
 		// Concat everything with dashes
 		return label.replace(" ", "-");
 	}
-	
+
 	/**
 	 * Checks if the query requires to resolve external ids.
 	 */
@@ -184,14 +179,18 @@ public class QueryUtils {
 	/**
 	 * Test if this query is only reusing a different query (ie not combining it with other elements, or changing its secondaryId)
 	 */
+	@Data
 	public static class OnlyReusingChecker implements QueryVisitor {
+
+		private final ExecutionManager storage;
 
 		private CQReusedQuery reusedQuery = null;
 		private boolean containsOthersElements = false;
 
+
 		@Override
 		public void accept(Visitable element) {
-			if(containsOthersElements){
+			if (containsOthersElements) {
 				return;
 			}
 
@@ -201,8 +200,7 @@ public class QueryUtils {
 
 				if (reusedQuery == null) {
 					reusedQuery = (CQReusedQuery) element;
-				}
-				else {
+				} else {
 					containsOthersElements = true;
 				}
 				return;
@@ -213,12 +211,34 @@ public class QueryUtils {
 			}
 		}
 
-		public Optional<ManagedExecutionId> getOnlyReused() {
+		public Optional<ManagedQuery> getOnlyReused(QueryDescription query) {
 			if (containsOthersElements || reusedQuery == null) {
 				return Optional.empty();
 			}
 
-			return Optional.of(reusedQuery.getQueryId());
+			ManagedExecutionId executionId = getReusedQuery().getQueryId();
+			ManagedQuery execution = (ManagedQuery) storage.getExecution(executionId);
+
+			if (execution == null) {
+				return Optional.empty();
+			}
+
+			// Direct reuse only works if the queries are of the same type (As reuse reconstructs the Query for different types)
+			if (!query.getClass().equals(execution.getSubmitted().getClass())) {
+				return Optional.empty();
+			}
+
+			// If SecondaryIds differ from selected and prior, we cannot reuse them.
+			if (query instanceof SecondaryIdQuery secondaryIdQuery) {
+				final SecondaryIdDescriptionId selectedSecondaryId = secondaryIdQuery.getSecondaryId();
+				final SecondaryIdDescriptionId reusedSecondaryId = ((SecondaryIdQuery) execution.getSubmitted()).getSecondaryId();
+
+				if (!selectedSecondaryId.equals(reusedSecondaryId)) {
+					return Optional.empty();
+				}
+			}
+
+			return Optional.of(execution);
 		}
 	}
 
@@ -250,16 +270,16 @@ public class QueryUtils {
 
 		@Override
 		public void accept(Visitable element) {
-			if(element instanceof final CQConcept cqConcept){
+			if (element instanceof final CQConcept cqConcept) {
 
 				// Excluded Concepts are not available
-				if(cqConcept.isExcludeFromSecondaryId()){
+				if (cqConcept.isExcludeFromSecondaryId()) {
 					return;
 				}
 
 				for (Connector connector : cqConcept.getConcept().getConnectors()) {
 					for (Column column : connector.getResolvedTable().getColumns()) {
-						if(column.getSecondaryId() == null){
+						if (column.getSecondaryId() == null) {
 							continue;
 						}
 

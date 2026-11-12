@@ -1,5 +1,5 @@
 import { memo } from "react";
-import {
+import type {
   Control,
   UseFormRegister,
   UseFormSetValue,
@@ -14,19 +14,20 @@ import { Description } from "../form-components/Description";
 import { getInitialValue, isFormFieldWithValue } from "../helper";
 
 import type { DynamicFormValues } from "./Form";
-import { CheckboxField } from "./fields/CheckboxField";
-import { ConceptListField } from "./fields/ConceptListField";
-import { DatasetSelectField } from "./fields/DatasetSelectField";
-import { DateRangeField } from "./fields/DateRangeField";
+import { ControlledCheckboxField } from "./fields/ControlledCheckboxField";
+import { ControlledConceptListField } from "./fields/ControlledConceptListField";
+import { ControlledDatasetSelectField } from "./fields/ControlledDatasetSelectField";
+import { ControlledDateField } from "./fields/ControlledDateField";
+import { ControlledDateRangeField } from "./fields/ControlledDateRangeField";
+import { ControlledNumberField } from "./fields/ControlledNumberField";
+import { ControlledResultGroupField } from "./fields/ControlledResultGroupField";
+import { ControlledSelectField } from "./fields/ControlledSelectField";
+import { ControlledStringField } from "./fields/ControlledStringField";
+import { ControlledTextAreaField } from "./fields/ControlledTextAreaField";
 import { DisclosureListField } from "./fields/DisclosureListField";
 import { GroupField } from "./fields/GroupField";
 import { HeadlineField } from "./fields/HeadlineField";
-import { NumberField } from "./fields/NumberField";
-import { ResultGroupField } from "./fields/ResultGroupField";
-import { SelectField } from "./fields/SelectField";
-import { StringField } from "./fields/StringField";
 import { TabsField } from "./fields/TabsField";
-import { TextAreaField } from "./fields/TextAreaField";
 
 const Field = ({
   field,
@@ -59,12 +60,13 @@ const Field = ({
     case "DESCRIPTION":
       return (
         <Description
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: labels come from the form configs the backend serves
           dangerouslySetInnerHTML={{ __html: field.label[locale] || "" }}
         />
       );
     case "STRING":
       return (
-        <StringField
+        <ControlledStringField
           field={field}
           defaultValue={defaultValue}
           commonProps={commonProps}
@@ -72,7 +74,7 @@ const Field = ({
       );
     case "TEXTAREA":
       return (
-        <TextAreaField
+        <ControlledTextAreaField
           field={field}
           defaultValue={defaultValue}
           commonProps={commonProps}
@@ -80,7 +82,15 @@ const Field = ({
       );
     case "NUMBER":
       return (
-        <NumberField
+        <ControlledNumberField
+          field={field}
+          defaultValue={defaultValue}
+          commonProps={commonProps}
+        />
+      );
+    case "DATE":
+      return (
+        <ControlledDateField
           field={field}
           defaultValue={defaultValue}
           commonProps={commonProps}
@@ -88,7 +98,7 @@ const Field = ({
       );
     case "DATE_RANGE":
       return (
-        <DateRangeField
+        <ControlledDateRangeField
           field={field}
           defaultValue={defaultValue}
           commonProps={commonProps}
@@ -96,7 +106,7 @@ const Field = ({
       );
     case "RESULT_GROUP":
       return (
-        <ResultGroupField
+        <ControlledResultGroupField
           field={field}
           defaultValue={defaultValue}
           commonProps={commonProps}
@@ -104,7 +114,7 @@ const Field = ({
       );
     case "CHECKBOX":
       return (
-        <CheckboxField
+        <ControlledCheckboxField
           field={field}
           defaultValue={defaultValue}
           commonProps={commonProps}
@@ -112,7 +122,7 @@ const Field = ({
       );
     case "SELECT":
       return (
-        <SelectField
+        <ControlledSelectField
           field={field}
           defaultValue={defaultValue}
           commonProps={commonProps}
@@ -120,7 +130,7 @@ const Field = ({
       );
     case "DATASET_SELECT":
       return (
-        <DatasetSelectField
+        <ControlledDatasetSelectField
           field={field}
           commonProps={commonProps}
           datasetId={datasetId}
@@ -147,7 +157,7 @@ const Field = ({
       );
     case "CONCEPT_LIST":
       return (
-        <ConceptListField
+        <ControlledConceptListField
           field={field}
           commonProps={commonProps}
           defaultValue={defaultValue}

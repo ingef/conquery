@@ -1,21 +1,15 @@
-import styled from "@emotion/styled";
-import { faFolder } from "@fortawesome/free-solid-svg-icons";
+import { FolderIcon } from "lucide-react";
 import { memo } from "react";
-
-import Highlighter from "react-highlight-words";
-import { ConceptIdT, ConceptT } from "../../api/types";
+import { tv } from "tailwind-variants";
+import type { ConceptIdT, ConceptT } from "../../api/types";
 import { getConceptById } from "../../concept-trees/globalTreeStoreHelper";
-import FaIcon from "../../icon/FaIcon";
+import { Highlighter } from "../../ui-components/Highlighter";
+import { C2 } from "../../ui-components/Typography";
 import { useTimelineSearch } from "../timeline-search/timelineSearchState";
 
-const Root = styled("div")`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-`;
-const Named = styled("span")`
-  font-weight: 400;
-`;
+const conceptRoot = tv({
+  base: ["flex items-center", "gap-[10px]"],
+});
 
 interface Props {
   className?: string;
@@ -35,12 +29,12 @@ const ConceptLabel = ({
 }) => {
   const label = concept
     ? `${concept.label}${
-        concept.description ? " – " + concept.description : ""
+        concept.description ? ` – ${concept.description}` : ""
       }`
     : conceptId;
 
   return (
-    <Named>
+    <C2 as="span">
       {searchTerm && searchTerm.length > 0 ? (
         <Highlighter
           searchWords={searchTerm.split(" ")}
@@ -49,7 +43,7 @@ const ConceptLabel = ({
       ) : (
         label
       )}
-    </Named>
+    </C2>
   );
 };
 
@@ -60,13 +54,17 @@ const RootConceptLabel = ({
   rootConcept: ConceptT;
   searchTerm?: string;
 }) => {
-  return searchTerm && searchTerm.length > 0 ? (
-    <Highlighter
-      searchWords={searchTerm.split(" ")}
-      textToHighlight={rootConcept.label + " "}
-    />
-  ) : (
-    rootConcept.label + " "
+  return (
+    <C2 as="span">
+      {searchTerm && searchTerm.length > 0 ? (
+        <Highlighter
+          searchWords={searchTerm.split(" ")}
+          textToHighlight={`${rootConcept.label} `}
+        />
+      ) : (
+        `${rootConcept.label} `
+      )}
+    </C2>
   );
 };
 
@@ -77,7 +75,7 @@ const ConceptName = ({ className, title, rootConceptId, conceptId }: Props) => {
   if (!concept) {
     return (
       <span className={className} title={title}>
-        {conceptId}
+        <C2 as="span">{conceptId}</C2>
       </span>
     );
   }
@@ -97,8 +95,8 @@ const ConceptName = ({ className, title, rootConceptId, conceptId }: Props) => {
   const rootConcept = getConceptById(rootConceptId, rootConceptId);
 
   return (
-    <Root title={title} className={className}>
-      <FaIcon icon={faFolder} active />
+    <div title={title} className={conceptRoot({ className })}>
+      <FolderIcon data-filled className="text-primary-500" />
       <span>
         {rootConcept && (
           <RootConceptLabel rootConcept={rootConcept} searchTerm={searchTerm} />
@@ -109,7 +107,7 @@ const ConceptName = ({ className, title, rootConceptId, conceptId }: Props) => {
           searchTerm={searchTerm}
         />
       </span>
-    </Root>
+    </div>
   );
 };
 

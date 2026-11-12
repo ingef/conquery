@@ -51,7 +51,7 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 		conquery.waitUntilWorkDone();
 
 		final ManagedExecutionId executionId =
-				IntegrationUtils.assertQueryResult(conquery, test.getQuery(), 6, ExecutionState.DONE, conquery.getTestUser(), 201);
+				IntegrationUtils.assertQueryResult(conquery, test.getQuery(), null, 6, ExecutionState.DONE, conquery.getTestUser(), 201);
 
 		final UriBuilder uriBuilder = HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), QueryResource.class, "getDescription");
 

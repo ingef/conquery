@@ -4,8 +4,10 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import jakarta.validation.Validator;
@@ -17,6 +19,7 @@ import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.mode.Manager;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.config.StartupConfig;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -33,7 +36,6 @@ import io.dropwizard.core.setup.Environment;
 import io.dropwizard.lifecycle.Managed;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.SneakyThrows;
 import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
@@ -138,27 +140,76 @@ public class ManagerNode implements Managed {
 
 	}
 
-	@SneakyThrows(InterruptedException.class)
-	public void loadNamespaces() {
+	public void loadNamespaces() throws InterruptedException {
+		DatasetRegistry<? extends Namespace> registry = getDatasetRegistry();
+		final Collection<NamespaceStorage> namespaceStorages = getConfig().getStorage().discoverNamespaceStorages();
+
+		loadNamespaces(namespaceStorages, registry, getMetaStorage(), getEnvironment());
+	}
+
+	static void loadNamespaces(
+			Collection<NamespaceStorage> namespaceStorages,
+			DatasetRegistry<? extends Namespace> registry,
+			MetaStorage metaStorage,
+			Environment environment) throws InterruptedException {
 
 		try(ExecutorService loaders = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())) {
-			DatasetRegistry<? extends Namespace> registry = getDatasetRegistry();
+			final List<NamespaceLoadTask> loadTasks = new ArrayList<>(namespaceStorages.size());
 
 			// Namespaces load their storage themselves, so they can inject Namespace relevant objects into stored objects
-			final Collection<NamespaceStorage> namespaceStorages = getConfig().getStorage().discoverNamespaceStorages();
 			for (NamespaceStorage namespaceStorage : namespaceStorages) {
-				loaders.submit(() -> {
-					registry.createNamespace(namespaceStorage, getMetaStorage(), getEnvironment());
-				});
+				Future<?> future = loaders.submit(() -> registry.createNamespace(namespaceStorage, metaStorage, environment));
+				loadTasks.add(new NamespaceLoadTask(namespaceStorage, future));
 			}
 
 			loaders.shutdown();
 			while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
 				final int countLoaded = registry.getNamespaces().size();
-				log.debug("Waiting for Worker namespaces to load. {} are already finished. {} pending.", countLoaded, namespaceStorages.size()
-																													  - countLoaded);
+				log.debug("Waiting for dataset namespaces to load. {} are already finished. {} pending.", countLoaded, namespaceStorages.size()
+																							  - countLoaded);
+			}
+
+			// Check for failed storages
+			final List<NamespaceLoadFailure> failures = new ArrayList<>();
+			for (NamespaceLoadTask loadTask : loadTasks) {
+				try {
+					loadTask.future().get();
+				}
+				catch (ExecutionException exception) {
+					final Throwable cause = exception.getCause();
+					final String storagePath = loadTask.storage().getPathName();
+					log.error(
+							"Failed to load persisted dataset namespace [storage={}]. The dataset is unavailable; application startup will be aborted.",
+							storagePath,
+							cause
+					);
+					failures.add(new NamespaceLoadFailure(storagePath, cause));
+				}
+			}
+
+			if (!failures.isEmpty()) {
+				// Fail and stop startup if at least one storage caught a problem
+				throw createNamespaceLoadingException(namespaceStorages.size(), failures);
 			}
 		}
+	}
+
+	private static IllegalStateException createNamespaceLoadingException(int namespaceCount, List<NamespaceLoadFailure> failures) {
+		final List<String> failedStoragePaths = failures.stream().map(NamespaceLoadFailure::storagePath).toList();
+		final IllegalStateException exception = new IllegalStateException(
+				"Failed to load %d of %d persisted dataset namespaces: %s"
+						.formatted(failures.size(), namespaceCount, failedStoragePaths),
+				failures.getFirst().cause()
+		);
+
+		failures.stream().skip(1).map(NamespaceLoadFailure::cause).forEach(exception::addSuppressed);
+		return exception;
+	}
+
+	private record NamespaceLoadTask(NamespaceStorage storage, Future<?> future) {
+	}
+
+	private record NamespaceLoadFailure(String storagePath, Throwable cause) {
 	}
 
 	private void loadMetaStorage() {
@@ -197,6 +248,16 @@ public class ManagerNode implements Managed {
 		loadMetaStorage();
 
 		manager.start();
+
+		final StartupConfig startupConfig = getConfig().getStartup();
+		for (Namespace namespace : getDatasetRegistry().getNamespaces()) {
+			if (startupConfig.isUpdateMatchingStats()) {
+				namespace.scheduleMatchingStatsUpdate();
+			}
+			if (startupConfig.isUpdateFilterSearch()) {
+				namespace.scheduleFilterSearchUpdate();
+			}
+		}
 	}
 
 	@Override

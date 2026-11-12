@@ -1,15 +1,10 @@
-import { BarStatistics, DateStatistics, PreviewStatistics } from "../api/types";
+import type {
+  BarStatistics,
+  DateStatistics,
+  PreviewStatistics,
+} from "../api/types";
 
 export const NUMBER_TYPES = ["NUMERIC", "INTEGER"];
-
-export const NUMBER_STATISTICS_TYPES = [...NUMBER_TYPES, "MONEY"];
-
-export function currencyFromSymbol(symbol: string): string {
-  // TODO: this is a workaround until the backend sends currency-codes
-  if (symbol === "€") return "EUR";
-
-  return "USD";
-}
 
 export function formatNumber(
   num: number,

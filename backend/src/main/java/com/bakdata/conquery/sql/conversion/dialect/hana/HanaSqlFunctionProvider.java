@@ -115,7 +115,13 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		return ColumnDateRange.of(getMinDateExpression(), getMaxDateExpression());
 	}
 
-	private ColumnDateRange toColumnDateRange(ValidityDate validityDate) {
+	@Override
+    public <T> Field<T> anyValue(Field<T> field) {
+        // Hana does not have any_value
+        return DSL.min(field);
+    }
+
+    private ColumnDateRange toColumnDateRange(ValidityDate validityDate) {
 
 		String tableName = validityDate.getConnector().resolveTableId().getTable();
 

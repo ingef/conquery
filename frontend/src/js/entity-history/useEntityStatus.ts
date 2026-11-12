@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import type { SelectOptionT } from "../api/types";
-import { EntityIdsStatus } from "./History";
+import type { EntityIdsStatus } from "./History";
 import { useDefaultStatusOptions } from "./useDefaultStatusOptions";
 
 export const useEntityStatus = ({

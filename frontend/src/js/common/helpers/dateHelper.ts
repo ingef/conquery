@@ -1,10 +1,8 @@
 import {
   addMonths,
   addQuarters,
-  differenceInCalendarDays,
   endOfMonth,
   format,
-  formatDistance,
   isValid,
   lastDayOfQuarter,
   parse,
@@ -15,17 +13,10 @@ import { useTranslation } from "react-i18next";
 // To save the date in this format in the state
 const DATE_FORMAT = "yyyy-MM-dd";
 
-export const useDateLocale = () => {
+const useDateLocale = () => {
   const { i18n } = useTranslation();
 
   return i18n.language === "de" ? de : enGB;
-};
-
-export const useFormatDateDistance = () => {
-  const locale = useDateLocale();
-
-  return (d1: Date, d2: Date, withSuffix: boolean = false) =>
-    formatDistance(d1, d2, { locale: locale, addSuffix: withSuffix });
 };
 
 export const formatStdDate = (date: Date) => {
@@ -86,7 +77,11 @@ function handleRaw(
   const yIdx = denseFormat.indexOf("y");
   const y = value.substring(yIdx, yIdx + 4);
 
-  let date: Date | null = new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
+  let date: Date | null = new Date(
+    parseInt(y, 10),
+    parseInt(m, 10) - 1,
+    parseInt(d, 10),
+  );
 
   date = isValid(date) ? date : null;
 
@@ -99,7 +94,7 @@ function handleYear(value: string) {
   if (!match) {
     throw new Error("Quarter.year should match at this point");
   }
-  const year = parseInt(match[1]);
+  const year = parseInt(match[1], 10);
 
   const min = new Date(year, 0, 1);
   const max = new Date(year, 11, 31);
@@ -114,8 +109,8 @@ function handleQuarter(value: string) {
     throw new Error("Quarter.year should match at this point");
   }
 
-  const quarter = parseInt(match[1]);
-  const year = parseInt(match[2]);
+  const quarter = parseInt(match[1], 10);
+  const year = parseInt(match[2], 10);
 
   const min = addQuarters(new Date(year, 0, 1), quarter - 1);
   const max = lastDayOfQuarter(addQuarters(new Date(year, 0, 1), quarter - 1));
@@ -130,8 +125,8 @@ function handleMonth(value: string) {
     throw new Error("Month.year should match at this point");
   }
 
-  const month = parseInt(match[1]);
-  const year = parseInt(match[2]);
+  const month = parseInt(match[1], 10);
+  const year = parseInt(match[2], 10);
 
   const min = addMonths(new Date(year, 0, 1), month - 1);
   const max = endOfMonth(addMonths(new Date(year, 0, 1), month - 1));
@@ -162,7 +157,7 @@ interface DateMinMax {
   max: Date | null;
 }
 
-export const testRegexes = (
+const testRegexes = (
   what: "min" | "max",
   value: string,
   displayDateFormat: string,
@@ -180,10 +175,6 @@ export const testRegexes = (
       return { min: null, max: null };
   }
 };
-
-export function getDiffInDays(d1: Date, d2: Date) {
-  return Math.abs(differenceInCalendarDays(d1, d2)) + 1;
-}
 
 /**
  * A custom string format we're using that allows a list of day intervals

@@ -1,10 +1,9 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
@@ -12,15 +11,18 @@ import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.concepts.filters.EventFilter;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.filter.event.FlagColumnsFilterNode;
-import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.sql.conversion.model.aggregator.FlagSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
+import com.bakdata.conquery.util.validation.ResolvableId;
+import com.bakdata.conquery.util.validation.SupportedColumnTypes;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
@@ -38,9 +40,12 @@ import lombok.ToString;
 @CPSType(base = Filter.class, id = "FLAGS")
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 @ToString
-public class FlagFilter extends Filter<Set<String>> {
+public class FlagFilter extends EventFilter<Set<String>> {
 
-	private final Map<String, ColumnId> flags;
+	@Valid
+	@NotEmpty
+	@NotNull
+	private final Map<String, @ResolvableId @SupportedColumnTypes(MajorTypeId.BOOLEAN) ColumnId> flags;
 
 	@Override
 	protected void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
@@ -55,7 +60,7 @@ public class FlagFilter extends Filter<Set<String>> {
 	}
 
 	@Override
-	public FilterNode<?> createFilterNode(Set<String> labels) {
+	public EventFilterNode<?> createFilterNode(Set<String> labels) {
 
 		final Set<String> missing = new HashSet<>(labels.size());
 		final List<Column> columns = new ArrayList<>();
@@ -85,11 +90,6 @@ public class FlagFilter extends Filter<Set<String>> {
 		return flags.values().stream().distinct().count() == flags.size();
 	}
 
-	@JsonIgnore
-	@ValidationMethod(message = "Columns must be BOOLEAN.")
-	public boolean isAllColumnsBoolean() {
-		return flags.values().stream().map(ColumnId::resolve).map(Column::getType).allMatch(MajorTypeId.BOOLEAN::equals);
-	}
 
 	@Override
 	public FilterConverter<FlagFilter, Set<String>> createConverter() {

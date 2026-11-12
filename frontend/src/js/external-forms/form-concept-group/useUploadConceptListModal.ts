@@ -2,22 +2,21 @@ import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
-import { SelectOptionT } from "../../api/types";
-import { StateT } from "../../app/reducers";
+import type { SelectOptionT } from "../../api/types";
+import type { StateT } from "../../app/reducers";
 import { getUniqueFileRows } from "../../common/helpers/fileHelper";
-import { TreesT } from "../../concept-trees/reducer";
-import { DragItemConceptTreeNode } from "../../standard-query-editor/types";
+import type { TreesT } from "../../concept-trees/reducer";
+import type { SelectConfig } from "../../model/select";
+import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
 import {
   initUploadConceptListModal,
   resetUploadConceptListModal,
 } from "../../upload-concept-list-modal/actions";
 import type { ConceptListDefaults as ConceptListDefaultsType } from "../config-types";
-
-import { SelectConfig } from "../../model/select";
 import {
   addConceptsFromFile,
-  FormConceptGroupT,
-  TableConfig,
+  type FormConceptGroupT,
+  type TableConfig,
 } from "./formConceptGroupState";
 
 interface UploadConceptListModalContext {

@@ -1,12 +1,16 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
+import {
+  type ActionType,
+  createAction,
+  createAsyncAction,
+} from "typesafe-actions";
 
 import { useGetDatasets } from "../api/api";
 import type { DatasetT, GetDatasetsResponseT } from "../api/types";
-import { StateT } from "../app/reducers";
-import { ErrorObject } from "../common/actions/genericActions";
+import type { StateT } from "../app/reducers";
+import type { ErrorObject } from "../common/actions/genericActions";
 import { exists } from "../common/helpers/exists";
 import { useLoadTrees } from "../concept-trees/actions";
 import {

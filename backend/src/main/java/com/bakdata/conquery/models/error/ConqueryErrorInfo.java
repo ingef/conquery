@@ -12,14 +12,14 @@ public interface ConqueryErrorInfo {
 	 * A unique id for this error to retrieve it in the logs.
 	 */
 	UUID getId();
-	
+
 	String getCode();
-	
+
 	String getMessage();
 
 	SimpleErrorInfo asPlain();
 
-	
+
 	/**
 	 * Method to check if two errors are basically the same, by not checking the id and the context (which possibly checks on hashcode basis).
 	 */

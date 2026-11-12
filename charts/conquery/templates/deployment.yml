@@ -33,6 +33,8 @@ spec:
                 value: {{ .Values.frontend.disableLogin | quote }}
               - name: REACT_APP_LANG
                 value: {{ .Values.frontend.lang }}
+              - name: REACT_APP_EDITOR_V2_ENABLE
+                value: {{ .Values.frontend.editorV2.enabled | quote }}
               - name: REACT_APP_IDP_ENABLE
                 value: {{ .Values.frontend.idp.enabled | quote }}
               - name: REACT_APP_IDP_URL

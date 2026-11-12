@@ -1,13 +1,14 @@
-import { faDiagramProject } from "@fortawesome/free-solid-svg-icons";
-
-import FaIcon from "../icon/FaIcon";
+import { WorkflowIcon } from "lucide-react";
+import { tv } from "tailwind-variants";
 
 import { InABox } from "./InABox";
+
+const icon = tv({ base: "text-primary-500" });
 
 const QuerySymbol = ({ className }: { className?: string }) => {
   return (
     <InABox className={className}>
-      <FaIcon icon={faDiagramProject} active className={className} />
+      <WorkflowIcon className={icon({ className })} />
     </InABox>
   );
 };

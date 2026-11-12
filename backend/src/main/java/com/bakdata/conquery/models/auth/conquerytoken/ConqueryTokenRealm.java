@@ -38,8 +38,8 @@ public class ConqueryTokenRealm extends AuthenticatingRealm implements ConqueryA
 	private final MetaStorage storage;
 	@Setter
 	private JWTConfig jwtConfig = new JWTConfig();
-	
-	
+
+
 	public ConqueryTokenRealm(MetaStorage storage) {
 		this.storage = storage;
 		setAuthenticationTokenClass(TOKEN_CLASS);
@@ -93,22 +93,22 @@ public class ConqueryTokenRealm extends AuthenticatingRealm implements ConqueryA
 
 	}
 
-	
+
 	public String createTokenForUser(UserId userId) {
 		return createTokenForUser(userId, jwtConfig.getJwtDuration());
 	}
-	
+
 	public static class JWTConfig{
 		@Getter
 		@Setter
 		private Duration jwtDuration = Duration.hours(8);
-		
+
 		@JsonIgnore
 		@Getter
 		private Algorithm tokenSignAlgorithm = Algorithm.HMAC256(JWTokenHandler.generateTokenSecret());
 		@JsonIgnore
 		private JWTVerifier tokenVerifier;
-		
+
 		@JsonIgnore
 		public JWTVerifier getTokenVerifier(AuthenticatingRealm realm) {
 			if(tokenVerifier == null) {
@@ -116,7 +116,7 @@ public class ConqueryTokenRealm extends AuthenticatingRealm implements ConqueryA
 			}
 			return tokenVerifier;
 		}
-		
+
 
 	}
 

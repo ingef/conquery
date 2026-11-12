@@ -7,8 +7,7 @@ import type { SearchT, TreesT } from "./reducer";
 
 const isChildWithinResults = (children: ConceptIdT[], search: SearchT) => {
   return children.some(
-    (child) =>
-      !!search.result && Object.hasOwnProperty.call(search.result, child),
+    (child) => !!search.result && Object.hasOwn(search.result, child),
   );
 };
 
@@ -19,9 +18,9 @@ export const isNodeInSearchResult = (
 ) => {
   if (!search.result) return true;
 
-  if (Object.hasOwnProperty.call(search.result, id)) return true;
+  if (Object.hasOwn(search.result, id)) return true;
 
-  if (!!children && children.length > 0)
+  if (children && children.length > 0)
     return isChildWithinResults(children, search);
 
   return false;

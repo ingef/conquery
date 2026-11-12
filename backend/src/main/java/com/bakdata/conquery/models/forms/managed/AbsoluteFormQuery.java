@@ -82,7 +82,7 @@ public class AbsoluteFormQuery extends Query {
 			)
 		);
 	}
-	
+
 	@Override
 	public List<ResultInfo> getResultInfos() {
 		final List<ResultInfo> resultInfos = new ArrayList<>();

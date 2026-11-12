@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { ActionType, createAction } from "typesafe-actions";
+import { type ActionType, createAction } from "typesafe-actions";
 
 import type { StateT } from "../../app/reducers";
 import { exists } from "../../common/helpers/exists";
@@ -9,8 +9,8 @@ import {
   configMatchesSearch,
 } from "../../external-forms/form-configs/selectors";
 import type { ProjectItemsFilterStateT } from "../filter/reducer";
-import type { ProjectItemT } from "../list/ProjectItem";
 import { isFormConfig } from "../list/helpers";
+import type { ProjectItemT } from "../list/ProjectItem";
 import type { FormConfigT, PreviousQueryT } from "../list/reducer";
 import { queryHasFilterType, queryMatchesSearch } from "../list/selector";
 

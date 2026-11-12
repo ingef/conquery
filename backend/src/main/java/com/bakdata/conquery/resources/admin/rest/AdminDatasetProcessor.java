@@ -2,13 +2,7 @@ package com.bakdata.conquery.resources.admin.rest;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import jakarta.inject.Inject;
@@ -343,12 +337,21 @@ public class AdminDatasetProcessor {
 	}
 
 	/**
-	 * Issues a postprocessing of the imported data for initializing certain internal modules that are either expensive or need the whole data present.
+	 * Schedules collection of matching statistics for the dataset.
 	 */
-	public void postprocessNamespace(DatasetId dataset) {
+	public void updateMatchingStats(DatasetId dataset) {
 		final Namespace ns = getDatasetRegistry().get(dataset);
 
-		ns.postprocessData();
+		ns.scheduleMatchingStatsUpdate();
+	}
+
+	/**
+	 * Schedules regeneration of the filter search for the dataset.
+	 */
+	public void updateFilterSearch(DatasetId dataset) {
+		final Namespace ns = getDatasetRegistry().get(dataset);
+
+		ns.scheduleFilterSearchUpdate();
 	}
 
 	public EntityIdMap getIdMapping(Namespace namespace) {
@@ -442,5 +445,13 @@ public class AdminDatasetProcessor {
 
 	public void deletePreviewConfig(Namespace namespace) {
 		namespace.getStorage().removePreviewConfig();
+	}
+
+	public List<SearchIndexId> listSearchIndexes(Namespace namespace) {
+		return namespace.getStorage().getSearchIndexIds().sorted(Comparator.comparing(SearchIndexId::getName)).toList();
+	}
+
+	public SearchIndex getSearchIndex(Namespace namespace, SearchIndexId id) {
+		return namespace.getStorage().getSearchIndex(id);
 	}
 }
