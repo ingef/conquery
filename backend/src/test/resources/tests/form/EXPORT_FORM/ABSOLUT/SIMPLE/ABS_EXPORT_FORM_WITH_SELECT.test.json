@@ -1,12 +1,6 @@
 {
   "type": "FORM_TEST",
   "label": "ABS-EXPORT-FORM WITH SELECT SET Test",
-    "sqlSpec": {
-    "isEnabled": true,
-    "supportedDialects": [
-       "HANA"
-    ]
-  },
   "expectedCsv": {
     "results": "tests/form/EXPORT_FORM/ABSOLUT/SIMPLE/expected_with_select.csv"
   },
