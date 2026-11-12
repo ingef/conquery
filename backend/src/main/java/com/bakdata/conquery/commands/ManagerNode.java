@@ -25,6 +25,8 @@ import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
+import com.bakdata.conquery.news.ManagedNewsService;
+import com.bakdata.conquery.news.NewsApi;
 import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.bakdata.conquery.resources.admin.ShutdownTask;
@@ -63,6 +65,7 @@ public class ManagerNode implements Managed {
 
 	// For registering form providers
 	private FormScanner formScanner;
+	private ManagedNewsService newsService;
 
 	public ManagerNode() {
 		this(DEFAULT_NAME);
@@ -84,6 +87,9 @@ public class ManagerNode implements Managed {
 
 		// FormScanner needs to be instantiated before plugins are initialized
 		formScanner = new FormScanner(config);
+
+		newsService = new ManagedNewsService(config.getNews(), environment.getValidator());
+		environment.lifecycle().manage(newsService);
 
 		// Init all plugins
 		config.getPlugins().forEach(pluginConfig -> pluginConfig.initialize(this));
@@ -107,6 +113,9 @@ public class ManagerNode implements Managed {
 
 		// Register default components for the admin interface
 		admin.register();
+
+		// Wire up news-service with jersey
+		NewsApi.register(environment.jersey().getResourceConfig(), admin.getJerseyConfig(), newsService);
 
 		log.info("Registering ResourcesProvider");
 		for (Class<? extends ResourcesProvider> resourceProvider : CPSTypeIdResolver.listImplementations(ResourcesProvider.class)) {
