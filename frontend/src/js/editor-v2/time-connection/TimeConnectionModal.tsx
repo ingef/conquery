@@ -65,8 +65,9 @@ export const TimeConnectionModal = memo(
       [t],
     );
 
-    const [aTimestamp, setATimestamp] = useState(conditions.timestamps[0]);
-    const [bTimestamp, setBTimestamp] = useState(conditions.timestamps[1]);
+    const [indexSelector, setIndexSelector] = useState(
+      conditions.indexSelector,
+    );
     const [operator, setOperator] = useState(conditions.operator);
     const [interval, setTheInterval] = useState(conditions.interval);
 
@@ -77,9 +78,9 @@ export const TimeConnectionModal = memo(
     useEffect(() => {
       onChangeRef.current({
         ...conditionsRef.current,
-        timestamps: [aTimestamp, bTimestamp],
+        indexSelector,
       });
-    }, [aTimestamp, bTimestamp]);
+    }, [indexSelector]);
 
     useEffect(() => {
       onChangeRef.current({
@@ -110,10 +111,12 @@ export const TimeConnectionModal = memo(
                 <ComboBoxField
                   aria-label={t("editorV2.timestamp")}
                   options={TIMESTAMP_OPTIONS}
-                  value={TIMESTAMP_OPTIONS.find((o) => o.value === aTimestamp)!}
+                  value={TIMESTAMP_OPTIONS.find(
+                    (o) => o.value === indexSelector,
+                  )!}
                   onChange={(opt) => {
                     if (opt) {
-                      setATimestamp(opt.value as TimeTimestamp);
+                      setIndexSelector(opt.value as TimeTimestamp);
                     }
                   }}
                 />
@@ -193,16 +196,9 @@ export const TimeConnectionModal = memo(
             </div>
             <div className={row()}>
               <div className="min-w-[150px] basis-0">
-                <ComboBoxField
-                  aria-label={t("editorV2.timestamp")}
-                  options={TIMESTAMP_OPTIONS}
-                  value={TIMESTAMP_OPTIONS.find((o) => o.value === bTimestamp)!}
-                  onChange={(opt) => {
-                    if (opt) {
-                      setBTimestamp(opt.value as TimeTimestamp);
-                    }
-                  }}
-                />
+                <C2 as="span" strong>
+                  {t("editorV2.ANY")}
+                </C2>
               </div>
               <span className="whitespace-nowrap">
                 <C2 as="span">{t("editorV2.dateRangeFrom")}</C2>

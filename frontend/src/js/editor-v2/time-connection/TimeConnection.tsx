@@ -33,8 +33,8 @@ export const TimeConnection = memo(
     const getNodeLabel = useGetNodeLabel();
     const getTranslatedTimestamp = useGetTranslatedTimestamp();
 
-    const aTimestamp = getTranslatedTimestamp(conditions.timestamps[0]);
-    const bTimestamp = getTranslatedTimestamp(conditions.timestamps[1]);
+    const aTimestamp = getTranslatedTimestamp(conditions.indexSelector);
+    const bTimestamp = getTranslatedTimestamp("ANY");
     const a = getNodeLabel(conditions.items[0]);
     const b = getNodeLabel(conditions.items[1]);
     const operator = useTranslatedOperator(conditions.operator);
