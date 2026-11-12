@@ -15,10 +15,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.model.CteStep;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
-import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
-import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.CountCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
@@ -39,8 +36,6 @@ import org.jooq.impl.DSL;
 
 @NoArgsConstructor
 public class CountSqlAggregator implements SelectConverter<CountSelect>, FilterConverter<CountFilter, Range.LongRange>, SqlAggregator {
-
-	private static final String ROW_NUMBER_ALIAS = "row_number";
 
 	@Override
 	public ConnectorSqlSelects connectorSelect(CountSelect countSelect, SelectContext<ConnectorSqlTables> selectContext) {
@@ -67,7 +62,7 @@ public class CountSqlAggregator implements SelectConverter<CountSelect>, FilterC
 
 			return ConnectorSqlSelects.builder()
 									  .preprocessingSelects(countAggregationSelect.getRootSelects())
-									  .additionalPredecessor(countAggregationSelect.getAdditionalPredecessor())
+									  .aggregationSelect(countAggregationSelect.getGroupBy())
 									  .finalSelect(createFinalSelect(countAggregationSelect, tables))
 									  .build();
 		}
@@ -89,89 +84,61 @@ public class CountSqlAggregator implements SelectConverter<CountSelect>, FilterC
 			ConnectorSqlTables tables,
 			NameGenerator nameGenerator
 	) {
-		List<ExtractingSqlSelect<?>> preprocessingSelects = new ArrayList<>();
-		ExtractingSqlSelect<?> countRootSelect = new ExtractingSqlSelect<>(tables.getRootTable(), countColumn.getName(), Object.class);
+		final List<SingleColumnSqlSelect> preprocessingSelects = new ArrayList<>();
+		final ExtractingSqlSelect<?> countRootSelect = new ExtractingSqlSelect<>(tables.getRootTable(), countColumn.getName(), Object.class);
 		preprocessingSelects.add(countRootSelect);
 
-		List<ExtractingSqlSelect<?>> distinctByRootSelects =
+		final List<ExtractingSqlSelect<?>> distinctByRootSelects =
 				distinctByColumns.stream()
 							 .map(column -> new ExtractingSqlSelect<>(tables.getRootTable(), column.getName(), Object.class))
 							 .collect(Collectors.toList());
 		preprocessingSelects.addAll(distinctByRootSelects);
 
-		QueryStep rowNumberCte = createRowNumberCte(ids, countRootSelect, distinctByRootSelects, alias, tables, nameGenerator);
-		Field<?> qualifiedCountSelect = countRootSelect.qualify(rowNumberCte.getCteName()).select();
-		FieldWrapper<Integer> countGroupBy = new FieldWrapper<>(DSL.nullif(DSL.count(qualifiedCountSelect), 0).as(alias));
-		QueryStep rowNumberFilteredCte = createRowNumberFilteredCte(rowNumberCte, countGroupBy, alias, nameGenerator);
+		final String rowNumberAlias = nameGenerator.cteStepName(CountDistinctStep.ROW_NUMBER, alias);
+		final FieldWrapper<Integer> rowNumberSelect = createRowNumberSelect(ids, distinctByRootSelects, rowNumberAlias);
+		preprocessingSelects.add(rowNumberSelect);
+
+		final String aggregationPredecessor = tables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT);
+		final Field<?> qualifiedCountSelect = countRootSelect.qualify(aggregationPredecessor).select();
+		final List<Field<?>> qualifiedDistinctByFields = distinctByRootSelects.stream()
+																			.map(sqlSelect -> sqlSelect.qualify(aggregationPredecessor).select())
+																			.collect(Collectors.toList());
+		final Field<Integer> qualifiedRowNumber = rowNumberSelect.qualify(aggregationPredecessor).select();
+
+		final Condition firstOccurrence = qualifiedRowNumber.eq(DSL.inline(1));
+		final Condition anyDistinctByValuePresent = qualifiedDistinctByFields.stream()
+																			.map(Field::isNotNull)
+																			.reduce(Condition::or)
+																			.orElseThrow();
+		final Field<?> countValue = DSL.when(firstOccurrence.and(anyDistinctByValuePresent), qualifiedCountSelect);
+		final FieldWrapper<Integer> countGroupBy = new FieldWrapper<>(DSL.nullif(DSL.count(countValue), 0).as(alias));
 
 		return CommonAggregationSelect.<Integer>builder()
 									  .rootSelects(preprocessingSelects)
-									  .additionalPredecessor(rowNumberFilteredCte)
 									  .groupBy(countGroupBy)
 									  .build();
 	}
 
-	private static QueryStep createRowNumberCte(
+	/**
+	 * Assigns row numbers within each partition of subject IDs and distinct-by values during preprocessing. Rows with the same subject and distinct-by tuple
+	 * receive increasing row numbers and can therefore be reduced to a single representative during aggregation.
+	 */
+	private static FieldWrapper<Integer> createRowNumberSelect(
 			SqlIdColumns ids,
-			SingleColumnSqlSelect countColumnRootSelect,
 			List<ExtractingSqlSelect<?>> distinctByRootSelects,
-			String alias,
-			SqlTables connectorTables,
-			NameGenerator nameGenerator
+			String rowNumberAlias
 	) {
-		String predecessor = connectorTables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT);
-		SqlIdColumns qualifiedIds = ids.qualify(predecessor);
-		SingleColumnSqlSelect qualifiedCountRootSelect = countColumnRootSelect.qualify(predecessor);
-		List<Field<?>> qualifiedDistinctByFields = distinctByRootSelects.stream()
-																	.map(sqlSelect -> sqlSelect.qualify(predecessor).select())
-																	.collect(Collectors.toList());
+		final SqlIdColumns rootIds = ids.getPredecessor().orElse(ids);
+		final List<Field<?>> partitioningFields = Stream.concat(
+														rootIds.toFields().stream(),
+														distinctByRootSelects.stream().map(SingleColumnSqlSelect::select)
+												)
+												.collect(Collectors.toList());
 
-		List<Field<?>> partitioningFields = Stream.concat(qualifiedIds.toFields().stream(), qualifiedDistinctByFields.stream())
-														 .collect(Collectors.toList());
-		FieldWrapper<Integer> rowNumber = new FieldWrapper<>(
-				DSL.rowNumber().over(DSL.partitionBy(partitioningFields)).as(ROW_NUMBER_ALIAS),
+		return new FieldWrapper<>(
+				DSL.rowNumber().over(DSL.partitionBy(partitioningFields)).as(rowNumberAlias),
 				partitioningFields.stream().map(Field::getName).toArray(String[]::new)
 		);
-
-		Selects rowNumberAssignedSelects = Selects.builder()
-													  .ids(qualifiedIds)
-													  .sqlSelects(List.of(qualifiedCountRootSelect, rowNumber))
-													  .build();
-		Condition anyDistinctByValuePresent = qualifiedDistinctByFields.stream()
-																		.map(Field::isNotNull)
-																		.reduce(Condition::or)
-																		.orElseThrow();
-
-		return QueryStep.builder()
-						.cteName(nameGenerator.cteStepName(CountDistinctCteStep.ROW_NUMBER_ASSIGNED, alias))
-						.selects(rowNumberAssignedSelects)
-						.fromTable(QueryStep.toTableLike(predecessor))
-						.conditions(List.of(anyDistinctByValuePresent))
-						.build();
-	}
-
-	private static QueryStep createRowNumberFilteredCte(
-			QueryStep rowNumberCte,
-			FieldWrapper<Integer> countSelect,
-			String alias,
-			NameGenerator nameGenerator
-	) {
-		SqlIdColumns ids = rowNumberCte.getQualifiedSelects().getIds();
-		Selects rowNumberFilteredSelects = Selects.builder()
-													  .ids(ids)
-													  .sqlSelect(countSelect)
-													  .build();
-		Condition firstOccurrence = DSL.field(DSL.name(rowNumberCte.getCteName(), ROW_NUMBER_ALIAS))
-													   .eq(DSL.inline(1));
-
-		return QueryStep.builder()
-						.cteName(nameGenerator.cteStepName(CountDistinctCteStep.ROW_NUMBER_FILTERED, alias))
-						.selects(rowNumberFilteredSelects)
-						.fromTable(QueryStep.toTableLike(rowNumberCte.getCteName()))
-						.conditions(List.of(firstOccurrence))
-						.predecessor(rowNumberCte)
-						.groupBy(ids.toFields())
-						.build();
 	}
 
 	private static ExtractingSqlSelect<Integer> createFinalSelect(
@@ -230,13 +197,11 @@ public class CountSqlAggregator implements SelectConverter<CountSelect>, FilterC
 
 	@Getter
 	@RequiredArgsConstructor
-	private enum CountDistinctCteStep implements CteStep {
+	private enum CountDistinctStep implements CteStep {
 
-		ROW_NUMBER_ASSIGNED("count_distinct_row_number_assigned", null),
-		ROW_NUMBER_FILTERED("count_distinct_row_number_filtered", ROW_NUMBER_ASSIGNED);
+		ROW_NUMBER("count_distinct_row_number");
 
 		private final String suffix;
-		private final CountDistinctCteStep predecessor;
 	}
 
 
