@@ -3,7 +3,6 @@ package com.bakdata.conquery.sql.conversion.model.aggregator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Column;
@@ -13,6 +12,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
+import com.bakdata.conquery.sql.conversion.model.PartitioningUtil;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.filter.CountCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
@@ -81,14 +81,10 @@ public class CountSqlAggregator implements SelectConverter<CountSelect>, FilterC
 							 .collect(Collectors.toList());
 		preprocessingSelects.addAll(distinctByRootSelects);
 
-		List<Field<?>> partitioningFields = Stream.concat(
-				ids.toFields().stream(),
-				distinctByRootSelects.stream().map(ExtractingSqlSelect::select)
-		).collect(Collectors.toList());
-		FieldWrapper<Integer> rowNumber = new FieldWrapper<>(
-				DSL.rowNumber().over(DSL.partitionBy(partitioningFields)).as(alias),
-				partitioningFields.stream().map(Field::getName).toArray(String[]::new)
-		);
+		final List<? extends Field<?>> distinctByFields = distinctByRootSelects.stream()
+				.map(ExtractingSqlSelect::select)
+				.toList();
+		final FieldWrapper<Integer> rowNumber = PartitioningUtil.rowNumber(ids, distinctByFields, alias);
 		preprocessingSelects.add(rowNumber);
 
 		String preprocessingCte = tables.cteName(ConceptCteStep.PREPROCESSING);

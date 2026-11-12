@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import com.bakdata.conquery.sql.conversion.dialect.IntervalPacker;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import com.bakdata.conquery.sql.conversion.model.PartitioningUtil;
 import com.bakdata.conquery.sql.conversion.model.QualifyingUtil;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
@@ -45,7 +46,7 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 		ColumnDateRange daterange = context.getDaterange().qualify(sourceTableName);
 
 		Field<Date> previousEnd = DSL.max(daterange.getEnd())
-									 .over(DSL.partitionBy(ids.toFields())
+									 .over(PartitioningUtil.partitionBy(ids)
 											  .orderBy(daterange.getStart(), daterange.getEnd())
 											  .rowsBetweenUnboundedPreceding()
 											  .andPreceding(1))
@@ -76,7 +77,7 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 				DSL.sum(
 						   DSL.when(daterange.getStart().greaterThan(previousEnd), DSL.inline(1))
 							  .otherwise(DSL.inline(null, Integer.class)))
-				   .over(DSL.partitionBy(ids.toFields())
+				   .over(PartitioningUtil.partitionBy(ids)
 							.orderBy(daterange.getStart(), daterange.getEnd())
 							.rowsUnboundedPreceding())
 				   .as(IntervalPacker.RANGE_INDEX_FIELD_NAME);

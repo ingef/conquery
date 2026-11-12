@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import com.bakdata.conquery.sql.conversion.model.PartitioningUtil;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
@@ -25,7 +26,7 @@ class RowNumberCte extends DateAggregationCte {
 		SqlIdColumns ids = context.getIds();
 
 		ColumnDateRange aggregatedValidityDate = context.getDateAggregationDates().getValidityDates().get(0);
-		Field<Integer> rowNumber = DSL.rowNumber().over(DSL.partitionBy(ids.toFields()).orderBy(aggregatedValidityDate.getStart()))
+		Field<Integer> rowNumber = DSL.rowNumber().over(PartitioningUtil.partitionBy(ids).orderBy(aggregatedValidityDate.getStart()))
 									  .as(ROW_NUMBER_FIELD_NAME);
 
 		ArrayList<SqlSelect> selects = new ArrayList<>(context.getCarryThroughSelects());
