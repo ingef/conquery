@@ -8,6 +8,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -25,18 +26,19 @@ class NewsResourceTest {
 
 	@Test
 	void returnsOnlyPublishedNewsForTheRequestedDataset() {
-		RecordingNewsService newsService = new RecordingNewsService(List.of(
+		final RecordingNewsService newsService = new RecordingNewsService(List.of(
 				newsItem("past", TODAY.minusDays(1)),
 				newsItem("today", TODAY),
-				newsItem("future", TODAY.plusDays(1))
+				newsItem("future", TODAY.plusDays(1)),
+				new NewsItem("unpublished", "unpublished", "Description", null, TODAY, Set.of())
 		));
-		NewsResource resource = new NewsResource(newsService, PUBLICATION_POLICY);
+		final NewsResource resource = new NewsResource(newsService, PUBLICATION_POLICY);
 		resource.setDatasetId(new DatasetId("dataset-a"));
 
-		var result = resource.getNews(mock(Subject.class));
+		final Collection<FrontendNewsItem> result = resource.getNews(mock(Subject.class));
 
 		assertThat(result).extracting(FrontendNewsItem::id).containsExactly("past", "today");
-		assertThat(newsService.requestedCategory).isEqualTo("dataset-a");
+		assertThat(newsService.requestedDataset).isEqualTo("dataset-a");
 	}
 
 	private static NewsItem newsItem(String id, LocalDate date) {
@@ -46,7 +48,7 @@ class NewsResourceTest {
 	private static final class RecordingNewsService implements NewsService {
 
 		private final List<NewsItem> news;
-		private String requestedCategory;
+		private String requestedDataset;
 
 		private RecordingNewsService(List<NewsItem> news) {
 			this.news = news;
@@ -57,8 +59,8 @@ class NewsResourceTest {
 		}
 
 		@Override
-		public List<NewsItem> getNews(String category) {
-			requestedCategory = category;
+		public List<NewsItem> getNews(String dataset) {
+			requestedDataset = dataset;
 			return news;
 		}
 

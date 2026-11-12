@@ -10,15 +10,17 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+
 public record NewsItem(
 		@NotBlank @Pattern(regexp = ID_PATTERN) @Size(max = 100, message = "ID must not exceed 100 characters") String id,
 		@NotBlank String title,
 		@NotBlank String description,
 		URI link,
 		@NotNull LocalDate date,
-		Set<@NotBlank String> categories) {
+		Set<@NotBlank String> publishedToDatasets) {
 
 	public NewsItem {
-		categories = categories == null ? Set.of() : Set.copyOf(categories);
+		publishedToDatasets = publishedToDatasets == null ? Set.of() : Set.copyOf(publishedToDatasets);
 	}
 }

@@ -21,7 +21,7 @@ class NewsPublicationPolicyTest {
 
 	@Test
 	void publishesPastNews() {
-		NewsItem item = newsItem(TODAY.minusDays(1));
+		final NewsItem item = newsItem(TODAY.minusDays(1));
 
 		assertThat(policy.getStatus(item)).isEqualTo(NewsPublicationStatus.PUBLISHED);
 		assertThat(policy.isPublished(item)).isTrue();
@@ -29,7 +29,7 @@ class NewsPublicationPolicyTest {
 
 	@Test
 	void publishesNewsDatedToday() {
-		NewsItem item = newsItem(TODAY);
+		final NewsItem item = newsItem(TODAY);
 
 		assertThat(policy.getStatus(item)).isEqualTo(NewsPublicationStatus.PUBLISHED);
 		assertThat(policy.isPublished(item)).isTrue();
@@ -37,13 +37,32 @@ class NewsPublicationPolicyTest {
 
 	@Test
 	void schedulesFutureNews() {
-		NewsItem item = newsItem(TODAY.plusDays(1));
+		final NewsItem item = newsItem(TODAY.plusDays(1));
 
 		assertThat(policy.getStatus(item)).isEqualTo(NewsPublicationStatus.SCHEDULED);
 		assertThat(policy.isPublished(item)).isFalse();
 	}
 
+	@Test
+	void marksNewsWithoutPublishedDatasetsAsUnpublished() {
+		final NewsItem item = newsItem(TODAY, Set.of());
+
+		assertThat(policy.getStatus(item)).isEqualTo(NewsPublicationStatus.UNPUBLISHED);
+		assertThat(policy.isPublished(item)).isFalse();
+	}
+
+	@Test
+	void unpublishedTakesPrecedenceOverScheduled() {
+		final NewsItem item = newsItem(TODAY.plusDays(1), Set.of());
+
+		assertThat(policy.getStatus(item)).isEqualTo(NewsPublicationStatus.UNPUBLISHED);
+	}
+
 	private static NewsItem newsItem(LocalDate date) {
-		return new NewsItem("news", "News", "Description", null, date, Set.of());
+		return newsItem(date, Set.of("dataset-a"));
+	}
+
+	private static NewsItem newsItem(LocalDate date, Set<String> publishedToDatasets) {
+		return new NewsItem("news", "News", "Description", null, date, publishedToDatasets);
 	}
 }
