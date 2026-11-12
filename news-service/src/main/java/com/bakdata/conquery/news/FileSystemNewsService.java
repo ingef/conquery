@@ -15,6 +15,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
 
@@ -24,7 +25,6 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -82,9 +82,9 @@ public class FileSystemNewsService implements NewsService {
 	}
 
 	@Override
-	public List<NewsItem> getNews(String category) {
+	public List<NewsItem> getNews(String dataset) {
 		return news.values().stream()
-				.filter(c -> Strings.isNullOrEmpty(category)|| c.newsItem().categories().isEmpty() || c.newsItem().categories().contains(category))
+				.filter(container -> dataset == null || container.newsItem().publishedToDatasets().contains(dataset))
 				.sorted(Comparator.comparing(NewsItemContainer::file))
 				.map(NewsItemContainer::newsItem).toList();
 	}
@@ -115,7 +115,7 @@ public class FileSystemNewsService implements NewsService {
 				newsItem.title(),
 				newsItem.description(),
 				newsItem.link(),
-				newsItem.categories()
+				newsItem.publishedToDatasets()
 		);
 
 		try( TemporaryFile temporary = TemporaryFile.create(newsFolder)) {
@@ -230,7 +230,7 @@ public class FileSystemNewsService implements NewsService {
 					item.description(),
 					item.link(),
 					date,
-					item.categories()
+					item.publishedToDatasets()
 			);
 
 		}
@@ -244,7 +244,7 @@ public class FileSystemNewsService implements NewsService {
 	}
 
 	private <T> void validate(T value) {
-		var violations = validator.validate(value);
+		final Set<ConstraintViolation<T>> violations = validator.validate(value);
 
 		if (!violations.isEmpty()) {
 			throw new ConstraintViolationException(violations);

@@ -11,6 +11,9 @@ public class NewsPublicationPolicy {
 	private final Clock clock;
 
 	public NewsPublicationStatus getStatus(NewsItem item) {
+		if (item.publishedToDatasets().isEmpty()) {
+			return NewsPublicationStatus.UNPUBLISHED;
+		}
 		if (item.date().isAfter(LocalDate.now(clock))) {
 			return NewsPublicationStatus.SCHEDULED;
 		}
