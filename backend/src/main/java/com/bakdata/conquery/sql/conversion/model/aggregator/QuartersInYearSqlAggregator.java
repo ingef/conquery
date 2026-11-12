@@ -2,7 +2,6 @@ package com.bakdata.conquery.sql.conversion.model.aggregator;
 
 import java.sql.Date;
 import java.util.List;
-import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Column;
@@ -12,6 +11,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
+import com.bakdata.conquery.sql.conversion.model.PartitioningUtil;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.filter.CountCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
@@ -102,11 +102,13 @@ public class QuartersInYearSqlAggregator implements
 	) {
 		ExtractingSqlSelect<Date> rootSelect = new ExtractingSqlSelect<>(tables.getRootTable(), column.getName(), Date.class);
 		Field<Date> date = rootSelect.select();
-		List<Field<?>> partitionBy = Stream.concat(ids.toFields().stream(), Stream.of(functionProvider.year(date))).toList();
+		final Field<Integer> denseRank = DSL.denseRank()
+				.over(PartitioningUtil.partitionBy(ids, List.of(functionProvider.year(date)))
+						.orderBy(functionProvider.yearQuarter(date)));
 		FieldWrapper<Integer> quarterRank = new FieldWrapper<>(
 				DSL.when(
 						date.isNotNull(),
-						DSL.denseRank().over(DSL.partitionBy(partitionBy).orderBy(functionProvider.yearQuarter(date)))
+						denseRank
 				).as(alias),
 				column.getName()
 		);

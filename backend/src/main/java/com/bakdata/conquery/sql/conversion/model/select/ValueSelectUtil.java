@@ -14,6 +14,8 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import com.bakdata.conquery.sql.conversion.model.PartitioningUtil;
+import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import org.jetbrains.annotations.NotNull;
 import org.jooq.Field;
 import org.jooq.OrderField;
@@ -58,15 +60,15 @@ class ValueSelectUtil {
 			SelectContext<ConnectorSqlTables> selectContext
 	) {
 		SqlFunctionProvider functionProvider = selectContext.getFunctionProvider();
-		List<Field<?>> ids = selectContext.getPreprocessingIds().toFields();
-		List<Field<?>> partitionByFields = new ArrayList<>(ids);
+		final SqlIdColumns ids = selectContext.getPreprocessingIds();
+		final List<Field<?>> additionalPartitioningFields = new ArrayList<>();
 		if (selectContext.getConversionContext().isWithStratification()) {
 			ColumnDateRange stratificationDate = selectContext.getConversionContext()
 					.getStratificationTable()
 					.getQualifiedSelects()
 					.getStratificationDate()
 					.orElseThrow(() -> new IllegalStateException("Stratification table must provide a stratification date"));
-			partitionByFields.addAll(stratificationDate.toFields());
+			additionalPartitioningFields.addAll(stratificationDate.toFields());
 		}
 		List<OrderField<?>> orderByFields = new ArrayList<>();
 
@@ -77,11 +79,12 @@ class ValueSelectUtil {
 			orderByFields.addAll(functionProvider.orderByValidityDates(ordering, validityDate.get().toFields()));
 		}
 		else {
-			orderByFields.addAll(ids);
+			orderByFields.addAll(ids.toFields());
 		}
 
 		return new FieldWrapper<>(
-				rowNumber().over(partitionBy(partitionByFields).orderBy(orderByFields)).as("%s-row-number".formatted(alias)),
+				rowNumber().over(PartitioningUtil.partitionBy(ids, additionalPartitioningFields).orderBy(orderByFields))
+						.as("%s-row-number".formatted(alias)),
 				new String[0]
 		);
 	}
