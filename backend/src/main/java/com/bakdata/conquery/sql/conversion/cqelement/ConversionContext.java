@@ -63,6 +63,7 @@ public class ConversionContext implements Context {
 	SecondaryIdDescription secondaryIdDescription;
 
 	boolean negation;
+	boolean disableAggregationFilters;
 
 	boolean isGroupBy;
 

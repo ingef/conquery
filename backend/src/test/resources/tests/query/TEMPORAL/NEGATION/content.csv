@@ -1,0 +1,6 @@
+pid,datum,value
+1,2011-01-01,index
+1,2011-01-10,index
+1,2011-01-02,compare
+1,2011-01-11,compare
+1,2011-01-02,forbidden
