@@ -25,7 +25,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jooq.*;
 import org.jooq.Record;
 import org.jooq.exception.DataAccessException;
-import org.jooq.impl.SQLDataType;
 
 @Slf4j
 @Data
@@ -282,7 +281,9 @@ public class SqlMatchingStats {
 
         SelectJoinStep<Record4<Integer, String, Integer, Integer>> records = dslContext.with(unioned).select(unioned.field(CONCEPT_ID_FIELD), PID_FIELD,
                 // The infinities are intentionally swapped
-                functionProvider.cast(nullif(unioned.field(LB_FIELD), positiveInfinity), SQLDataType.INTEGER).as(LB_FIELD), functionProvider.cast(nullif(unioned.field(UB_FIELD), negativeInfinity), SQLDataType.INTEGER).as(UB_FIELD)).from(ct_name);
+                functionProvider.dateToInteger(nullif(unioned.field(LB_FIELD), positiveInfinity)).as(LB_FIELD),
+                functionProvider.dateToInteger(nullif(unioned.field(UB_FIELD), negativeInfinity)).as(UB_FIELD)
+        ).from(ct_name);
 
 
         return records;

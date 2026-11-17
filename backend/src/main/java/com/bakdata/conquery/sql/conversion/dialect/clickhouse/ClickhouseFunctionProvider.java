@@ -17,7 +17,6 @@ import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import org.jetbrains.annotations.NotNull;
 import org.jooq.Condition;
-import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.OrderField;
 import org.jooq.SortField;
@@ -271,14 +270,16 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
     }
 
     @Override
-    public <T> Field<T> cast(Field<?> field, DataType<T> type) {
-        if (type == SQLDataType.VARCHAR) {
-            return function("toString", type.getType(), field);
-        }
+    public Field<String> castToString(Field<?> field) {
+        return function("toString", String.class, field);
+    }
+
+    @Override
+    public Field<Integer> castToInteger(Field<?> field) {
         return function(
                 name("CAST"),
-                type.getType(),
-                field("{0} AS Nullable({1})", field, keyword(type.getName()))
+                Integer.class,
+                field("{0} AS Nullable({1})", field, keyword(SQLDataType.INTEGER.getName()))
         );
     }
 

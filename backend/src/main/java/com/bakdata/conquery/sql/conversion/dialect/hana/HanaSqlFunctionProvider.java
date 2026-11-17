@@ -19,15 +19,9 @@ import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import org.jetbrains.annotations.NotNull;
-import org.jooq.Condition;
-import org.jooq.DataType;
-import org.jooq.Field;
-import org.jooq.OrderField;
+import org.jooq.*;
 import org.jooq.Record;
-import org.jooq.SortField;
-import org.jooq.Table;
 import org.jooq.impl.DSL;
-import org.jooq.impl.SQLDataType;
 
 public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
@@ -38,6 +32,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	public static final char DATE_SET_SEPARATOR = UNIT_SEPARATOR;
 	private static final String ANY_CHAR_REGEX = ".*";
 	private static final String NOP_TABLE = "DUMMY";
+	private final Field<Date> UNIX_0_DATE = toDateField("1970-01-01");
 
 	@Override
 	public String getAnyCharRegex() {
@@ -78,8 +73,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		if (daterange.hasUpperBound()) {
 			// end date is expected to be handled as exclusive, but if it's already the maximum date, we can't add +1 day
 			if (Objects.equals(daterange.getMax(), LocalDate.ofEpochDay(CDateRange.POSITIVE_INFINITY))) {
-				throw new UnsupportedOperationException(
-						"Given daterange has an upper bound of CDateRange.POSITIVE_INFINITY, which is not supported by ConQuery's HANA dialect.");
+				throw new UnsupportedOperationException("Given daterange has an upper bound of CDateRange.POSITIVE_INFINITY, which is not supported by ConQuery's HANA dialect.");
 			}
 			LocalDate exclusiveMaxDate = daterange.getMax().plusDays(1);
 			endDateExpression = exclusiveMaxDate.toString();
@@ -90,12 +84,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public Field<Date> toDateField(String dateExpression) {
-		return function(
-				"TO_DATE",
-				Date.class,
-				inline(dateExpression),
-				inline(DEFAULT_DATE_FORMAT)
-		);
+		return function("TO_DATE", Date.class, inline(dateExpression), inline(DEFAULT_DATE_FORMAT));
 	}
 
 	@Override
@@ -106,9 +95,9 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 
 	@Override
-    public ColumnDateRange forValidityDate(ValidityDate validityDate) {
-        return toColumnDateRange(validityDate);
-    }
+	public ColumnDateRange forValidityDate(ValidityDate validityDate) {
+		return toColumnDateRange(validityDate);
+	}
 
 	@Override
 	public ColumnDateRange allRange() {
@@ -116,12 +105,12 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-    public <T> Field<T> anyValue(Field<T> field) {
-        // Hana does not have any_value
-        return DSL.min(field);
-    }
+	public <T> Field<T> anyValue(Field<T> field) {
+		// Hana does not have any_value
+		return DSL.min(field);
+	}
 
-    private ColumnDateRange toColumnDateRange(ValidityDate validityDate) {
+	private ColumnDateRange toColumnDateRange(ValidityDate validityDate) {
 
 		String tableName = validityDate.getConnector().resolveTableId().getTable();
 
@@ -143,40 +132,22 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 	private ColumnDateRange ofStartAndEnd(String tableName, Column startColumn, Column endColumn) {
 
-		Field<Date> rangeStart = coalesce(
-				field(name(tableName, startColumn.getName()), Date.class),
-				getMinDateExpression()
-		);
+		Field<Date> rangeStart = coalesce(field(name(tableName, startColumn.getName()), Date.class), getMinDateExpression());
 		// when aggregating date ranges, we want to treat the last day of the range as excluded,
 		// so when using the date value of the end column, we add +1 day as end of the date range
-		Field<Date> rangeEnd = coalesce(
-				addDays(field(name(tableName, endColumn.getName()), Date.class), inline(1)),
-				getMaxDateExpression()
-		);
+		Field<Date> rangeEnd = coalesce(addDays(field(name(tableName, endColumn.getName()), Date.class), inline(1)), getMaxDateExpression());
 
 		return ColumnDateRange.of(rangeStart, rangeEnd);
 	}
 
 	@Override
 	public Field<Date> addDays(Field<Date> dateColumn, Field<Integer> amountOfDays) {
-		return function(
-				"ADD_DAYS",
-				Date.class,
-				dateColumn,
-				amountOfDays
-		);
+		return function("ADD_DAYS", Date.class, dateColumn, amountOfDays);
 	}
 
 	@Override
 	public ColumnDateRange allRangeIf(Condition condition) {
-		return ColumnDateRange.of(
-				when(condition.isTrue(),
-						getMinDateExpression()
-				),
-				when(condition.isTrue(),
-						getMaxDateExpression()
-				)
-		);
+		return ColumnDateRange.of(when(condition.isTrue(), getMinDateExpression()), when(condition.isTrue(), getMaxDateExpression()));
 	}
 
 
@@ -186,13 +157,11 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		ColumnDateRange validityDateRange = toColumnDateRange(validityDate);
 		ColumnDateRange restriction = toColumnDateRange(dateRestriction);
 
-		Field<Date> lowerBound = when(validityDateRange.getStart().lessThan(restriction.getStart()), restriction.getStart())
-				.otherwise(validityDateRange.getStart());
+		Field<Date> lowerBound = when(validityDateRange.getStart().lessThan(restriction.getStart()), restriction.getStart()).otherwise(validityDateRange.getStart());
 
 		Field<Date> maxDate = toDateField(MAX_DATE_VALUE); // we want to add +1 day to the end date - except when it's the max date already
 		Field<Date> restrictionUpperBound = when(restriction.getEnd().eq(maxDate), maxDate).otherwise(addDays(restriction.getEnd(), inline(1)));
-		Field<Date> upperBound = when(validityDateRange.getEnd().greaterThan(restriction.getEnd()), restrictionUpperBound)
-				.otherwise(validityDateRange.getEnd());
+		Field<Date> upperBound = when(validityDateRange.getEnd().greaterThan(restriction.getEnd()), restrictionUpperBound).otherwise(validityDateRange.getEnd());
 
 		return ColumnDateRange.of(lowerBound, upperBound);
 	}
@@ -215,14 +184,9 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 	@NotNull
 	@Override
-	public Collection<? extends OrderField<?>> orderByValidityDates(
-			Function<Field<?>, ? extends SortField<?>> ordering,
-			List<Field<?>> validityDateFields) {
+	public Collection<? extends OrderField<?>> orderByValidityDates(Function<Field<?>, ? extends SortField<?>> ordering, List<Field<?>> validityDateFields) {
 
-		return List.of(
-				ordering.apply(nullif(validityDateFields.getFirst(), getMinDateExpression())).nullsLast(),
-				ordering.apply(nullif(validityDateFields.getLast(), getMaxDateExpression())).nullsLast()
-		);
+		return List.of(ordering.apply(nullif(validityDateFields.getFirst(), getMinDateExpression())).nullsLast(), ordering.apply(nullif(validityDateFields.getLast(), getMaxDateExpression())).nullsLast());
 	}
 
 	@Override
@@ -248,11 +212,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public ColumnDateRange aggregated(ColumnDateRange columnDateRange) {
-		return ColumnDateRange.of(
-						min(columnDateRange.getStart()),
-						max(columnDateRange.getEnd())
-				)
-				.as(columnDateRange.getAlias());
+		return ColumnDateRange.of(min(columnDateRange.getStart()), max(columnDateRange.getEnd())).as(columnDateRange.getAlias());
 	}
 
 	@Override
@@ -277,12 +237,9 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public Field<String> dateRangeAggregation(ColumnDateRange columnDateRange) {
 
-		Field<String> stringAggregation = stringAggregation(
-				dateRangeToField(columnDateRange),
-				toChar(DATE_SET_SEPARATOR),
+		Field<String> stringAggregation = stringAggregation(dateRangeToField(columnDateRange), toChar(DATE_SET_SEPARATOR),
 				// The coalesce is necessary so that hana isn't upset about a potential `order by null` which happens for empty date-ranges
-                List.of(coalesce(columnDateRange.getStart(), getMinDateExpression()))
-		);
+				List.of(coalesce(columnDateRange.getStart(), getMinDateExpression())));
 
 		// encapsulate all ranges (including empty ranges) within curly braces
 		return stringAggregation;
@@ -291,25 +248,22 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public Field<String> dateRangeToField(ColumnDateRange columnDateRange) {
 		// translation is handled in printer
-		return field("'[' || {0} || {2} || {1} || ')'", String.class,
-				cast(columnDateRange.getStart(), SQLDataType.VARCHAR),
-				cast(columnDateRange.getEnd(), SQLDataType.VARCHAR),
-				DATERANGE_SEPARATOR
-		);
+		return field("'[' || {0} || {2} || {1} || ')'", String.class, castToString(columnDateRange.getStart()), castToString(columnDateRange.getEnd()), DATERANGE_SEPARATOR);
 	}
 
 	@Override
-	public <T> Field<T> cast(Field<?> field, DataType<T> type) {
-		// HANA would require an explicit length param when using CAST with varchar type, TO_VARCHAR does not require this
-		if (type == SQLDataType.VARCHAR) {
-			return function("TO_VARCHAR", type.getType(), field);
-		}
-		return function(
-				// Needs to be explicitly unquoted, otherwise Hana is angry when Jooq quotes it on occasion.
-				unquotedName("CAST"),
-				type.getType(),
-				field("{0} AS {1}", field, keyword(type.getName()))
-		);
+	public Field<String> castToString(Field<?> field) {
+		return function(unquotedName("TO_VARCHAR"), String.class, field);
+	}
+
+	@Override
+	public Field<Integer> dateToInteger(Field<Date> field) {
+		return function("DAYS_BETWEEN", Integer.class, UNIX_0_DATE, field);
+	}
+
+	@Override
+	public Field<Integer> castToInteger(Field<?> field) {
+		return function(unquotedName("TO_INTEGER"), Integer.class, field);
 	}
 
 	@Override
@@ -338,13 +292,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public <T> Field<T> random(Field<T> column) {
-		return field(
-				"{0}({1} {2})",
-				column.getType(),
-				keyword("FIRST_VALUE"),
-				column,
-				orderBy(function("RAND", Object.class))
-		);
+		return field("{0}({1} {2})", column.getType(), keyword("FIRST_VALUE"), column, orderBy(function("RAND", Object.class)));
 	}
 
 	@Override
