@@ -19,10 +19,6 @@
           "label": "F00-F99",
           "tables": [
             {
-              "id": "icd.kh$5fdiagnose$5ficd$5fcode",
-              "filters": []
-            },
-            {
               "id": "icd.au$5ffall",
               "filters": []
             }
