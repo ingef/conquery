@@ -10,7 +10,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 
 public record NewsItem(
 		@NotBlank @Pattern(regexp = ID_PATTERN) @Size(max = 100, message = "ID must not exceed 100 characters") String id,
