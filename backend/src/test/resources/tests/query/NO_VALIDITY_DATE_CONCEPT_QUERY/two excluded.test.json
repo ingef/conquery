@@ -1,24 +1,50 @@
 {
   "type": "QUERY_TEST",
   "label": "AND without validity Dates",
-  "expectedCsv": "tests/query/NO_VALIDITY_DATE_CONCEPT_QUERY/expected.csv",
+  "expectedCsv": "tests/query/NO_VALIDITY_DATE_CONCEPT_QUERY/expected-two-excluded.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
-      "excludeFromTimeAggregation": true,
-      "ids": [
-        "concept"
-      ],
-      "type": "CONCEPT",
-      "tables": [
+      "type": "AND",
+      "children": [
         {
-          "id": "concept.connector",
-          "filters": [
+          "excludeFromTimeAggregation": true,
+          "ids": [
+            "concept"
+          ],
+          "type": "CONCEPT",
+          "tables": [
             {
-              "filter": "concept.connector.filter",
-              "type": "BIG_MULTI_SELECT",
-              "value": [
-                "f"
+              "id": "concept.connector",
+              "filters": [
+                {
+                  "filter": "concept.connector.filter",
+                  "type": "BIG_MULTI_SELECT",
+                  "value": [
+                    "f"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "excludeFromTimeAggregation": true,
+          "ids": [
+            "concept"
+          ],
+          "type": "CONCEPT",
+          "tables": [
+            {
+              "id": "concept.connector",
+              "filters": [
+                {
+                  "filter": "concept.connector.filter",
+                  "type": "BIG_MULTI_SELECT",
+                  "value": [
+                    "m"
+                  ]
+                }
               ]
             }
           ]

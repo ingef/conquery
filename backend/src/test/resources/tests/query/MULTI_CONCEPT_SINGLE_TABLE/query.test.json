@@ -5,6 +5,9 @@
 	"query": {
 		"type": "CONCEPT_QUERY",
 		"root": {
+			"type": "AND",
+			"children": [
+				{
 				"type": "CONCEPT",
 				"ids": [
 					"concept1.a"
@@ -15,7 +18,20 @@
 						"selects": "concept1.connector.sum"
 					}
 				]
-			}
+				},
+				{
+					"type": "CONCEPT",
+					"ids": [
+						"concept2.b"
+					],
+					"tables": [
+						{
+							"id": "concept2.connector"
+						}
+					]
+				}
+			]
+		}
 
 	},
 	"concepts": [
@@ -96,7 +112,8 @@
 					"children": []
 				},
 				{
-					"name": "B",
+					"name": "b",
+					"label": "B",
 					"condition": {
 						"type": "EQUAL",
 						"values": [
