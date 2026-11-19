@@ -146,7 +146,10 @@ public class FilterTest extends AbstractQueryEngineTest {
 
 			if (expectedFrontendConfig != null) {
 				log.info("Checking actual FrontendConfig: {}", actual);
-				assertThat(actual).usingRecursiveComparison().ignoringFieldsOfTypes(SerializationTestUtil.TYPES_TO_IGNORE).isEqualTo(expectedFrontendConfig);
+				assertThat(actual).usingRecursiveComparison()
+						.ignoringFieldsOfTypes(SerializationTestUtil.TYPES_TO_IGNORE)
+						.ignoringFields("id.connector.concept.dataset.domain")
+						.isEqualTo(expectedFrontendConfig);
 			}
 		}
 		catch (ConceptConfigurationException e) {

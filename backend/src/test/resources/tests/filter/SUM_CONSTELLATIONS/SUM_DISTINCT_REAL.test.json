@@ -1,0 +1,21 @@
+{
+  "type": "FILTER_TEST",
+  "label": "SUM distinct REAL Test",
+  "expectedCsv": "tests/filter/SUM_CONSTELLATIONS/expected_distinct.csv",
+  "expectedFrontendConfig": {"label": "filter", "type": "REAL_RANGE"},
+  "content": {"tables": {
+    "csv": "tests/filter/SUM_CONSTELLATIONS/content.csv",
+    "primaryColumn": {"name": "pid", "type": "STRING"},
+    "columns": [
+      {"name": "plus", "type": "REAL"},
+      {"name": "minus", "type": "REAL"},
+      {"name": "val", "type": "STRING"},
+      {"name": "datum", "type": "DATE"}
+    ]
+  }},
+  "connector": {
+    "validityDates": {"label": "Datum", "column": "table.datum"},
+    "filters": {"type": "SUM", "column": "table.plus", "distinctByColumn": ["table.val"]}
+  },
+  "filterValue": {"type": "REAL_RANGE", "value": {"min": 100, "max": 100}}
+}

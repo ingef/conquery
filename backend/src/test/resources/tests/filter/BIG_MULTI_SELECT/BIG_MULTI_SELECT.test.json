@@ -2,6 +2,11 @@
   "type": "FILTER_TEST",
   "label": "BIG_MULTI_SELECT Test",
   "expectedCsv": "tests/filter/BIG_MULTI_SELECT/expected_BIG_MULTI_SELECT_Filter.csv",
+  "expectedFrontendConfig": {
+    "label": "filter",
+    "type": "BIG_MULTI_SELECT",
+    "creatable": false
+  },
   "content": {
     "tables": {
       "csv": "tests/filter/BIG_MULTI_SELECT/content_BIG_MULTI_SELECT_Filter.csv",

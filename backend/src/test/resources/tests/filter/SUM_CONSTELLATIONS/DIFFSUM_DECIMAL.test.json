@@ -1,0 +1,20 @@
+{
+  "type": "FILTER_TEST",
+  "label": "DIFFSUM DECIMAL Test",
+  "expectedCsv": "tests/filter/SUM_CONSTELLATIONS/expected_plain.csv",
+  "content": {"tables": {
+    "csv": "tests/filter/SUM_CONSTELLATIONS/content.csv",
+    "primaryColumn": {"name": "pid", "type": "STRING"},
+    "columns": [
+      {"name": "plus", "type": "DECIMAL"},
+      {"name": "minus", "type": "DECIMAL"},
+      {"name": "val", "type": "STRING"},
+      {"name": "datum", "type": "DATE"}
+    ]
+  }},
+  "connector": {
+    "validityDates": {"label": "Datum", "column": "table.datum"},
+    "filters": {"type": "SUM", "column": "table.plus", "subtractColumn": "table.minus"}
+  },
+  "filterValue": {"type": "REAL_RANGE", "value": {"min": 120, "max": 120}}
+}

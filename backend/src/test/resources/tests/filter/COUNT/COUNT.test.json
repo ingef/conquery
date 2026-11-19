@@ -2,6 +2,12 @@
   "type": "FILTER_TEST",
   "label": "COUNT Test",
   "expectedCsv": "tests/filter/COUNT/expected_COUNT_Filter.csv",
+  "expectedFrontendConfig": {
+    "label": "filter",
+    "type": "INTEGER_RANGE",
+    "tooltip": "Test count_filter",
+    "min": 1
+  },
   "connector": {
     "validityDates": {
       "label": "Datum",
@@ -40,4 +46,4 @@
       ]
     }
   }
-}	
+}

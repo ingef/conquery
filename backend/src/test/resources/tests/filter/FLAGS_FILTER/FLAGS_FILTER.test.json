@@ -2,6 +2,15 @@
   "type": "FILTER_TEST",
   "label": "FLAGS FILTER Test",
   "expectedCsv": "tests/filter/FLAGS_FILTER/expected.csv",
+  "expectedFrontendConfig": {
+    "label": "filter",
+    "type": "MULTI_SELECT",
+    "options": [
+      {"value": "A", "label": "A"},
+      {"value": "B", "label": "B"},
+      {"value": "C", "label": "C"}
+    ]
+  },
   "content": {
     "tables": {
       "csv": "tests/filter/FLAGS_FILTER/content.csv",

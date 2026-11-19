@@ -2,6 +2,12 @@
   "type": "FILTER_TEST",
   "label": "SELECT Test",
   "expectedCsv": "tests/filter/SELECT/expected_SELECT_Filter.csv",
+  "expectedFrontendConfig": {
+    "label": "filter",
+    "type": "SELECT",
+    "tooltip": "Test SELECT_Filter",
+    "creatable": false
+  },
   "content": {
     "tables":
       {

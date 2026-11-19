@@ -1,0 +1,46 @@
+{
+  "type": "FILTER_TEST",
+  "label": "COUNT_QUARTERS date-range Test",
+  "expectedCsv": "tests/filter/COUNT_QUARTERS_RANGE/expected.csv",
+  "expectedFrontendConfig": {
+    "label": "filter",
+    "type": "INTEGER_RANGE",
+    "min": 1
+  },
+  "content": {
+    "tables": {
+      "csv": "tests/filter/COUNT_QUARTERS_RANGE/content.csv",
+      "primaryColumn": {
+        "name": "pid",
+        "type": "STRING"
+      },
+      "columns": [
+        {
+          "name": "behandlungsdatum",
+          "type": "DATE_RANGE"
+        },
+        {
+          "name": "datum",
+          "type": "DATE"
+        }
+      ]
+    }
+  },
+  "connector": {
+    "validityDates": {
+      "label": "Datum",
+      "column": "table.datum"
+    },
+    "filters": {
+      "column": "table.behandlungsdatum",
+      "type": "COUNT_QUARTERS"
+    }
+  },
+  "filterValue": {
+    "type": "INTEGER_RANGE",
+    "value": {
+      "min": 2,
+      "max": 3
+    }
+  }
+}

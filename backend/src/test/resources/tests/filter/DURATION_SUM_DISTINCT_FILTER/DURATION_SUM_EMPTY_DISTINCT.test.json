@@ -1,0 +1,42 @@
+{
+  "type": "FILTER_TEST",
+  "label": "DURATION_SUM empty distinct Test",
+  "expectedCsv": "tests/filter/DURATION_SUM_DISTINCT_FILTER/expected_plain.csv",
+  "content": {
+    "tables": {
+      "csv": "tests/filter/DURATION_SUM_DISTINCT_FILTER/content.csv",
+      "primaryColumn": {
+        "name": "pid",
+        "type": "STRING"
+      },
+      "columns": [
+        {
+          "name": "datum",
+          "type": "DATE_RANGE"
+        },
+        {
+          "name": "val",
+          "type": "STRING"
+        }
+      ]
+    }
+  },
+  "connector": {
+    "validityDates": {
+      "label": "Datum",
+      "column": "table.datum"
+    },
+    "filters": {
+      "type": "DURATION_SUM",
+      "column": "table.datum",
+      "distinctBy": []
+    }
+  },
+  "filterValue": {
+    "type": "INTEGER_RANGE",
+    "value": {
+      "min": 2,
+      "max": 2
+    }
+  }
+}
