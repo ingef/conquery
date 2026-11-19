@@ -26,6 +26,7 @@ import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import io.dropwizard.validation.BaseValidator;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.shiro.authc.BearerToken;
+import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.pam.UnsupportedTokenException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -339,5 +340,40 @@ class JwtPkceVerifyingRealmTest {
 		BearerToken accessToken = new BearerToken(token);
 
 		assertThatCode(() -> REALM.doGetAuthenticationInfo(accessToken)).isInstanceOf(UnsupportedTokenException.class);
+	}
+
+	@Test
+	void falsifyTokenMissingKid() {
+		final String token = JWT.create().sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
+		final BearerToken accessToken = new BearerToken(token);
+
+		assertThatCode(() -> REALM.doGetAuthenticationInfo(accessToken)).isInstanceOf(UnsupportedTokenException.class);
+	}
+
+	@Test
+	void rejectMalformedTokenAsIncorrectCredentials() {
+		final BearerToken malformedToken = new BearerToken("not-a-jwt");
+
+		assertThatCode(() -> REALM.doGetAuthenticationInfo(malformedToken))
+				.isInstanceOf(IncorrectCredentialsException.class)
+				.hasCauseInstanceOf(VerificationException.class);
+	}
+
+	@Test
+	void rejectNullHeaderAsIncorrectCredentials() {
+		final BearerToken malformedToken = new BearerToken("bnVsbA.e30");
+
+		assertThatCode(() -> REALM.doGetAuthenticationInfo(malformedToken))
+				.isInstanceOf(IncorrectCredentialsException.class)
+				.hasCauseInstanceOf(VerificationException.class);
+	}
+
+	@Test
+	void rejectMissingAlgorithmAsIncorrectCredentials() {
+		final BearerToken malformedToken = new BearerToken("eyJraWQiOiJ2YWxpZF9rZXlfaWQifQ.e30");
+
+		assertThatCode(() -> REALM.doGetAuthenticationInfo(malformedToken))
+				.isInstanceOf(IncorrectCredentialsException.class)
+				.hasCauseInstanceOf(VerificationException.class);
 	}
 }
