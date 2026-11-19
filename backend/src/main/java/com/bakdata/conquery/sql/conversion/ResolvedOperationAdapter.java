@@ -28,6 +28,7 @@ import com.bakdata.conquery.models.datasets.concepts.filters.specific.DateDistan
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.DurationSumFilter;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.FlagFilter;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.NumberFilter;
+import com.bakdata.conquery.models.datasets.concepts.filters.specific.QuartersInYearFilter;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SumFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
@@ -35,6 +36,7 @@ import com.bakdata.conquery.models.datasets.concepts.select.concept.ConceptColum
 import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.EventDateUnionSelect;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.EventDurationSumSelect;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.ExistsSelect;
+import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.QuarterSelect;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.DistinctSelect;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.FirstValueSelect;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.LastValueSelect;
@@ -46,6 +48,7 @@ import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.D
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.DurationSumSelect;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.FlagSelect;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
+import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.QuartersInYearSelect;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.SumSelect;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.sql.conversion.model.ModelMapper;
@@ -56,6 +59,7 @@ import com.bakdata.conquery.sql.model.operation.aggregation.CountAggregation;
 import com.bakdata.conquery.sql.model.operation.aggregation.CountQuartersAggregation;
 import com.bakdata.conquery.sql.model.operation.aggregation.DurationSumAggregation;
 import com.bakdata.conquery.sql.model.operation.aggregation.FlagsAggregation;
+import com.bakdata.conquery.sql.model.operation.aggregation.QuartersInYearAggregation;
 import com.bakdata.conquery.sql.model.operation.ResolvedAggregation;
 import com.bakdata.conquery.sql.model.operation.ResolvedCondition;
 import com.bakdata.conquery.sql.model.operation.ResolvedFilter;
@@ -78,17 +82,21 @@ public class ResolvedOperationAdapter {
 			case EventDateUnionSelect value -> new BuiltInSelects.EventDateUnion(value.getName());
 			case EventDurationSumSelect value -> new BuiltInSelects.EventDurationSum(value.getName());
 			case ExistsSelect value -> new BuiltInSelects.Exists(value.getName());
+			case QuarterSelect value -> new BuiltInSelects.Quarter(value.getName(), value.getSample());
 			case DistinctSelect value -> values(value, BuiltInSelects.ValueOperation.DISTINCT);
 			case FirstValueSelect value -> values(value, BuiltInSelects.ValueOperation.FIRST);
 			case LastValueSelect value -> values(value, BuiltInSelects.ValueOperation.LAST);
 			case RandomValueSelect value -> values(value, BuiltInSelects.ValueOperation.RANDOM);
-			case CountSelect value -> aggregation(value.getName(), count(value.getColumn().resolve(), value.isDistinct()));
+			case CountSelect value -> aggregation(value.getName(), count(
+					value.getColumn().resolve(), value.isDistinct(), value.getDistinctByColumn()));
 			case CountQuartersSelect value -> aggregation(value.getName(), new CountQuartersAggregation(ModelMapper.map(value)));
 			case DurationSumSelect value -> aggregation(value.getName(), new DurationSumAggregation(
 					ModelMapper.map(value), List.of()));
 			case SumSelect value -> aggregation(value.getName(), sum(
 					value.getColumn().resolve(), value.getSubtractColumn(), value.getDistinctByColumn()));
 			case FlagSelect value -> aggregation(value.getName(), flags(value.getFlags()));
+			case QuartersInYearSelect value -> aggregation(value.getName(),
+					new QuartersInYearAggregation(ModelMapper.map(value.getColumn().resolve())));
 			case DateDistanceSelect value -> new BuiltInSelects.DateDistance(
 					value.getName(), ModelMapper.map(value.getColumn().resolve()), value.getTimeUnit(), endDate);
 			case DateUnionSelect value -> new BuiltInSelects.DateUnion(value.getName(), ModelMapper.map(value));
@@ -106,7 +114,7 @@ public class ResolvedOperationAdapter {
 			case NumberFilter<?> numberFilter -> new BuiltInFilters.NumericColumnRange(
 					filter.getName(), ModelMapper.map(numberFilter.getColumn().resolve()), numberRange((IRange<?, ?>) value));
 			case CountFilter countFilter -> aggregationFilter(filter.getName(),
-					count(countFilter.getColumn().resolve(), countFilter.isDistinct()), value);
+					count(countFilter.getColumn().resolve(), countFilter.isDistinct(), countFilter.getDistinctByColumn()), value);
 			case CountQuartersFilter quartersFilter -> aggregationFilter(filter.getName(),
 					new CountQuartersAggregation(ModelMapper.map(quartersFilter)), value);
 			case DurationSumFilter durationFilter -> aggregationFilter(filter.getName(),
@@ -114,6 +122,8 @@ public class ResolvedOperationAdapter {
 			case SumFilter<?> sumFilter -> aggregationFilter(filter.getName(),
 					sum(sumFilter.getColumn().resolve(), sumFilter.getSubtractColumn(), sumFilter.getDistinctByColumn()), value);
 			case FlagFilter flagFilter -> new BuiltInFilters.Flags(filter.getName(), flags(flagFilter.getFlags()), (Set<String>) value);
+			case QuartersInYearFilter quartersFilter -> aggregationFilter(filter.getName(),
+					new QuartersInYearAggregation(ModelMapper.map(quartersFilter.getColumn().resolve())), value);
 			case DateDistanceFilter distanceFilter -> new BuiltInFilters.DateDistanceRange(
 					filter.getName(), ModelMapper.map(distanceFilter.getColumn().resolve()), distanceFilter.getTimeUnit(),
 					endDate, numberRange((IRange<?, ?>) value));
@@ -163,9 +173,17 @@ public class ResolvedOperationAdapter {
 		return Optional.of(new SubstringRange(range.getMin() == null ? 0 : range.getMin(), Optional.ofNullable(range.getMax())));
 	}
 
-	private static CountAggregation count(com.bakdata.conquery.models.datasets.Column column, boolean distinct) {
+	private static CountAggregation count(
+			com.bakdata.conquery.models.datasets.Column column,
+			boolean distinct,
+			List<com.bakdata.conquery.models.identifiable.ids.specific.ColumnId> distinctBy
+	) {
 		final ResolvedColumn resolved = ModelMapper.map(column);
-		return new CountAggregation(resolved, distinct ? List.of(resolved) : List.of());
+		if (!distinct) {
+			return new CountAggregation(resolved, List.of());
+		}
+		final List<ResolvedColumn> resolvedDistinctBy = columns(distinctBy);
+		return new CountAggregation(resolved, resolvedDistinctBy.isEmpty() ? List.of(resolved) : resolvedDistinctBy);
 	}
 
 	private static SumAggregation sum(

@@ -17,6 +17,7 @@ import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.sql.model.operation.aggregation.CountAggregation;
 import com.bakdata.conquery.sql.model.operation.aggregation.CountQuartersAggregation;
 import com.bakdata.conquery.sql.model.operation.aggregation.DurationSumAggregation;
+import com.bakdata.conquery.sql.model.operation.aggregation.QuartersInYearAggregation;
 import com.bakdata.conquery.sql.model.operation.aggregation.SumAggregation;
 import com.bakdata.conquery.sql.model.schema.DateColumns;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
@@ -73,16 +74,20 @@ class ResolvedAggregationConverterTest {
 
 	@Test
 	void shouldCountDistinctValues() {
-		CommonAggregationSelect<?> result = converter.convert(
+		final CommonAggregationSelect<?> result = converter.convert(
 				new CountAggregation(VALUE, List.of(PERSON)),
 				CONTEXT
 		);
+		final QueryStep counted = result.getAdditionalPredecessor().orElseThrow();
+		final QueryStep numbered = counted.getPredecessors().getFirst();
 
 		assertEquals(List.of("\"events\".\"value\"", "\"events\".\"person_id\""), renderRootSelects(result));
-		assertEquals(
-				"nullif(count(distinct \"preprocessing\".\"person_id\"), 0) as \"event-count\"",
-				render(result.getGroupBy().select())
-		);
+		assertEquals("row_number() over (partition by \"preprocessing\".\"id\", \"preprocessing\".\"person_id\") as \"row_number\"",
+				render(numbered.getSelects().getSqlSelects().getLast().toFields().getFirst()));
+		final String count = render(result.getGroupBy().select());
+		assertTrue(count.contains("\"event-count-row_number_assigned\".\"row_number\" = 1"), count);
+		assertTrue(count.contains("\"event-count-row_number_assigned\".\"person_id\" is not null"), count);
+		assertTrue(count.contains("\"event-count-row_number_assigned\".\"value\""), count);
 	}
 
 	private static List<String> renderRootSelects(CommonAggregationSelect<?> aggregation) {
@@ -179,6 +184,23 @@ class ResolvedAggregationConverterTest {
 	}
 
 	@Test
+	void shouldSelectMaximumDistinctQuarterCountAcrossCalendarYears() {
+		final CommonAggregationSelect<?> result = converter.convert(
+				new QuartersInYearAggregation(START), CONTEXT);
+		final QueryStep maximum = result.getAdditionalPredecessor().orElseThrow();
+		final QueryStep perYear = maximum.getPredecessors().getFirst();
+
+		assertEquals(List.of("\"events\".\"start_date\""), renderRootSelects(result));
+		assertEquals(
+				"nullif(count(distinct year_quarter(\"preprocessing\".\"start_date\")), 0) as \"event-count\"",
+				render(perYear.getSelects().getSqlSelects().getFirst().toFields().getFirst())
+		);
+		assertEquals(2, perYear.getGroupBy().size());
+		assertEquals("max(\"event-count-quarters_per_year\".\"event-count\") as \"event-count\"",
+				render(result.getGroupBy().select()));
+	}
+
+	@Test
 	void shouldPackIntervalsBeforeSummingDurationsAndExcludeInfiniteBounds() {
 		CommonAggregationSelect<?> result = converter.convert(new DurationSumAggregation(new DateColumns.Pair(START, END), List.of()), CONTEXT);
 		QueryStep sum = result.getAdditionalPredecessor().orElseThrow();
@@ -243,6 +265,11 @@ class ResolvedAggregationConverterTest {
 		@Override
 		public Field<String> yearQuarter(Field<Date> date) {
 			return DSL.function("year_quarter", String.class, date);
+		}
+
+		@Override
+		public Field<Integer> year(Field<Date> date) {
+			return DSL.function("year", Integer.class, date);
 		}
 
 		@Override

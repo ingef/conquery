@@ -108,11 +108,6 @@
                 "type": "NUMBER"
             },
             {
-                "label": "PREFIX_TEXT",
-                "column": "table.STRING",
-                "type": "PREFIX_TEXT"
-            },
-            {
                 "label": "DATE_DISTANCE",
                 "column": "table.DATE",
                 "type": "DATE_DISTANCE"
@@ -174,11 +169,6 @@
                 "label": "DATE_DISTANCE",
                 "type": "DATE_DISTANCE",
                 "column": "table.DATE"
-            },
-            {
-                "label": "PREFIX",
-                "type": "PREFIX",
-                "column": "table.STRING"
             },
             {
                 "label": "COUNT_QUARTERS",

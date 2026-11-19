@@ -194,6 +194,11 @@ public class HanaTranslatorDialect implements TranslatorDialect {
   }
 
   @Override
+  public Field<Integer> year(Field<Date> date) {
+    return function("YEAR", Integer.class, date);
+  }
+
+  @Override
   public Field<Date> quarterStart(Field<Date> date) {
     Field<Integer> quarter =
         castToInteger(function("RIGHT", String.class, yearQuarter(date), inline(1)));

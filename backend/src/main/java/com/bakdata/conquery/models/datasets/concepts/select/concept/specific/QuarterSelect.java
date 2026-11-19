@@ -31,6 +31,11 @@ public class QuarterSelect extends UniversalSelect {
 	}
 
 	@Override
+	public boolean isEventDateSelect() {
+		return true;
+	}
+
+	@Override
 	public ResultType getResultType() {
 		return ResultType.Primitive.STRING;
 	}

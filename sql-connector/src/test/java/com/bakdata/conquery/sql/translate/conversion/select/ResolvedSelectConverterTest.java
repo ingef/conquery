@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.bakdata.conquery.models.datasets.MajorTypeId;
+import com.bakdata.conquery.models.forms.util.IndexSelector;
 import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
 import com.bakdata.conquery.sql.model.operation.aggregation.FlagsAggregation;
 import com.bakdata.conquery.sql.model.operation.ResolvedSelect;
@@ -20,6 +21,7 @@ import com.bakdata.conquery.sql.model.schema.DateColumns;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.model.schema.SqlTable;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
+import com.bakdata.conquery.sql.translate.dialect.hana.HanaTranslatorDialect;
 import com.bakdata.conquery.sql.translate.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.translate.ir.SqlTables;
 import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
@@ -149,6 +151,23 @@ class ResolvedSelectConverterTest {
 			assertEquals(1, result.getEventDateSelects().size());
 			assertTrue(result.getAggregationSelects().isEmpty());
 		}
+	}
+
+	@Test
+	void shouldSelectQuarterFromSampledValidityDateForConnectorAndConcept() {
+		final SelectConversionContext base = context();
+		final ColumnDateRange dates = ColumnDateRange.of(
+				DSL.field(DSL.name("validity", "start"), Date.class),
+				DSL.field(DSL.name("validity", "end"), Date.class));
+		final SelectConversionContext context = new SelectConversionContext(
+				new HanaTranslatorDialect(), base.nameGenerator(), base.tables(), base.ids(), Optional.of(dates), base.alias());
+		final BuiltInSelects.Quarter select = new BuiltInSelects.Quarter("value", IndexSelector.EARLIEST);
+
+		final String connectorSql = render(converter.convert(select, context).getEventDateSelects().getFirst().toFields().getFirst());
+		final String conceptSql = render(converter.conceptSelect(select, context).getEventDateSelects().getFirst().toFields().getFirst());
+
+		assertTrue(connectorSql.contains("quarter("), connectorSql);
+		assertTrue(conceptSql.contains("quarter("), conceptSql);
 	}
 
 	@Test

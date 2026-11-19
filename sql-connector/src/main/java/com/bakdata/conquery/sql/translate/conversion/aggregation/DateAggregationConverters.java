@@ -8,10 +8,14 @@ import java.util.List;
 import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.sql.model.operation.aggregation.CountQuartersAggregation;
 import com.bakdata.conquery.sql.model.operation.aggregation.DurationSumAggregation;
+import com.bakdata.conquery.sql.model.operation.aggregation.QuartersInYearAggregation;
 import com.bakdata.conquery.sql.model.schema.DateColumns;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.translate.ir.QueryStep;
+import com.bakdata.conquery.sql.translate.ir.CteStep;
+import com.bakdata.conquery.sql.translate.ir.Selects;
+import com.bakdata.conquery.sql.translate.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.translate.ir.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.translate.ir.select.FieldWrapper;
@@ -82,6 +86,53 @@ final class DateAggregationConverters {
 				.groupBy(sum)
 				.additionalPredecessor(predecessor)
 				.build();
+	}
+
+	static CommonAggregationSelect<Integer> quartersInYear(
+			QuartersInYearAggregation aggregation,
+			AggregationConversionContext context
+	) {
+		final ExtractingSqlSelect<Date> root = new ExtractingSqlSelect<>(
+				context.tables().getRootTable(), aggregation.column().physicalName(), Date.class);
+		final String source = context.tables().getPredecessor(ConceptCteStep.AGGREGATION_SELECT);
+		final SqlIdColumns sourceIds = context.ids().qualify(source);
+		final Field<Date> date = root.qualify(source).select();
+		final FieldWrapper<Integer> quarterCount = new FieldWrapper<>(
+				DSL.nullif(DSL.countDistinct(context.dialect().yearQuarter(date)), 0).as(context.alias()));
+		final QueryStep perYear = QueryStep.builder()
+				.cteName(context.nameGenerator().cteStepName(QuartersInYearStep.QUARTERS_PER_YEAR, context.alias()))
+				.selects(Selects.builder().ids(sourceIds).sqlSelect(quarterCount).build())
+				.fromTable(QueryStep.toTableLike(source))
+				.groupBy(java.util.stream.Stream.concat(
+						sourceIds.toFields().stream(), java.util.stream.Stream.of(context.dialect().year(date))).toList())
+				.build();
+
+		final SqlIdColumns perYearIds = sourceIds.qualify(perYear.getCteName());
+		final FieldWrapper<Integer> maximum = new FieldWrapper<>(DSL.max(
+				DSL.field(DSL.name(perYear.getCteName(), context.alias()), Integer.class)).as(context.alias()));
+		final QueryStep maximumPerEntity = QueryStep.builder()
+				.cteName(context.nameGenerator().cteStepName(QuartersInYearStep.MAXIMUM_QUARTERS, context.alias()))
+				.selects(Selects.builder().ids(perYearIds).sqlSelect(maximum).build())
+				.fromTable(QueryStep.toTableLike(perYear.getCteName()))
+				.groupBy(perYearIds.toFields())
+				.predecessor(perYear)
+				.build();
+
+		return CommonAggregationSelect.<Integer>builder()
+				.rootSelect(root)
+				.groupBy(maximum)
+				.additionalPredecessor(maximumPerEntity)
+				.build();
+	}
+
+	private enum QuartersInYearStep implements CteStep {
+		QUARTERS_PER_YEAR,
+		MAXIMUM_QUARTERS;
+
+		@Override
+		public String getSuffix() {
+			return name().toLowerCase(java.util.Locale.ROOT);
+		}
 	}
 
 	static ColumnDateRange dateRange(DateColumns dates, AggregationConversionContext context) {

@@ -37,6 +37,7 @@ public final class ResolvedSelectConverter {
 				converter(BuiltInSelects.DateDistance.class, DateDistanceSqlAggregator::connectorSelect),
 				converter(BuiltInSelects.EventDateUnion.class, new EventDateUnionSelectConverter()::connectorSelect),
 				converter(BuiltInSelects.EventDurationSum.class, new EventDurationSumSelectConverter()::connectorSelect),
+				converter(BuiltInSelects.Quarter.class, QuarterSelectConverter::connectorSelect),
 				converter(BuiltInSelects.Aggregation.class, ResolvedSelectConverter::aggregation),
 				converter(BuiltInSelects.Exists.class, (select, context) -> ConnectorSqlSelects.builder().finalSelect(ExistsSqlSelect.withAlias(context.alias())).build())
 		));
@@ -57,6 +58,9 @@ public final class ResolvedSelectConverter {
 		}
 		if (select instanceof BuiltInSelects.EventDurationSum duration) {
 			return new EventDurationSumSelectConverter().conceptSelect(duration, context);
+		}
+		if (select instanceof BuiltInSelects.Quarter quarter) {
+			return QuarterSelectConverter.conceptSelect(quarter, context);
 		}
 		if (select instanceof BuiltInSelects.Exists) {
 			return ConceptSqlSelects.builder().finalSelect(ExistsSqlSelect.withAlias(context.alias())).build();

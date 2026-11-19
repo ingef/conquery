@@ -1,23 +1,16 @@
 {
   "type": "QUERY_TEST",
-  "label": "PREFIX_AGGREGATOR Test",
-  "expectedCsv": "tests/aggregator/PREFIX_AGGREGATOR/expected.csv",
-  "sqlSpec": {
-    "isEnabled": false
-  },
+  "label": "COUNT_DISTINCT_BY_AGGREGATOR Test",
+  "expectedCsv": "tests/aggregator/COUNT_DISTINCT_BY_AGGREGATOR/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
-      "ids": [
-        "concept"
-      ],
+      "ids": ["concept"],
       "type": "CONCEPT",
       "tables": [
         {
           "id": "concept.connector",
-          "selects": [
-            "concept.connector.select"
-          ]
+          "selects": ["concept.connector.select"]
         }
       ]
     }
@@ -28,17 +21,18 @@
       "type": "TREE",
       "connectors": [
         {
-          "label": "connector",
+          "name": "connector",
           "table": "table",
           "validityDates": {
             "label": "datum",
             "column": "table.datum"
           },
           "selects": {
-            "type": "PREFIX",
             "name": "select",
-            "column": "table.value",
-            "prefix": "f"
+            "type": "COUNT",
+            "distinct": true,
+            "distinctByColumn": ["table.k1", "table.k2"],
+            "column": "table.value"
           }
         }
       ]
@@ -47,21 +41,17 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/aggregator/PREFIX_AGGREGATOR/content.csv",
+        "csv": "tests/aggregator/COUNT_DISTINCT_BY_AGGREGATOR/content.csv",
         "name": "table",
         "primaryColumn": {
           "name": "pid",
           "type": "STRING"
         },
         "columns": [
-          {
-            "name": "datum",
-            "type": "DATE"
-          },
-          {
-            "name": "value",
-            "type": "STRING"
-          }
+          {"name": "datum", "type": "DATE"},
+          {"name": "k1", "type": "STRING"},
+          {"name": "k2", "type": "STRING"},
+          {"name": "value", "type": "STRING"}
         ]
       }
     ]

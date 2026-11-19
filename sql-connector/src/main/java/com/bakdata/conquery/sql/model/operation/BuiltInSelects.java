@@ -11,6 +11,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.datasets.MajorTypeId;
+import com.bakdata.conquery.models.forms.util.IndexSelector;
 import com.bakdata.conquery.sql.model.internal.ModelNormalization;
 import com.bakdata.conquery.sql.model.range.SubstringRange;
 import com.bakdata.conquery.sql.model.schema.DateColumns;
@@ -78,6 +79,10 @@ public final class BuiltInSelects {
 	}
 
 	public record EventDurationSum(@NotBlank String name) implements ResolvedSelect {
+	}
+
+	/** Selects the calendar quarter containing the sampled event date. */
+	public record Quarter(@NotBlank String name, @NotNull IndexSelector sample) implements ResolvedSelect {
 	}
 
 	public record Exists(@NotBlank String name) implements ResolvedSelect {

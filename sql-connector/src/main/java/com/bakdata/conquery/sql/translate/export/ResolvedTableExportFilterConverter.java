@@ -9,6 +9,7 @@ import com.bakdata.conquery.sql.model.operation.aggregation.CountAggregation;
 import com.bakdata.conquery.sql.model.operation.aggregation.CountQuartersAggregation;
 import com.bakdata.conquery.sql.model.operation.aggregation.DurationSumAggregation;
 import com.bakdata.conquery.sql.model.operation.aggregation.FlagsAggregation;
+import com.bakdata.conquery.sql.model.operation.aggregation.QuartersInYearAggregation;
 import com.bakdata.conquery.sql.model.operation.ResolvedAggregation;
 import com.bakdata.conquery.sql.model.operation.ResolvedFilter;
 import com.bakdata.conquery.sql.model.operation.aggregation.SumAggregation;
@@ -63,6 +64,7 @@ public final class ResolvedTableExportFilterConverter {
 		return switch (aggregation) {
 			case CountAggregation ignored -> DSL.inline(1);
 			case CountQuartersAggregation ignored -> DSL.inline(1);
+			case QuartersInYearAggregation ignored -> DSL.inline(1);
 			case SumAggregation sum -> sum.subtractColumn()
 					.<Field<? extends Number>>map(subtract -> SchemaSql.field(sum.column(), BigDecimal.class)
 							.minus(SchemaSql.field(subtract, BigDecimal.class)))

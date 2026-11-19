@@ -174,6 +174,11 @@ public interface TranslatorDialect {
 		throw new UnsupportedOperationException("Year-quarter expressions are not implemented by this dialect");
 	}
 
+	/** Calendar year of a date. */
+	default Field<Integer> year(Field<Date> date) {
+		return DSL.year(date);
+	}
+
 	/** First day of the quarter containing a date. */
 	default Field<Date> quarterStart(Field<Date> date) {
 		throw new UnsupportedOperationException("Quarter boundaries are not implemented by this dialect");
