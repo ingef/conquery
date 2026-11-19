@@ -30,7 +30,9 @@ public class Jackson {
 	static {
 		MAPPER = configure(io.dropwizard.jackson.Jackson.newObjectMapper());
 
-		BINARY_MAPPER = configure(io.dropwizard.jackson.Jackson.newObjectMapper(new SmileFactory()));
+		BINARY_MAPPER = configure(io.dropwizard.jackson.Jackson.newObjectMapper(new SmileFactory()))
+				// This fixes a bug for deserialization with numeric values
+				.disable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
 	}
 
 	/**
