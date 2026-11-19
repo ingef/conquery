@@ -88,7 +88,7 @@ class SqlExtractionQueryTest {
 		ConceptQuery query = mock(ConceptQuery.class);
 		ResultInfo resultInfo = mock(ResultInfo.class);
 		List<ResultInfo> resultInfos = List.of(resultInfo);
-		ResolvedQuery resolved = validAllEntitiesQuery();
+		ResolvedQuery resolved = validAllEntitiesQueryWithOneResult();
 		ResolvedQueryMapper mapper = mock(ResolvedQueryMapper.class);
 		when(query.getResultInfos()).thenReturn(resultInfos);
 		when(mapper.map(same(query), eq(Optional.empty()), same(resultInfos))).thenReturn(resolved);
@@ -113,7 +113,7 @@ class SqlExtractionQueryTest {
 		SecondaryIdDescription resolvedSecondaryId = mock(SecondaryIdDescription.class);
 		ResultInfo resultInfo = mock(ResultInfo.class);
 		List<ResultInfo> resultInfos = List.of(resultInfo);
-		ResolvedQuery resolved = validAllEntitiesQuery();
+		ResolvedQuery resolved = validAllEntitiesQueryWithOneResult();
 		ResolvedQueryMapper mapper = mock(ResolvedQueryMapper.class);
 		when(query.getQuery()).thenReturn(nested);
 		when(query.getSecondaryId()).thenReturn(secondaryId);
@@ -131,6 +131,31 @@ class SqlExtractionQueryTest {
 		assertEquals(resultInfos, adapted.getResultInfos());
 		verify(query, times(1)).getResultInfos();
 		verify(mapper).map(same(nested), eq(Optional.of(resolvedSecondaryId)), same(resultInfos));
+	}
+
+	@Test
+	void shouldCorrelateResultInfosByOutputIdWhenTranslatorReordersColumns() {
+		final ResultInfo first = mock(ResultInfo.class);
+		final ResultInfo second = mock(ResultInfo.class);
+		final ResolvedQuery query = new ResolvedQuery(
+				validAllEntitiesQuery().entitySchema(),
+				new AllEntitiesNode(),
+				false,
+				List.of(
+						new com.bakdata.conquery.sql.model.result.ResultColumn("result-0", ResultType.Primitive.STRING),
+						new com.bakdata.conquery.sql.model.result.ResultColumn("result-1", ResultType.Primitive.STRING)));
+		final ResolvedQueryAdapter adapter = new ResolvedQueryAdapter(
+				Validation.buildDefaultValidatorFactory().getValidator(),
+				(ignored, dialect) -> new TranslatedQuery("select second, first", List.of(
+						new TranslatedColumn("entity-id", "entity_id", ResultType.Primitive.STRING, ColumnRole.ENTITY_ID),
+						new TranslatedColumn("result-1", "second", ResultType.Primitive.STRING, ColumnRole.RESULT),
+						new TranslatedColumn("result-0", "first", ResultType.Primitive.STRING, ColumnRole.RESULT))),
+				mock(ResolvedQueryMapper.class));
+
+		final com.bakdata.conquery.sql.conversion.model.SqlQuery adapted = adapter.translate(
+				query, new HanaTranslatorDialect(), List.of(first, second));
+
+		assertEquals(List.of(second, first), adapted.getResultInfos());
 	}
 
 	private static TranslatedQuery translatedWithOneResult() {
@@ -152,6 +177,17 @@ class SqlExtractionQueryTest {
 				new AllEntitiesNode(),
 				false,
 				List.of()
+		);
+	}
+
+	private static ResolvedQuery validAllEntitiesQueryWithOneResult() {
+		final ResolvedQuery query = validAllEntitiesQuery();
+		return new ResolvedQuery(
+				query.entitySchema(),
+				query.root(),
+				query.includeValidityDate(),
+				List.of(new com.bakdata.conquery.sql.model.result.ResultColumn(
+						"result", ResultType.Primitive.STRING))
 		);
 	}
 }

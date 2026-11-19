@@ -146,6 +146,35 @@ class DefaultSqlTranslatorTest {
 	}
 
 	@Test
+	void shouldKeepConceptValueSourcesSeparateForConnectorsSharingOneTable() {
+		final SqlTable events = SqlTable.of("events", "catalog", "events");
+		final ResolvedColumn conceptColumn = new ResolvedColumn(
+				"events.diagnosis", events, "diagnosis", MajorTypeId.STRING, true);
+		final ResolvedColumn primary = new ResolvedColumn(
+				"events.entity-id", events, "person_id", MajorTypeId.STRING, false);
+		final ResolvedConnector first = new ResolvedConnector(
+				"inpatient", events, primary, Optional.empty(), new ResolvedValidityDate.None(),
+				List.of(), List.of(), List.of());
+		final ResolvedConnector second = new ResolvedConnector(
+				"outpatient", events, primary, Optional.empty(), new ResolvedValidityDate.None(),
+				List.of(), List.of(), List.of());
+		final ResolvedQuery query = new ResolvedQuery(
+				new EntitySchema(ENTITY_ID),
+				new ConceptNode("diagnosis", List.of(first, second),
+						List.of(new BuiltInSelects.ConceptValues(
+								"concept ids", List.of(conceptColumn, conceptColumn))),
+						DateAggregationAction.BLOCK),
+				false,
+				List.of(new ResultColumn("concept-ids", new ResultType.ListT(ResultType.Primitive.STRING))));
+
+		final TranslatedQuery compiled = new DefaultSqlTranslator(DSL.using(SQLDialect.DEFAULT))
+				.translate(query, new HanaTranslatorDialect());
+
+		assertTrue(compiled.sql().contains("concept_diagnosis_inpatient-0-preprocessing"), compiled.sql());
+		assertTrue(compiled.sql().contains("concept_diagnosis_outpatient-0-preprocessing"), compiled.sql());
+	}
+
+	@Test
 	void shouldExposeASecondaryIdAsTheFirstResultColumn() {
 		SqlTable events = SqlTable.of("events", "catalog", "events");
 		ResolvedColumn secondaryId = new ResolvedColumn(

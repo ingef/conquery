@@ -67,6 +67,6 @@ public final class ResolvedQueryAdapter {
 							.formatted(resultColumnCount, resultInfos.size())
 			);
 		}
-		return SqlQuery.fromCompiled(compiled, resultInfos);
+		return SqlQuery.fromCompiled(compiled, resolvedQuery.resultColumns(), resultInfos);
 	}
 }

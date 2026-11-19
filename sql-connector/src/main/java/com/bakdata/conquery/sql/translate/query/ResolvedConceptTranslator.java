@@ -2,7 +2,7 @@ package com.bakdata.conquery.sql.translate.query;
 
 import java.sql.Date;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -13,6 +13,7 @@ import com.bakdata.conquery.sql.mapping.ConceptIdMappingSelection;
 import com.bakdata.conquery.sql.model.node.ConceptNode;
 import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
 import com.bakdata.conquery.sql.model.operation.ResolvedSelect;
+import com.bakdata.conquery.sql.model.schema.SqlTable;
 import com.bakdata.conquery.sql.model.range.DateRange;
 import com.bakdata.conquery.sql.model.schema.EntitySchema;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
@@ -67,13 +68,10 @@ final class ResolvedConceptTranslator {
 		SqlTables tables = ConceptCtePlanner.planConcept(joined, names.conceptName(concept),
 				concept.selects().stream().anyMatch(ResolvedConceptTranslator::isEventDateSelect), dialect, names);
 		Selects joinedSelects = joined.getQualifiedSelects();
-		Map<String, String> connectorTables = new LinkedHashMap<>();
-		connectors.forEach(item -> connectorTables.put(item.connector().table().physicalName().getLast(),
-				item.plan().tables().cteName(ConceptCteStep.PREPROCESSING)));
 		List<ConceptSqlSelects> selects = concept.selects().stream()
 				.map(select -> selectConverter.conceptSelect(select, new SelectConversionContext(
 						dialect, names, tables, joinedSelects.getIds(), joinedSelects.getValidityDate(),
-						names.selectName(select), connectorTables)))
+						names.selectName(select), Map.of(), conceptValueSources(select, connectors))))
 				.toList();
 		return ConceptCteTranslator.translateConcept(new ConceptCteInput(
 				joined, selects, tables, negate, concept.dateAction() == DateAggregationAction.BLOCK
@@ -159,6 +157,36 @@ final class ResolvedConceptTranslator {
 				mapping.source().resolvedIdOrRoot(mapping.rootLocalId()),
 				List.of(SchemaSql.field(column, Object.class).isNotNull())
 		));
+	}
+
+	private static List<SelectConversionContext.ConceptColumnSource> conceptValueSources(
+			ResolvedSelect select,
+			List<ConnectorCompilation> connectors
+	) {
+		if (!(select instanceof BuiltInSelects.ConceptValues values)) {
+			return List.of();
+		}
+		final Map<SqlTable, Integer> nextConnector = new HashMap<>();
+		return values.columns().stream().map(column -> {
+			final List<ConnectorCompilation> candidates = connectors.stream()
+					.filter(item -> item.connector().table().equals(column.table()))
+					.toList();
+			final int index = nextConnector.merge(column.table(), 1, Integer::sum) - 1;
+			if (index >= candidates.size()) {
+				final String qualifier = column.table().physicalName().getLast();
+				return new SelectConversionContext.ConceptColumnSource(
+						qualifier,
+						DSL.table(DSL.name(qualifier)),
+						SchemaSql.field(column, Object.class),
+						List.of());
+			}
+			final String qualifier = candidates.get(index).plan().tables().cteName(ConceptCteStep.PREPROCESSING);
+			return new SelectConversionContext.ConceptColumnSource(
+					qualifier,
+					DSL.table(DSL.name(qualifier)),
+					DSL.field(DSL.name(qualifier, column.physicalName())),
+					List.of());
+		}).toList();
 	}
 
 	private static SelectConversionContext selectContext(TranslatorDialect dialect, SqlNameGenerator names,

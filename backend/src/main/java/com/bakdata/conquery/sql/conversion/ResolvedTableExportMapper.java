@@ -4,7 +4,6 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -15,6 +14,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
+import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.sql.conversion.model.ModelMapper;
 import com.bakdata.conquery.sql.model.ResolvedQuerySource;
 import com.bakdata.conquery.sql.model.export.ResolvedExportTable;
@@ -65,7 +65,7 @@ public final class ResolvedTableExportMapper {
 			}
 		}
 		return new ResolvedExportTable(
-				concept.userLabel(Locale.ROOT),
+				concept.userLabel(I18n.LOCALE.get()),
 				connector.getName(),
 				sqlTable,
 				primaryId,
