@@ -16,7 +16,6 @@ import com.bakdata.conquery.sql.translate.ir.QueryStep;
 import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.translate.query.concept.ConnectorSqlSelects;
 import org.jooq.Condition;
-import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.OrderField;
 import org.jooq.Record;
@@ -60,8 +59,16 @@ public interface TranslatorDialect {
 		return DistinctSelectConverter.connectorSelect(select, context);
 	}
 
-	default <T> Field<T> cast(Field<?> field, DataType<T> type) {
-		throw new UnsupportedOperationException("Casting is not implemented by this dialect");
+	default Field<String> castToString(Field<?> field) {
+		return field.cast(String.class);
+	}
+
+	default Field<Integer> castToInteger(Field<?> field) {
+		return field.cast(Integer.class);
+	}
+
+	default Field<Integer> dateToInteger(Field<Date> field) {
+		return castToInteger(field);
 	}
 
 	default Field<String> stringAggregation(Field<String> field, Field<String> delimiter, List<Field<?>> orderByFields) {

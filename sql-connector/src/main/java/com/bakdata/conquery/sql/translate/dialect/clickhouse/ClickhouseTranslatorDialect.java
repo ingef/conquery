@@ -17,7 +17,6 @@ import com.bakdata.conquery.sql.translate.ir.QueryStep;
 import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.translate.query.concept.ConnectorSqlSelects;
 import org.jooq.Condition;
-import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.OrderField;
 import org.jooq.SortField;
@@ -119,10 +118,16 @@ public class ClickhouseTranslatorDialect implements TranslatorDialect {
   }
 
   @Override
-  public <T> Field<T> cast(Field<?> value, DataType<T> type) {
-    if (type == SQLDataType.VARCHAR) return function("toString", type.getType(), value);
+  public Field<String> castToString(Field<?> value) {
+    return function("toString", String.class, value);
+  }
+
+  @Override
+  public Field<Integer> castToInteger(Field<?> value) {
     return function(
-        name("CAST"), type.getType(), field("{0} AS Nullable({1})", value, keyword(type.getName())));
+        name("CAST"),
+        Integer.class,
+        field("{0} AS Nullable({1})", value, keyword(SQLDataType.INTEGER.getName())));
   }
 
   public Field<Date> toDateField(String expression) {
@@ -173,7 +178,7 @@ public class ClickhouseTranslatorDialect implements TranslatorDialect {
   @Override
   public Field<Date> quarterStart(Field<Date> date) {
     Field<Integer> quarter =
-        cast(function("RIGHT", String.class, yearQuarter(date), inline(1)), SQLDataType.INTEGER);
+        castToInteger(function("RIGHT", String.class, yearQuarter(date), inline(1)));
     return function(
         "addMonths",
         Date.class,
@@ -184,7 +189,7 @@ public class ClickhouseTranslatorDialect implements TranslatorDialect {
   @Override
   public Field<Date> nextQuarterStart(Field<Date> date) {
     Field<Integer> quarter =
-        cast(function("RIGHT", String.class, yearQuarter(date), inline(1)), SQLDataType.INTEGER);
+        castToInteger(function("RIGHT", String.class, yearQuarter(date), inline(1)));
     return function(
         "addMonths",
         Date.class,

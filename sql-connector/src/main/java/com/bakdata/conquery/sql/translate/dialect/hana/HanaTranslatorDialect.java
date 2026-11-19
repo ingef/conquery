@@ -15,7 +15,6 @@ import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.translate.ir.QueryStep;
 import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import org.jooq.Condition;
-import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.OrderField;
 import org.jooq.Record;
@@ -35,6 +34,7 @@ public class HanaTranslatorDialect implements TranslatorDialect {
   public static final String MIN_DATE_VALUE = "0001-01-01";
   public static final String DATERANGE_SEPARATOR = "/";
   private static final char DATE_SET_SEPARATOR = (char) 31;
+  private final Field<Date> unixEpoch = toDateField("1970-01-01");
 
   @Override
   public int getNameMaxLength() {
@@ -105,10 +105,18 @@ public class HanaTranslatorDialect implements TranslatorDialect {
   }
 
   @Override
-  public <T> Field<T> cast(Field<?> value, DataType<T> type) {
-    if (type == SQLDataType.VARCHAR) return function("TO_VARCHAR", type.getType(), value);
-    return function(
-        unquotedName("CAST"), type.getType(), field("{0} AS {1}", value, keyword(type.getName())));
+  public Field<String> castToString(Field<?> value) {
+    return function(unquotedName("TO_VARCHAR"), String.class, value);
+  }
+
+  @Override
+  public Field<Integer> castToInteger(Field<?> value) {
+    return function(unquotedName("TO_INTEGER"), Integer.class, value);
+  }
+
+  @Override
+  public Field<Integer> dateToInteger(Field<Date> value) {
+    return function("DAYS_BETWEEN", Integer.class, unixEpoch, value);
   }
 
   @Override
@@ -188,7 +196,7 @@ public class HanaTranslatorDialect implements TranslatorDialect {
   @Override
   public Field<Date> quarterStart(Field<Date> date) {
     Field<Integer> quarter =
-        cast(function("RIGHT", String.class, yearQuarter(date), inline(1)), SQLDataType.INTEGER);
+        castToInteger(function("RIGHT", String.class, yearQuarter(date), inline(1)));
     return function(
         "ADD_MONTHS", Date.class, yearStart(date), quarter.minus(1).times(MONTHS_PER_QUARTER));
   }
@@ -196,7 +204,7 @@ public class HanaTranslatorDialect implements TranslatorDialect {
   @Override
   public Field<Date> nextQuarterStart(Field<Date> date) {
     Field<Integer> quarter =
-        cast(function("RIGHT", String.class, yearQuarter(date), inline(1)), SQLDataType.INTEGER);
+        castToInteger(function("RIGHT", String.class, yearQuarter(date), inline(1)));
     return function("ADD_MONTHS", Date.class, yearStart(date), quarter.times(MONTHS_PER_QUARTER));
   }
 
@@ -211,8 +219,8 @@ public class HanaTranslatorDialect implements TranslatorDialect {
     return field(
         "'[' || {0} || {2} || {1} || ')'",
         String.class,
-        cast(start, SQLDataType.VARCHAR),
-        cast(end, SQLDataType.VARCHAR),
+        castToString(start),
+        castToString(end),
         DATERANGE_SEPARATOR);
   }
 

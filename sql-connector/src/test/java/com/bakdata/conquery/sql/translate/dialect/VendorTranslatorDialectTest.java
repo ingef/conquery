@@ -15,6 +15,7 @@ import com.bakdata.conquery.sql.model.range.DateRange;
 import com.bakdata.conquery.sql.translate.dialect.clickhouse.ClickhouseTranslatorDialect;
 import com.bakdata.conquery.sql.translate.dialect.hana.HanaTranslatorDialect;
 import org.jooq.Field;
+import org.jooq.QueryPart;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Test;
@@ -26,7 +27,7 @@ class VendorTranslatorDialectTest {
 
   @Test
   void shouldRenderHanaCapabilitiesWithoutBackendTypes() {
-    var dialect = new HanaTranslatorDialect();
+    final HanaTranslatorDialect dialect = new HanaTranslatorDialect();
 
     assertEquals("127", Integer.toString(dialect.getNameMaxLength()));
     assertTrue(render(dialect.minimumDate(), SQLDialect.DEFAULT).contains("TO_DATE('0001-01-01'"));
@@ -37,6 +38,13 @@ class VendorTranslatorDialectTest {
     assertTrue(render(dialect.quarterStart(START), SQLDialect.DEFAULT).contains("SERIES_ROUND"));
     assertTrue(render(dialect.nextQuarterStart(START), SQLDialect.DEFAULT).contains("ADD_MONTHS"));
     assertTrue(
+        render(dialect.castToString(field(name("value"), Integer.class)), SQLDialect.DEFAULT)
+            .contains("TO_VARCHAR"));
+    assertTrue(
+        render(dialect.castToInteger(field(name("value"), String.class)), SQLDialect.DEFAULT)
+            .contains("TO_INTEGER"));
+    assertTrue(render(dialect.dateToInteger(START), SQLDialect.DEFAULT).contains("DAYS_BETWEEN"));
+    assertTrue(
         render(dialect.externalStringValues(List.of("a", "b")), SQLDialect.DEFAULT)
             .contains(Character.toString((char) 31)));
     assertEquals("\"DUMMY\"", render(dialect.literalSelectTable(), SQLDialect.DEFAULT));
@@ -45,7 +53,7 @@ class VendorTranslatorDialectTest {
 
   @Test
   void shouldRenderClickhouseCapabilitiesWithoutBackendTypes() {
-    var dialect = new ClickhouseTranslatorDialect();
+    final ClickhouseTranslatorDialect dialect = new ClickhouseTranslatorDialect();
 
     assertEquals(64, dialect.getNameMaxLength());
     assertTrue(render(dialect.minimumDate(), SQLDialect.CLICKHOUSE).contains("toDate32(-25567)"));
@@ -66,13 +74,16 @@ class VendorTranslatorDialectTest {
     assertTrue(
         render(dialect.externalId("id"), SQLDialect.CLICKHOUSE).contains("::Nullable(String)"));
     assertTrue(
-        render(dialect.cast(field(name("value"), Integer.class), org.jooq.impl.SQLDataType.INTEGER), SQLDialect.CLICKHOUSE)
+        render(dialect.castToInteger(field(name("value"), Integer.class)), SQLDialect.CLICKHOUSE)
             .contains("Nullable(integer)"));
+    assertTrue(
+        render(dialect.castToString(field(name("value"), Integer.class)), SQLDialect.CLICKHOUSE)
+            .contains("toString"));
   }
 
   @Test
   void shouldKeepInclusiveLiteralRangeSemantics() {
-    var range =
+    final com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange range =
         new HanaTranslatorDialect()
             .dateRangeLiteral(
                 new DateRange(
@@ -83,7 +94,7 @@ class VendorTranslatorDialectTest {
     assertTrue(render(range.getEnd(), SQLDialect.DEFAULT).contains("2020-02-01"));
   }
 
-  private static String render(org.jooq.QueryPart part, SQLDialect dialect) {
+  private static String render(QueryPart part, SQLDialect dialect) {
     return DSL.using(dialect).renderInlined(part).replace('`', '"');
   }
 }

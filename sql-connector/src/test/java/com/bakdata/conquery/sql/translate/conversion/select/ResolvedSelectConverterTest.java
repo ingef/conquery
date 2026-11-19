@@ -279,8 +279,13 @@ class ResolvedSelectConverterTest {
 		}
 
 		@Override
-		public <T> Field<T> cast(Field<?> field, org.jooq.DataType<T> type) {
-			return field.cast(type);
+		public Field<String> castToString(Field<?> field) {
+			return field.cast(String.class);
+		}
+
+		@Override
+		public Field<Integer> castToInteger(Field<?> field) {
+			return field.cast(Integer.class);
 		}
 
 		@Override

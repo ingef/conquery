@@ -23,7 +23,6 @@ import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
-import org.jooq.impl.SQLDataType;
 
 public class ConceptColumnSelectConverter {
 
@@ -120,7 +119,7 @@ public class ConceptColumnSelectConverter {
 		Field<?> connectorColumn = preparedSource != null
 				? preparedSource.value()
 				: DSL.field(DSL.name(connectorTable.getName(), connector.physicalName()));
-		Field<String> casted = selectContext.dialect().cast(connectorColumn, SQLDataType.VARCHAR).as(alias);
+		Field<String> casted = selectContext.dialect().castToString(connectorColumn).as(alias);
 		FieldWrapper<String> connectorSelect = new FieldWrapper<>(casted);
 
 		Selects selects = Selects.builder()

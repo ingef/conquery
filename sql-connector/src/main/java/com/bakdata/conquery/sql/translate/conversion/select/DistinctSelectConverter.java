@@ -18,7 +18,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
-import org.jooq.impl.SQLDataType;
 
 /**
  * <pre>
@@ -88,7 +87,8 @@ public class DistinctSelectConverter {
 			String alias
 	) {
 		TranslatorDialect functionProvider = selectContext.dialect();
-		Field<String> castedColumn = functionProvider.cast(preprocessingSelect.qualify(distinctSelectCte.getCteName()).select(), SQLDataType.VARCHAR);
+		Field<String> castedColumn = functionProvider.castToString(
+				preprocessingSelect.qualify(distinctSelectCte.getCteName()).select());
 		Field<String> aggregatedColumn = functionProvider.stringAggregation(castedColumn, DSL.toChar((char) 31), List.of(castedColumn))
 														 .as(alias);
 

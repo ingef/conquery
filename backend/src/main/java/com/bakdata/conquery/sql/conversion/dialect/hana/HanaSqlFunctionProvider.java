@@ -20,14 +20,12 @@ import com.bakdata.conquery.sql.translate.ir.QueryStep;
 import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import org.jetbrains.annotations.NotNull;
 import org.jooq.Condition;
-import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.OrderField;
 import org.jooq.Record;
 import org.jooq.SortField;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
-import org.jooq.impl.SQLDataType;
 
 public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
@@ -38,6 +36,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	public static final char DATE_SET_SEPARATOR = UNIT_SEPARATOR;
 	private static final String ANY_CHAR_REGEX = ".*";
 	private static final String NOP_TABLE = "DUMMY";
+	private final Field<Date> unixEpoch = toDateField("1970-01-01");
 
 	@Override
 	public String getAnyCharRegex() {
@@ -266,24 +265,25 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	public Field<String> dateRangeToField(ColumnDateRange columnDateRange) {
 		// translation is handled in printer
 		return field("'[' || {0} || {2} || {1} || ')'", String.class,
-				cast(columnDateRange.getStart(), SQLDataType.VARCHAR),
-				cast(columnDateRange.getEnd(), SQLDataType.VARCHAR),
+				castToString(columnDateRange.getStart()),
+				castToString(columnDateRange.getEnd()),
 				DATERANGE_SEPARATOR
 		);
 	}
 
 	@Override
-	public <T> Field<T> cast(Field<?> field, DataType<T> type) {
-		// HANA would require an explicit length param when using CAST with varchar type, TO_VARCHAR does not require this
-		if (type == SQLDataType.VARCHAR) {
-			return function("TO_VARCHAR", type.getType(), field);
-		}
-		return function(
-				// Needs to be explicitly unquoted, otherwise Hana is angry when Jooq quotes it on occasion.
-				unquotedName("CAST"),
-				type.getType(),
-				field("{0} AS {1}", field, keyword(type.getName()))
-		);
+	public Field<String> castToString(Field<?> field) {
+		return function(unquotedName("TO_VARCHAR"), String.class, field);
+	}
+
+	@Override
+	public Field<Integer> dateToInteger(Field<Date> field) {
+		return function("DAYS_BETWEEN", Integer.class, unixEpoch, field);
+	}
+
+	@Override
+	public Field<Integer> castToInteger(Field<?> field) {
+		return function(unquotedName("TO_INTEGER"), Integer.class, field);
 	}
 
 	@Override
