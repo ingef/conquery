@@ -38,14 +38,23 @@ public class LocalNamespace extends Namespace {
 			SqlStorageHandler storageHandler,
 			JobManager jobManager,
 			SearchProcessor filterSearch,
-			SqlEntityResolver sqlEntityResolver, DatabaseConnectionConfig databaseConfig
+			SqlEntityResolver sqlEntityResolver,
+			DatabaseConnectionConfig databaseConfig,
+			boolean reuseExistingConceptIdTables
 	) {
 		super(preprocessMapper, storage, executionManager, jobManager, filterSearch, sqlEntityResolver);
 
 		this.dslContext = dslContext;
 		this.storageHandler = storageHandler;
 		this.dialect = dialect;
-		this.matchingStats = new SqlMatchingStats(dslContext, dialect.getFunctionProvider(), databaseConfig.getPrimaryColumn(), databaseConfig.getMatchingStatsWorkers(), databaseConfig.getMatchingStatsRetries());
+		this.matchingStats = new SqlMatchingStats(
+				dslContext,
+				dialect.getFunctionProvider(),
+				databaseConfig.getPrimaryColumn(),
+				databaseConfig.getMatchingStatsWorkers(),
+				databaseConfig.getMatchingStatsRetries(),
+				reuseExistingConceptIdTables
+		);
 	}
 
 
