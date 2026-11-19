@@ -169,6 +169,7 @@
   "inputDateRange": {
     "from": "Von",
     "to": "Bis",
+    "calendar": "Kalender",
     "openCalendar": "Kalender öffnen",
     "dateFormat": "dd.MM.yyyy",
     "tooltip": {

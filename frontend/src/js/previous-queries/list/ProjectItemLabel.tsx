@@ -9,8 +9,6 @@ const labelText = tv({
 
 const ProjectItemLabel = ({
   mayEdit,
-  loading,
-  selectTextOnMount,
   label,
   highlightedWords,
   onSubmit,
@@ -20,8 +18,6 @@ const ProjectItemLabel = ({
   mayEdit?: boolean;
   label: string;
   highlightedWords: string[];
-  selectTextOnMount: boolean;
-  loading?: boolean;
   onSubmit: (text: string) => void;
   isEditing: boolean;
   setIsEditing: (value: boolean) => void;
@@ -30,10 +26,8 @@ const ProjectItemLabel = ({
 
   return mayEdit ? (
     <EditableText
-      className={labelText()}
-      loading={loading}
+      size="sm"
       text={label}
-      selectTextOnMount={selectTextOnMount}
       editing={isEditing}
       onSubmit={onSubmit}
       onToggleEdit={() => setIsEditing(!isEditing)}

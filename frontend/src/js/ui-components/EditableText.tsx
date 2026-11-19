@@ -11,15 +11,15 @@ import { C2 } from "./Typography";
 const editButton = tv({
   base: "flex shrink-0",
   variants: {
-    large: {
-      true: "mr-[10px]",
-      false: "mr-2",
+    size: {
+      sm: "mr-2",
+      md: "mr-[10px]",
     },
   },
 });
 
 const text = tv({
-  base: "flex flex-row items-center",
+  base: "flex min-w-0 flex-row items-center",
 });
 
 const label = tv({
@@ -27,50 +27,44 @@ const label = tv({
 });
 
 const EditableText = ({
-  className,
-  loading,
   editing,
   text: textValue,
   tooltip,
-  large,
-  saveOnClickoutside,
+  size = "md",
   isHighlighted,
   highlightedWords,
-  selectTextOnMount,
   onSubmit,
   onToggleEdit,
 }: {
-  className?: string;
-  loading?: boolean;
   editing: boolean;
   text: string;
   tooltip?: string;
-  large?: boolean;
-  saveOnClickoutside?: boolean;
+  /** the button sizes; the field matches their height */
+  size?: "sm" | "md";
   isHighlighted?: boolean;
   highlightedWords?: string[];
-  selectTextOnMount?: boolean;
   onSubmit: (text: string) => void;
   onToggleEdit: () => void;
 }) => {
   return editing ? (
     <EditableTextForm
-      className={className}
-      loading={loading}
+      size={size}
+      label={tooltip}
       text={textValue}
-      selectTextOnMount={selectTextOnMount}
-      saveOnClickoutside={saveOnClickoutside}
-      onSubmit={onSubmit}
+      onSubmit={(newText) => {
+        onSubmit(newText);
+        onToggleEdit();
+      }}
       onCancel={onToggleEdit}
     />
   ) : (
-    <div className={text({ className })}>
-      <span className={editButton({ large: !!large })}>
+    <div className={text()}>
+      <span className={editButton({ size })}>
         <TooltipTrigger>
           <Button
             aria-label={tooltip}
             intent="tertiary"
-            size={large ? "md" : "sm"}
+            size={size}
             onPress={onToggleEdit}
           >
             <PencilIcon />

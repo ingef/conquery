@@ -45,8 +45,7 @@ import org.junit.jupiter.api.Test;
 public class ParquetResultGenerationTest {
 
 	public static final ConqueryConfig CONFIG = new ConqueryConfig();
-	private static final PrintSettings
-			PRINT_SETTINGS =
+	private static final PrintSettings PRINT_SETTINGS =
 			new PrintSettings(false, Locale.ROOT, CONFIG, null, (selectInfo) -> selectInfo.getSelect().getLabel());
 
 
@@ -114,7 +113,7 @@ public class ParquetResultGenerationTest {
 
 		ManagedQuery managedQuery = getTestQuery();
 
-		// First we write to the buffer, than we read from it and parse it as TSV
+		// First we write to the buffer, then we read from it and parse it as TSV
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		ParquetRenderer.writeToStream(output, getIdFields(), managedQuery.collectResultInfos(), printSettings, managedQuery.streamResults(OptionalLong.empty()));
 
@@ -122,10 +121,10 @@ public class ParquetResultGenerationTest {
 
 		final ConqueryParquetReaderBuilder builder = new ConqueryParquetReaderBuilder(new ByteArrayInputFile(buf));
 		StringJoiner stringJoiner = new StringJoiner("\n");
-		try (final ParquetReader<Group> reader1 = builder.build()) {
+		try (final ParquetReader<Group> reader = builder.build()) {
 			Group record;
-			while ((record = reader1.read()) != null) {
-				if (reader1.getCurrentRowIndex() == 0) {
+			while ((record = reader.read()) != null) {
+				if (reader.getCurrentRowIndex() == 0) {
 					// Add Header
 					stringJoiner.add(extractHeader(record.getType()));
 
@@ -142,6 +141,18 @@ public class ParquetResultGenerationTest {
 
 	}
 
+	@Test
+	void byteArrayInputFileTracksPosition() throws IOException {
+		try (final SeekableInputStream stream = new ByteArrayInputFile(new byte[]{0, 1, 2}).newStream()) {
+			assertThat(stream.getPos()).isZero();
+			assertThat(stream.read()).isZero();
+			assertThat(stream.getPos()).isEqualTo(1);
+
+			stream.seek(2);
+			assertThat(stream.getPos()).isEqualTo(2);
+		}
+	}
+
 	private CharSequence extractHeader(GroupType type) {
 		StringJoiner stringJoiner = new StringJoiner("\t");
 		type.getFields().stream().map(Type::getName).forEach(stringJoiner::add);
@@ -149,7 +160,6 @@ public class ParquetResultGenerationTest {
 	}
 
 	private StringBuilder appendToString(StringBuilder builder, SimpleGroup group, boolean inSubGroup) {
-		int i = 0;
 		for (Type field : group.getType().getFields()) {
 			final String name = field.getName();
 			final int fieldIndex = group.getType().getFieldIndex(name);
@@ -169,7 +179,7 @@ public class ParquetResultGenerationTest {
 
 				}
 				else if (field.isPrimitive()) {
-					final String stringValue = group.getValueToString(fieldIndex, i);
+					final String stringValue = group.getValueToString(fieldIndex, 0);
 					if (inSubGroup) {
 						builder.append("\"").append(name).append("\":");
 					}
@@ -177,7 +187,7 @@ public class ParquetResultGenerationTest {
 				}
 
 				else {
-					final Group subGroup = group.getGroup(fieldIndex, i);
+					final Group subGroup = group.getGroup(fieldIndex, 0);
 					if (field.getLogicalTypeAnnotation() == null) {
 						builder.append("{");
 
@@ -211,7 +221,6 @@ public class ParquetResultGenerationTest {
 				}
 			}
 		}
-		++i;
 		return builder;
 	}
 
@@ -231,7 +240,7 @@ public class ParquetResultGenerationTest {
 			return new DelegatingSeekableInputStream(stream) {
 				@Override
 				public long getPos() {
-					return stream.available() - buf.length;
+					return buf.length - stream.available();
 				}
 
 				@Override
