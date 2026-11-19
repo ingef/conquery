@@ -51,6 +51,7 @@
                 <scope>provided</scope>
             </dependency>
             <dependency>
+                <!-- TODO delete this in future arrow versions -->
                 <groupId>io.netty</groupId>
                 <artifactId>netty-bom</artifactId>
                 <version>4.1.137.Final</version>
