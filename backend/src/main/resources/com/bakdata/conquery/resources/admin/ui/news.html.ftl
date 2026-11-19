@@ -32,15 +32,18 @@
 						</div>
 					</div>
 					<div class="form-group position-relative">
-						<label for="news-category-input">Categories:</label>
-						<div id="news-category-control" class="category-token-input form-control d-flex flex-wrap align-items-center p-1" data-test-id="news-category-control">
-							<div id="news-selected-categories" class="d-flex flex-wrap"></div>
-							<input id="news-category-input" data-test-id="news-category-input" class="p-1" autocomplete="off"
-								   role="combobox" aria-autocomplete="list" aria-controls="news-category-suggestions" aria-expanded="false"
-								   placeholder="Type or select a category">
+						<div class="d-flex justify-content-between align-items-center">
+							<label for="news-dataset-input">Published to datasets:</label>
+							<button id="news-add-all-datasets" data-test-id="news-add-all-datasets" class="btn btn-outline-secondary btn-sm mb-1" type="button">Add all</button>
 						</div>
-						<div id="news-category-suggestions" data-test-id="news-category-suggestions" class="dropdown-menu w-100" role="listbox"></div>
-						<small class="form-text text-muted">Choose a dataset ID to publish the item on specific datasets. Press Enter or comma to add it. Leave empty to publish on all datasets.</small>
+						<div id="news-dataset-control" class="dataset-token-input form-control d-flex flex-wrap align-items-center p-1" data-test-id="news-dataset-control">
+							<div id="news-selected-datasets" class="d-flex flex-wrap"></div>
+							<input id="news-dataset-input" data-test-id="news-dataset-input" class="p-1" autocomplete="off"
+								   role="combobox" aria-autocomplete="list" aria-controls="news-dataset-suggestions" aria-expanded="false"
+								   placeholder="Type or select a dataset ID">
+						</div>
+						<div id="news-dataset-suggestions" data-test-id="news-dataset-suggestions" class="dropdown-menu w-100" role="listbox"></div>
+						<small class="form-text text-muted">Choose dataset IDs to publish this item. Press Enter or comma to add a custom ID. Leave empty to keep the item unpublished.</small>
 					</div>
 					<button id="news-submit" data-test-id="create-news-btn" class="btn btn-primary" type="submit">Create</button>
 				</form>
@@ -56,7 +59,7 @@
 								<th scope="col">Title</th>
 								<th scope="col">Description</th>
 								<th scope="col">Link</th>
-								<th scope="col">Categories</th>
+								<th scope="col">Published to datasets</th>
 								<th scope="col">ID</th>
 								<th scope="col" class="text-right">Actions</th>
 							</tr>
@@ -74,7 +77,7 @@
 		const availableDatasetIds = [
 			<#list c.datasetIds as datasetId>"${datasetId?js_string}"<#sep>, </#sep></#list>
 		];
-		let selectedCategories = [];
+		let selectedDatasets = [];
 		let newsIdEdited = false;
 
 		const newsForm = document.getElementById('news-form');
@@ -82,8 +85,8 @@
 		const newsId = document.getElementById('news-id');
 		const newsLink = document.getElementById('news-link');
 		const newsDate = document.getElementById('news-date');
-		const categoryInput = document.getElementById('news-category-input');
-		const categorySuggestions = document.getElementById('news-category-suggestions');
+		const datasetInput = document.getElementById('news-dataset-input');
+		const datasetSuggestions = document.getElementById('news-dataset-suggestions');
 
 		function slugifyTitle(title) {
 			return title
@@ -101,38 +104,47 @@
 			return year + '-' + month + '-' + day;
 		}
 
-		function renderSelectedCategories() {
-			const container = document.getElementById('news-selected-categories');
+		function renderSelectedDatasets() {
+			const container = document.getElementById('news-selected-datasets');
 			container.replaceChildren();
-			selectedCategories.forEach(function (category) {
+			selectedDatasets.forEach(function (dataset) {
 				const badge = document.createElement('span');
 				badge.className = 'badge badge-secondary d-inline-flex align-items-center mr-1 mb-1 p-2';
-				badge.setAttribute('data-test-id', 'news-category-token');
-				badge.appendChild(document.createTextNode(category));
+				badge.setAttribute('data-test-id', 'news-dataset-token');
+				badge.appendChild(document.createTextNode(dataset));
 
 				const removeButton = document.createElement('button');
 				removeButton.type = 'button';
 				removeButton.className = 'close ml-2 text-white';
-				removeButton.setAttribute('aria-label', 'Remove category ' + category);
+				removeButton.setAttribute('aria-label', 'Remove dataset ' + dataset);
 				removeButton.innerHTML = '<span aria-hidden="true">&times;</span>';
 				removeButton.addEventListener('click', function () {
-					selectedCategories = selectedCategories.filter(function (selected) { return selected !== category; });
-					renderSelectedCategories();
-					renderCategorySuggestions();
+					selectedDatasets = selectedDatasets.filter(function (selected) { return selected !== dataset; });
+					renderSelectedDatasets();
+					renderDatasetSuggestions();
 				});
 				badge.appendChild(removeButton);
 				container.appendChild(badge);
 			});
 		}
 
-		function addCategory(value) {
-			const category = value.trim();
-			if (!category || selectedCategories.includes(category)) return false;
-			selectedCategories.push(category);
-			categoryInput.value = '';
-			renderSelectedCategories();
-			renderCategorySuggestions();
+		function addDataset(value) {
+			const dataset = value.trim();
+			if (!dataset || selectedDatasets.includes(dataset)) return false;
+			selectedDatasets.push(dataset);
+			datasetInput.value = '';
+			renderSelectedDatasets();
+			renderDatasetSuggestions();
 			return true;
+		}
+
+		function addAllDatasets() {
+			availableDatasetIds.forEach(function (datasetId) {
+				if (!selectedDatasets.includes(datasetId)) selectedDatasets.push(datasetId);
+			});
+			datasetInput.value = '';
+			renderSelectedDatasets();
+			renderDatasetSuggestions();
 		}
 
 		function createSuggestion(label, value) {
@@ -140,34 +152,34 @@
 			suggestion.type = 'button';
 			suggestion.className = 'dropdown-item';
 			suggestion.setAttribute('role', 'option');
-			suggestion.setAttribute('data-test-id', 'news-category-suggestion');
+			suggestion.setAttribute('data-test-id', 'news-dataset-suggestion');
 			suggestion.textContent = label;
 			suggestion.addEventListener('mousedown', function (event) {
 				event.preventDefault();
-				addCategory(value);
-				categoryInput.focus();
+				addDataset(value);
+				datasetInput.focus();
 			});
 			return suggestion;
 		}
 
-		function renderCategorySuggestions() {
-			const query = categoryInput.value.trim();
+		function renderDatasetSuggestions() {
+			const query = datasetInput.value.trim();
 			const normalizedQuery = query.toLowerCase();
 			const matchingDatasets = availableDatasetIds.filter(function (datasetId) {
-				return !selectedCategories.includes(datasetId) && datasetId.toLowerCase().includes(normalizedQuery);
+				return !selectedDatasets.includes(datasetId) && datasetId.toLowerCase().includes(normalizedQuery);
 			});
 
-			categorySuggestions.replaceChildren();
-			if (query && !selectedCategories.includes(query) && !availableDatasetIds.includes(query)) {
-				categorySuggestions.appendChild(createSuggestion('Add custom category “' + query + '”', query));
+			datasetSuggestions.replaceChildren();
+			if (query && !selectedDatasets.includes(query) && !availableDatasetIds.includes(query)) {
+				datasetSuggestions.appendChild(createSuggestion('Add custom dataset ID “' + query + '”', query));
 			}
 			matchingDatasets.forEach(function (datasetId) {
-				categorySuggestions.appendChild(createSuggestion(datasetId, datasetId));
+				datasetSuggestions.appendChild(createSuggestion(datasetId, datasetId));
 			});
 
-			const show = document.activeElement === categoryInput && categorySuggestions.childElementCount > 0;
-			categorySuggestions.classList.toggle('show', show);
-			categoryInput.setAttribute('aria-expanded', String(show));
+			const show = document.activeElement === datasetInput && datasetSuggestions.childElementCount > 0;
+			datasetSuggestions.classList.toggle('show', show);
+			datasetInput.setAttribute('aria-expanded', String(show));
 		}
 
 		function validateNewsId() {
@@ -200,15 +212,15 @@
 		function resetNewsForm() {
 			newsForm.reset();
 			newsIdEdited = false;
-			selectedCategories = [];
+			selectedDatasets = [];
 			newsDate.value = localDateString(new Date());
-			renderSelectedCategories();
-			renderCategorySuggestions();
+			renderSelectedDatasets();
+			renderDatasetSuggestions();
 		}
 
 		async function createNews(event) {
 			event.preventDefault();
-			if (categoryInput.value.trim()) addCategory(categoryInput.value);
+			if (datasetInput.value.trim()) addDataset(datasetInput.value);
 			validateNewsLink();
 			validateNewsId();
 			if (!newsForm.reportValidity()) return;
@@ -224,7 +236,7 @@
 						description: document.getElementById('news-description').value.trim(),
 						link: newsLink.value.trim() || null,
 						date: newsDate.value,
-						categories: selectedCategories
+						publishedToDatasets: selectedDatasets
 					})
 				});
 				if (response.ok) {
@@ -281,12 +293,12 @@
 				const row = document.createElement('tr');
 				row.setAttribute('data-test-id', 'news-row-' + item.id);
 				const dateCell = appendTextCell(row, item.date);
-				if (item.publicationStatus === 'SCHEDULED') {
+				if (item.publicationStatus !== 'PUBLISHED') {
 					row.classList.add('table-warning');
 					const statusBadge = document.createElement('span');
 					statusBadge.className = 'badge badge-warning ml-2';
 					statusBadge.setAttribute('data-test-id', 'news-publication-status-' + item.id);
-					statusBadge.textContent = 'Not published yet';
+					statusBadge.textContent = item.publicationStatus === 'UNPUBLISHED' ? 'Not published' : 'Not published yet';
 					dateCell.appendChild(statusBadge);
 				}
 				appendTextCell(row, item.title);
@@ -307,15 +319,15 @@
 				}
 				row.appendChild(linkCell);
 
-				const categoriesCell = document.createElement('td');
-				(item.categories || []).forEach(function (category) {
+				const datasetsCell = document.createElement('td');
+				(item.publishedToDatasets || []).forEach(function (dataset) {
 					const badge = document.createElement('span');
 					badge.className = 'badge badge-secondary mr-1';
-					badge.textContent = category;
-					categoriesCell.appendChild(badge);
+					badge.textContent = dataset;
+					datasetsCell.appendChild(badge);
 				});
-				if (!categoriesCell.childElementCount) categoriesCell.textContent = '—';
-				row.appendChild(categoriesCell);
+				if (!datasetsCell.childElementCount) datasetsCell.textContent = '—';
+				row.appendChild(datasetsCell);
 				appendTextCell(row, item.id, 'text-monospace');
 
 				const actionsCell = document.createElement('td');
@@ -373,25 +385,26 @@
 		});
 		newsId.addEventListener('input', function () { newsIdEdited = true; });
 		newsLink.addEventListener('input', validateNewsLink);
-		categoryInput.addEventListener('focus', renderCategorySuggestions);
-		categoryInput.addEventListener('input', renderCategorySuggestions);
-		categoryInput.addEventListener('keydown', function (event) {
+		datasetInput.addEventListener('focus', renderDatasetSuggestions);
+		datasetInput.addEventListener('input', renderDatasetSuggestions);
+		datasetInput.addEventListener('keydown', function (event) {
 			if (event.key === 'Enter' || event.key === ',') {
 				event.preventDefault();
-				addCategory(categoryInput.value);
+				addDataset(datasetInput.value);
 			}
-			else if (event.key === 'Backspace' && !categoryInput.value && selectedCategories.length) {
-				selectedCategories.pop();
-				renderSelectedCategories();
-				renderCategorySuggestions();
+			else if (event.key === 'Backspace' && !datasetInput.value && selectedDatasets.length) {
+				selectedDatasets.pop();
+				renderSelectedDatasets();
+				renderDatasetSuggestions();
 			}
 		});
-		document.getElementById('news-category-control').addEventListener('click', function () { categoryInput.focus(); });
+		document.getElementById('news-add-all-datasets').addEventListener('click', addAllDatasets);
+		document.getElementById('news-dataset-control').addEventListener('click', function () { datasetInput.focus(); });
 		document.addEventListener('click', function (event) {
-			if (!document.getElementById('news-category-control').contains(event.target)
-					&& !categorySuggestions.contains(event.target)) {
-				categorySuggestions.classList.remove('show');
-				categoryInput.setAttribute('aria-expanded', 'false');
+			if (!document.getElementById('news-dataset-control').contains(event.target)
+					&& !datasetSuggestions.contains(event.target)) {
+				datasetSuggestions.classList.remove('show');
+				datasetInput.setAttribute('aria-expanded', 'false');
 			}
 		});
 

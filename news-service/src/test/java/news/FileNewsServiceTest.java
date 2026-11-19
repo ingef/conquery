@@ -48,11 +48,11 @@ public class FileNewsServiceTest {
 	// TODO after JUnit 5.14.4 use Arguments.ArumentSet for better test rendering
 	static Stream<Arguments> goodNews() {
 		return Stream.of(
-				Arguments.of("News without category", "2026-08-23_some_news.json", "{\"id\":\"some_news\", \"title\": \"title\", \"description\":\"some description\"}", 1),
+				Arguments.of("News without published datasets", "2026-08-23_some_news.json", "{\"id\":\"some_news\", \"title\": \"title\", \"description\":\"some description\"}", 1),
 				Arguments.of("News with link", "2026-08-23_some_news.json", "{\"id\":\"some_news\", \"title\": \"title\", \"description\":\"some description\", \"link\":\"/read/more\"}", 1),
-				Arguments.of("News with category null", "2026-08-23_some_news.json", "{\"id\":\"some_news\", \"title\": \"title\", \"description\":\"some description\", \"categories\": null}", 1),
-				Arguments.of("News with single category", "2026-08-23_some_news.json", "{\"id\":\"some_news\", \"title\": \"title\", \"description\":\"some description\", \"categories\":[\"some_category\"]}", 1),
-				Arguments.of("News with multiple categories", "2026-08-23_some_news.json", "{\"id\":\"some_news\", \"title\": \"title\", \"description\":\"some description\", \"categories\":[\"first_category\", \"second_category\"]}", 1),
+				Arguments.of("News with published datasets null", "2026-08-23_some_news.json", "{\"id\":\"some_news\", \"title\": \"title\", \"description\":\"some description\", \"publishedToDatasets\": null}", 1),
+				Arguments.of("News with single published dataset", "2026-08-23_some_news.json", "{\"id\":\"some_news\", \"title\": \"title\", \"description\":\"some description\", \"publishedToDatasets\":[\"some_dataset\"]}", 1),
+				Arguments.of("News with multiple published datasets", "2026-08-23_some_news.json", "{\"id\":\"some_news\", \"title\": \"title\", \"description\":\"some description\", \"publishedToDatasets\":[\"first_dataset\", \"second_dataset\"]}", 1),
 				Arguments.of("News id mismatch with filename", "2026-08-23_some_news.json", "{\"id\":\"other_news\", \"title\": \"title\", \"description\":\"some description\"}", 1) // Should print a warning
 		);
 
@@ -64,13 +64,13 @@ public class FileNewsServiceTest {
 				Arguments.of("News with wrong date", "2026-13-23_some_news.json", "{\"id\":\"some_news\", \"description\":\"some description\"}", 0),
 				Arguments.of("News with empty content", "2026-08-23_some_news.json", "", 0),
 				Arguments.of("News with broken json", "2026-08-23_some_news.json", "{\"id\":\"some_news}", 0),
-				Arguments.of("News missing id", "2026-08-23_some_news.json", "{\"title\": \"title\", \"description\":\"some description\", \"categories\":[\"first_category\", \"second_category\"]}", 0),
+				Arguments.of("News missing id", "2026-08-23_some_news.json", "{\"title\": \"title\", \"description\":\"some description\", \"publishedToDatasets\":[\"first_dataset\", \"second_dataset\"]}", 0),
 
-				Arguments.of("News missing title", "2026-08-23_some_news.json", "{\"id\":\"some_news\", \"description\":\"some description\", \"categories\":[\"first_category\", \"second_category\"]}", 0),
+				Arguments.of("News missing title", "2026-08-23_some_news.json", "{\"id\":\"some_news\", \"description\":\"some description\", \"publishedToDatasets\":[\"first_dataset\", \"second_dataset\"]}", 0),
 
-				Arguments.of("News missing description", "2026-08-23_some_news.json", "{\"id\":\"some_news\", \"title\": \"title\", \"categories\":[\"first_category\", \"second_category\"]}", 0),
+				Arguments.of("News missing description", "2026-08-23_some_news.json", "{\"id\":\"some_news\", \"title\": \"title\", \"publishedToDatasets\":[\"first_dataset\", \"second_dataset\"]}", 0),
 
-				Arguments.of("News with blank category", "2026-08-23_some_news.json", "{\"id\":\"some_news\", \"title\": \"title\", \"description\":\"some description\", \"categories\":[\"first_category\", \"\"]}", 0)
+				Arguments.of("News with blank published dataset", "2026-08-23_some_news.json", "{\"id\":\"some_news\", \"title\": \"title\", \"description\":\"some description\", \"publishedToDatasets\":[\"first_dataset\", \"\"]}", 0)
 		);
 
 	}
@@ -95,6 +95,21 @@ public class FileNewsServiceTest {
 		assertThatCode(() -> newsService.reloadNews()).doesNotThrowAnyException();
 		assertThat(newsService.getNews(null)).hasSize(loaded);
 		assertThat(newsFile.delete()).as("Deleting %s".formatted(newsFile)).isTrue();
+	}
+
+	@Test
+	void ignoresLegacyCategoriesWhenLoadingNews(@TempDir Path legacyNewsFolder) throws Exception {
+		final File legacyNewsFile = legacyNewsFolder.resolve("2026-08-23_legacy.json").toFile();
+		try (final FileWriter fileWriter = new FileWriter(legacyNewsFile)) {
+			fileWriter.write("{\"id\":\"legacy\",\"title\":\"Legacy\",\"description\":\"Description\",\"categories\":[\"dataset-a\"]}");
+		}
+
+		try (final NewsService legacyNewsService = new FileSystemNewsService(legacyNewsFolder, validatorFactory.getValidator())) {
+			assertThat(legacyNewsService.getNews(null)).singleElement()
+					.extracting(NewsItem::publishedToDatasets)
+					.isEqualTo(Set.of());
+			assertThat(legacyNewsService.getNews("dataset-a")).isEmpty();
+		}
 	}
 
 
@@ -135,21 +150,17 @@ public class FileNewsServiceTest {
 		);
 
 
-		List<NewsItem> newsCat1 = newsService.getNews("cat1");
+		final List<NewsItem> newsCat1 = newsService.getNews("cat1");
 
 		assertThat(newsCat1).containsExactly(
-				new NewsItem("id4", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 8, 1), Set.of()),
-				new NewsItem("id5", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 8, 1), Set.of()),
 				new NewsItem("id1", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 9, 1), Set.of("cat1"))
 		);
 
 
-		List<NewsItem> newsCat3 = newsService.getNews("cat3");
+		final List<NewsItem> newsCat3 = newsService.getNews("cat3");
 
 		assertThat(newsCat3).containsExactly(
-				new NewsItem("id3", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 8, 1), Set.of("cat3")),
-				new NewsItem("id4", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 8, 1), Set.of()),
-				new NewsItem("id5", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 8, 1), Set.of())
+				new NewsItem("id3", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 8, 1), Set.of("cat3"))
 		);
 	}
 
@@ -173,20 +184,15 @@ public class FileNewsServiceTest {
 		);
 
 
-		List<NewsItem> newsCat1 = newsService.getNews("cat1");
+		final List<NewsItem> newsCat1 = newsService.getNews("cat1");
 
-		assertThat(newsCat1).containsExactly(
-				new NewsItem("id4", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 8, 1), Set.of()),
-				new NewsItem("id5", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 8, 1), Set.of())
-		);
+		assertThat(newsCat1).isEmpty();
 
 
-		List<NewsItem> newsCat3 = newsService.getNews("cat3");
+		final List<NewsItem> newsCat3 = newsService.getNews("cat3");
 
 		assertThat(newsCat3).containsExactly(
-				new NewsItem("id3", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 8, 1), Set.of("cat3")),
-				new NewsItem("id4", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 8, 1), Set.of()),
-				new NewsItem("id5", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 8, 1), Set.of())
+				new NewsItem("id3", "title", "description", URI.create("/read/more"), LocalDate.of(2026, 8, 1), Set.of("cat3"))
 		);
 	}
 
