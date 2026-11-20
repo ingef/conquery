@@ -66,7 +66,8 @@ final class CountAggregationConverter {
 		final Field<?> qualifiedCount = DSL.field(DSL.name(numbered.getCteName(), aggregation.column().physicalName()));
 		final org.jooq.Condition anyKeyPresent = aggregation.distinctBy().stream()
 				.map(column -> DSL.field(DSL.name(numbered.getCteName(), column.physicalName())).isNotNull())
-				.reduce(DSL.falseCondition(), org.jooq.Condition::or);
+				.reduce(org.jooq.Condition::or)
+				.orElseThrow();
 		final Field<?> countValue = DSL.when(qualifiedRowNumber.eq(1).and(anyKeyPresent), qualifiedCount);
 		final FieldWrapper<Integer> groupedCount = new FieldWrapper<>(
 				DSL.nullif(DSL.count(countValue), 0).as(context.alias()));

@@ -3,6 +3,7 @@ package com.bakdata.conquery.sql.translate.conversion.aggregation;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.name;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -84,10 +85,24 @@ class ResolvedAggregationConverterTest {
 		assertEquals(List.of("\"events\".\"value\"", "\"events\".\"person_id\""), renderRootSelects(result));
 		assertEquals("row_number() over (partition by \"preprocessing\".\"id\", \"preprocessing\".\"person_id\") as \"row_number\"",
 				render(numbered.getSelects().getSqlSelects().getLast().toFields().getFirst()));
-		final String count = render(result.getGroupBy().select());
+		final String count = render(result.getGroupBy().select(), SQLDialect.DEFAULT);
 		assertTrue(count.contains("\"event-count-row_number_assigned\".\"row_number\" = 1"), count);
 		assertTrue(count.contains("\"event-count-row_number_assigned\".\"person_id\" is not null"), count);
 		assertTrue(count.contains("\"event-count-row_number_assigned\".\"value\""), count);
+		assertFalse(count.contains("false"), count);
+	}
+
+	@Test
+	void shouldCombineMultipleDistinctKeysWithoutABooleanLiteralIdentity() {
+		final CommonAggregationSelect<?> result = converter.convert(
+				new CountAggregation(VALUE, List.of(PERSON, AMOUNT)),
+				CONTEXT
+		);
+
+		final String count = render(result.getGroupBy().select(), SQLDialect.DEFAULT);
+		assertTrue(count.contains("\"event-count-row_number_assigned\".\"person_id\" is not null"), count);
+		assertTrue(count.contains("\"event-count-row_number_assigned\".\"amount\" is not null"), count);
+		assertFalse(count.contains("false"), count);
 	}
 
 	private static List<String> renderRootSelects(CommonAggregationSelect<?> aggregation) {
@@ -243,7 +258,11 @@ class ResolvedAggregationConverterTest {
 	}
 
 	private static String render(Field<?> field) {
-		return DSL.using(SQLDialect.POSTGRES).renderInlined(DSL.select(field)).substring("select ".length()).toLowerCase(Locale.ROOT);
+		return render(field, SQLDialect.POSTGRES);
+	}
+
+	private static String render(Field<?> field, SQLDialect dialect) {
+		return DSL.using(dialect).renderInlined(DSL.select(field)).substring("select ".length()).toLowerCase(Locale.ROOT);
 	}
 
 	private static ResolvedColumn column(String name, MajorTypeId type) {
