@@ -235,7 +235,9 @@ final class ResolvedConceptTranslator {
 	}
 
 	private static boolean isEventDateSelect(ResolvedSelect select) {
-		return select instanceof BuiltInSelects.EventDateUnion || select instanceof BuiltInSelects.EventDurationSum;
+		return select instanceof BuiltInSelects.EventDateUnion
+				|| select instanceof BuiltInSelects.EventDurationSum
+				|| select instanceof BuiltInSelects.Quarter;
 	}
 
 	private record ConnectorCompilation(ResolvedConnector connector, ConnectorCtePlan plan, QueryStep step) {

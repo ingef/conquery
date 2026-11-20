@@ -2,6 +2,7 @@ package com.bakdata.conquery.sql.translate;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.MajorTypeId;
+import com.bakdata.conquery.models.forms.util.IndexSelector;
 import com.bakdata.conquery.models.query.DateAggregationAction;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.mapping.ConceptIdMappingSelection;
@@ -30,6 +32,7 @@ import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.model.schema.ResolvedConnector;
 import com.bakdata.conquery.sql.model.schema.ResolvedValidityDate;
 import com.bakdata.conquery.sql.model.schema.SqlTable;
+import com.bakdata.conquery.sql.translate.dialect.clickhouse.ClickhouseTranslatorDialect;
 import com.bakdata.conquery.sql.translate.dialect.hana.HanaTranslatorDialect;
 import com.bakdata.conquery.sql.translate.naming.SqlNameGenerator;
 import com.bakdata.conquery.sql.translate.query.ResolvedQueryStepTranslator;
@@ -94,6 +97,48 @@ class DefaultSqlTranslatorTest {
 		assertTrue(compiled.sql().contains("concept_diagnosis_claims-0-preprocessing"));
 		assertEquals("diagnosis_exists-1", compiled.columns().get(1).sqlAlias());
 		assertEquals("diagnosis.exists", compiled.columns().get(1).outputId());
+	}
+
+	@Test
+	void shouldPlanIntervalPackingForQuarterSelects() {
+		final SqlTable events = SqlTable.of("table", "table");
+		final ResolvedColumn primaryId = new ResolvedColumn(
+				"table.primary-id", events, "pid", MajorTypeId.STRING, false
+		);
+		final ResolvedColumn eventDate = new ResolvedColumn(
+				"table.datum", events, "datum", MajorTypeId.DATE, true
+		);
+		final ResolvedConnector connector = new ResolvedConnector(
+				"connector",
+				events,
+				primaryId,
+				Optional.empty(),
+				new ResolvedValidityDate.Point(eventDate),
+				List.of(),
+				List.of(new BuiltInSelects.Quarter("select", IndexSelector.LATEST)),
+				List.of()
+		);
+		final ResolvedQuery query = new ResolvedQuery(
+				new EntitySchema(primaryId),
+				new ConceptNode(
+						"concept",
+						List.of(connector),
+						List.of(new BuiltInSelects.Quarter("earliest-quarter", IndexSelector.EARLIEST)),
+						DateAggregationAction.MERGE
+				),
+				false,
+				List.of(
+						new ResultColumn("result-0", ResultType.Primitive.STRING),
+						new ResultColumn("result-1", ResultType.Primitive.STRING)
+				)
+		);
+
+		final TranslatedQuery compiled = new DefaultSqlTranslator(DSL.using(SQLDialect.DEFAULT))
+				.translate(query, new ClickhouseTranslatorDialect());
+
+		assertFalse(compiled.sql().contains("\"\" as ("), compiled.sql());
+		assertTrue(compiled.sql().contains("concept_concept_connector-0-interval_packing_selects"), compiled.sql());
+		assertTrue(compiled.sql().contains("concept_concept-1-interval_packing_selects"), compiled.sql());
 	}
 
 	@Test
