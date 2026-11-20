@@ -6,12 +6,11 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.sql.translate.ir.Conditions;
 import com.bakdata.conquery.sql.translate.ir.JoinMode;
 import com.bakdata.conquery.sql.translate.ir.QueryStep;
 import com.bakdata.conquery.sql.translate.ir.Selects;
 import com.bakdata.conquery.sql.translate.ir.SqlIdColumns;
-import com.bakdata.conquery.sql.translate.ir.condition.DateRestrictionCondition;
-import com.bakdata.conquery.sql.translate.ir.condition.WhereCondition;
 import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.translate.ir.select.SqlSelect;
 import com.bakdata.conquery.sql.translate.query.QueryStepJoiner;
@@ -55,7 +54,6 @@ public class ConnectorCteTranslator {
 						sqlFilter.getWhereClauses().getPreprocessingConditions().stream(),
 						sqlFilter.getWhereClauses().getEventFilters().stream()
 				))
-				.map(WhereCondition::condition)
 				.collect(Collectors.toCollection(ArrayList::new));
 
 		input.ids()
@@ -88,7 +86,7 @@ public class ConnectorCteTranslator {
 		ColumnDateRange stratificationDate = stratificationSelects.getStratificationDate().orElseThrow(() -> new IllegalStateException(
 				"Stratification table must provide a stratification date"
 		));
-		conditions.add(new DateRestrictionCondition(stratificationDate, input.rawValidityDate()).condition());
+		conditions.add(Conditions.dateRestriction(stratificationDate, input.rawValidityDate()));
 
 		Table<Record> connectorTable = input.sourceTable();
 		Table<Record> joinedTable = connectorTable.innerJoin(stratificationTable)
@@ -161,7 +159,6 @@ public class ConnectorCteTranslator {
 
 		List<Condition> conditions = sqlFilters.stream()
 				.flatMap(sqlFilter -> sqlFilter.getWhereClauses().getGroupFilters().stream())
-				.map(WhereCondition::condition)
 				.toList();
 
 		return QueryStep.builder()

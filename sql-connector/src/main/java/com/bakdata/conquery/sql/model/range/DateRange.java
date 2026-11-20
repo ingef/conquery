@@ -2,9 +2,9 @@ package com.bakdata.conquery.sql.model.range;
 
 import java.time.LocalDate;
 import java.util.Optional;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.common.InclusiveRange;
-import jakarta.validation.constraints.NotNull;
 
 /** Inclusive date restriction. An empty bound represents an unbounded side. */
 public record DateRange(

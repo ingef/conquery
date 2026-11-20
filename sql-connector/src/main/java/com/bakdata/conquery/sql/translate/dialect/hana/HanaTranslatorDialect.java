@@ -20,7 +20,6 @@ import org.jooq.OrderField;
 import org.jooq.Record;
 import org.jooq.SortField;
 import org.jooq.Table;
-import org.jooq.impl.SQLDataType;
 
 /** HANA SQL capabilities used by the framework-neutral translate. */
 public class HanaTranslatorDialect implements TranslatorDialect {

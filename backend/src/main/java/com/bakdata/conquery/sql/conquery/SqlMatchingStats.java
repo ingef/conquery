@@ -202,7 +202,7 @@ public class SqlMatchingStats {
 
             if (connector.getCondition() != null) {
                 CTConditionContext context = CTConditionContext.forConnector(connector, functionProvider);
-                condition = condition.and(connector.getCondition().convertToSqlCondition(context).condition());
+				condition = condition.and(connector.getCondition().convertToSqlCondition(context));
             }
 
             SelectConditionStep<? extends Record> connectorTable =

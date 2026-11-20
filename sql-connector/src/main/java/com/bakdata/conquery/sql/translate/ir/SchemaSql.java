@@ -1,10 +1,5 @@
 package com.bakdata.conquery.sql.translate.ir;
 
-import static org.jooq.impl.DSL.name;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.model.schema.SqlTable;
 import lombok.experimental.UtilityClass;
@@ -23,7 +18,7 @@ public final class SchemaSql {
 	}
 
 	public static Name tableName(SqlTable table) {
-		return name(table.physicalName().toArray(String[]::new));
+		return table.physicalName();
 	}
 
 	public static <T> Field<T> field(ResolvedColumn column, Class<T> type) {
@@ -31,8 +26,6 @@ public final class SchemaSql {
 	}
 
 	public static Name columnName(ResolvedColumn column) {
-		List<String> qualifiedName = new ArrayList<>(column.table().physicalName());
-		qualifiedName.add(column.physicalName());
-		return name(qualifiedName.toArray(String[]::new));
+		return column.table().physicalName().append(column.physicalName());
 	}
 }

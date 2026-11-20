@@ -6,14 +6,11 @@ import com.bakdata.conquery.sql.model.export.ResolvedTableExportQuery;
 import com.bakdata.conquery.sql.translate.TableExportSqlTranslator;
 import com.bakdata.conquery.sql.translate.TranslatedQuery;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
-import lombok.RequiredArgsConstructor;
-
 /** Backend boundary for resolved row-level table exports. */
-@RequiredArgsConstructor
-public final class ResolvedTableExportAdapter {
-
-	private final ResolvedQuerySourceMapper mapper;
-	private final TableExportSqlTranslator translator;
+public record ResolvedTableExportAdapter(
+		ResolvedQuerySourceMapper mapper,
+		TableExportSqlTranslator translator
+) {
 
 	public SqlQuery translate(TableExportQuery query, TranslatorDialect dialect) {
 		final ResolvedTableExportQuery resolved = mapper.mapTableExport(query);

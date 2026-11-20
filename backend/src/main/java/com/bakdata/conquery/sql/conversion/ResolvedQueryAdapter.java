@@ -19,12 +19,12 @@ import com.bakdata.conquery.sql.validation.ResolvedQueryValidation;
 /** Maps initialized backend queries, validates the resolved input, and adapts translate output to the backend contract. */
 public final class ResolvedQueryAdapter {
 
-	private final ResolvedQueryValidation validation;
+	private final Validator validator;
 	private final SqlTranslator translator;
 	private final ResolvedQueryMapper mapper;
 
 	public ResolvedQueryAdapter(Validator validator, SqlTranslator translator, ResolvedQueryMapper mapper) {
-		this.validation = new ResolvedQueryValidation(validator);
+		this.validator = validator;
 		this.translator = translator;
 		this.mapper = mapper;
 	}
@@ -56,7 +56,7 @@ public final class ResolvedQueryAdapter {
 			TranslatorDialect dialect,
 			List<ResultInfo> resultInfos
 	) {
-		validation.validate(resolvedQuery);
+		ResolvedQueryValidation.validate(resolvedQuery, validator);
 		TranslatedQuery compiled = translator.translate(resolvedQuery, dialect);
 		long resultColumnCount = compiled.columns().stream()
 				.filter(column -> column.role() == ColumnRole.RESULT)

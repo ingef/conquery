@@ -45,7 +45,7 @@ public class ConceptColumnSelectConverter {
 					if (source != null) {
 						return new FieldWrapper<>(source.value().as(column.physicalName()));
 					}
-					return new ExtractingSqlSelect<>(column.table().physicalName().getLast(), column.physicalName(), Object.class);
+					return new ExtractingSqlSelect<>(column.table().physicalName().last(), column.physicalName(), Object.class);
 				})
 				.toList()).build();
 	}
@@ -110,7 +110,7 @@ public class ConceptColumnSelectConverter {
 	) {
 		// a  ConceptColumn select uses all connectors a Concept has, even if they are not part of the CQConcept
 		// but if they are, we need to make sure we use the preprocessed and event-filtered table instead of the root table
-		String physicalTable = connector.table().physicalName().getLast();
+		String physicalTable = connector.table().physicalName().last();
 		String tableName = preparedSource != null
 				? preparedSource.qualifier()
 				: selectContext.conceptColumnTables().getOrDefault(physicalTable, physicalTable);

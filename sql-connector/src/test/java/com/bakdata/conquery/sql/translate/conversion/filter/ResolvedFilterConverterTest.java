@@ -20,10 +20,10 @@ import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.sql.model.operation.BuiltInFilters;
-import com.bakdata.conquery.sql.model.operation.aggregation.CountAggregation;
-import com.bakdata.conquery.sql.model.operation.aggregation.DurationSumAggregation;
 import com.bakdata.conquery.sql.model.operation.ResolvedAggregation;
 import com.bakdata.conquery.sql.model.operation.ResolvedFilter;
+import com.bakdata.conquery.sql.model.operation.aggregation.CountAggregation;
+import com.bakdata.conquery.sql.model.operation.aggregation.DurationSumAggregation;
 import com.bakdata.conquery.sql.model.operation.aggregation.SumAggregation;
 import com.bakdata.conquery.sql.model.range.NumberRange;
 import com.bakdata.conquery.sql.model.range.SubstringRange;
@@ -38,8 +38,7 @@ import com.bakdata.conquery.sql.translate.ir.QueryStep;
 import com.bakdata.conquery.sql.translate.ir.Selects;
 import com.bakdata.conquery.sql.translate.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.translate.ir.SqlTables;
-import com.bakdata.conquery.sql.translate.ir.condition.ConditionWrappingWhereCondition;
-import com.bakdata.conquery.sql.translate.ir.condition.WhereClauses;
+import com.bakdata.conquery.sql.translate.ir.WhereClauses;
 import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.translate.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.translate.naming.SqlNameGenerator;
@@ -216,7 +215,7 @@ class ResolvedFilterConverterTest {
 				return new SqlFilters(
 						ConnectorSqlSelects.none(),
 						WhereClauses.builder()
-								.eventFilter(new ConditionWrappingWhereCondition(condition("extension_filter")))
+								.eventFilter(condition("extension_filter"))
 								.build()
 				);
 			}
@@ -305,7 +304,7 @@ class ResolvedFilterConverterTest {
 		assertTrue(filters.getWhereClauses().getPreprocessingConditions().isEmpty());
 		assertTrue(filters.getWhereClauses().getGroupFilters().isEmpty());
 		return DSL.using(SQLDialect.POSTGRES)
-				.renderInlined(filters.getWhereClauses().getEventFilters().getFirst().condition())
+				.renderInlined(filters.getWhereClauses().getEventFilters().getFirst())
 				.toLowerCase(Locale.ROOT);
 	}
 
@@ -314,7 +313,7 @@ class ResolvedFilterConverterTest {
 		assertTrue(filters.getWhereClauses().getPreprocessingConditions().isEmpty());
 		assertTrue(filters.getWhereClauses().getEventFilters().isEmpty());
 		return DSL.using(SQLDialect.POSTGRES)
-				.renderInlined(filters.getWhereClauses().getGroupFilters().getFirst().condition())
+				.renderInlined(filters.getWhereClauses().getGroupFilters().getFirst())
 				.toLowerCase(Locale.ROOT);
 	}
 

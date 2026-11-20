@@ -13,27 +13,26 @@ import com.bakdata.conquery.sql.mapping.ConceptIdMappingSelection;
 import com.bakdata.conquery.sql.model.node.ConceptNode;
 import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
 import com.bakdata.conquery.sql.model.operation.ResolvedSelect;
-import com.bakdata.conquery.sql.model.schema.SqlTable;
 import com.bakdata.conquery.sql.model.range.DateRange;
 import com.bakdata.conquery.sql.model.schema.EntitySchema;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.model.schema.ResolvedConnector;
 import com.bakdata.conquery.sql.model.schema.ResolvedValidityDate;
+import com.bakdata.conquery.sql.model.schema.SqlTable;
 import com.bakdata.conquery.sql.translate.conversion.condition.ResolvedConditionConverter;
 import com.bakdata.conquery.sql.translate.conversion.filter.FilterConversionContext;
 import com.bakdata.conquery.sql.translate.conversion.filter.ResolvedFilterConverter;
 import com.bakdata.conquery.sql.translate.conversion.select.ResolvedSelectConverter;
 import com.bakdata.conquery.sql.translate.conversion.select.SelectConversionContext;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
+import com.bakdata.conquery.sql.translate.ir.Conditions;
 import com.bakdata.conquery.sql.translate.ir.JoinMode;
 import com.bakdata.conquery.sql.translate.ir.QueryStep;
 import com.bakdata.conquery.sql.translate.ir.SchemaSql;
 import com.bakdata.conquery.sql.translate.ir.Selects;
 import com.bakdata.conquery.sql.translate.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.translate.ir.SqlTables;
-import com.bakdata.conquery.sql.translate.ir.condition.DateRestrictionCondition;
-import com.bakdata.conquery.sql.translate.ir.condition.WhereClauses;
-import com.bakdata.conquery.sql.translate.ir.condition.WhereCondition;
+import com.bakdata.conquery.sql.translate.ir.WhereClauses;
 import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.translate.naming.SqlNameGenerator;
 import com.bakdata.conquery.sql.translate.query.concept.ConceptCteInput;
@@ -105,14 +104,14 @@ final class ResolvedConceptTranslator {
 				dialect, names, plan.tables(), operationIds, stratificationDate);
 		connector.filters().stream().map(filter -> filterConverter.convert(filter, filterContext)).forEach(filters::add);
 		ResolvedConditionConverter conditionConverter = new ResolvedConditionConverter();
-		List<WhereCondition> conditions = connector.conditions().stream()
+		List<Condition> conditions = connector.conditions().stream()
 				.map(condition -> conditionConverter.convert(condition, dialect))
 				.collect(Collectors.toCollection(ArrayList::new));
-		validityPresentCondition(connector.validityDate()).ifPresent(condition -> conditions.add(() -> condition));
+		validityPresentCondition(connector.validityDate()).ifPresent(conditions::add);
 		filters.add(new SqlFilters(ConnectorSqlSelects.none(),
 				WhereClauses.builder().preprocessingConditions(conditions).build()));
 		restriction.ifPresent(range -> filters.add(new SqlFilters(ConnectorSqlSelects.none(),
-				WhereClauses.builder().eventFilter(new DateRestrictionCondition(dialect.dateRangeLiteral(range), validityDate)).build())));
+				WhereClauses.builder().eventFilter(Conditions.dateRestriction(dialect.dateRangeLiteral(range), validityDate)).build())));
 		List<ConnectorSqlSelects> selects = new ArrayList<>();
 		for (ResolvedSelect select : concept.selects()) {
 			if (select instanceof BuiltInSelects.ConceptValues values) {
@@ -173,7 +172,7 @@ final class ResolvedConceptTranslator {
 					.toList();
 			final int index = nextConnector.merge(column.table(), 1, Integer::sum) - 1;
 			if (index >= candidates.size()) {
-				final String qualifier = column.table().physicalName().getLast();
+				final String qualifier = column.table().physicalName().last();
 				return new SelectConversionContext.ConceptColumnSource(
 						qualifier,
 						DSL.table(DSL.name(qualifier)),

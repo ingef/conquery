@@ -5,22 +5,20 @@ import java.sql.Date;
 import java.util.List;
 
 import com.bakdata.conquery.sql.model.operation.BuiltInFilters;
+import com.bakdata.conquery.sql.model.operation.ResolvedAggregation;
+import com.bakdata.conquery.sql.model.operation.ResolvedFilter;
 import com.bakdata.conquery.sql.model.operation.aggregation.CountAggregation;
 import com.bakdata.conquery.sql.model.operation.aggregation.CountQuartersAggregation;
 import com.bakdata.conquery.sql.model.operation.aggregation.DurationSumAggregation;
 import com.bakdata.conquery.sql.model.operation.aggregation.FlagsAggregation;
 import com.bakdata.conquery.sql.model.operation.aggregation.QuartersInYearAggregation;
-import com.bakdata.conquery.sql.model.operation.ResolvedAggregation;
-import com.bakdata.conquery.sql.model.operation.ResolvedFilter;
 import com.bakdata.conquery.sql.model.operation.aggregation.SumAggregation;
 import com.bakdata.conquery.sql.model.range.NumberRange;
 import com.bakdata.conquery.sql.model.range.SubstringRange;
 import com.bakdata.conquery.sql.model.schema.DateColumns;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
+import com.bakdata.conquery.sql.translate.ir.Conditions;
 import com.bakdata.conquery.sql.translate.ir.SchemaSql;
-import com.bakdata.conquery.sql.translate.ir.condition.FlagCondition;
-import com.bakdata.conquery.sql.translate.ir.condition.InclusiveRangeCondition;
-import com.bakdata.conquery.sql.translate.ir.condition.StringValuesCondition;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
@@ -49,7 +47,7 @@ public final class ResolvedTableExportFilterConverter {
 		if (filter.substring().isPresent()) {
 			field = substring(field, filter.substring().orElseThrow());
 		}
-		return new StringValuesCondition(field, filter.values().toArray(String[]::new)).condition();
+		return Conditions.stringValues(field, filter.values().toArray(String[]::new));
 	}
 
 	private static Condition flags(BuiltInFilters.Flags filter) {
@@ -57,7 +55,7 @@ public final class ResolvedTableExportFilterConverter {
 				.map(filter.availableFlags().columns()::get)
 				.map(column -> SchemaSql.field(column, Boolean.class))
 				.toList();
-		return new FlagCondition(fields).condition();
+		return Conditions.flags(fields);
 	}
 
 	private static Field<? extends Number> rowValue(ResolvedAggregation aggregation, TranslatorDialect dialect) {
@@ -89,7 +87,7 @@ public final class ResolvedTableExportFilterConverter {
 	}
 
 	private static Condition inclusive(Field<BigDecimal> field, NumberRange range) {
-		return new InclusiveRangeCondition<>(field, range).condition();
+		return Conditions.inclusiveRange(field, range);
 	}
 
 	private static Field<String> substring(Field<String> field, SubstringRange range) {

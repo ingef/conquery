@@ -10,15 +10,13 @@ import com.bakdata.conquery.sql.model.operation.ResolvedFilter;
 import com.bakdata.conquery.sql.model.range.SubstringRange;
 import com.bakdata.conquery.sql.translate.conversion.Converter;
 import com.bakdata.conquery.sql.translate.conversion.select.DateDistanceSqlAggregator;
+import com.bakdata.conquery.sql.translate.ir.Conditions;
 import com.bakdata.conquery.sql.translate.ir.SchemaSql;
-import com.bakdata.conquery.sql.translate.ir.condition.FlagCondition;
-import com.bakdata.conquery.sql.translate.ir.condition.InclusiveRangeCondition;
-import com.bakdata.conquery.sql.translate.ir.condition.StringValuesCondition;
-import com.bakdata.conquery.sql.translate.ir.condition.WhereClauses;
-import com.bakdata.conquery.sql.translate.ir.condition.WhereCondition;
+import com.bakdata.conquery.sql.translate.ir.WhereClauses;
 import com.bakdata.conquery.sql.translate.query.concept.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.translate.query.concept.SqlFilters;
 import lombok.experimental.UtilityClass;
+import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
@@ -43,7 +41,7 @@ class BuiltInColumnFilterConverters {
 		if (filter.substring().isPresent()) {
 			field = substring(field, filter.substring().orElseThrow());
 		}
-		return eventFilter(new StringValuesCondition(field, filter.values().toArray(String[]::new)));
+		return eventFilter(Conditions.stringValues(field, filter.values().toArray(String[]::new)));
 	}
 
 	private static SqlFilters convertNumericRange(
@@ -51,7 +49,7 @@ class BuiltInColumnFilterConverters {
 			FilterConversionContext context
 	) {
 		Field<BigDecimal> field = SchemaSql.field(filter.column(), BigDecimal.class);
-		return eventFilter(new InclusiveRangeCondition<>(field, filter.range()));
+		return eventFilter(Conditions.inclusiveRange(field, filter.range()));
 	}
 
 	private static SqlFilters convertDateDistanceRange(
@@ -64,7 +62,7 @@ class BuiltInColumnFilterConverters {
 		Field<BigDecimal> distance = context.dialect()
 				.dateDistance(filter.unit(), startDate, endDate)
 				.coerce(BigDecimal.class);
-		return eventFilter(new InclusiveRangeCondition<>(distance, filter.range()));
+		return eventFilter(Conditions.inclusiveRange(distance, filter.range()));
 	}
 
 	private static SqlFilters convertFlags(
@@ -75,7 +73,7 @@ class BuiltInColumnFilterConverters {
 				.map(filter.availableFlags().columns()::get)
 				.map(column -> SchemaSql.field(column, Boolean.class))
 				.toList();
-		return eventFilter(new FlagCondition(selectedFlags));
+		return eventFilter(Conditions.flags(selectedFlags));
 	}
 
 	private static Field<String> substring(Field<String> field, SubstringRange range) {
@@ -85,7 +83,7 @@ class BuiltInColumnFilterConverters {
 				.orElseGet(() -> DSL.substring(field, start));
 	}
 
-	private static SqlFilters eventFilter(WhereCondition condition) {
+	private static SqlFilters eventFilter(Condition condition) {
 		return new SqlFilters(
 				ConnectorSqlSelects.none(),
 				WhereClauses.builder().eventFilter(condition).build()

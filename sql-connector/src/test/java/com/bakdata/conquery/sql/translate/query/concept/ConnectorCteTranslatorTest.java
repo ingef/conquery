@@ -17,8 +17,7 @@ import com.bakdata.conquery.sql.translate.ir.QueryStep;
 import com.bakdata.conquery.sql.translate.ir.Selects;
 import com.bakdata.conquery.sql.translate.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.translate.ir.SqlTables;
-import com.bakdata.conquery.sql.translate.ir.condition.ConditionWrappingWhereCondition;
-import com.bakdata.conquery.sql.translate.ir.condition.WhereClauses;
+import com.bakdata.conquery.sql.translate.ir.WhereClauses;
 import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.translate.ir.select.ExistsSqlSelect;
 import com.bakdata.conquery.sql.translate.ir.select.FieldWrapper;
@@ -148,7 +147,7 @@ class ConnectorCteTranslatorTest {
 		SqlFilters sqlFilter = new SqlFilters(
 				ConnectorSqlSelects.none(),
 				WhereClauses.builder()
-						.groupFilter(new ConditionWrappingWhereCondition(groupFilter))
+						.groupFilter(groupFilter)
 						.build()
 		);
 
@@ -266,15 +265,9 @@ class ConnectorCteTranslatorTest {
 		SqlFilters sqlFilters = new SqlFilters(
 				ConnectorSqlSelects.none(),
 				WhereClauses.builder()
-						.preprocessingCondition(new ConditionWrappingWhereCondition(
-								field(name("events", "status"), String.class).eq("active")
-						))
-						.eventFilter(new ConditionWrappingWhereCondition(
-								field(name("events", "score"), Integer.class).greaterThan(0)
-						))
-						.groupFilter(new ConditionWrappingWhereCondition(
-								field(name("events", "score"), Integer.class).lessThan(10)
-						))
+						.preprocessingCondition(field(name("events", "status"), String.class).eq("active"))
+						.eventFilter(field(name("events", "score"), Integer.class).greaterThan(0))
+						.groupFilter(field(name("events", "score"), Integer.class).lessThan(10))
 						.build()
 		);
 		return new PreprocessingCteInput(

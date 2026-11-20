@@ -58,7 +58,7 @@ public class ConceptCtePlanner {
 			TranslatorDialect dialect,
 			SqlNameGenerator nameGenerator
 	) {
-		String rootQualifier = sourceTable.physicalName().getLast();
+		String rootQualifier = sourceTable.physicalName().last();
 		return planConnector(
 				SchemaSql.table(sourceTable),
 				rootQualifier,

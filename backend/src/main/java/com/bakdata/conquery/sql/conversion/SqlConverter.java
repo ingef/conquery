@@ -20,25 +20,15 @@ public class SqlConverter {
 	private final TranslatorDialect dialect;
 
 	public SqlQuery convert(QueryDescription queryDescription) {
-		if (queryDescription instanceof ConceptQuery conceptQuery) {
-			return resolvedQueryAdapter.translate(conceptQuery, dialect);
-		}
-		if (queryDescription instanceof SecondaryIdQuery secondaryIdQuery) {
-			return resolvedQueryAdapter.translate(secondaryIdQuery, dialect);
-		}
-		if (queryDescription instanceof TableExportQuery tableExportQuery) {
-			return tableExportAdapter.translate(tableExportQuery, dialect);
-		}
-		if (queryDescription instanceof AbsoluteFormQuery absoluteForm) {
-			return formAdapter.translate(absoluteForm, dialect);
-		}
-		if (queryDescription instanceof RelativeFormQuery relativeForm) {
-			return formAdapter.translate(relativeForm, dialect);
-		}
-		if (queryDescription instanceof EntityDateQuery entityDateForm) {
-			return formAdapter.translate(entityDateForm, dialect);
-		}
-		throw new UnsupportedOperationException(
-				"SQL compilation is not implemented for " + queryDescription.getClass());
+		return switch (queryDescription) {
+			case ConceptQuery conceptQuery -> resolvedQueryAdapter.translate(conceptQuery, dialect);
+			case SecondaryIdQuery secondaryIdQuery -> resolvedQueryAdapter.translate(secondaryIdQuery, dialect);
+			case TableExportQuery tableExportQuery -> tableExportAdapter.translate(tableExportQuery, dialect);
+			case AbsoluteFormQuery absoluteForm -> formAdapter.translate(absoluteForm, dialect);
+			case RelativeFormQuery relativeForm -> formAdapter.translate(relativeForm, dialect);
+			case EntityDateQuery entityDateForm -> formAdapter.translate(entityDateForm, dialect);
+			default -> throw new UnsupportedOperationException(
+					"SQL compilation is not implemented for " + queryDescription.getClass());
+		};
 	}
 }

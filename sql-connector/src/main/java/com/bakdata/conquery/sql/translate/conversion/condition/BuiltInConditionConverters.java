@@ -6,18 +6,17 @@ import java.util.function.BiFunction;
 import com.bakdata.conquery.sql.model.operation.BuiltInConditions;
 import com.bakdata.conquery.sql.model.operation.ResolvedCondition;
 import com.bakdata.conquery.sql.translate.conversion.Converter;
+import com.bakdata.conquery.sql.translate.ir.Conditions;
 import com.bakdata.conquery.sql.translate.ir.SchemaSql;
-import com.bakdata.conquery.sql.translate.ir.condition.ConditionWrappingWhereCondition;
-import com.bakdata.conquery.sql.translate.ir.condition.StringValuesCondition;
-import com.bakdata.conquery.sql.translate.ir.condition.WhereCondition;
 import lombok.experimental.UtilityClass;
+import org.jooq.Condition;
 import org.jooq.Field;
 
 /** Built-in mappings from resolved condition values to translate condition IR. */
 @UtilityClass
 class BuiltInConditionConverters {
 
-	static List<Converter<? extends ResolvedCondition, WhereCondition, ConditionConversionContext>> create() {
+	static List<Converter<? extends ResolvedCondition, Condition, ConditionConversionContext>> create() {
 		return List.of(
 				converter(BuiltInConditions.AllOf.class, BuiltInConditionConverters::convertAllOf),
 				converter(BuiltInConditions.Not.class, BuiltInConditionConverters::convertNot),
@@ -28,49 +27,49 @@ class BuiltInConditionConverters {
 		);
 	}
 
-	private static WhereCondition convertAllOf(
+	private static Condition convertAllOf(
 			BuiltInConditions.AllOf condition,
 			ConditionConversionContext context
 	) {
 		return condition.conditions().stream()
 				.map(child -> context.conditionConverter().convert(child, context.dialect()))
-				.reduce(WhereCondition::and)
+				.reduce(Condition::and)
 				.orElseThrow();
 	}
 
-	private static WhereCondition convertNot(
+	private static Condition convertNot(
 			BuiltInConditions.Not condition,
 			ConditionConversionContext context
 	) {
-		return context.conditionConverter().convert(condition.condition(), context.dialect()).negate();
+		return context.conditionConverter().convertNegated(condition.condition(), context.dialect());
 	}
 
-	private static WhereCondition convertStringValues(
+	private static Condition convertStringValues(
 			BuiltInConditions.StringValues condition,
 			ConditionConversionContext context
 	) {
 		Field<String> field = SchemaSql.field(condition.column(), String.class);
-		return new StringValuesCondition(field, condition.values().toArray(String[]::new));
+		return Conditions.stringValues(field, condition.values().toArray(String[]::new));
 	}
 
-	private static WhereCondition convertPresence(
+	private static Condition convertPresence(
 			BuiltInConditions.Presence condition,
 			ConditionConversionContext context
 	) {
 		Field<Object> field = SchemaSql.field(condition.column(), Object.class);
-		return new ConditionWrappingWhereCondition(condition.present() ? field.isNotNull() : field.isNull());
+		return condition.present() ? field.isNotNull() : field.isNull();
 	}
 
-	private static WhereCondition convertPrefixes(
+	private static Condition convertPrefixes(
 			BuiltInConditions.Prefixes condition,
 			ConditionConversionContext context
 	) {
 		String pattern = String.join("|", condition.prefixes()) + context.dialect().regexAnyCharacters();
 		Field<String> field = SchemaSql.field(condition.column(), String.class);
-		return new ConditionWrappingWhereCondition(context.dialect().regexMatches(field, pattern));
+		return context.dialect().regexMatches(field, pattern);
 	}
 
-	private static WhereCondition convertPrefixRange(
+	private static Condition convertPrefixRange(
 			BuiltInConditions.PrefixRange condition,
 			ConditionConversionContext context
 	) {
@@ -88,12 +87,12 @@ class BuiltInConditionConverters {
 		pattern.append(context.dialect().regexAnyCharacters());
 
 		Field<String> field = SchemaSql.field(condition.column(), String.class);
-		return new ConditionWrappingWhereCondition(context.dialect().regexMatches(field, pattern.toString()));
+		return context.dialect().regexMatches(field, pattern.toString());
 	}
 
-	private static <C extends ResolvedCondition> Converter<C, WhereCondition, ConditionConversionContext> converter(
+	private static <C extends ResolvedCondition> Converter<C, Condition, ConditionConversionContext> converter(
 			Class<C> conversionClass,
-			BiFunction<C, ConditionConversionContext, WhereCondition> conversion
+			BiFunction<C, ConditionConversionContext, Condition> conversion
 	) {
 		return new Converter<>() {
 			@Override
@@ -102,7 +101,7 @@ class BuiltInConditionConverters {
 			}
 
 			@Override
-			public WhereCondition convert(C input, ConditionConversionContext context) {
+			public Condition convert(C input, ConditionConversionContext context) {
 				return conversion.apply(input, context);
 			}
 		};

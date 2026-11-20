@@ -10,8 +10,6 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.translate.ir.condition.ConditionWrappingWhereCondition;
-import com.bakdata.conquery.sql.translate.ir.condition.WhereCondition;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
@@ -57,11 +55,10 @@ public class PrefixRangeCondition implements CTCondition {
 	}
 
 	@Override
-	public WhereCondition convertToSqlCondition(CTConditionContext context) {
-		Field<String> field = field(context.getConnectorColumn(), VARCHAR);
-		String pattern = buildSqlRegexPattern(context.getFunctionProvider());
-		Condition regexCondition = context.getFunctionProvider().likeRegex(field, pattern);
-		return new ConditionWrappingWhereCondition(regexCondition);
+	public Condition convertToSqlCondition(CTConditionContext context) {
+		final Field<String> value = field(context.getConnectorColumn(), VARCHAR);
+		final String pattern = buildSqlRegexPattern(context.getFunctionProvider());
+		return context.getFunctionProvider().likeRegex(value, pattern);
 	}
 
 	private String buildSqlRegexPattern(SqlFunctionProvider functionProvider) {

@@ -12,13 +12,13 @@ import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.model.schema.ResolvedValidityDate;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.translate.export.ResolvedTableExportFilterConverter;
+import com.bakdata.conquery.sql.translate.ir.Conditions;
 import com.bakdata.conquery.sql.translate.ir.ProjectionMode;
 import com.bakdata.conquery.sql.translate.ir.QueryStep;
 import com.bakdata.conquery.sql.translate.ir.SchemaSql;
 import com.bakdata.conquery.sql.translate.ir.Selects;
 import com.bakdata.conquery.sql.translate.ir.SharedAliases;
 import com.bakdata.conquery.sql.translate.ir.SqlIdColumns;
-import com.bakdata.conquery.sql.translate.ir.condition.DateRestrictionCondition;
 import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.translate.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.translate.naming.SqlNameGenerator;
@@ -103,7 +103,7 @@ public final class TableExportSqlTranslator {
 		Table<Record> source = SchemaSql.table(value.table());
 		Table<Record> prerequisiteTable = org.jooq.impl.DSL.table(org.jooq.impl.DSL.name(prerequisite.getCteName()));
 		List<Condition> joins = new java.util.ArrayList<>(ids.join(prerequisite.getQualifiedSelects().getIds()));
-		joins.add(new DateRestrictionCondition(dialect.dateRangeLiteral(query.dateRestriction()), validity).condition());
+		joins.add(Conditions.dateRestriction(dialect.dateRangeLiteral(query.dateRestriction()), validity));
 		Table<Record> joined = source.innerJoin(prerequisiteTable).on(joins.toArray(Condition[]::new));
 		return QueryStep.builder()
 				.cteName(cteName)

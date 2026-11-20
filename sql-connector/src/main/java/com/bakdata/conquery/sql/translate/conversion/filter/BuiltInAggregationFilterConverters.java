@@ -8,8 +8,8 @@ import com.bakdata.conquery.sql.model.operation.ResolvedFilter;
 import com.bakdata.conquery.sql.translate.conversion.Converter;
 import com.bakdata.conquery.sql.translate.conversion.aggregation.AggregationConversionContext;
 import com.bakdata.conquery.sql.translate.conversion.aggregation.ResolvedAggregationConverter;
-import com.bakdata.conquery.sql.translate.ir.condition.InclusiveRangeCondition;
-import com.bakdata.conquery.sql.translate.ir.condition.WhereClauses;
+import com.bakdata.conquery.sql.translate.ir.Conditions;
+import com.bakdata.conquery.sql.translate.ir.WhereClauses;
 import com.bakdata.conquery.sql.translate.query.concept.CommonAggregationSelect;
 import com.bakdata.conquery.sql.translate.query.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.translate.query.concept.ConnectorSqlSelects;
@@ -69,7 +69,7 @@ class BuiltInAggregationFilterConverters {
 		return new SqlFilters(
 				selects.build(),
 				WhereClauses.builder()
-						.groupFilter(new InclusiveRangeCondition<>(aggregationField, filter.range()))
+						.groupFilter(Conditions.inclusiveRange(aggregationField, filter.range()))
 						.build()
 		);
 	}

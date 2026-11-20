@@ -4,7 +4,9 @@ import static org.jooq.impl.DSL.condition;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.inline;
 import static org.jooq.impl.DSL.name;
+import static org.jooq.impl.DSL.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.sql.Date;
 import java.util.LinkedHashSet;
@@ -18,8 +20,6 @@ import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.model.schema.SqlTable;
 import com.bakdata.conquery.sql.translate.conversion.Converter;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
-import com.bakdata.conquery.sql.translate.ir.condition.ConditionWrappingWhereCondition;
-import com.bakdata.conquery.sql.translate.ir.condition.WhereCondition;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.SQLDialect;
@@ -61,6 +61,62 @@ class ResolvedConditionConverterTest {
 	}
 
 	@Test
+	void shouldPreserveNullAwareNegationThroughASingletonConjunction() {
+		final BuiltInConditions.AllOf allOf = new BuiltInConditions.AllOf(List.of(
+				new BuiltInConditions.StringValues(COLUMN, new LinkedHashSet<>(List.of("A")))
+		));
+		final BuiltInConditions.Not condition = new BuiltInConditions.Not(allOf);
+		final Field<String> field = field(name("analytics", "events", "event_code"), String.class);
+
+		assertEquals(render(not(field.eq("A")).or(field.isNull())), render(converter.convert(condition, DIALECT)));
+	}
+
+	@Test
+	void shouldRejectAmbiguousStringValueConvertersWhenNegated() {
+		final Converter<BuiltInConditions.StringValues, Condition, ConditionConversionContext> extension = new Converter<>() {
+			@Override
+			public Class<BuiltInConditions.StringValues> getConversionClass() {
+				return BuiltInConditions.StringValues.class;
+			}
+
+			@Override
+			public Condition convert(BuiltInConditions.StringValues input, ConditionConversionContext context) {
+				return condition("extension_condition");
+			}
+		};
+		final ResolvedConditionConverter converterWithExtension = new ResolvedConditionConverter(List.of(extension));
+		final BuiltInConditions.Not condition = new BuiltInConditions.Not(
+				new BuiltInConditions.StringValues(COLUMN, new LinkedHashSet<>(List.of("A")))
+		);
+
+		assertThrows(IllegalStateException.class, () -> converterWithExtension.convert(condition, DIALECT));
+	}
+
+	@Test
+	void shouldRejectAmbiguousSingletonConjunctionConvertersWhenNegated() {
+		final Converter<BuiltInConditions.AllOf, Condition, ConditionConversionContext> extension = new Converter<>() {
+			@Override
+			public Class<BuiltInConditions.AllOf> getConversionClass() {
+				return BuiltInConditions.AllOf.class;
+			}
+
+			@Override
+			public Condition convert(BuiltInConditions.AllOf input, ConditionConversionContext context) {
+				return condition("extension_condition");
+			}
+		};
+		final ResolvedConditionConverter converterWithExtension = new ResolvedConditionConverter(List.of(extension));
+		final BuiltInConditions.AllOf allOf = new BuiltInConditions.AllOf(List.of(
+				new BuiltInConditions.StringValues(COLUMN, new LinkedHashSet<>(List.of("A")))
+		));
+
+		assertThrows(
+				IllegalStateException.class,
+				() -> converterWithExtension.convert(new BuiltInConditions.Not(allOf), DIALECT)
+		);
+	}
+
+	@Test
 	void shouldDelegateRegexRenderingToDialect() {
 		BuiltInConditions.AllOf condition = new BuiltInConditions.AllOf(List.of(
 				new BuiltInConditions.Prefixes(COLUMN, List.of("A", "B")),
@@ -75,15 +131,15 @@ class ResolvedConditionConverterTest {
 
 	@Test
 	void shouldDispatchExtensionCondition() {
-		Converter<ExtensionCondition, WhereCondition, ConditionConversionContext> extension = new Converter<>() {
+		final Converter<ExtensionCondition, Condition, ConditionConversionContext> extension = new Converter<>() {
 			@Override
 			public Class<ExtensionCondition> getConversionClass() {
 				return ExtensionCondition.class;
 			}
 
 			@Override
-			public WhereCondition convert(ExtensionCondition input, ConditionConversionContext context) {
-				return new ConditionWrappingWhereCondition(condition("extension_condition"));
+			public Condition convert(ExtensionCondition input, ConditionConversionContext context) {
+				return condition("extension_condition");
 			}
 		};
 		ResolvedConditionConverter converterWithExtension = new ResolvedConditionConverter(List.of(extension));
@@ -91,8 +147,8 @@ class ResolvedConditionConverterTest {
 		assertEquals("(extension_condition)", render(converterWithExtension.convert(new ExtensionCondition(), DIALECT)));
 	}
 
-	private static String render(WhereCondition condition) {
-		return DSL.using(SQLDialect.POSTGRES).renderInlined(condition.condition()).toLowerCase(Locale.ROOT);
+	private static String render(Condition condition) {
+		return DSL.using(SQLDialect.POSTGRES).renderInlined(condition).toLowerCase(Locale.ROOT);
 	}
 
 	private record ExtensionCondition() implements ResolvedCondition {

@@ -22,8 +22,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.forms.util.CalendarUnit;
-import com.bakdata.conquery.models.forms.util.IndexSelector;
 import com.bakdata.conquery.models.forms.util.IndexPlacement;
+import com.bakdata.conquery.models.forms.util.IndexSelector;
 import com.bakdata.conquery.models.forms.util.ResolutionAndAlignment;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
 import com.bakdata.conquery.sql.translate.ir.SharedAliases;

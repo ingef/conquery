@@ -9,8 +9,6 @@ import java.util.Set;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
-import com.bakdata.conquery.sql.translate.ir.condition.ConditionWrappingWhereCondition;
-import com.bakdata.conquery.sql.translate.ir.condition.WhereCondition;
 import com.bakdata.conquery.util.CalculatedValue;
 import lombok.Getter;
 import lombok.NonNull;
@@ -34,9 +32,8 @@ public class IsPresentCondition implements CTCondition {
 	}
 
 	@Override
-	public WhereCondition convertToSqlCondition(CTConditionContext context) {
-		Condition condition = field(name(column)).isNotNull();
-		return new ConditionWrappingWhereCondition(condition);
+	public Condition convertToSqlCondition(CTConditionContext context) {
+		return field(name(column)).isNotNull();
 	}
 
 	@Override

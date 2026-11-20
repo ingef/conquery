@@ -56,7 +56,7 @@ class ResolvedQueryTest {
 		);
 
 		assertValid(query);
-		new ResolvedQueryValidation(ValidationTestSupport.VALIDATOR).validate(query);
+		ResolvedQueryValidation.validate(query, ValidationTestSupport.VALIDATOR);
 		assertEquals(concept, query.root());
 	}
 
@@ -128,7 +128,7 @@ class ResolvedQueryTest {
 
 		assertThrows(
 				ConstraintViolationException.class,
-				() -> new ResolvedQueryValidation(ValidationTestSupport.VALIDATOR).validate(query)
+				() -> ResolvedQueryValidation.validate(query, ValidationTestSupport.VALIDATOR)
 		);
 	}
 

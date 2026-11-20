@@ -10,10 +10,10 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
-import com.bakdata.conquery.sql.translate.ir.condition.WhereCondition;
 import com.bakdata.conquery.util.CalculatedValue;
 import lombok.Getter;
 import lombok.Setter;
+import org.jooq.Condition;
 
 /**
  * This condition connects multiple conditions with an and.
@@ -45,13 +45,21 @@ public class AndCondition implements CTCondition {
 	}
 
 	@Override
-	public WhereCondition convertToSqlCondition(CTConditionContext context) {
+	public Condition convertToSqlCondition(CTConditionContext context) {
 		return conditions.stream()
 						 .map(condition -> condition.convertToSqlCondition(context))
-						 .reduce(WhereCondition::and)
+						 .reduce(Condition::and)
 						 .orElseThrow(
 								 () -> new IllegalStateException("At least one condition is required to convert %s to a SQL condition.".formatted(getClass()))
 						 );
+	}
+
+	@Override
+	public Condition convertNegatedToSqlCondition(CTConditionContext context) {
+		if (conditions.size() == 1) {
+			return conditions.getFirst().convertNegatedToSqlCondition(context);
+		}
+		return CTCondition.super.convertNegatedToSqlCondition(context);
 	}
 
 	@Override

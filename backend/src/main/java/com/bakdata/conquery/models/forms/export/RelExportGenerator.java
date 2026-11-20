@@ -8,8 +8,8 @@ import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
 import com.bakdata.conquery.models.forms.util.CalendarUnit;
-import com.bakdata.conquery.models.forms.util.IndexSelector;
 import com.bakdata.conquery.models.forms.util.IndexPlacement;
+import com.bakdata.conquery.models.forms.util.IndexSelector;
 import com.bakdata.conquery.models.forms.util.ResolutionAndAlignment;
 import lombok.AllArgsConstructor;
 

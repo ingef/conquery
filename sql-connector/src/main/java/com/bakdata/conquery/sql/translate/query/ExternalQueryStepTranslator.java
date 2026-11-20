@@ -11,11 +11,11 @@ import com.bakdata.conquery.sql.model.node.ExternalEntity;
 import com.bakdata.conquery.sql.model.node.ExternalNode;
 import com.bakdata.conquery.sql.model.range.DateRange;
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
+import com.bakdata.conquery.sql.translate.ir.Conditions;
 import com.bakdata.conquery.sql.translate.ir.QueryStep;
 import com.bakdata.conquery.sql.translate.ir.Selects;
 import com.bakdata.conquery.sql.translate.ir.SharedAliases;
 import com.bakdata.conquery.sql.translate.ir.SqlIdColumns;
-import com.bakdata.conquery.sql.translate.ir.condition.DateRestrictionCondition;
 import com.bakdata.conquery.sql.translate.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.translate.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.translate.ir.select.SqlSelect;
@@ -72,10 +72,10 @@ public final class ExternalQueryStepTranslator {
 		ColumnDateRange validityDate = allEntities.getSelects().getValidityDate().orElseThrow();
 		return QueryStep.builder()
 				.predecessor(allEntities)
-				.conditions(List.of(new DateRestrictionCondition(
+				.conditions(List.of(Conditions.dateRestriction(
 						translatorDialect.dateRangeLiteral(dateRestriction.orElseThrow()),
 						validityDate
-				).condition()))
+				)))
 				.selects(allEntities.getQualifiedSelects())
 				.fromTable(table(name(allEntities.getCteName())))
 				.cteName(names.reusableStepName(EXTERNAL_IDS_CTE_NAME + "_date_restriction"))

@@ -1,6 +1,11 @@
 package com.bakdata.conquery.sql.translate.ir;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /** Shared SQL aliases used by translate transformations and their generated output columns. */
+@Getter
+@RequiredArgsConstructor
 public enum SharedAliases {
 
 	PRIMARY_COLUMN("primary_id"),
@@ -31,11 +36,4 @@ public enum SharedAliases {
 
 	private final String alias;
 
-	SharedAliases(String alias) {
-		this.alias = alias;
-	}
-
-	public String getAlias() {
-		return alias;
-	}
 }
