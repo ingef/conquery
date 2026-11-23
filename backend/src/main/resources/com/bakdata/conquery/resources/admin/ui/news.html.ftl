@@ -13,8 +13,8 @@
 						</div>
 						<div class="form-group col-md-6">
 							<label for="news-id">ID:</label>
-							<input id="news-id" data-test-id="news-id" class="form-control text-monospace" pattern="[a-z0-9_-]+" required>
-							<small class="form-text text-muted">Generated from the title until edited. Allowed characters: a-z, 0-9, underscore, and hyphen.</small>
+							<input id="news-id" data-test-id="news-id" class="form-control text-monospace" pattern="[a-z0-9_-]+" required maxlength="100">
+							<small class="form-text text-muted">Generated from the title until edited. Allowed characters: a-z, 0-9, underscore, and hyphen. Maximum 100 characters.</small>
 						</div>
 					</div>
 					<div class="form-group">
@@ -170,6 +170,17 @@
 			categoryInput.setAttribute('aria-expanded', String(show));
 		}
 
+		function validateNewsId() {
+			const id = newsId.value.trim();
+			if (id.length > 100) {
+				newsId.setCustomValidity('ID must not exceed 100 characters');
+				return false;
+			} else {
+				newsId.setCustomValidity('');
+				return true;
+			}
+		}
+
 		function validateNewsLink() {
 			const value = newsLink.value.trim();
 			newsLink.setCustomValidity('');
@@ -199,6 +210,7 @@
 			event.preventDefault();
 			if (categoryInput.value.trim()) addCategory(categoryInput.value);
 			validateNewsLink();
+			validateNewsId();
 			if (!newsForm.reportValidity()) return;
 
 			const submitButton = document.getElementById('news-submit');

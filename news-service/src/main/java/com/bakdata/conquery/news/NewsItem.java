@@ -8,9 +8,10 @@ import java.util.Set;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 public record NewsItem(
-		@NotBlank @Pattern(regexp = ID_PATTERN) String id,
+		@NotBlank @Pattern(regexp = ID_PATTERN) @Size(max = 100, message = "ID must not exceed 100 characters") String id,
 		@NotBlank String title,
 		@NotBlank String description,
 		URI link,
