@@ -1,17 +1,17 @@
 package com.bakdata.conquery.integration.common;
 
+import java.io.IOException;
+import java.util.Objects;
+import jakarta.validation.constraints.NotEmpty;
+
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-
-import java.io.IOException;
-import java.util.Objects;
 
 @Getter
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator(mode = JsonCreator.Mode.PROPERTIES))
