@@ -1,0 +1,69 @@
+{
+  "type": "QUERY_TEST",
+  "label": "EVENT_DURATION_SUM_AGGREGATOR Test",
+  "sqlSpec": {
+    "isEnabled": true,
+    "supportedDialects": []
+  },
+  "expectedCsv": "tests/aggregator/EVENT_DURATION_SUM_AGGREGATOR/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "CONCEPT",
+      "ids": [
+        "concept"
+      ],
+      "tables": [
+        {
+          "id": "concept.connector",
+          "selects": [
+            "concept.connector.event-duration"
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "name": "concept",
+      "type": "TREE",
+      "connectors": [
+        {
+          "name": "connector",
+          "table": "table",
+          "validityDates": {
+            "name": "date",
+            "startColumn": "table.start",
+            "endColumn": "table.end"
+          },
+          "selects": {
+            "type": "EVENT_DURATION_SUM",
+            "name": "event-duration"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/aggregator/EVENT_DURATION_SUM_AGGREGATOR/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "start",
+            "type": "DATE"
+          },
+          {
+            "name": "end",
+            "type": "DATE"
+          }
+        ]
+      }
+    ]
+  }
+}

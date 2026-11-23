@@ -33,7 +33,7 @@
           },
           "selects": {
             "name" : "select",
-            "type": "LAST",
+            "type": "RANDOM",
             "column": "table.value"
           }
         }

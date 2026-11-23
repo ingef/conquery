@@ -2,7 +2,8 @@
   "type": "QUERY_TEST",
   "label": "CONCEPT_VALUES (Resolved) Test",
   "sqlSpec": {
-    "isEnabled": false
+    "isEnabled": true,
+    "supportedDialects": []
   },
   "expectedCsv": "tests/aggregator/CONCEPT_COLUMN_SELECTS/expected_resolved.csv",
   "query": {
