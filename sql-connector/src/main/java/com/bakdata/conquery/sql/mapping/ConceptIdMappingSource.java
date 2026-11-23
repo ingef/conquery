@@ -1,10 +1,10 @@
 package com.bakdata.conquery.sql.mapping;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import com.bakdata.conquery.sql.translate.dialect.TranslatorDialect;
+import lombok.NonNull;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Record;
@@ -14,12 +14,11 @@ import org.jooq.impl.DSL;
 
 /** SQL source built by joining connector values to their most-specific concept element. */
 public record ConceptIdMappingSource(
-		ConceptIdMappingTable mapping,
+		@NonNull ConceptIdMappingTable mapping,
 		Map<String, Field<?>> extractors
 ) {
 
 	public ConceptIdMappingSource {
-		Objects.requireNonNull(mapping, "mapping");
 		extractors = Map.copyOf(extractors);
 	}
 

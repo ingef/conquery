@@ -2,9 +2,9 @@ package com.bakdata.conquery.sql.mapping;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Supplier;
 
+import lombok.NonNull;
 import org.jooq.Field;
 import org.jooq.Name;
 import org.jooq.Record;
@@ -22,16 +22,16 @@ public final class ConceptIdMappingTable {
 	private Supplier<List<RowN>> rowsSupplier;
 	private List<RowN> rows;
 
-	public ConceptIdMappingTable(Name tableName, List<Field<?>> keyFields, List<RowN> rows) {
-		this.tableName = Objects.requireNonNull(tableName, "tableName");
+	public ConceptIdMappingTable(@NonNull Name tableName, List<Field<?>> keyFields, List<RowN> rows) {
+		this.tableName = tableName;
 		this.keyFields = List.copyOf(keyFields);
 		this.rows = List.copyOf(rows);
 	}
 
-	ConceptIdMappingTable(Name tableName, List<Field<?>> keyFields, Supplier<List<RowN>> rowsSupplier) {
-		this.tableName = Objects.requireNonNull(tableName, "tableName");
+	ConceptIdMappingTable(@NonNull Name tableName, List<Field<?>> keyFields, @NonNull Supplier<List<RowN>> rowsSupplier) {
+		this.tableName = tableName;
 		this.keyFields = List.copyOf(keyFields);
-		this.rowsSupplier = Objects.requireNonNull(rowsSupplier, "rowsSupplier");
+		this.rowsSupplier = rowsSupplier;
 	}
 
 	public Name tableName() {

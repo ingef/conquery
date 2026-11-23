@@ -1,6 +1,5 @@
 package com.bakdata.conquery.sql.translate.query;
 
-import java.util.Objects;
 import java.util.Optional;
 
 import com.bakdata.conquery.sql.model.node.AllEntitiesNode;
@@ -10,6 +9,7 @@ import com.bakdata.conquery.sql.translate.ir.QueryStep;
 import com.bakdata.conquery.sql.translate.ir.SchemaSql;
 import com.bakdata.conquery.sql.translate.ir.Selects;
 import com.bakdata.conquery.sql.translate.ir.SqlIdColumns;
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 /** Compiles the resolved entity schema into the query step used to select every entity. */
@@ -17,12 +17,11 @@ import lombok.experimental.UtilityClass;
 public final class AllEntitiesQueryStepTranslator {
 
 	public static QueryStep translate(
-			AllEntitiesNode allEntitiesNode,
+			@NonNull AllEntitiesNode allEntitiesNode,
 			EntitySchema entitySchema,
 			TranslatorDialect translatorDialect,
 			String cteName
 	) {
-		Objects.requireNonNull(allEntitiesNode, "allEntitiesNode");
 		Selects selects = Selects.builder()
 				.ids(new SqlIdColumns(SchemaSql.field(entitySchema.primaryId(), String.class)))
 				.validityDate(Optional.of(
