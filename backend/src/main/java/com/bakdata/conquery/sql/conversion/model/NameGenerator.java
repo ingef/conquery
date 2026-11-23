@@ -34,12 +34,14 @@ public class NameGenerator {
 	private int conceptCount;
 	private int andCount;
 	private int orCount;
+	private int temporalCount;
 
 	public NameGenerator(int nameMaxLength) {
 		this.nameMaxLength = nameMaxLength;
 		this.conceptCount = 0;
 		this.andCount = 0;
 		this.orCount = 0;
+		this.temporalCount = 0;
 		this.selectCountMap = new HashMap<>();
 	}
 
@@ -71,6 +73,10 @@ public class NameGenerator {
 			case OUTER_JOIN -> "OR-%d".formatted(++orCount);
 			case LEFT_JOIN -> throw new UnsupportedOperationException("Creating CTE names for LEFT_JOIN nodes is not supported");
 		};
+	}
+
+	public String temporalName() {
+		return ensureValidLength("temporal-%d".formatted(++temporalCount));
 	}
 
 	private String ensureValidLength(String input) {

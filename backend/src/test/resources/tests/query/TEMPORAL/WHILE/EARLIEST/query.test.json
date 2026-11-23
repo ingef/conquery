@@ -1,12 +1,6 @@
 {
   "type": "QUERY_TEST",
   "label": "Temporal Test",
-  "sqlSpec": {
-    "isEnabled": false,
-    "supportedDialects": [
-       "HANA"
-    ]
-  },
   "expectedCsv": "tests/query/TEMPORAL/WHILE/EARLIEST/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",

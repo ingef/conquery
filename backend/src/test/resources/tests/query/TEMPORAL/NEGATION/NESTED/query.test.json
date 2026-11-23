@@ -1,0 +1,127 @@
+{
+  "type": "QUERY_TEST",
+  "label": "Temporal nested negation keeps partitions independent",
+  "expectedCsv": "tests/query/TEMPORAL/NEGATION/NESTED/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "TEMPORAL",
+      "indexSelector": "ANY",
+      "showCompareDate": false,
+      "mode": {
+        "type": "AFTER",
+        "days": {
+          "min": 0,
+          "max": 2
+        }
+      },
+      "index": {
+        "type": "CONCEPT",
+        "ids": [
+          "concept"
+        ],
+        "tables": [
+          {
+            "id": "concept.connector",
+            "filters": [
+              {
+                "filter": "concept.connector.filter",
+                "type": "SELECT",
+                "value": "index"
+              }
+            ]
+          }
+        ]
+      },
+      "compare": {
+        "type": "AND",
+        "children": [
+          {
+            "type": "CONCEPT",
+            "ids": [
+              "concept"
+            ],
+            "tables": [
+              {
+                "id": "concept.connector",
+                "filters": [
+                  {
+                    "filter": "concept.connector.filter",
+                    "type": "SELECT",
+                    "value": "compare"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NEGATION",
+            "child": {
+              "type": "CONCEPT",
+              "ids": [
+                "concept"
+              ],
+              "tables": [
+                {
+                  "id": "concept.connector",
+                  "filters": [
+                    {
+                      "filter": "concept.connector.filter",
+                      "type": "SELECT",
+                      "value": "forbidden"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "concepts": [
+    {
+      "name": "concept",
+      "type": "TREE",
+      "connectors": [
+        {
+          "name": "connector",
+          "table": "table",
+          "validityDates": {
+            "name": "datum",
+            "column": "table.datum"
+          },
+          "filters": [
+            {
+              "name": "filter",
+              "column": "table.value",
+              "type": "SINGLE_SELECT"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/TEMPORAL/NEGATION/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE_RANGE"
+          },
+          {
+            "name": "value",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+}

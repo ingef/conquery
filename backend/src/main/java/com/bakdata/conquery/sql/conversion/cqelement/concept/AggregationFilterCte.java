@@ -21,10 +21,12 @@ class AggregationFilterCte extends ConnectorCte {
 
 		Selects aggregationFilterSelects = collectSelects(tableContext);
 
-		List<Condition> aggregationFilterConditions = tableContext.getSqlFilters().stream()
-																  .flatMap(conceptFilter -> conceptFilter.getWhereClauses().getGroupFilters().stream())
-																  .map(WhereCondition::condition)
-																  .toList();
+		List<Condition> aggregationFilterConditions = tableContext.getConversionContext().isDisableAggregationFilters()
+				? List.of()
+				: tableContext.getSqlFilters().stream()
+							  .flatMap(conceptFilter -> conceptFilter.getWhereClauses().getGroupFilters().stream())
+							  .map(WhereCondition::condition)
+							  .toList();
 
 		return QueryStep.builder()
 						.selects(aggregationFilterSelects)

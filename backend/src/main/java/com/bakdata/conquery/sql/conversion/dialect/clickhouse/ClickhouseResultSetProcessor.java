@@ -14,6 +14,7 @@ import java.util.List;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.execution.DefaultResultSetProcessor;
 import com.google.common.base.Preconditions;
 
@@ -121,6 +122,11 @@ public class ClickhouseResultSetProcessor extends DefaultResultSetProcessor {
 		}
 
 		return out;
+	}
+
+	@Override
+	public List<?> getOrderedList(ResultSet resultSet, int columnIndex, ResultType.Primitive elementType) throws SQLException {
+		return getList(resultSet, columnIndex);
 	}
 
 	@Override

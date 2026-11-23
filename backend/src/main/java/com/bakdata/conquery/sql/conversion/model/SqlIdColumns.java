@@ -86,6 +86,24 @@ public class SqlIdColumns implements Qualifiable<SqlIdColumns> {
 										 .build();
 	}
 
+	/**
+	 * Adds an internal identity column used to partition nested query conversion without exposing the column in the final result.
+	 */
+	public SqlIdColumns withTemporalPartition(Field<Integer> partition) {
+		return new TemporalSqlIdColumns(this, partition);
+	}
+
+	/**
+	 * Removes the most recently added temporal partition.
+	 */
+	public SqlIdColumns withoutTemporalPartition() {
+		return this;
+	}
+
+	public Optional<Field<Integer>> getTemporalPartition() {
+		return Optional.empty();
+	}
+
 	public SqlIdColumns forFinalSelect() {
 		return this;
 	}

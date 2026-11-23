@@ -35,6 +35,18 @@ public interface ResultSetProcessor {
 		};
 	}
 
+	default List<?> getOrderedList(ResultSet resultSet, int columnIndex, ResultType.Primitive elementType) throws SQLException {
+		return switch (elementType) {
+			case STRING -> getStringList(resultSet, columnIndex);
+			case BOOLEAN -> getBooleanList(resultSet, columnIndex);
+			case INTEGER -> getIntegerList(resultSet, columnIndex);
+			case NUMERIC -> getDoubleList(resultSet, columnIndex);
+			case DATE -> getDateList(resultSet, columnIndex);
+			case DATE_RANGE -> getDateRangeList(resultSet, columnIndex);
+			case MONEY -> getMoneyList(resultSet, columnIndex);
+		};
+	}
+
 	String getString(ResultSet resultSet, int columnIndex) throws SQLException;
 
 	Integer getInteger(ResultSet resultSet, int columnIndex) throws SQLException;
