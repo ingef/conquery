@@ -2,7 +2,7 @@
 import { visitAdminUI } from "../../integration-helpers/visitAdminUI";
 
 context("Admin UI News", () => {
-  it("Creates, orders, and deletes news with suggested and custom categories", () => {
+  it("Creates, publishes, schedules, orders, and deletes news", () => {
     const suffix = Date.now();
     const datasetId = `NewsDataset${suffix}`;
     const customNewsId = `custom-news-${suffix}`;
@@ -29,30 +29,39 @@ context("Admin UI News", () => {
     cy.get('[data-test-id="news-description"]').type("First line{enter}Second line");
     cy.get('[data-test-id="news-link"]').type("https://example.com/news");
 
-    cy.get('[data-test-id="news-category-input"]').focus();
-    cy.contains('[data-test-id="news-category-suggestion"]', datasetId).click();
-    cy.get('[data-test-id="news-category-input"]').type("custom-category{enter}");
-    cy.get('[data-test-id="news-category-token"]').should("have.length", 2);
+    cy.get('[data-test-id="news-dataset-input"]').type("custom-dataset{enter}");
+    cy.get('[data-test-id="news-add-all-datasets"]').click();
+    cy.get('[data-test-id="news-dataset-token"]').should("contain.text", datasetId);
+    cy.get('[data-test-id="news-dataset-token"]').should("contain.text", "custom-dataset");
+    cy.get('[data-test-id="news-dataset-token"]').then(($tokens) => {
+      cy.get('[data-test-id="news-add-all-datasets"]').click();
+      cy.get('[data-test-id="news-dataset-token"]').should("have.length", $tokens.length);
+    });
     cy.get('[data-test-id="news-title"]').click();
-    cy.get('[data-test-id="news-category-suggestions"]').should("not.be.visible");
+    cy.get('[data-test-id="news-dataset-suggestions"]').should("not.be.visible");
     cy.get('[data-test-id="create-news-btn"]').click();
 
     cy.get(`[data-test-id="news-row-${customNewsId}"]`)
       .should("contain.text", "Generated News Updated")
       .and("contain.text", datasetId)
-      .and("contain.text", "custom-category");
+      .and("contain.text", "custom-dataset");
 
     cy.get('[data-test-id="news-title"]').type(olderTitle);
     cy.get('[data-test-id="news-id"]').should("have.value", olderNewsId);
     cy.get('[data-test-id="news-description"]').type("Older news item");
     cy.get('[data-test-id="news-date"]').type("2000-01-01");
     cy.get('[data-test-id="create-news-btn"]').click();
-    cy.get(`[data-test-id="news-row-${olderNewsId}"]`).should("exist");
+    cy.get(`[data-test-id="news-row-${olderNewsId}"]`)
+      .should("exist")
+      .and("have.class", "table-warning");
+    cy.get(`[data-test-id="news-publication-status-${olderNewsId}"]`)
+      .should("have.text", "Not published");
 
     cy.get('[data-test-id="news-title"]').type(scheduledTitle);
     cy.get('[data-test-id="news-id"]').should("have.value", scheduledNewsId);
     cy.get('[data-test-id="news-description"]').type("Scheduled news item");
     cy.get('[data-test-id="news-date"]').type("2999-12-31");
+    cy.get('[data-test-id="news-add-all-datasets"]').click();
     cy.get('[data-test-id="create-news-btn"]').click();
     cy.get(`[data-test-id="news-row-${scheduledNewsId}"]`)
       .should("exist")

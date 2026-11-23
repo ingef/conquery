@@ -15,10 +15,12 @@ import java.util.Set;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
 
 import com.bakdata.conquery.io.jetty.IllegalArgumentExceptionMapper;
 import com.bakdata.conquery.io.jetty.JsonValidationExceptionMapper;
 import com.bakdata.conquery.io.jetty.NoSuchElementExceptionMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
 import io.dropwizard.testing.junit5.ResourceExtension;
@@ -49,6 +51,14 @@ class AdminNewsResourceTest {
 			LocalDate.of(2026, 10, 28),
 			Set.of("dataset-a")
 	);
+	private static final NewsItem UNPUBLISHED_NEWS_ITEM = new NewsItem(
+			"release-3",
+			"Release 3",
+			"The third release",
+			null,
+			LocalDate.of(2026, 10, 27),
+			Set.of()
+	);
 	private static final InMemoryNewsService NEWS_SERVICE = new InMemoryNewsService();
 	private static final ResourceExtension EXT = ResourceExtension.builder()
 			.addResource(new AdminNewsResource(NEWS_SERVICE, PUBLICATION_POLICY))
@@ -56,6 +66,7 @@ class AdminNewsResourceTest {
 			.addProvider(JsonValidationExceptionMapper.class)
 			.addProvider(NoSuchElementExceptionMapper.class)
 			.addProvider(IllegalArgumentExceptionMapper.class)
+			.addProvider(TestJsonProcessingExceptionMapper.class)
 			.build();
 
 	@BeforeEach
@@ -67,16 +78,20 @@ class AdminNewsResourceTest {
 	void listsAllNewsItems() throws IOException {
 		NEWS_SERVICE.addNewsItem(NEWS_ITEM);
 		NEWS_SERVICE.addNewsItem(SCHEDULED_NEWS_ITEM);
+		NEWS_SERVICE.addNewsItem(UNPUBLISHED_NEWS_ITEM);
 
 		try(Response response = EXT.target("/news").request().get()) {
 			assertThat(response.getStatus()).isEqualTo(Response.Status.OK.getStatusCode());
-			JsonNode body = response.readEntity(JsonNode.class);
-			assertThat(body).hasSize(2);
+			final JsonNode body = response.readEntity(JsonNode.class);
+			assertThat(body).hasSize(3);
 			assertThat(body.get(0).get("id").asText()).isEqualTo("release-1");
-			assertThat(body.get(0).get("categories").get(0).asText()).isEqualTo("dataset-a");
+			assertThat(body.get(0).get("publishedToDatasets").get(0).asText()).isEqualTo("dataset-a");
+			assertThat(body.get(0).has("categories")).isFalse();
 			assertThat(body.get(0).get("publicationStatus").asText()).isEqualTo("PUBLISHED");
 			assertThat(body.get(1).get("id").asText()).isEqualTo("release-2");
 			assertThat(body.get(1).get("publicationStatus").asText()).isEqualTo("SCHEDULED");
+			assertThat(body.get(2).get("id").asText()).isEqualTo("release-3");
+			assertThat(body.get(2).get("publicationStatus").asText()).isEqualTo("UNPUBLISHED");
 		}
 	}
 
@@ -171,7 +186,7 @@ class AdminNewsResourceTest {
 				  "description": "%s",
 				  "link": %s,
 				  "date": "%s",
-				  "categories": ["dataset-a"]
+				  "publishedToDatasets": ["dataset-a"]
 				}
 				""".formatted(
 				item.id(),
@@ -191,9 +206,9 @@ class AdminNewsResourceTest {
 		}
 
 		@Override
-		public List<NewsItem> getNews(String category) {
+		public List<NewsItem> getNews(String dataset) {
 			return news.values().stream()
-					.filter(item -> category == null || item.categories().contains(category))
+					.filter(item -> dataset == null || item.publishedToDatasets().contains(dataset))
 					.toList();
 		}
 
@@ -215,6 +230,14 @@ class AdminNewsResourceTest {
 
 		private void clear() {
 			news.clear();
+		}
+	}
+
+	public static final class TestJsonProcessingExceptionMapper implements ExceptionMapper<JsonProcessingException> {
+
+		@Override
+		public Response toResponse(final JsonProcessingException exception) {
+			return Response.status(Response.Status.BAD_REQUEST).build();
 		}
 	}
 }

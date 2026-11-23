@@ -14,19 +14,19 @@ h3 {
     padding-top:20px;
 }
 
-.category-token-input {
+.dataset-token-input {
     min-height: calc(2.25rem + 2px);
     cursor: text;
 }
 
-.category-token-input input {
+.dataset-token-input input {
     min-width: 12rem;
     flex: 1;
     border: 0;
     outline: 0;
 }
 
-.category-token-input .close {
+.dataset-token-input .close {
     float: none;
     font-size: 1rem;
     line-height: 1;

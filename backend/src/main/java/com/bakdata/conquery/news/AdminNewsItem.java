@@ -10,7 +10,7 @@ public record AdminNewsItem(
 		String description,
 		URI link,
 		LocalDate date,
-		Set<String> categories,
+		Set<String> publishedToDatasets,
 		NewsPublicationStatus publicationStatus) {
 
 	public static AdminNewsItem from(NewsItem item, NewsPublicationStatus publicationStatus) {
@@ -20,7 +20,7 @@ public record AdminNewsItem(
 				item.description(),
 				item.link(),
 				item.date(),
-				item.categories(),
+				item.publishedToDatasets(),
 				publicationStatus
 		);
 	}

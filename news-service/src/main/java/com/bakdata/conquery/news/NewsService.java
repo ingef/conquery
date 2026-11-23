@@ -9,7 +9,7 @@ public interface NewsService extends AutoCloseable {
 
 	void reloadNews() throws IOException;
 
-	List<NewsItem> getNews(String category);
+	List<NewsItem> getNews(String dataset);
 
 	void addNewsItem(NewsItem news) throws IOException;
 
