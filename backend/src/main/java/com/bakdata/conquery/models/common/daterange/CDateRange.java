@@ -111,7 +111,6 @@ public final class CDateRange implements IRange<LocalDate, CDateRange> {
 	 * @param max upper bound of the range
 	 * @return
 	 */
-	@JsonCreator
 	public static CDateRange of(LocalDate min, LocalDate max) {
 		return of(
 			CDate.ofLocalDate(min, NEGATIVE_INFINITY),
