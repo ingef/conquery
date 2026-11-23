@@ -25,11 +25,15 @@ public class PPColumn {
 
 	public ColumnStore findBestType() {
 		log.info("Compute best Subtype for  Column[{}] with {}", getName(), getParser());
-		ColumnStore decision = parser.findBestType();
+		ColumnStore decision = createStore(parser.getLines());
 		// this only creates the headers
 
 		log.debug("\t{}: {} -> {}", getName(), getParser(), decision);
 
 		return decision;
+	}
+
+	public ColumnStore createStore(int lines) {
+		return parser.findBestType(lines);
 	}
 }

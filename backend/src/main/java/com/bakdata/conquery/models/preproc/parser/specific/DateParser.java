@@ -8,6 +8,7 @@ import com.bakdata.conquery.models.events.stores.primitive.IntegerDateStore;
 import com.bakdata.conquery.models.events.stores.root.DateStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.preproc.OutputRow;
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.DateReader;
@@ -39,6 +40,21 @@ public class DateParser extends Parser<Integer, DateStore> {
 	}
 
 	@Override
+	public void parse(String value, OutputRow outputRow, int outputIndex) throws ParsingException {
+		if (value == null) {
+			outputRow.setNull(outputIndex);
+			return;
+		}
+
+		try {
+			outputRow.setLong(outputIndex, CDate.ofLocalDate(dateReader.parseToLocalDate(value)));
+		}
+		catch (Exception e) {
+			throw parsingException(value, e);
+		}
+	}
+
+	@Override
 	public Integer addLine(Integer v) {
 		if(v == null){
 			subType.addLine(null);
@@ -51,8 +67,26 @@ public class DateParser extends Parser<Integer, DateStore> {
 	}
 
 	@Override
+	public void addLine(OutputRow outputRow, int outputIndex) {
+		if (outputRow.isNull(outputIndex)) {
+			recordNullLine();
+			subType.addNull();
+			return;
+		}
+
+		final long value = outputRow.getLong(outputIndex);
+		recordLongLine(value);
+		subType.addLong(value);
+	}
+
+	@Override
 	protected DateStore decideType() {
-		IntegerStore subDecision = subType.findBestType();
+		return decideType(getLines());
+	}
+
+	@Override
+	protected DateStore decideType(int storeLines) {
+		IntegerStore subDecision = subType.findBestType(storeLines);
 		return new IntegerDateStore(subDecision);
 	}
 

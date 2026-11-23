@@ -6,11 +6,11 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.EmptyStore;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.preproc.OutputRow;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Base class used for parsing values in Preprocessing.
@@ -24,7 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @RequiredArgsConstructor
 @ToString
-@Slf4j
 public abstract class Parser<MAJOR_JAVA_TYPE, STORE_TYPE extends ColumnStore> {
 
 	@ToString.Exclude
@@ -42,8 +41,16 @@ public abstract class Parser<MAJOR_JAVA_TYPE, STORE_TYPE extends ColumnStore> {
 			return parseValue(v);
 		}
 		catch (Exception e) {
-			throw new ParsingException("Failed to parse '" + v + "' with " + this.getClass().getSimpleName(), e);
+			throw parsingException(v, e);
 		}
+	}
+
+	public void parse(String value, OutputRow outputRow, int outputIndex) throws ParsingException {
+		outputRow.setObject(outputIndex, parse(value));
+	}
+
+	protected final ParsingException parsingException(String value, Exception cause) {
+		return new ParsingException("Failed to parse '" + value + "' with " + this.getClass().getSimpleName(), cause);
 	}
 
 	/**
@@ -52,11 +59,22 @@ public abstract class Parser<MAJOR_JAVA_TYPE, STORE_TYPE extends ColumnStore> {
 	protected abstract MAJOR_JAVA_TYPE parseValue(@Nonnull String value) throws ParsingException;
 
 	public final STORE_TYPE findBestType() {
+		return findBestType(getLines());
+	}
+
+	/**
+	 * Select the optimal store based on all registered values, but allocate it for the supplied number of lines.
+	 */
+	public final STORE_TYPE findBestType(int storeLines) {
+		if (storeLines < 0) {
+			throw new IllegalArgumentException("Store lines must not be negative");
+		}
+
 		if (isEmpty()) {
 			return (STORE_TYPE) EmptyStore.INSTANCE; // This implements all root ColumnStores.
 		}
 
-		return decideType();
+		return decideType(storeLines);
 	}
 
 	public boolean isEmpty() {
@@ -66,7 +84,14 @@ public abstract class Parser<MAJOR_JAVA_TYPE, STORE_TYPE extends ColumnStore> {
 	/**
 	 * Analyze all values and select an optimal store.
 	 */
-	protected abstract STORE_TYPE decideType();
+	protected STORE_TYPE decideType() {
+		return decideType(getLines());
+	}
+
+	/**
+	 * Select the store representation from the globally collected parser statistics and allocate it with the supplied length.
+	 */
+	protected abstract STORE_TYPE decideType(int storeLines);
 
 	/**
 	 * Process a single parsed line.
@@ -74,16 +99,40 @@ public abstract class Parser<MAJOR_JAVA_TYPE, STORE_TYPE extends ColumnStore> {
 	 * @param v a parsed value.
 	 */
 	public MAJOR_JAVA_TYPE addLine(MAJOR_JAVA_TYPE v) {
-		lines++;
-		log.trace("Registering `{}` in line {}", v, lines);
-
 		if (v == null) {
-			nullLines++;
+			recordNullLine();
 		}
 		else {
+			recordObjectLine(v);
 			registerValue(v);
 		}
 		return v;
+	}
+
+	@SuppressWarnings("unchecked")
+	public void addLine(OutputRow outputRow, int outputIndex) {
+		addLine((MAJOR_JAVA_TYPE) outputRow.getObject(outputIndex));
+	}
+
+	protected final void recordNullLine() {
+		lines++;
+		nullLines++;
+	}
+
+	protected final void recordObjectLine(Object value) {
+		lines++;
+	}
+
+	protected final void recordLongLine(long value) {
+		lines++;
+	}
+
+	protected final void recordDoubleLine(double value) {
+		lines++;
+	}
+
+	protected final void recordBooleanLine(boolean value) {
+		lines++;
 	}
 
 	/**
