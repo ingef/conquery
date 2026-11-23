@@ -29,7 +29,7 @@ const getNextConnector = (
       items: children.items,
       direction: children.direction,
       connection: "time" as const,
-      timestamps: children.items.map(() => "ANY" as const),
+      indexSelector: "ANY" as const,
       operator: "BEFORE" as const,
     };
   }

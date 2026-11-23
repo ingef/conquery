@@ -10,7 +10,6 @@
     "root": {
       "type": "TEMPORAL",
       "indexSelector": "ALL",
-      "compareSelector": "ALL",
       "mode": {
         "type": "AFTER",
         "days": {

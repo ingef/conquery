@@ -33,6 +33,7 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.ListResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonView;
 import lombok.Data;
 import lombok.Setter;
@@ -46,11 +47,10 @@ import lombok.Setter;
  * 	"reference" : {}, // Concept A
  * 	"compare" : {}, // Concept B
  * 	"mode" : {"type": "BEFORE", "days" : {"min" : 10}},
- * 	"referenceSelector" : "EARLIEST",
- * 	"compareSelector" : "EARLIEST",
+ * 	"indexSelector" : "EARLIEST",
  * }
  * </pre>
- * => The earliest sub-period of Concept A is included, if the earliest sub-period of B is at least 10 days before it.
+ * => The earliest sub-period of Concept A is included, if any sub-period of B is at least 10 days before it.
  * <p>
  * <hr />
  *
@@ -60,16 +60,16 @@ import lombok.Setter;
  * 	"reference" : {}, // Concept A
  * 	"compare" : {}, // Concept B
  * 	"mode" : {"type": "BEFORE", "days" : {"min" : 10}},
- * 	"referenceSelector" : "ANY",
- * 	"compareSelector" : "EARLIEST",
+ * 	"indexSelector" : "ANY",
  * }
  * </pre>
- * => All sub-periods of Concept A are included, if the earliest sub-period of Concept B is 10 days before it.
+ * => All sub-periods of Concept A are included, if any sub-period of Concept B is 10 days before it.
  * <p>
  * <hr />
  */
 @Data
 @CPSType(id = "TEMPORAL", base = CQElement.class)
+@JsonIgnoreProperties("compareSelector")
 public class CQTemporal extends CQElement {
 
 	/**
@@ -81,7 +81,7 @@ public class CQTemporal extends CQElement {
 	private final CQElement index;
 
 	/**
-	 * Subquery, whose date-restriction is set in relation to sub-periods of index. Conforming to the definitions of mode and selectors.
+	 * Subquery, whose date-restriction is set in relation to sub-periods of index. Conforming to the definitions of mode and the index selector.
 	 * < br/>
 	 * Aggregators are returned as array of results per contained sub-period. (This is a bit hard to read, but allows users to access them)
 	 */
@@ -100,7 +100,6 @@ public class CQTemporal extends CQElement {
 	@Valid
 	private final TemporalRelationMode mode;
 	private final TemporalSelector indexSelector;
-	private final TemporalSelector compareSelector;
 
 	/**
 	 * If true, also output the inner compareDates that are satisfied.
@@ -128,7 +127,6 @@ public class CQTemporal extends CQElement {
 															getMode(),
 															createCompareQueryPlan(context, true),
 															createCompareQueryPlan(context, false),
-															getCompareSelector(),
 															shimAggregators
 		);
 

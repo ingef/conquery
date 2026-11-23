@@ -49,7 +49,7 @@ export type TimeOperator = (typeof TIME_OPERATORS)[number];
 export interface TreeChildrenTime extends TreeChildrenBase {
   connection: "time";
   operator: TimeOperator;
-  timestamps: TimeTimestamp[]; // items.length
+  indexSelector: TimeTimestamp;
   interval?: {
     min: number | null;
     max: number | null;

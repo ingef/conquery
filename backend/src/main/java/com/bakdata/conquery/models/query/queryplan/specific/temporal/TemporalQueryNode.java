@@ -54,9 +54,6 @@ public class TemporalQueryNode extends QPNode {
 	 */
 	private final ConceptQueryPlan innerCompareQueryPlan;
 
-	private final TemporalSelector compareSelector;
-
-
 	private final List<ConstantValueAggregator<List<Object>>> aggregationResults;
 	private final ConstantValueAggregator<CDateSet> compareDateAggregator = new ConstantValueAggregator<>(null);
 	private final ConstantValueAggregator<CDateSet> indexDateAggregator = new ConstantValueAggregator<>(null);
@@ -150,11 +147,12 @@ public class TemporalQueryNode extends QPNode {
 			}
 
 			final CDateSet outerDates = outerCompareQueryPlan.getDateAggregator().createAggregationResult();
-			final CDateRange[] comparePeriods = compareSelector.sample(outerDates);
+			final CDateRange[] comparePeriods = outerDates.asRanges().toArray(CDateRange[]::new);
 
 			final boolean[] compareContained = new boolean[comparePeriods.length];
 			final CDateSet[] compareDates = new CDateSet[comparePeriods.length];
 			final Object[][] compareAggregationResults = new Object[comparePeriods.length][];
+			boolean satisfies = false;
 
 			for (int inner = 0; inner < comparePeriods.length; inner++) {
 
@@ -164,6 +162,7 @@ public class TemporalQueryNode extends QPNode {
 				compareContained[inner] = evaluateWithRestriction(entity, comparePeriod, innerCompareQueryPlan, ctx);
 
 				if (compareContained[inner]) {
+					satisfies = true;
 					compareDates[inner] = innerCompareQueryPlan.getDateAggregator().createAggregationResult();
 					compareAggregationResults[inner] = innerCompareQueryPlan.getAggregators().stream()
 																			.skip(1) // Skip the result-date
@@ -171,11 +170,8 @@ public class TemporalQueryNode extends QPNode {
 				}
 			}
 
-			boolean satisfies = compareSelector.satisfies(compareContained);
-
-			log.trace("{}:{} => indexPeriod={}, comparePeriods={}, compareContained={} => {}",
+			log.trace("{} => indexPeriod={}, comparePeriods={}, compareContained={} => {}",
 					  getEntity(),
-					  compareSelector,
 					  indexPeriod,
 					  comparePeriods,
 					  compareContained,
@@ -184,7 +180,7 @@ public class TemporalQueryNode extends QPNode {
 
 			results[current] = satisfies;
 
-			// If compare's selector is satisfied, we append current to the results and collect the aggregation results
+			// If any compare period is satisfied, we append current to the results and collect the aggregation results
 			if (!satisfies) {
 				continue;
 			}
