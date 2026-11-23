@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
@@ -25,6 +26,9 @@ public class UpdateMatchingStatsSqlJob extends Job {
 	@ToString.Exclude
 	private final List<Concept<?>> concepts;
 	private final Dataset dataset;
+
+	@ToString.Exclude
+	private final NamespaceStorage storage;
 
 	@ToString.Exclude
 	private final SqlMatchingStats matchingStats;
@@ -70,6 +74,7 @@ public class UpdateMatchingStatsSqlJob extends Job {
 				if (concept instanceof TreeConcept treeConcept) {
 					Future<Void> future = completionService.submit(() -> {
 						matchingStats.collectMatchingStatsForConcept(treeConcept, matchingStats.getMatchingStatsRetries());
+						storage.updateConcept(treeConcept);
 						return null;
 					});
 

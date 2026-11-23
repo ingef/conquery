@@ -52,7 +52,7 @@ public class LocalNamespace extends Namespace {
 	@Override
 	void updateMatchingStats() {
 		getJobManager().addSlowJob(
-				new UpdateMatchingStatsSqlJob(getStorage().getAllConcepts().toList(), getDataset(), getMatchingStats())
+				new UpdateMatchingStatsSqlJob(getStorage().getAllConcepts().toList(), getDataset(), getStorage(), getMatchingStats())
 		);
 	}
 
