@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
+
+import com.bakdata.conquery.models.error.ConqueryError;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.Invocation;
@@ -25,6 +28,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.dropwizard.health.check.http.HttpHealthCheck;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.glassfish.jersey.client.ClientProperties;
 
 @Slf4j
 @Getter
@@ -105,8 +109,12 @@ public class ExternalFormBackendApi {
 			   .acceptLanguage(I18n.LOCALE.get())
 		;
 
-		ExternalTaskState post = request.post(Entity.entity(form.getExternalApiPayload(), MediaType.APPLICATION_JSON_TYPE), ExternalTaskState.class);
-		return post;
+		try {
+            return request.post(Entity.entity(form.getExternalApiPayload(), MediaType.APPLICATION_JSON_TYPE), ExternalTaskState.class);
+		} catch (BadRequestException bre) {
+			log.error("Failed to forward form request (target: {}, body: {}). Problem: {}", webTarget.getUri(), form.getExternalApiPayload(),  bre.getResponse().readEntity(String.class));
+			throw new ConqueryError.UnknownError(bre);
+		}
 	}
 
 	public ExternalTaskState getFormState(UUID externalId) {
@@ -115,16 +123,20 @@ public class ExternalFormBackendApi {
 		log.debug("Getting status from: {}", getStatusTargetResolved);
 
 		return getStatusTargetResolved.request(MediaType.APPLICATION_JSON_TYPE)
-									  .acceptLanguage(I18n.LOCALE.get())
-									  .get(ExternalTaskState.class);
+				.acceptLanguage(I18n.LOCALE.get())
+				.get(ExternalTaskState.class);
 	}
 
 	public Response getResult(final URI resultURL) {
 		log.debug("Query external form result from {}", resultURL);
 
-		return client.target(baseTarget.getUri().resolve(resultURL)).request()
-					 .acceptLanguage(I18n.LOCALE.get())
-					 .get();
+		Response response = client.target(baseTarget.getUri().resolve(resultURL)).request()
+				.acceptLanguage(I18n.LOCALE.get())
+				// We don't follow result urls, since a redirect here is intended for the users browser
+				.property(ClientProperties.FOLLOW_REDIRECTS, false)
+				.get();
+		log.debug("Response from {}: {}", resultURL, response.getStatus());
+		return response;
 
 	}
 
