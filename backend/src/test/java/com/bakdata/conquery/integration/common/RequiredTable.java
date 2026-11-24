@@ -17,10 +17,12 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import net.minidev.json.annotate.JsonIgnore;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
 public class RequiredTable {
 
@@ -38,7 +40,7 @@ public class RequiredTable {
 	@JsonIgnore
 	private String importName;
 
-	@JsonCreator
+	@JsonCreator(mode = JsonCreator.Mode.DELEGATING)
 	public static RequiredTable fromFile(String fileResource) throws IOException {
 		return Jackson.MAPPER.readValue(
 				Objects.requireNonNull(
