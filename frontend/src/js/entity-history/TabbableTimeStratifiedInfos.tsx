@@ -7,6 +7,7 @@ import { Tab, TabList, Tabs } from "../ui-components/Tabs";
 
 import { TimeStratifiedChart } from "./TimeStratifiedChart";
 import { TimeStratifiedConceptChart } from "./TimeStratifiedConceptChart";
+import { TimeStratifiedTextChart } from "./TimeStratifiedTextChart";
 import { isConceptColumn, isMoneyColumn } from "./timeline/util/util";
 
 const container = tv({
@@ -22,7 +23,7 @@ export const TabbableTimeStratifiedInfos = ({
   const [activeTab, setActiveTab] = useState(infos[0].label);
 
   const { data, type } = useMemo(() => {
-    let infoType = "money";
+    let infoType: "money" | "concept" | "text" = "money";
     let infoData = infos.find((info) => info.label === activeTab);
 
     if (infoData?.columns.some((c) => isMoneyColumn(c))) {
@@ -38,8 +39,13 @@ export const TabbableTimeStratifiedInfos = ({
         columns: columns ?? [],
       };
     } else if (infoData?.columns.some(isConceptColumn)) {
-      // TODO: Handle concept data
       infoType = "concept";
+    } else if (
+      infoData?.columns.some(
+        (column) => column.type === "STRING" || column.type === "LIST[STRING]",
+      )
+    ) {
+      infoType = "text";
     }
 
     return { data: infoData, type: infoType };
@@ -61,6 +67,9 @@ export const TabbableTimeStratifiedInfos = ({
       )}
       {data && type === "concept" && (
         <TimeStratifiedConceptChart timeStratifiedInfo={data} />
+      )}
+      {data && type === "text" && (
+        <TimeStratifiedTextChart timeStratifiedInfo={data} />
       )}
     </div>
   );
