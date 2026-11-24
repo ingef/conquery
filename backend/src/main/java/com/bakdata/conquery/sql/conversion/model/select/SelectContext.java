@@ -20,7 +20,16 @@ import lombok.Value;
 public class SelectContext<T extends SqlTables> implements Context {
 
 	SqlIdColumns ids;
+	/**
+	 * ID expressions available from the source tables of the preprocessing CTE. Unlike {@link #ids}, these fields must not reference aliases created by the
+	 * preprocessing SELECT itself.
+	 */
+	SqlIdColumns preprocessingIds;
 	Optional<ColumnDateRange> validityDate;
+	/**
+	 * Validity-date expressions available from the source tables of the preprocessing CTE.
+	 */
+	Optional<ColumnDateRange> preprocessingValidityDate;
 	T tables;
 	ConversionContext conversionContext;
 
@@ -32,10 +41,12 @@ public class SelectContext<T extends SqlTables> implements Context {
 	public static SelectContext<ConnectorSqlTables> create(
 			SqlIdColumns ids,
 			Optional<ColumnDateRange> validityDate,
+			SqlIdColumns preprocessingIds,
+			Optional<ColumnDateRange> preprocessingValidityDate,
 			ConnectorSqlTables tables,
 			ConversionContext conversionContext
 	) {
-		return new SelectContext<>(ids, validityDate, tables, conversionContext);
+		return new SelectContext<>(ids, preprocessingIds, validityDate, preprocessingValidityDate, tables, conversionContext);
 	}
 
 	public static SelectContext<ConceptSqlTables> create(
@@ -44,7 +55,7 @@ public class SelectContext<T extends SqlTables> implements Context {
 			ConceptSqlTables tables,
 			ConversionContext conversionContext
 	) {
-		return new SelectContext<>(ids, validityDate, tables, conversionContext);
+		return new SelectContext<>(ids, ids, validityDate, validityDate, tables, conversionContext);
 	}
 
 	public SqlFunctionProvider getFunctionProvider() {
