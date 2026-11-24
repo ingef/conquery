@@ -119,6 +119,8 @@ backend:
     sqlConnectorConfig:
       # flag to enable the usage of an external databases
       enabled: false
+      # preserve and reuse compatible concept ID mapping tables across concept updates
+      reuseExistingConceptIdTables: false
       # Mapping of datasets (key) to database configuration
       databaseConfigs:
         example_database:
