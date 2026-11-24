@@ -5,10 +5,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.conditions.CTCondition;

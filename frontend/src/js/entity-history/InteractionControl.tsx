@@ -1,16 +1,8 @@
-import styled from "@emotion/styled";
-import { faChevronRight, faHome } from "@fortawesome/free-solid-svg-icons";
+import { ChevronRightIcon, HouseIcon } from "lucide-react";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
-
-import IconButton from "../button/IconButton";
-import WithTooltip from "../tooltip/WithTooltip";
-
-const Root = styled("div")`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-`;
+import { Button } from "../ui-components/Button";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 const InteractionControl = ({
   onCloseAll,
@@ -22,14 +14,28 @@ const InteractionControl = ({
   const { t } = useTranslation();
 
   return (
-    <Root>
-      <WithTooltip text={t("history.closeAll")}>
-        <IconButton onClick={onCloseAll} icon={faHome} />
-      </WithTooltip>
-      <WithTooltip text={t("history.openAll")}>
-        <IconButton onClick={onOpenAll} icon={faChevronRight} />
-      </WithTooltip>
-    </Root>
+    <div className="flex flex-col items-center">
+      <TooltipTrigger>
+        <Button
+          intent="tertiary"
+          aria-label={t("history.closeAll")}
+          onPress={onCloseAll}
+        >
+          <HouseIcon />
+        </Button>
+        <Tooltip placement="right">{t("history.closeAll")}</Tooltip>
+      </TooltipTrigger>
+      <TooltipTrigger>
+        <Button
+          intent="tertiary"
+          aria-label={t("history.openAll")}
+          onPress={onOpenAll}
+        >
+          <ChevronRightIcon />
+        </Button>
+        <Tooltip placement="right">{t("history.openAll")}</Tooltip>
+      </TooltipTrigger>
+    </div>
   );
 };
 

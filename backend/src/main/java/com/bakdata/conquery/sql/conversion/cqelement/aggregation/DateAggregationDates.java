@@ -4,7 +4,6 @@ import java.sql.Date;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;

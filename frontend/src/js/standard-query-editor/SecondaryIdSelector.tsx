@@ -1,37 +1,33 @@
-import styled from "@emotion/styled";
-import { faMicroscope } from "@fortawesome/free-solid-svg-icons";
-import { FC, memo, useCallback, useEffect, useMemo, useRef } from "react";
+import { MicroscopeIcon } from "lucide-react";
+import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-
-import { SecondaryId } from "../api/types";
+import { tv } from "tailwind-variants";
+import type { SecondaryId } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { exists } from "../common/helpers/exists";
-import FaIcon from "../icon/FaIcon";
 import { nodeIsConceptQueryNode } from "../model/node";
-import InfoTooltip from "../tooltip/InfoTooltip";
-import ToggleButton from "../ui-components/ToggleButton";
+import { Label } from "../ui-components/Label";
+import { ToggleButton } from "../ui-components/ToggleButton";
+import { ToggleButtonGroup } from "../ui-components/ToggleButtonGroup";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 import { setSelectedSecondaryId } from "./actions";
 import type { StandardQueryStateT } from "./queryReducer";
 import type { SelectedSecondaryIdStateT } from "./selectedSecondaryIdReducer";
 
-const Headline = styled.h3<{ active?: boolean }>`
-  font-size: ${({ theme }) => theme.font.sm};
-  margin: 0;
-  text-transform: uppercase;
-  transition: color ${({ theme }) => theme.transitionTime};
-  color: ${({ theme, active }) =>
-    active ? theme.col.blueGrayDark : theme.col.gray};
-`;
+// the icon shows whether a non-standard id is selected
+const headlineIcon = tv({
+  base: "mr-[10px] transition-[color] duration-100",
+  variants: {
+    active: {
+      true: "text-primary-500",
+      false: "text-gray-600",
+    },
+  },
+});
 
-const SxFaIcon = styled(FaIcon)<{ active?: boolean }>`
-  transition: color ${({ theme }) => theme.transitionTime};
-  color: ${({ theme, active }) =>
-    active ? theme.col.blueGrayDark : theme.col.gray};
-`;
-
-const SecondaryIdSelector: FC = () => {
+const SecondaryIdSelector = () => {
   const { t } = useTranslation();
   const query = useSelector<StateT, StandardQueryStateT>(
     (state) => state.queryEditor.query,
@@ -88,6 +84,7 @@ const SecondaryIdSelector: FC = () => {
 
   const availableSecondaryIdsString = JSON.stringify(availableSecondaryIds);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally keyed on the stringified ids, see above
   useEffect(
     function unselectSecondaryId() {
       const activeSecondaryIdNotFound =
@@ -108,6 +105,7 @@ const SecondaryIdSelector: FC = () => {
     ],
   );
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally keyed on the stringified ids, see above
   const options = useMemo(
     () => [
       {
@@ -122,7 +120,6 @@ const SecondaryIdSelector: FC = () => {
     ],
     // We DO want to recompute this when the availableSecondaryIds change,
     // see explanation above
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [availableSecondaryIdsString, t],
   );
 
@@ -145,7 +142,7 @@ const SecondaryIdSelectorUI = memo(
     value,
     onChange,
   }: {
-    options: { label: string; value: string }[];
+    options: { label: string; value: string; description?: string }[];
     value: string | null;
     onChange: (value: string) => void;
   }) => {
@@ -153,16 +150,28 @@ const SecondaryIdSelectorUI = memo(
 
     return (
       <div>
-        <Headline active={!!value}>
-          <SxFaIcon active={!!value} left icon={faMicroscope} />
+        <Label elementType="span" tooltip={t("queryEditor.secondaryIdTooltip")}>
+          <MicroscopeIcon className={headlineIcon({ active: !!value })} />
           {t("queryEditor.secondaryId")}
-          <InfoTooltip text={t("queryEditor.secondaryIdTooltip")} />
-        </Headline>
-        <ToggleButton
-          value={value || "standard"}
-          onChange={onChange}
-          options={options}
-        />
+        </Label>
+        <ToggleButtonGroup
+          wrap
+          size="sm"
+          selectionMode="single"
+          disallowEmptySelection
+          selectedKeys={[value || "standard"]}
+          onSelectionChange={(keys) => {
+            const [key] = keys;
+            if (typeof key === "string") onChange(key);
+          }}
+        >
+          {options.map(({ value: id, label, description }) => (
+            <TooltipTrigger key={id}>
+              <ToggleButton id={id}>{label}</ToggleButton>
+              <Tooltip>{description}</Tooltip>
+            </TooltipTrigger>
+          ))}
+        </ToggleButtonGroup>
       </div>
     );
   },

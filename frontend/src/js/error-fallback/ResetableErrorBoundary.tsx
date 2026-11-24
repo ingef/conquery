@@ -1,4 +1,4 @@
-import { ReactNode, useCallback, useState } from "react";
+import { type ReactNode, useCallback, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
 import ErrorFallback from "./ErrorFallback";

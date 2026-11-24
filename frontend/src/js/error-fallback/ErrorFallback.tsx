@@ -1,33 +1,20 @@
-import styled from "@emotion/styled";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
+import { Button } from "../ui-components/Button";
+import { C2, H3 } from "../ui-components/Typography";
 
-import { TransparentButton } from "../button/TransparentButton";
+const root = tv({
+  base: [
+    "flex flex-col items-center justify-center",
+    "gap-[10px]",
+    "h-full w-full",
+    "p-5",
+  ],
+});
 
-const Root = styled("div")`
-  height: 100%;
-  width: 100%;
-  padding: 20px;
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-  justify-content: center;
-  gap: 10px;
-`;
+const description = tv({ base: ["max-w-[300px]", "text-justify"] });
 
-const Heading = styled("h3")`
-  margin: 0;
-  font-size: ${({ theme }) => theme.font.md};
-`;
-const Description = styled("p")`
-  margin: 0;
-  font-size: ${({ theme }) => theme.font.sm};
-  max-width: 300px;
-  text-align: justify;
-`;
-
-const ReloadButton = styled(TransparentButton)`
-  margin-top: 10px;
-`;
+const reloadButton = tv({ base: "mt-[10px]" });
 
 const ErrorFallback = ({
   allowFullRefresh,
@@ -39,24 +26,36 @@ const ErrorFallback = ({
   const { t } = useTranslation();
 
   return (
-    <Root>
-      <Heading>{t("error.sorry")}</Heading>
-      <Description>{t("error.description")}</Description>
+    <div className={root()}>
+      <H3>{t("error.sorry")}</H3>
+      <div className={description()}>
+        <C2>{t("error.description")}</C2>
+      </div>
       {allowFullRefresh && (
         <>
-          <Description>{t("error.reloadDescription")}</Description>
-          <ReloadButton onClick={() => window.location.reload()}>
-            {t("error.reload")}
-          </ReloadButton>
+          <div className={description()}>
+            <C2>{t("error.reloadDescription")}</C2>
+          </div>
+          <div className={reloadButton()}>
+            <Button intent="secondary" onPress={() => window.location.reload()}>
+              {t("error.reload")}
+            </Button>
+          </div>
         </>
       )}
       {onReset && (
         <>
-          <Description>{t("error.resetDescription")}</Description>
-          <ReloadButton onClick={onReset}>{t("error.reset")}</ReloadButton>
+          <div className={description()}>
+            <C2>{t("error.resetDescription")}</C2>
+          </div>
+          <div className={reloadButton()}>
+            <Button intent="secondary" onPress={onReset}>
+              {t("error.reset")}
+            </Button>
+          </div>
         </>
       )}
-    </Root>
+    </div>
   );
 };
 export default ErrorFallback;

@@ -1,22 +1,14 @@
-import { css } from "@emotion/react";
-import styled from "@emotion/styled";
-import { faFileImport } from "@fortawesome/free-solid-svg-icons";
-import {
-  ReactElement,
-  ReactNode,
-  Ref,
-  forwardRef,
-  useRef,
-  useState,
-} from "react";
-import { DropTargetMonitor } from "react-dnd";
+import { type ReactNode, type Ref, useRef, useState } from "react";
+import type { DropTargetMonitor } from "react-dnd";
 import { NativeTypes } from "react-dnd-html5-backend";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
+import { Button } from "./Button";
 
-import { SelectFileButton } from "../button/SelectFileButton";
-import FaIcon from "../icon/FaIcon";
-
-import Dropzone, { ChildArgs, PossibleDroppableObject } from "./Dropzone";
+import Dropzone, {
+  type ChildArgs,
+  type PossibleDroppableObject,
+} from "./Dropzone";
 import { ImportModal } from "./ImportModal";
 
 export interface DragItemFile {
@@ -24,35 +16,29 @@ export interface DragItemFile {
   files: File[];
 }
 
-const FileInput = styled("input")`
-  display: none;
-`;
+const dropzone = tv({
+  base: [
+    "relative",
+    "cursor-pointer",
+    "transition-shadow duration-100",
+    "hover:shadow-[0_0_5px_0_rgba(0,0,0,0.2)]",
+  ],
+  variants: {
+    isInitial: { true: "cursor-[initial]" },
+    naked: { true: "cursor-auto hover:shadow-none" },
+  },
+});
 
-const SxDropzone = styled(Dropzone)<{ isInitial?: boolean; tight?: boolean }>`
-  cursor: ${({ isInitial }) => (isInitial ? "initial" : "pointer")};
-  transition: box-shadow ${({ theme }) => theme.transitionTime};
-  position: relative;
-  ${({ tight }) =>
-    tight &&
-    css`
-      padding: 5px;
-    `}
-
-  &:hover {
-    box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
-  }
-`;
-
-const SxSelectFileButton = styled(SelectFileButton)<{ outside?: boolean }>`
-  position: absolute;
-  top: ${({ outside }) => (outside ? "-26px" : "3px")};
-  right: ${({ outside }) => (outside ? "-12px" : "0")};
-`;
-
-const SxFaIcon = styled(FaIcon)`
-  height: 10px;
-  padding-right: 3px;
-`;
+// a small button at the dropzone's top right corner, or above it
+const importButton = tv({
+  base: "absolute",
+  variants: {
+    outside: {
+      true: "-top-[30px] right-0",
+      false: "-top-0.5 right-0",
+    },
+  },
+});
 
 interface PropsT<DroppableObject> {
   children: (args: ChildArgs<DroppableObject>) => ReactNode;
@@ -66,7 +52,8 @@ interface PropsT<DroppableObject> {
   disableClick?: boolean;
   isInitial?: boolean;
   className?: string;
-  tight?: boolean;
+  /** no frame and no padding: a drop target around a field that is fine on its own */
+  naked?: boolean;
 
   showImportButton?: boolean;
   importButtonOutside?: boolean;
@@ -85,25 +72,23 @@ interface PropsT<DroppableObject> {
 */
 const DropzoneWithFileInput = <
   DroppableObject extends PossibleDroppableObject = DragItemFile,
->(
-  {
-    onSelectFile,
-    onImportLines,
-    importPlaceholder,
-    importDescription,
-    importButtonOutside,
-    acceptedDropTypes,
-    disableClick,
-    showImportButton,
-    children,
-    onDrop,
-    isInitial,
-    className,
-    accept,
-    tight,
-  }: PropsT<DroppableObject>,
-  ref: Ref<HTMLDivElement>,
-) => {
+>({
+  onSelectFile,
+  onImportLines,
+  importPlaceholder,
+  importDescription,
+  importButtonOutside,
+  acceptedDropTypes,
+  disableClick,
+  showImportButton,
+  children,
+  onDrop,
+  isInitial,
+  className,
+  accept,
+  naked,
+  ref,
+}: PropsT<DroppableObject> & { ref?: Ref<HTMLDivElement> }) => {
   const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -122,8 +107,7 @@ const DropzoneWithFileInput = <
   }
 
   return (
-    <SxDropzone /* <FC<DropzoneProps<DroppableObject | DragItemFile>>> */
-      tight={tight}
+    <Dropzone
       acceptedDropTypes={dropTypes}
       onClick={() => {
         if (disableClick) return;
@@ -142,31 +126,35 @@ const DropzoneWithFileInput = <
 
         onDrop(item as DroppableObject | DragItemFile, monitor);
       }}
-      isInitial={isInitial}
-      className={className}
+      className={dropzone({ isInitial, naked, className })}
+      naked={naked}
+      bare={naked}
       ref={ref}
     >
       {(args) => (
         <>
-          {importModalOpen && (
-            <ImportModal
-              onClose={() => setImportModalOpen(false)}
-              onSubmit={onSubmitImport}
-              placeholder={importPlaceholder}
-              description={importDescription}
-            />
-          )}
+          <ImportModal
+            isOpen={importModalOpen}
+            onOpenChange={setImportModalOpen}
+            onSubmit={onSubmitImport}
+            placeholder={importPlaceholder}
+            description={importDescription}
+          />
           {showImportButton && onImportLines && (
-            <SxSelectFileButton
-              outside={importButtonOutside}
-              onClick={() => setImportModalOpen(true)}
-            >
-              <SxFaIcon icon={faFileImport} gray />
-              {t("common.import")}
-            </SxSelectFileButton>
+            <div className={importButton({ outside: !!importButtonOutside })}>
+              <Button
+                intent="tertiary"
+                size="sm"
+                excludeFromTabOrder
+                onPress={() => setImportModalOpen(true)}
+              >
+                {t("common.import")}
+              </Button>
+            </div>
           )}
           {onSelectFile && (
-            <FileInput
+            <input
+              className="hidden"
               ref={fileInputRef}
               type="file"
               accept={accept}
@@ -184,12 +172,8 @@ const DropzoneWithFileInput = <
           {children(args as ChildArgs<DroppableObject>)}
         </>
       )}
-    </SxDropzone>
+    </Dropzone>
   );
 };
 
-export default forwardRef(DropzoneWithFileInput) as <
-  DroppableObject extends PossibleDroppableObject = DragItemFile,
->(
-  p: PropsT<DroppableObject> & { ref?: Ref<HTMLDivElement> },
-) => ReactElement;
+export default DropzoneWithFileInput;

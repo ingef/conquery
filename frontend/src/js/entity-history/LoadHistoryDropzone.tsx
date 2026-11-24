@@ -6,11 +6,11 @@ import type { SelectOptionT } from "../api/types";
 import { parseCSV } from "../file/csv";
 import { setMessage } from "../snack-message/actions";
 import DropzoneWithFileInput, {
-  DragItemFile,
+  type DragItemFile,
 } from "../ui-components/DropzoneWithFileInput";
 
 import type { EntityIdsStatus } from "./History";
-import { EntityId } from "./reducer";
+import type { EntityId } from "./reducer";
 import { useLoadHistory } from "./saveAndLoad";
 
 const acceptedDropTypes = [NativeTypes.FILE];

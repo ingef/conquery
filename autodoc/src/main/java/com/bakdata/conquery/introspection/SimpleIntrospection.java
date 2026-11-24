@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 public class SimpleIntrospection implements Introspection {
 
 	private final File file;
-	
+
 	@Override
 	public String getDescription() {
 		return "";

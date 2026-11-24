@@ -116,6 +116,9 @@ export const useFolders = () => {
   const localFolders = useSelector<StateT, string[]>(
     (state) => state.previousQueries.localFolders,
   );
+  const defaultFolders = useSelector<StateT, string[]>(
+    (state) => state.previousQueries.defaultFolders,
+  );
 
   return useMemo(
     () =>
@@ -128,8 +131,9 @@ export const useFolders = () => {
             .filter((config) => configHasFilterType(config, filter))
             .flatMap((config) => config.tags),
           ...localFolders,
+          ...defaultFolders,
         ]),
       ).sort(),
-    [queries, formConfigs, localFolders, filter],
+    [queries, formConfigs, localFolders, defaultFolders, filter],
   );
 };

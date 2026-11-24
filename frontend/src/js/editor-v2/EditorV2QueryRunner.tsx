@@ -1,12 +1,12 @@
 import { useSelector } from "react-redux";
 
-import { StateT } from "../app/reducers";
+import type { StateT } from "../app/reducers";
 import { useDatasetId } from "../dataset/selectors";
-import QueryRunner from "../query-runner/QueryRunner";
 import { useStartQuery, useStopQuery } from "../query-runner/actions";
-import { QueryRunnerStateT } from "../query-runner/reducer";
+import QueryRunner from "../query-runner/QueryRunner";
+import type { QueryRunnerStateT } from "../query-runner/reducer";
 
-import { EditorV2Query } from "./types";
+import type { EditorV2Query } from "./types";
 
 export const EditorV2QueryRunner = ({ query }: { query: EditorV2Query }) => {
   const datasetId = useDatasetId();

@@ -3,8 +3,8 @@ import { useSelector } from "react-redux";
 import type { DatasetT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { validateQueryLength } from "../model/query";
-import QueryRunner from "../query-runner/QueryRunner";
 import { useStartQuery, useStopQuery } from "../query-runner/actions";
+import QueryRunner from "../query-runner/QueryRunner";
 import type { QueryRunnerStateT } from "../query-runner/reducer";
 
 import type { StandardQueryStateT } from "./queryReducer";

@@ -3,10 +3,9 @@ import { useDispatch, useSelector } from "react-redux";
 
 import type { ConceptIdT, SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
-import { NodeResetConfig, nodeIsConceptQueryNode } from "../model/node";
+import { type NodeResetConfig, nodeIsConceptQueryNode } from "../model/node";
 import { tableIsEditable } from "../model/table";
 import QueryNodeEditor from "../query-node-editor/QueryNodeEditor";
-import { ModeT } from "../ui-components/InputRange";
 
 import {
   addConceptToNode,
@@ -17,14 +16,13 @@ import {
   setFilterValue,
   setSelects,
   setTableSelects,
-  switchFilterMode,
   toggleSecondaryIdExclude,
   toggleTable,
   toggleTimestamps,
   updateNodeLabel,
   useLoadFilterSuggestions,
 } from "./actions";
-import {
+import type {
   DragItemConceptTreeNode,
   FilterWithValueType,
   StandardQueryNodeT,
@@ -102,12 +100,6 @@ const StandardQueryNodeEditor = ({ editedNode, onClose }: Props) => {
     [dispatch, andIdx, orIdx],
   );
 
-  const onSwitchFilterMode = useCallback(
-    (tableIdx: number, filterIdx: number, mode: ModeT) =>
-      dispatch(switchFilterMode({ andIdx, orIdx, tableIdx, filterIdx, mode })),
-    [dispatch, andIdx, orIdx],
-  );
-
   const onResetAllSettings = useCallback(
     (config: NodeResetConfig) =>
       dispatch(resetAllSettings({ andIdx, orIdx, config })),
@@ -154,7 +146,6 @@ const StandardQueryNodeEditor = ({ editedNode, onClose }: Props) => {
       onSelectSelects={onSelectSelects}
       onSelectTableSelects={onSelectTableSelects}
       onSetFilterValue={onSetFilterValue}
-      onSwitchFilterMode={onSwitchFilterMode}
       onResetAllSettings={onResetAllSettings}
       onResetTable={onResetTable}
       onToggleTimestamps={onToggleTimeStamps}

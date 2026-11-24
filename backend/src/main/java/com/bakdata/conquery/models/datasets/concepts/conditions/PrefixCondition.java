@@ -6,14 +6,14 @@ import static org.jooq.impl.SQLDataType.VARCHAR;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
-import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.ConditionWrappingWhereCondition;
+import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.util.CalculatedValue;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;

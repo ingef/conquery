@@ -14,7 +14,7 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.EventDateUnionAggregator;
-import com.bakdata.conquery.models.query.queryplan.filter.AggregationResultFilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.AggregationFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import lombok.Getter;
@@ -30,7 +30,7 @@ public class FiltersNode extends QPNode {
 	private final List<? extends FilterNode<?>> filters;
 	private final List<Aggregator<?>> aggregators;
 	private final List<EventFilterNode<?>> eventFilters;
-	private final List<AggregationResultFilterNode<?, ?>> aggregationFilters;
+	private final List<AggregationFilterNode<?, ?>> aggregationFilters;
 	private final EventDateUnionAggregator eventDateAggregator;
 	private boolean hit = false;
 
@@ -39,14 +39,14 @@ public class FiltersNode extends QPNode {
 			throw new IllegalStateException("Unable to create FilterNode without filters or aggregators.");
 		}
 
-		final List<EventFilterNode<?>> eventFilters = new ArrayList<>(filters.size());
-		final List<AggregationResultFilterNode<?, ?>> aggregationFilters = new ArrayList<>(filters.size());
+		final List<EventFilterNode<?>> eventFilters = new ArrayList<>();
+		final List<AggregationFilterNode<?, ?>> aggregationFilters = new ArrayList<>();
 
 		// Event and AggregationResultFilterNodes are used differently
 		for (FilterNode<?> filter : filters) {
 			switch (filter) {
 				case EventFilterNode<?> ef -> eventFilters.add(ef);
-				case AggregationResultFilterNode<?, ?> af -> aggregationFilters.add(af);
+				case AggregationFilterNode<?, ?> af -> aggregationFilters.add(af);
 			}
 		}
 
@@ -117,7 +117,7 @@ public class FiltersNode extends QPNode {
 			}
 		}
 
-		for (AggregationResultFilterNode<?, ?> f : aggregationFilters) {
+		for (AggregationFilterNode<?, ?> f : aggregationFilters) {
 			f.acceptEvent(bucket, event);
 		}
 		for (Aggregator<?> a : aggregators) {
@@ -131,7 +131,7 @@ public class FiltersNode extends QPNode {
 
 	@Override
 	public boolean isContained() {
-		for (AggregationResultFilterNode<?, ?> f : aggregationFilters) {
+		for (AggregationFilterNode<?, ?> f : aggregationFilters) {
 			if (!f.isContained()) {
 				return false;
 			}

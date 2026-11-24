@@ -106,7 +106,7 @@ public class ArrayConceptQuery extends Query {
 		childQueries.forEach(q -> resultInfos.addAll(q.getResultInfos()));
 
 		if(!resultInfos.isEmpty()) {
-			// Remove DateInfo from each childQuery			
+			// Remove DateInfo from each childQuery
 			resultInfos.subList(lastIndex, resultInfos.size())
 					   .removeIf(resultInfo -> resultInfo.getSemantics().contains(new SemanticType.EventDateT()));
 		}

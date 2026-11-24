@@ -10,12 +10,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Cookie;
@@ -37,6 +39,8 @@ import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.nimbusds.jwt.JWTParser;
 import com.nimbusds.oauth2.sdk.AccessTokenResponse;
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
@@ -57,7 +61,9 @@ import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.validation.ValidationMethod;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -129,6 +135,13 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 	@JsonIgnore
 	private Supplier<Optional<IdpConfiguration>> idpConfigurationSupplier;
 
+	@JsonIgnore
+	@Getter(AccessLevel.NONE)
+	private final Cache<String, PendingAuthorizationRequest> pendingAuthorizationRequests = Caffeine.newBuilder()
+																						.maximumSize(10_000)
+																						.expireAfterWrite(10, TimeUnit.MINUTES)
+																						.build();
+
 	/**
 	 * Authentication cookie creator for using the Admin API
 	 */
@@ -152,6 +165,14 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 			@NonNull URI tokenEndpoint,
 			@NonNull URI logoutEndpoint,
 			@NotEmpty String issuer) {
+	}
+
+    /**
+     * State container for auth flow
+     * @param callbackUri The URI the IDP should return the user to, after successful authentication
+     * @param returnUri The URI the user tried to access, that triggered this auth-flow
+     */
+	record PendingAuthorizationRequest(URI callbackUri, URI returnUri) {
 	}
 
 	public ConqueryAuthenticationRealm createRealm(Environment environment, ConqueryConfig config, AuthorizationController authorizationController) {
@@ -326,12 +347,16 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 			return null;
 		}
 		JwtPkceVerifyingRealmFactory.IdpConfiguration idpConfiguration = idpConfigurationOpt.get();
+		final URI callbackUri = UriBuilder.fromUri(RequestHelper.getRequestURL(request)).path(AdminServlet.ADMIN_UI).build();
+		final URI returnUri = toRootRelativeUri(request.getUriInfo().getRequestUri());
+		final String state = registerAuthorizationRequest(callbackUri, returnUri);
+
 		return UriBuilder.fromUri(idpConfiguration.authorizationEndpoint())
 						 .queryParam("response_type", "code")
 						 .queryParam("client_id", client)
-						 .queryParam("redirect_uri", UriBuilder.fromUri(RequestHelper.getRequestURL(request)).path(AdminServlet.ADMIN_UI).build())
+						 .queryParam("redirect_uri", callbackUri)
 						 .queryParam("scope", "openid")
-						 .queryParam("state", UUID.randomUUID()).build();
+						 .queryParam("state", state).build();
 	}
 
 
@@ -346,15 +371,19 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 			return null;
 		}
 
-		// Build the original redirect uri (the request uri without the query added by the IDP)
-		final URI redirectedUri =
+		// Rebuild the callback URI without the query added by the IDP and compare it to the URI used to initiate this authorization request.
+		final URI callbackUri =
 				UriBuilder.fromUri(RequestHelper.getRequestURL(request)).replacePath(request.getUriInfo().getAbsolutePath().getPath()).replaceQuery("").build();
-		log.trace("Redirect URI: {}", redirectedUri);
+		final PendingAuthorizationRequest authorizationRequest = validateAndConsumeAuthorizationRequest(
+				request.getUriInfo().getQueryParameters().getFirst("state"),
+				callbackUri
+		);
+		log.trace("Redirect URI: {}", authorizationRequest.returnUri());
 
 		// Prepare code for exchange with access token
 		final AuthorizationCodeGrant authzGrant = new AuthorizationCodeGrant(
 				new AuthorizationCode(code),
-				redirectedUri
+				authorizationRequest.callbackUri()
 		);
 
 		// Redeem code
@@ -368,7 +397,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 		final NewCookie refreshTokenCookie = prepareRefreshTokenCookie(request, tokenResponse);
 
 		// Let the client call the same uri again, but this time with valid credentials
-		return prepareRedirectResponse(redirectedUri, accessTokenCookie, refreshTokenCookie);
+		return prepareRedirectResponse(authorizationRequest.returnUri(), accessTokenCookie, refreshTokenCookie);
 	}
 
 
@@ -394,7 +423,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 		final Cookie accessTokenCookie = prepareAccessTokenCookie(request, tokenResponse);
 		final NewCookie refreshTokenCookie = prepareRefreshTokenCookie(request, tokenResponse);
 
-		return prepareRedirectResponse(request.getUriInfo().getRequestUriBuilder().replaceQuery("").build(), accessTokenCookie, refreshTokenCookie);
+		return prepareRedirectResponse(toRootRelativeUri(request.getUriInfo().getRequestUri()), accessTokenCookie, refreshTokenCookie);
 	}
 
 	/**
@@ -406,6 +435,49 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 				.header(HttpHeaders.SET_COOKIE, accessTokenCookie)
 				.header(HttpHeaders.SET_COOKIE, refreshTokenCookie)
 				.build();
+	}
+
+	String registerAuthorizationRequest(URI callbackUri, URI returnUri) {
+		final String state = UUID.randomUUID().toString();
+		pendingAuthorizationRequests.put(state, new PendingAuthorizationRequest(callbackUri, returnUri));
+		return state;
+	}
+
+    /**
+     * Checks for the state existence and matches it's removes/consumes it
+     * @param state state identifier
+     * @param callbackUri URI of the current request
+     * @return The actual state for the auth-flow
+     */
+	PendingAuthorizationRequest validateAndConsumeAuthorizationRequest(String state, URI callbackUri) {
+		if (state == null) {
+			throw new BadRequestException("Authorization callback is missing its state");
+		}
+
+		final PendingAuthorizationRequest authorizationRequest = pendingAuthorizationRequests.asMap().remove(state);
+		if (authorizationRequest == null || !authorizationRequest.callbackUri().equals(callbackUri)) {
+			throw new BadRequestException("Authorization callback URI does not match the authorization request");
+		}
+		return authorizationRequest;
+	}
+
+	static URI toRootRelativeUri(URI requestUri) {
+
+        if (requestUri == null) {
+            throw new BadRequestException("Request URI was not provided");
+        }
+
+		if (!requestUri.isAbsolute()) {
+			throw new BadRequestException("Request URI must be absolute");
+		}
+
+		final String rawPath = requestUri.getRawPath();
+		if (rawPath == null || !rawPath.startsWith("/") || rawPath.startsWith("//")) {
+			throw new BadRequestException("Request URI has an invalid path");
+		}
+
+		final String rawQuery = requestUri.getRawQuery();
+		return URI.create(rawQuery == null ? rawPath : rawPath + "?" + rawQuery);
 	}
 
 	private Cookie prepareAccessTokenCookie(ContainerRequestContext request, AccessTokenResponse tokenResponse) {

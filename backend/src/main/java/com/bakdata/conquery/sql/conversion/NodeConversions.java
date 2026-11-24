@@ -1,20 +1,19 @@
 package com.bakdata.conquery.sql.conversion;
 
+import java.time.Clock;
+import java.util.Locale;
+
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import lombok.NonNull;
 import org.jooq.DSLContext;
-
-import java.time.Clock;
-import java.util.Locale;
 
 /**
  * Entry point for converting {@link QueryDescription} to an SQL query.
@@ -46,10 +45,10 @@ public class NodeConversions extends Conversions<Visitable, ConversionContext, C
 		this.defaultPrimaryColumn = defaultPrimaryColumn;
 	}
 
-	public ConversionContext convert(QueryDescription queryDescription, Namespace namespace, ConqueryConfig conqueryConfig) {
+	public ConversionContext convert(QueryDescription queryDescription, ConqueryConfig conqueryConfig) {
 		ConversionContext initialCtx = ConversionContext.builder()
 				.idColumns(idColumns)
-				.sqlPrintSettings(new PrintSettings(false, Locale.ROOT, namespace, conqueryConfig, null, null))
+				.sqlPrintSettings(new PrintSettings(false, Locale.ROOT, conqueryConfig, null, null))
 				.nameGenerator(nameGenerator)
 				.nodeConversions(this)
 				.clock(clock)

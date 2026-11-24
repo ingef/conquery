@@ -1,13 +1,14 @@
 // ----------------------------------
 // PRODUCTION SERVER (see Dockerfile)
 // ----------------------------------
+
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import compression from "compression";
 import cors from "cors";
 import express from "express";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
-import path from "path";
-import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -33,12 +34,12 @@ app.use(cors());
 app.use(
   rateLimit({
     windowMs: 60 * 1000, // 1 minute
-    max: Number(requestsPerMinute),
+    limit: Number(requestsPerMinute),
   }),
 );
 
 app.use(express.static(path.resolve(__dirname, BUILD_FOLDER)));
-app.get("*", (_, res) =>
+app.get("/{*splat}", (_, res) =>
   res.sendFile(path.join(__dirname, BUILD_FOLDER, "index.html")),
 );
 app.use((req, res, next) => {

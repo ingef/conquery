@@ -38,7 +38,7 @@ public class ResourceFormConfigProvider {
 				throw new IllegalArgumentException(String.format("Could not parse the frontend config: %s", config.getPath()), e);
 			}
 		}
-		
+
 	}
-	
+
 }

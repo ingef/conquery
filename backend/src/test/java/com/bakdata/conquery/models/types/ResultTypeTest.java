@@ -29,9 +29,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 public class ResultTypeTest {
 
 	public static final ConqueryConfig CONFIG = new ConqueryConfig();
-	private static final PrintSettings PRETTY = new PrintSettings(true, Locale.ENGLISH, null, CONFIG, null, null);
-	private static final PrintSettings PRETTY_DE = new PrintSettings(true, Locale.GERMANY, null, CONFIG, null, null);
-	private static final PrintSettings PLAIN = new PrintSettings(false, Locale.ENGLISH, null, CONFIG, null, null);
+	private static final PrintSettings PRETTY = new PrintSettings(true, Locale.ENGLISH, CONFIG, null, null);
+	private static final PrintSettings PRETTY_DE = new PrintSettings(true, Locale.GERMANY, CONFIG, null, null);
+	private static final PrintSettings PLAIN = new PrintSettings(false, Locale.ENGLISH, CONFIG, null, null);
 
 	private static final PrinterFactory PRINTERS = StringResultPrinters.forCharset(Charset.defaultCharset());
 

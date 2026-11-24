@@ -1,9 +1,7 @@
 package com.bakdata.conquery.models.config;
 
 import com.bakdata.conquery.util.validation.ValidCaffeineSpec;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.util.Duration;
-import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;

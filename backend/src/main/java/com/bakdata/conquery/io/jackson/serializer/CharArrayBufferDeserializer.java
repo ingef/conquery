@@ -1,14 +1,14 @@
 package com.bakdata.conquery.io.jackson.serializer;
 
+import java.io.IOException;
+import java.util.Arrays;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import org.apache.http.util.CharArrayBuffer;
-
-import java.io.IOException;
-import java.util.Arrays;
 
 /**
  * This custom serializer treats an incoming text node as a mutable string, which is important for sensitve data.

@@ -1,5 +1,8 @@
 package com.bakdata.conquery.sql.conversion.model;
 
+import java.util.Collections;
+import java.util.List;
+
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.Builder;
@@ -10,9 +13,6 @@ import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.TableLike;
 import org.jooq.impl.DSL;
-
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Intermediate representation of an SQL query.

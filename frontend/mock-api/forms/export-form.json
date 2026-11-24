@@ -120,6 +120,16 @@
                 }
               },
               {
+                "name": "referenceDate",
+                "type": "DATE",
+                "label": {
+                  "de": "Stichtag"
+                },
+                "tooltip": {
+                  "de": "Ein einzelnes Datum"
+                }
+              },
+              {
                 "name": "features",
                 "type": "CONCEPT_LIST",
                 "label": {
@@ -203,7 +213,6 @@
                 "placeholder": {
                   "de": "1"
                 },
-                "pattern": "^(?!-)\\d*$",
                 "validations": ["NOT_EMPTY", "GREATER_THAN_ZERO"]
               },
               {
@@ -220,7 +229,6 @@
                 "placeholder": {
                   "de": "1"
                 },
-                "pattern": "^(?!-)\\d*$",
                 "validations": ["NOT_EMPTY", "GREATER_THAN_ZERO"]
               },
               {
@@ -309,7 +317,6 @@
                     "placeholder": {
                       "de": "1"
                     },
-                    "pattern": "^(?!-)\\d*$",
                     "validations": ["NOT_EMPTY", "GREATER_THAN_ZERO"]
                   },
                   {
@@ -326,7 +333,6 @@
                     "placeholder": {
                       "de": "1"
                     },
-                    "pattern": "^(?!-)\\d*$",
                     "validations": ["NOT_EMPTY", "GREATER_THAN_ZERO"]
                   },
                   {
@@ -385,7 +391,6 @@
                     "placeholder": {
                       "de": "1"
                     },
-                    "pattern": "^(?!-)\\d*$",
                     "validations": ["NOT_EMPTY", "GREATER_THAN_ZERO"]
                   },
                   {
@@ -402,7 +407,6 @@
                     "placeholder": {
                       "de": "1"
                     },
-                    "pattern": "^(?!-)\\d*$",
                     "validations": ["NOT_EMPTY", "GREATER_THAN_ZERO"]
                   },
                   {

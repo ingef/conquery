@@ -4,13 +4,6 @@ import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Random;
-
-import com.bakdata.conquery.models.auth.web.AuthCookieFilter;
-import com.google.common.base.Stopwatch;
-import com.password4j.Hash;
-import com.password4j.PBKDF2Function;
-import com.password4j.Password;
-import com.password4j.types.Hmac;
 import jakarta.annotation.Priority;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
@@ -18,6 +11,13 @@ import jakarta.ws.rs.container.ContainerResponseContext;
 import jakarta.ws.rs.container.ContainerResponseFilter;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.NewCookie;
+
+import com.bakdata.conquery.models.auth.web.AuthCookieFilter;
+import com.google.common.base.Stopwatch;
+import com.password4j.Hash;
+import com.password4j.PBKDF2Function;
+import com.password4j.Password;
+import com.password4j.types.Hmac;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -91,9 +91,9 @@ public class CsrfTokenSetFilter implements ContainerRequestFilter, ContainerResp
 		final Stopwatch stopwatch = log.isTraceEnabled() ? Stopwatch.createStarted() : null;
 
 		final Hash hash = Password.hash(csrfToken).addRandomSalt(SALT_LENGTH).with(HASH_FUNCTION);
-		
+
 		log.trace("Generated token in {}", stopwatch);
-		
+
 		final String encodedSalt = Base64.getEncoder().encodeToString(hash.getSaltBytes());
 
 		// Use '_' as join char, because it is not part of the standard base64 encoding (in base64url though)

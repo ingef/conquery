@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
 import java.util.List;
 import java.util.Set;
-
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.models.datasets.Column;

@@ -3,8 +3,8 @@ package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
+import javax.annotation.Nullable;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.concepts.filters.AggregationFilter;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
@@ -28,11 +29,14 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.Deci
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.IntegerSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.MoneySumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.RealSumAggregator;
-import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.AggregationFilterNode;
 import com.bakdata.conquery.sql.conversion.model.aggregator.SumSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
+import com.bakdata.conquery.util.validation.ResolvableId;
+import com.bakdata.conquery.util.validation.SupportedColumnTypes;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -42,16 +46,22 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @NoArgsConstructor
 @Data
+@EqualsAndHashCode(callSuper = false)
 @CPSType(id = "SUM", base = Filter.class)
-public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter<RANGE> {
+public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends AggregationFilter<RANGE> {
 
+	@NotNull
+	@ResolvableId
+	@SupportedColumnTypes(numericTypes = true)
 	private ColumnId column;
 
 	@Nullable
+	@ResolvableId
+	@SupportedColumnTypes(numericTypes = true)
 	private ColumnId subtractColumn;
 
 	@NotNull
-	private List<ColumnId> distinctByColumn = Collections.emptyList();
+	private List<@ResolvableId ColumnId> distinctByColumn = Collections.emptyList();
 
 	@Override
 	public void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
@@ -60,7 +70,8 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 			case MONEY -> FrontendFilterType.Fields.MONEY_RANGE;
 			case INTEGER -> FrontendFilterType.Fields.INTEGER_RANGE;
 			case DECIMAL, REAL -> FrontendFilterType.Fields.REAL_RANGE;
-			default -> throw new ConceptConfigurationException(getConnector(), "NUMBER filter is incompatible with columns of type " + typeId);
+			default ->
+					throw new ConceptConfigurationException(getConnector(), "NUMBER filter is incompatible with columns of type " + typeId);
 		};
 
 		f.setType(type);
@@ -84,7 +95,7 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 	}
 
 	@Override
-	public FilterNode createFilterNode(RANGE value) {
+	public AggregationFilterNode<?, ?> createFilterNode(RANGE value) {
 		IRange<? extends Number, ?> range = value;
 
 		// Real and Decimal share FilterValue
@@ -94,8 +105,8 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 
 		if (distinctByColumn != null && !distinctByColumn.isEmpty()) {
 			return new RangeFilterNode(range, new DistinctValuesWrapperAggregator(getAggregator(), getDistinctByColumn().stream()
-																														.map(ColumnId::resolve)
-																														.toList()));
+					.map(ColumnId::resolve)
+					.toList()));
 		}
 
 		return new RangeFilterNode(range, getAggregator());

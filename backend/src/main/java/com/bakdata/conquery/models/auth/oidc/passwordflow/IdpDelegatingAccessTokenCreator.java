@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.auth.oidc.passwordflow;
 
 import java.net.URI;
-
 import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.models.auth.basic.AccessTokenCreator;
@@ -37,12 +36,12 @@ public class IdpDelegatingAccessTokenCreator implements AccessTokenCreator {
 		Secret passwordSecret = new Secret(password);
 
 		AuthorizationGrant  grant = new ResourceOwnerPasswordCredentialsGrant(username, passwordSecret);
-		
+
 		URI tokenEndpoint =  UriBuilder.fromUri(authProviderConf.getTokenEndpoint()).build();
 
 		TokenRequest tokenRequest = new TokenRequest(tokenEndpoint, authProviderConf.getClientAuthentication(), grant, Scope.parse("openid"));
-		
-		
+
+
 		TokenResponse response = TokenResponse.parse(tokenRequest.toHTTPRequest().send());
 
 		if (!response.indicatesSuccess()) {

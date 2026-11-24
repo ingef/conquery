@@ -2,10 +2,10 @@ package com.bakdata.conquery.models.config;
 
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
+import jakarta.validation.constraints.Min;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.dropwizard.util.Duration;
-import jakarta.validation.constraints.Min;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;

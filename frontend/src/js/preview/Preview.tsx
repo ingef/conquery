@@ -1,81 +1,71 @@
-import styled from "@emotion/styled";
-import { useMemo, useState } from "react";
+import {
+  ChevronDownIcon,
+  ChevronLeftIcon,
+  LoaderCircleIcon,
+} from "lucide-react";
+import { type ReactNode, useMemo, useState } from "react";
+import { MenuTrigger } from "react-aria-components";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-
-import { StateT } from "../app/reducers";
-
-import { PreviewStatistics, SecondaryId } from "../api/types";
-import { TransparentButton } from "../button/TransparentButton";
-import FaIcon from "../icon/FaIcon";
-
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
-import Charts from "./Charts";
-import DiagramModal from "./DiagramModal";
-import HeadlineStats from "./HeadlineStats";
-import ScrollBox from "./ScrollBox";
-import SelectBox from "./SelectBox";
-import Table from "./Table";
+import { tv } from "tailwind-variants";
+import type { PreviewStatistics, SecondaryId } from "../api/types";
+import type { StateT } from "../app/reducers";
+import MatchingStats from "../info-pane/MatchingStats";
+import { Button } from "../ui-components/Button";
+import { Card } from "../ui-components/Card";
+import { Menu, MenuItem } from "../ui-components/Menu";
+import { C3, H3 } from "../ui-components/Typography";
 import { closePreview } from "./actions";
-import { PreviewStateT } from "./reducer";
+import Charts, { DIAGRAMS_PER_PAGE } from "./Charts";
+import DiagramModal from "./DiagramModal";
+import Pagination from "./Pagination";
+import type { PreviewStateT } from "./reducer";
+import ScrollBox from "./ScrollBox";
+import Table from "./Table";
 
-const FullScreen = styled("div")`
-  height: 100%;
-  width: 100%;
-  position: fixed;
-  top: 0;
-  left: 0;
-  background-color: ${({ theme }) => theme.col.bgAlt};
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-`;
+const fullScreen = tv({
+  base: ["fixed top-0 left-0", "z-2", "h-full w-full", "bg-bg-100"],
+});
 
-const Headline = styled("div")`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 30px;
-`;
+const content = tv({
+  base: ["flex flex-col", "gap-5", "px-5 pt-[55px] pb-5"],
+});
 
-const SxScrollBox = styled(ScrollBox)`
-  padding: 60px 20px 20px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-`;
+const topRow = tv({ base: ["flex items-center", "gap-[30px]"] });
 
-const SxCharts = styled(Charts)`
-  width: 100%;
-  background-color: white;
-  padding: 10px;
-  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
-`;
+const section = tv({ base: ["flex flex-col", "gap-[10px]"] });
 
-const SxChartLoadingBlocker = styled("div")`
-  width: 100%;
-  background-color: white;
-  padding: 10px;
-  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
-  align-items: center;
-  height: 65vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`;
+const sectionHeader = tv({
+  base: ["flex items-start justify-between", "gap-5"],
+});
 
-const SxFaIcon = styled(FaIcon)`
-  width: 30px;
-  height: 30px;
-`;
+// the stats stand beside the charts, like the info pane beside the panes
+const statistics = tv({
+  base: ["grid grid-cols-[auto_minmax(0,1fr)]", "gap-5", "items-start"],
+});
 
-const SxSelectBox = styled(SelectBox)`
-  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
-  background-color: white;
-  border-radius: ${({ theme }) => theme.borderRadius};
-`;
+const loading = tv({
+  base: ["flex items-center justify-center", "h-[65vh]"],
+});
+
+const SectionHeader = ({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle: string;
+  children?: ReactNode;
+}) => (
+  <div className={sectionHeader()}>
+    <div className="min-w-0">
+      <H3>{title}</H3>
+      <C3 tone="muted">{subtitle}</C3>
+    </div>
+    {children}
+  </div>
+);
 
 export default function Preview() {
   const preview = useSelector<StateT, PreviewStateT>((state) => state.preview);
@@ -84,13 +74,12 @@ export default function Preview() {
   );
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const [selectBoxOpen, setSelectBoxOpen] = useState<boolean>(false);
   const [page, setPage] = useState<number>(0);
   const [popOver, setPopOver] = useState<PreviewStatistics | null>(null);
   const onClose = () => dispatch(closePreview());
-  const statistics = preview.statisticsData;
+  const stats = preview.statisticsData;
   const idLabel = useMemo(() => {
-    const primaryIdLabel = t("tooltip.entitiesFound", { count: 2 });
+    const primaryIdLabel = t("common.entitiesFound", { count: 2 });
     if (preview.queryData?.secondaryId) {
       const secondaryIdLabel = loadedSecondaryIds.find(
         (x) => x.id === preview.queryData?.secondaryId,
@@ -102,57 +91,115 @@ export default function Preview() {
   }, [preview.queryData, loadedSecondaryIds, t]);
 
   useHotkeys("esc", () => {
-    if (!selectBoxOpen && !popOver) onClose();
+    if (!popOver) onClose();
   });
 
   return (
-    <FullScreen>
-      <SxScrollBox>
-        <Headline>
-          <TransparentButton small onClick={onClose}>
-            {t("common.back")}
-          </TransparentButton>
-          Ergebnisvorschau
-          <SxSelectBox
-            items={statistics?.statistics ?? ([] as PreviewStatistics[])}
-            onChange={(res) => {
-              const stat = statistics?.statistics.find(
-                (stat) => stat.label === res.label,
-              );
-              setPopOver(stat ?? null);
-            }}
-            isOpen={selectBoxOpen}
-            setIsOpen={setSelectBoxOpen}
-          />
-          <HeadlineStats statistics={statistics} idLabel={idLabel} />
-        </Headline>
-        {statistics ? (
-          <SxCharts
-            statistics={statistics.statistics}
-            showPopup={(statistic: PreviewStatistics) => {
-              setPopOver(statistic);
-            }}
-            page={page}
-            setPage={setPage}
-          />
-        ) : (
-          <SxChartLoadingBlocker>
-            <SxFaIcon icon={faSpinner} />
-          </SxChartLoadingBlocker>
-        )}
-        {popOver && (
-          <DiagramModal statistic={popOver} onClose={() => setPopOver(null)} />
-        )}
-        {preview.arrowReader &&
-          preview.initialTableData &&
-          preview.queryData && (
-            <Table
-              arrowReader={preview.arrowReader}
-              initialTableData={preview.initialTableData}
-              queryData={preview.queryData}
+    <div className={fullScreen()}>
+      <ScrollBox className="h-full">
+        <div className={content()}>
+          <div className={topRow()}>
+            <Button intent="secondary" onPress={onClose}>
+              <ChevronLeftIcon />
+              {t("common.back")}
+            </Button>
+            <div className="min-w-0">
+              <H3 truncate>{preview.queryData?.label}</H3>
+              <C3 tone="muted">{t("preview.headline")}</C3>
+            </div>
+          </div>
+          <section className={section()}>
+            <SectionHeader
+              title={t("preview.statisticsHeadline")}
+              subtitle={t("preview.statisticsSubline")}
+            >
+              {stats && (
+                <MenuTrigger>
+                  <Button intent="secondary">
+                    {t("preview.statisticsHeadline")}
+                    <ChevronDownIcon />
+                  </Button>
+                  <Menu
+                    aria-label={t("preview.statisticsHeadline")}
+                    placement="bottom end"
+                    onAction={(key) => {
+                      const stat = stats.statistics.find(
+                        (stat) => stat.label === key,
+                      );
+                      setPopOver(stat ?? null);
+                    }}
+                  >
+                    {stats.statistics.map((stat) => (
+                      <MenuItem key={stat.label} id={stat.label}>
+                        {stat.label}
+                      </MenuItem>
+                    ))}
+                  </Menu>
+                </MenuTrigger>
+              )}
+            </SectionHeader>
+            <div className={statistics()}>
+              <div className="max-w-[200px]">
+                <MatchingStats
+                  matchingEntities={stats?.entities}
+                  matchingEntries={stats?.total}
+                  dateRange={stats?.dateRange}
+                  idLabel={idLabel}
+                />
+              </div>
+              <Card>
+                {stats ? (
+                  <Charts
+                    statistics={stats.statistics}
+                    showPopup={(statistic: PreviewStatistics) => {
+                      setPopOver(statistic);
+                    }}
+                    page={page}
+                  />
+                ) : (
+                  <div className={loading()}>
+                    <LoaderCircleIcon className="size-[30px]" />
+                  </div>
+                )}
+              </Card>
+            </div>
+            {stats && (
+              <Pagination
+                page={page}
+                pageCount={Math.ceil(
+                  stats.statistics.length / DIAGRAMS_PER_PAGE,
+                )}
+                setPage={setPage}
+              />
+            )}
+          </section>
+          {popOver && (
+            <DiagramModal
+              statistic={popOver}
+              onClose={() => setPopOver(null)}
             />
           )}
-      </SxScrollBox>
-    </FullScreen>
+          {preview.arrowReader &&
+            preview.initialTableData?.value &&
+            preview.queryData && (
+              <section className={section()}>
+                <SectionHeader
+                  title={t("preview.previewHeadline")}
+                  subtitle={t("preview.previewSubline", {
+                    count: preview.initialTableData.value.numRows,
+                  })}
+                />
+                <Card>
+                  <Table
+                    arrowReader={preview.arrowReader}
+                    initialTableData={preview.initialTableData}
+                    queryData={preview.queryData}
+                  />
+                </Card>
+              </section>
+            )}
+        </div>
+      </ScrollBox>
+    </div>
   );
 }

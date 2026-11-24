@@ -1,13 +1,10 @@
 {
   "version": "",
   "production": true,
-  "currency": {
-    "factor": 1,
-    "unit": "€",
-    "thousandSeparator": ".",
-    "decimalSeparator": ",",
-    "decimalScale": 2
-  },
+  "versions": [{ "name": "Backend", "version": "mock", "buildTime": null }],
+  "manualUrl": "https://example.org",
+  "contactEmail": "test@example.org",
+  "currency": "EUR",
   "queryUpload": {
     "ids": [
       {

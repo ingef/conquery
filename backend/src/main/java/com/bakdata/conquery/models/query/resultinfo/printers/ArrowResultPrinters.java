@@ -18,17 +18,17 @@ public class ArrowResultPrinters extends JavaResultPrinters {
 
 	@Override
 	public Printer<Number> getMoneyPrinter(PrintSettings printSettings) {
-		return new MoneyPrinter();
+		return new MoneyPrinter(printSettings.getCurrency().getDefaultFractionDigits());
 	}
 
-	private record MoneyPrinter() implements Printer<Number> {
+	private record MoneyPrinter(int fractionDigits) implements Printer<Number> {
 		@Override
 		public Object apply(@NotNull Number value) {
 			if (value instanceof BigDecimal bigDecimal){
-				if (bigDecimal.scale() > 2) {
-					log.warn("Rounding money value '{}' as scale is greater than 2", bigDecimal);
+				if (bigDecimal.scale() > fractionDigits) {
+					log.warn("Rounding money value '{}' as scale is greater than {}", bigDecimal, fractionDigits);
 				}
-				return bigDecimal.setScale(2, RoundingMode.HALF_EVEN).unscaledValue().intValueExact();
+				return bigDecimal.setScale(fractionDigits, RoundingMode.HALF_EVEN).unscaledValue().intValueExact();
 			}
 
 			return value.intValue();

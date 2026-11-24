@@ -31,9 +31,6 @@ export const useDebounce = (
     return () => {
       if (handle.current) clearTimeout(handle.current);
     };
-
-    // Yes, dependencies can't be statically verified,
-    // but this way, useDebounce almost works like useEffect
-    // eslint-disable-next-line
+    // biome-ignore lint/correctness/useExhaustiveDependencies: dependencies are passed in by the caller, so useDebounce works like useEffect
   }, debounceTriggers);
 };

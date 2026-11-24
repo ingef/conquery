@@ -1,10 +1,11 @@
 package com.bakdata.conquery.models.auth.develop;
 
-import com.bakdata.conquery.models.auth.web.AuthFilter;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import jakarta.inject.Named;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.HttpHeaders;
+
+import com.bakdata.conquery.models.auth.web.AuthFilter;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

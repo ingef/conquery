@@ -1,5 +1,3 @@
-import styled from "@emotion/styled";
-
 import type { ConceptElementT, ConceptIdT, ConceptT } from "../api/types";
 import { useOpenableConcept } from "../concept-trees-open/useOpenableConcept";
 import { resetSelects } from "../model/select";
@@ -10,10 +8,6 @@ import ConceptTreeNodeTextContainer from "./ConceptTreeNodeTextContainer";
 import { getConceptById } from "./globalTreeStoreHelper";
 import type { SearchT } from "./reducer";
 import { isNodeInSearchResult } from "./selectors";
-
-const Root = styled("div")`
-  font-size: ${({ theme }) => theme.font.sm};
-`;
 
 const ConceptTreeNode = ({
   data,
@@ -52,7 +46,7 @@ const ConceptTreeNode = ({
   ) as ConceptElementT;
 
   return (
-    <Root>
+    <div>
       <ConceptTreeNodeTextContainer
         node={{
           label: data.label,
@@ -101,25 +95,23 @@ const ConceptTreeNode = ({
         onTextClick={toggleOpen}
         search={search}
       />
-      {!!data.children && isOpen && (
-        <>
-          {data.children.map((childId) => {
-            const child = getConceptById(childId);
+      {!!data.children &&
+        isOpen &&
+        data.children.map((childId) => {
+          const child = getConceptById(childId);
 
-            return child ? (
-              <ConceptTreeNode
-                key={childId}
-                rootConceptId={rootConceptId}
-                conceptId={childId}
-                data={child}
-                depth={depth + 1}
-                search={search}
-              />
-            ) : null;
-          })}
-        </>
-      )}
-    </Root>
+          return child ? (
+            <ConceptTreeNode
+              key={childId}
+              rootConceptId={rootConceptId}
+              conceptId={childId}
+              data={child}
+              depth={depth + 1}
+              search={search}
+            />
+          ) : null;
+        })}
+    </div>
   );
 };
 

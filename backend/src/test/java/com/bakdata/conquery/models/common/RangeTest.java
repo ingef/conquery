@@ -101,11 +101,11 @@ class RangeTest {
 		assertThat(Range.of(5, 7).span(Range.exactly(6)))
 				.isEqualTo(Range.of(5, 7));
 	}
-	
+
 	@Test
 	public void coveredYears() {
 		CDateRange dateRange = CDateRange.of(LocalDate.of(2000, 9, 2), LocalDate.of(2005, 3, 15));
-		
+
 		List<CDateRange> expected = new ArrayList<>();
 		expected.add(CDateRange.of(LocalDate.of(2000, 9, 2), LocalDate.of(2000, 12, 31)));
 		expected.add(CDateRange.of(LocalDate.of(2001, 1, 1), LocalDate.of(2001, 12, 31)));
@@ -113,7 +113,7 @@ class RangeTest {
 		expected.add(CDateRange.of(LocalDate.of(2003, 1, 1), LocalDate.of(2003, 12, 31)));
 		expected.add(CDateRange.of(LocalDate.of(2004, 1, 1), LocalDate.of(2004, 12, 31)));
 		expected.add(CDateRange.of(LocalDate.of(2005, 1, 1), LocalDate.of(2005, 3, 15)));
-		
+
 		assertThat(dateRange.getCoveredYears()).containsExactlyInAnyOrderElementsOf(expected);
 	}
 
@@ -139,7 +139,7 @@ class RangeTest {
 
 		assertThat(dateRange.getCoveredQuarters()).containsExactlyInAnyOrder(CDateRange.of(LocalDate.of(2000, 1, 10), LocalDate.of(2000, 3, 15)));
 	}
-	
+
 	public static List<Arguments> deserialize() {
 		return Arrays.asList(
 			Arguments.of(
@@ -160,7 +160,7 @@ class RangeTest {
 			)
 		);
 	}
-	
+
 	@ParameterizedTest(name="{0}") @MethodSource
 	public void deserialize(String json, Range<LocalDate> expected, CDateRange expectedCDateRange) throws IOException {
 		ObjectReader reader = Jackson.MAPPER.readerFor(
@@ -169,7 +169,7 @@ class RangeTest {
 		Range<LocalDate> range = reader.readValue(json);
 		assertThat(range).isEqualTo(expected);
 		assertThat(range).isEqualToComparingFieldByFieldRecursively(expected);
-		
+
 		CDateRange cDateRange = CDateRange.of(range);
 		assertThat(cDateRange).isEqualTo(expectedCDateRange);
 		assertThat(cDateRange).isEqualToComparingFieldByFieldRecursively(expectedCDateRange);

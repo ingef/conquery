@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.worker;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
@@ -16,9 +19,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Handler for worker in a single namespace.

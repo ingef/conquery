@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.query.filter.event.number;
 
 import java.util.Set;
-
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.common.IRange;

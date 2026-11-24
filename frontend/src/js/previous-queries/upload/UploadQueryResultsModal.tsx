@@ -1,56 +1,39 @@
-import styled from "@emotion/styled";
-import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
-import { FC, useState } from "react";
+import { CircleCheckIcon } from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import type { QueryUploadConfigT, UploadQueryResponseT } from "../../api/types";
-import FaIcon from "../../icon/FaIcon";
-import Modal from "../../modal/Modal";
-import InfoTooltip from "../../tooltip/InfoTooltip";
 import DropzoneWithFileInput from "../../ui-components/DropzoneWithFileInput";
+import InfoTooltip from "../../ui-components/InfoTooltip";
+import { Modal, ModalBody, ModalHeader } from "../../ui-components/Modal";
 
-import CSVColumnPicker, { QueryToUploadT } from "./CSVColumnPicker";
+import CSVColumnPicker, { type QueryToUploadT } from "./CSVColumnPicker";
 
-const Root = styled("div")``;
+const successIcon = tv({
+  base: ["block", "mx-auto mb-[10px]", "size-10", "text-green"],
+});
 
-const Success = styled("div")`
-  margin: 25px 0;
-`;
+const dropzone = tv({
+  base: ["w-full", "cursor-pointer", "py-[180px]"],
+});
 
-const StyledFaIcon = styled(FaIcon)`
-  font-size: 40px;
-  display: block;
-  margin: 0 auto 10px;
-  color: ${({ theme }) => theme.col.green};
-`;
-
-const SuccessMsg = styled("p")`
-  margin: 0;
-`;
-
-const SxDropzoneWithFileInput = styled(DropzoneWithFileInput)`
-  padding: 180px 250px;
-  width: 100%;
-  cursor: pointer;
-`;
-
-interface PropsT {
+interface Props {
   loading: boolean;
   config: QueryUploadConfigT;
   uploadResult: UploadQueryResponseT | null;
   onClearUploadResult: () => void;
-  onClose: () => void;
   onUpload: (query: QueryToUploadT) => void;
 }
 
-const UploadQueryResultsModal: FC<PropsT> = ({
+const UploadQueryResultsModalContent = ({
   loading,
   config,
   uploadResult,
   onClearUploadResult,
-  onClose,
   onUpload,
-}) => {
+  close,
+}: Props & { close: () => void }) => {
   const { t } = useTranslation();
   const [file, setFile] = useState<File | null>(null);
 
@@ -61,29 +44,24 @@ const UploadQueryResultsModal: FC<PropsT> = ({
     uploadResult.unresolvedId.length === 0;
 
   return (
-    <Modal
-      onClose={onClose}
-      scrollable
-      headline={
-        <>
-          {t("uploadQueryResultsModal.headline")}
-          <InfoTooltip
-            wide
-            text={t("uploadQueryResultsModal.formatInfo.text")}
-          />
-        </>
-      }
-    >
-      <Root>
+    <>
+      <ModalHeader>
+        {t("uploadQueryResultsModal.headline")}
+        <InfoTooltip
+          size="wide"
+          text={t("uploadQueryResultsModal.formatInfo.text")}
+        />
+      </ModalHeader>
+      <ModalBody>
         {fullUploadSuccess ? (
-          <Success>
-            <StyledFaIcon icon={faCheckCircle} />
-            <SuccessMsg>
+          <div className="my-[25px]">
+            <CircleCheckIcon className={successIcon()} />
+            <p className="m-0">
               {t("uploadQueryResultsModal.uploadSucceeded", {
                 count: uploadResult?.resolved || 0,
               })}
-            </SuccessMsg>
-          </Success>
+            </p>
+          </div>
         ) : (
           <div>
             {file && (
@@ -93,7 +71,7 @@ const UploadQueryResultsModal: FC<PropsT> = ({
                 config={config}
                 loading={loading}
                 onUpload={onUpload}
-                onCancel={onClose}
+                onCancel={close}
                 onReset={() => {
                   setFile(null);
                   onClearUploadResult();
@@ -101,7 +79,8 @@ const UploadQueryResultsModal: FC<PropsT> = ({
               />
             )}
             {!file && (
-              <SxDropzoneWithFileInput
+              <DropzoneWithFileInput
+                className={dropzone()}
                 onDrop={(item) => {
                   if (item.type === "__NATIVE_FILE__") {
                     setFile(item.files[0]);
@@ -111,13 +90,19 @@ const UploadQueryResultsModal: FC<PropsT> = ({
                 accept="text/csv"
               >
                 {() => t("uploadQueryResultsModal.dropzone")}
-              </SxDropzoneWithFileInput>
+              </DropzoneWithFileInput>
             )}
           </div>
         )}
-      </Root>
-    </Modal>
+      </ModalBody>
+    </>
   );
 };
+
+const UploadQueryResultsModal = (props: Props) => (
+  <Modal size="lg" scrollable>
+    {({ close }) => <UploadQueryResultsModalContent {...props} close={close} />}
+  </Modal>
+);
 
 export default UploadQueryResultsModal;

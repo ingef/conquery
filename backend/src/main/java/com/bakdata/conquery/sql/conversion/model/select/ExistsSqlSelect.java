@@ -1,16 +1,16 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import org.jooq.Field;
-import org.jooq.Name;
-import org.jooq.impl.DSL;
+import static org.jooq.impl.DSL.*;
+import static org.jooq.impl.DSL.field;
 
 import java.util.Collections;
 import java.util.List;
 
-import static org.jooq.impl.DSL.*;
-import static org.jooq.impl.DSL.field;
+import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import org.jooq.Field;
+import org.jooq.Name;
 
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class ExistsSqlSelect implements SingleColumnSqlSelect {
@@ -60,7 +60,14 @@ public class ExistsSqlSelect implements SingleColumnSqlSelect {
 		return new ExistsSqlSelect(coalesceWithZero().as(alias), alias);
 	}
 
+	@Override
+	public List<Field<?>> aggregateForFinalQuery(SqlFunctionProvider functionProvider) {
+		// We have to coalesce at the end of the query because full-outer-joins will create null values, which we want to avoid.
+		Field<Integer> coalesced = coalesce(max(select()), inline(0));
+		return List.of(coalesced.as(alias));
+	}
+
 	private Field<Integer> coalesceWithZero() {
-		return coalesce(select(), value(0));
+		return coalesce(select(), inline(0));
 	}
 }

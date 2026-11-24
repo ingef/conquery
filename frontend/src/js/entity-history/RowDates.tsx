@@ -1,16 +1,4 @@
-import styled from "@emotion/styled";
-
-const DateText = styled("div")`
-  font-size: ${({ theme }) => theme.font.xs};
-`;
-
-const Line = styled("div")`
-  display: block;
-  margin: 1px 0 1px 14px;
-  width: 1px;
-  height: 7px;
-  background-color: ${({ theme }) => theme.col.gray};
-`;
+import { C3 } from "../ui-components/Typography";
 
 export const formatHistoryDayRange = (dateStr: string) => {
   const [, month, day] = dateStr.split("-");
@@ -28,16 +16,14 @@ export const RowDates = ({ dates }: Props) => {
   const sameDate = dates.from === dates.to;
 
   return sameDate ? (
-    <DateText style={{ flexShrink: 0 }}>
-      {formatHistoryDayRange(dates.from)}
-    </DateText>
+    <div className="shrink-0">
+      <C3>{formatHistoryDayRange(dates.from)}</C3>
+    </div>
   ) : (
-    <DateText
-      style={{ display: "flex", flexDirection: "column", flexShrink: 0 }}
-    >
-      {formatHistoryDayRange(dates.from)}
-      <Line />
-      {formatHistoryDayRange(dates.to)}
-    </DateText>
+    <div className="flex shrink-0 flex-col">
+      <C3>{formatHistoryDayRange(dates.from)}</C3>
+      <div className="mt-px mb-px ml-[14px] block h-[7px] w-px bg-gray-500" />
+      <C3>{formatHistoryDayRange(dates.to)}</C3>
+    </div>
   );
 };

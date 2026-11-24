@@ -19,9 +19,9 @@ import org.apache.shiro.authc.AuthenticationToken;
  */
 @Slf4j
 public class ConqueryAuthenticator implements Authenticator<AuthenticationToken, Subject>{
-	
+
 	/**
-	 * The execeptions thrown by Shiro will be catched by {@link AuthenticationExceptionMapper}.  
+	 * The execeptions thrown by Shiro will be catched by {@link AuthenticationExceptionMapper}.
 	 */
 	@Override
 	public Optional<Subject> authenticate(AuthenticationToken token) {

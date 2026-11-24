@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.datasets.concepts.conditions;
 
 import static org.jooq.impl.DSL.*;
 import static org.jooq.impl.SQLDataType.BOOLEAN;
-import static org.jooq.impl.SQLDataType.VARCHAR;
 
 import java.util.Map;
 import java.util.Set;
@@ -17,7 +16,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import org.jooq.Condition;
-import org.jooq.impl.DSL;
 
 /**
  * This condition requires that the selected Column has a value.

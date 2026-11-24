@@ -4,7 +4,6 @@ import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.name;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -20,7 +19,6 @@ import com.bakdata.conquery.integration.common.RequiredColumn;
 import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.integration.sql.dialect.TestDialectBundle;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.DatabaseConnectionConfig;
 import com.bakdata.conquery.models.config.LocaleConfig;
@@ -36,7 +34,6 @@ import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.RowN;
 import org.jooq.Table;
-import org.jooq.impl.BuiltInDataType;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 

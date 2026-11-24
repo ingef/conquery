@@ -7,7 +7,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.query.filter.event.MultiSelectFilterNode;
 import com.bakdata.conquery.models.query.filter.event.SubstringMultiSelectFilterNode;
-import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.bakdata.conquery.sql.conversion.model.filter.SingleSelectFilterConverter;
 import net.minidev.json.annotate.JsonIgnore;
@@ -21,7 +21,7 @@ import net.minidev.json.annotate.JsonIgnore;
 public class SingleSelectFilter extends SelectFilter<String> {
 
 	@Override
-	public FilterNode<?> createFilterNode(String value) {
+	public EventFilterNode<?> createFilterNode(String value) {
 		if (getSubstringRange() != null && !getSubstringRange().isAll()) {
 			return new SubstringMultiSelectFilterNode(getColumn().resolve(), Collections.singleton(value), getSubstringRange());
 		}

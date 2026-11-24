@@ -1,79 +1,69 @@
-import styled from "@emotion/styled";
-import { FC } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import type { ConceptIdT } from "../api/types";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
-import { Heading3 } from "../headings/Headings";
-import { nodeIsConceptQueryNode, NodeResetConfig } from "../model/node";
+import { type NodeResetConfig, nodeIsConceptQueryNode } from "../model/node";
 import type {
   DragItemConceptTreeNode,
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
-
+import { GridList, GridListItem } from "../ui-components/GridList";
+import { C2, H4 } from "../ui-components/Typography";
 import AdditionalConceptNodeChildren from "./AdditionalConceptNodeChildren";
-import { HeadingBetween } from "./HeadingBetween";
 import MenuColumnItem from "./MenuColumnItem";
+import { COMMON_SECTION } from "./useSectionSpy";
 
-const FixedColumn = styled("div")<{ isEmpty?: boolean }>`
-  display: flex;
-  flex-direction: column;
-  width: ${({ isEmpty }) => (isEmpty ? "200px" : "270px")};
-  overflow: hidden;
-  flex-shrink: 0;
-  flex-grow: 1;
-  height: 100%;
+const fixedColumn = tv({
+  base: [
+    "flex flex-col",
+    "gap-3",
+    "shrink-0 grow",
+    "h-full",
+    "overflow-hidden",
+    "p-2",
+    "first-of-type:border-r first-of-type:border-r-gray-100",
+  ],
+  variants: {
+    isEmpty: {
+      true: "w-[200px]",
+      false: "w-[270px]",
+    },
+  },
+});
 
-  &:first-of-type {
-    border-right: 1px solid ${({ theme }) => theme.col.grayLight};
-  }
-`;
-
-const DimmedNote = styled(Heading3)`
-  color: ${({ theme }) => theme.col.grayLight};
-  padding: 15px;
-  font-weight: 400;
-`;
-
-const CommonSettingsLabel = styled(Heading3)`
-  padding: 15px 15px 0;
-  margin: 0;
-  cursor: pointer;
-  &:hover {
-    text-decoration: underline;
-  }
-`;
-
-interface PropsT {
+/**
+ * The node editor's navigation: the sections of the content column, with
+ * the controls that apply to a whole source (include it, clear its filters)
+ * and the concepts the node holds.
+ */
+const MenuColumn = ({
+  className,
+  node,
+  activeSection,
+  showTables,
+  blocklistedTables,
+  allowlistedTables,
+  onDropConcept,
+  onRemoveConcept,
+  onToggleTable,
+  onSelectSection,
+  onResetTable,
+}: {
   className?: string;
 
   node: StandardQueryNodeT;
-  selectedTableIdx: number | null;
+  /** the section in view on the right, `COMMON_SECTION` or a table index */
+  activeSection: string;
   showTables: boolean;
   allowlistedTables?: string[];
   blocklistedTables?: string[];
 
-  onCommonSettingsClick: () => void;
   onDropConcept: (node: DragItemConceptTreeNode) => void;
   onRemoveConcept: (conceptId: ConceptIdT) => void;
   onToggleTable: (tableIdx: number, isExcluded: boolean) => void;
-  onSelectTable: (tableIdx: number) => void;
+  onSelectSection: (key: string) => void;
   onResetTable: (tableIdx: number, config: NodeResetConfig) => void;
-}
-
-const MenuColumn: FC<PropsT> = ({
-  className,
-  node,
-  selectedTableIdx,
-  showTables,
-  blocklistedTables,
-  allowlistedTables,
-  onCommonSettingsClick,
-  onDropConcept,
-  onRemoveConcept,
-  onToggleTable,
-  onSelectTable,
-  onResetTable,
 }) => {
   const { t } = useTranslation();
   const isOnlyOneTableIncluded =
@@ -87,56 +77,74 @@ const MenuColumn: FC<PropsT> = ({
   const isEmpty =
     !nodeIsConceptQueryNode(node) ||
     (!showTables &&
-      (!rootConcept ||
-        !rootConcept.children ||
-        rootConcept.children.length === 0));
+      (!rootConcept?.children || rootConcept.children.length === 0));
 
   return (
-    <FixedColumn className={className} isEmpty={isEmpty}>
-      {isEmpty && (
-        <DimmedNote>{t("queryNodeEditor.emptyMenuColumn")}</DimmedNote>
-      )}
+    <div className={fixedColumn({ isEmpty, className })}>
+      {isEmpty && <C2 tone="muted">{t("queryNodeEditor.emptyMenuColumn")}</C2>}
       {nodeIsConceptQueryNode(node) && showTables && (
         <>
-          <CommonSettingsLabel onClick={onCommonSettingsClick}>
-            {t("queryNodeEditor.properties")}
-          </CommonSettingsLabel>
-          <HeadingBetween>
-            {t("queryNodeEditor.conceptNodeTables")}
-          </HeadingBetween>
-          {node.tables.map((table, tableIdx) => (
-            <MenuColumnItem
-              key={tableIdx}
-              table={table}
-              isActive={selectedTableIdx === tableIdx}
-              isOnlyOneTableIncluded={isOnlyOneTableIncluded}
-              blocklistedTables={blocklistedTables}
-              allowlistedTables={allowlistedTables}
-              onClick={() => {
-                if (!table.exclude) {
-                  onSelectTable(tableIdx);
+          <GridList
+            aria-label={t("queryNodeEditor.sections")}
+            selectionMode="single"
+            selectedKeys={
+              activeSection === COMMON_SECTION ? [COMMON_SECTION] : []
+            }
+            onSelectionChange={() => onSelectSection(COMMON_SECTION)}
+          >
+            <GridListItem
+              id={COMMON_SECTION}
+              textValue={t("queryNodeEditor.properties")}
+            >
+              <C2 truncate>{t("queryNodeEditor.properties")}</C2>
+            </GridListItem>
+          </GridList>
+          <div className="px-2">
+            <H4>{t("queryNodeEditor.conceptNodeTables")}</H4>
+          </div>
+          <GridList
+            aria-label={t("queryNodeEditor.conceptNodeTables")}
+            selectionMode="single"
+            selectedKeys={
+              activeSection === COMMON_SECTION ? [] : [activeSection]
+            }
+            onSelectionChange={(keys) => {
+              if (keys === "all") return;
+              const key = String([...keys][0]);
+              // an excluded source has no section
+              if (!node.tables[Number(key)]?.exclude) onSelectSection(key);
+            }}
+          >
+            {node.tables.map((table, tableIdx) => (
+              <MenuColumnItem
+                key={tableIdx}
+                id={String(tableIdx)}
+                table={table}
+                isOnlyOneTableIncluded={isOnlyOneTableIncluded}
+                blocklistedTables={blocklistedTables}
+                allowlistedTables={allowlistedTables}
+                onToggleTable={(value) => onToggleTable(tableIdx, value)}
+                onResetTable={(config: NodeResetConfig) =>
+                  onResetTable(tableIdx, config)
                 }
-              }}
-              onToggleTable={(value) => onToggleTable(tableIdx, value)}
-              onResetTable={(config: NodeResetConfig) =>
-                onResetTable(tableIdx, config)
-              }
-            />
-          ))}
+              />
+            ))}
+          </GridList>
         </>
       )}
       {nodeIsConceptQueryNode(node) &&
-        rootConcept &&
-        rootConcept.children &&
+        rootConcept?.children &&
         rootConcept.children.length > 0 && (
-          <AdditionalConceptNodeChildren
-            node={node}
-            rootConcept={rootConcept}
-            onDropConcept={onDropConcept}
-            onRemoveConcept={onRemoveConcept}
-          />
+          <div className="flex min-h-0 grow flex-col gap-3 px-2">
+            <AdditionalConceptNodeChildren
+              node={node}
+              rootConcept={rootConcept}
+              onDropConcept={onDropConcept}
+              onRemoveConcept={onRemoveConcept}
+            />
+          </div>
         )}
-    </FixedColumn>
+    </div>
   );
 };
 

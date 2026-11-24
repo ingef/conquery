@@ -44,7 +44,7 @@ public abstract class NetworkMessageContext<MESSAGE extends NetworkMessage<?>> e
 			this.rawSession = session;
 		}
 	}
-	
+
 	/**
 	 * Is used on a {@link ManagerNode} for sending messages to a {@link ShardNode} and is injected into messages from the {@link ShardNode}.
 	 */

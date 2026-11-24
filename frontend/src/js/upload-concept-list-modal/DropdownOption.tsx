@@ -1,44 +1,28 @@
-import { css } from "@emotion/react";
-import styled from "@emotion/styled";
-import { faFolder } from "@fortawesome/free-solid-svg-icons";
+import { FolderIcon } from "lucide-react";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
-
-import { IndexPrefix } from "../common/components/IndexPrefix";
+import { tv } from "tailwind-variants";
 import { exists } from "../common/helpers/exists";
-import { Icon } from "../icon/FaIcon";
+import { IndexPrefix } from "../ui-components/IndexPrefix";
+import { C2, textStyle } from "../ui-components/Typography";
 
-const Container = styled("div")`
-  display: grid;
-  grid-template-columns: 110px 30px auto auto auto auto 1fr;
-  align-items: flex-start;
-  gap: 0 8px;
-  padding: 3px 0;
-  font-size: ${({ theme }) => theme.font.sm};
-`;
+const container = tv({
+  base: [
+    "grid grid-cols-[110px_30px_auto_auto_auto_auto_1fr]",
+    "items-start",
+    "gap-x-2",
+    "py-[3px]",
+  ],
+});
 
-const Text = styled("span")<{ bold?: boolean }>`
-  margin: 0;
-  color: ${({ theme }) => theme.col.gray};
-  ${({ bold, theme }) =>
-    bold &&
-    css`
-      color: ${theme.col.black};
-      font-weight: 400;
-    `};
-`;
-
-const SxIndexPrefix = styled(IndexPrefix)`
-  margin-right: 0;
-  background-color: ${({ theme }) => theme.col.blueGrayDark};
-  color: white;
-  font-weight: 700;
-`;
-const Right = styled("div")`
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-`;
+const indexPrefix = tv({
+  base: [
+    "mr-0",
+    "bg-primary-500",
+    "text-white",
+    textStyle({ size: 3, strong: true }),
+  ],
+});
 
 export const DropdownOption = memo(
   ({
@@ -56,33 +40,37 @@ export const DropdownOption = memo(
     const hasDifferentFilterLabel = exists(filterLabel) && exists(filterIdx);
 
     return (
-      <Container>
-        <Text>
+      <div className={container()}>
+        <C2 as="span" tone="muted">
           {hasDifferentFilterLabel
             ? t("uploadConceptListModal.filterValuesFrom")
             : t("uploadConceptListModal.conceptValuesFrom")}
-        </Text>
-        <Right>
+        </C2>
+        <div className="flex items-center justify-end">
           {hasDifferentFilterLabel ? (
-            <SxIndexPrefix># {filterIdx}</SxIndexPrefix>
+            <IndexPrefix className={indexPrefix()}># {filterIdx}</IndexPrefix>
           ) : (
-            <Icon
-              icon={faFolder}
-              active={!hasDifferentFilterLabel}
-              gray={hasDifferentFilterLabel}
-            />
+            <FolderIcon data-filled className="text-primary-500" />
           )}
-        </Right>
-        <Text bold={!hasDifferentFilterLabel}>{conceptLabel}</Text>
+        </div>
+        <C2 as="span" tone={hasDifferentFilterLabel ? "muted" : "default"}>
+          {conceptLabel}
+        </C2>
         {hasDifferentFilterLabel && (
           <>
-            <Text>&gt;</Text>
-            <Text>{connectorLabel}</Text>
-            <Text>&gt;</Text>
-            <Text bold>{filterLabel}</Text>
+            <C2 as="span" tone="muted">
+              &gt;
+            </C2>
+            <C2 as="span" tone="muted">
+              {connectorLabel}
+            </C2>
+            <C2 as="span" tone="muted">
+              &gt;
+            </C2>
+            <C2 as="span">{filterLabel}</C2>
           </>
         )}
-      </Container>
+      </div>
     );
   },
 );

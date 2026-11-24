@@ -20,7 +20,7 @@ public class ParsingException extends RuntimeException {
 	public static ParsingException of(String value, String format) {
 		return new ParsingException("Failed to parse '"+Objects.toString(value)+"' as "+format);
 	}
-	
+
 	public static ParsingException of(String value, String format, Throwable cause) {
 		return new ParsingException("Failed to parse '"+Objects.toString(value)+"' as "+format, cause);
 	}

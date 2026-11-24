@@ -119,6 +119,16 @@
 					"type":"string",
 					"format": "uri"
 				},
+				"serviceUserPermissions": {
+					"type": "array",
+					"description": "Permissions granted to the service user in addition to the submitting user's permissions.",
+					"default": [],
+					"uniqueItems": true,
+					"items": {
+						"type": "string",
+						"pattern": "^[\\w,*-]+(?::[\\w,*@-]+){0,2}$"
+					}
+				},
 				"formConfigPath":{
 					"type": "string",
 					"format": "uri",

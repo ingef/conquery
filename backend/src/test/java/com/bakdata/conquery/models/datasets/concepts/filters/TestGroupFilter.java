@@ -1,31 +1,72 @@
 package com.bakdata.conquery.models.datasets.concepts.filters;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.QueryContextResolvable;
+import com.bakdata.conquery.models.events.MajorTypeId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.filter.event.MultiSelectFilterNode;
-import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+import io.dropwizard.validation.ValidationMethod;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.FieldNameConstants;
+import lombok.extern.slf4j.Slf4j;
 
 @CPSType(id = "TEST_GROUP_FILTER", base = Filter.class)
-public class TestGroupFilter extends SingleColumnFilter<TestGroupFilter.GroupFilterValue> implements GroupFilter {
+@Getter
+@Setter
+@Slf4j
+public class TestGroupFilter extends EventFilter<TestGroupFilter.GroupFilterValue> implements GroupFilter {
+
+	@Valid
+	@NotNull
+	private ColumnId column;
+
+	@Override
+	public List<ColumnId> getRequiredColumns() {
+		return List.of(getColumn());
+	}
+
+	@JsonIgnore
+	@ValidationMethod(message = "Columns do not match required Type.")
+	public boolean isValidColumnType() {
+		final Column resolved = getColumn().resolve();
+		final boolean acceptable = getAcceptedColumnTypes().contains(resolved.getType());
+
+		if (!acceptable) {
+			log.error("Column[{}] is of Type[{}]. Not one of [{}]", resolved.getId(), resolved.getType(), getAcceptedColumnTypes());
+		}
+
+		return acceptable;
+	}
+
+	@JsonIgnore
+	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
+		return EnumSet.allOf(MajorTypeId.class);
+	}
 
 	@Override
 	public void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) {
@@ -35,7 +76,7 @@ public class TestGroupFilter extends SingleColumnFilter<TestGroupFilter.GroupFil
 
 
 	@Override
-	public FilterNode<?> createFilterNode(GroupFilterValue compoundFilterValue) {
+	public EventFilterNode<?> createFilterNode(GroupFilterValue compoundFilterValue) {
 		return new MultiSelectFilterNode(getColumn().resolve(), Set.of(compoundFilterValue.getResolvedValues()));
 	}
 

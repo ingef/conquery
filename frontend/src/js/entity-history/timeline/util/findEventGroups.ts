@@ -1,5 +1,5 @@
-import { ColumnDescription } from "../../../api/types";
-import { DateRow, EntityEvent } from "../../reducer";
+import type { ColumnDescription } from "../../../api/types";
+import type { DateRow, EntityEvent } from "../../reducer";
 import { isGroupableColumn } from "./util";
 
 export interface EventsPerYear {
@@ -32,8 +32,8 @@ const diffObjects = (objects: object[]): string[] => {
 
     for (const key of keys) {
       if (
-        Object.prototype.hasOwnProperty.call(o1, key) &&
-        Object.prototype.hasOwnProperty.call(o2, key) &&
+        Object.hasOwn(o1, key) &&
+        Object.hasOwn(o2, key) &&
         // @ts-ignore should be fine
         JSON.stringify(o1[key]) !== JSON.stringify(o2[key])
       ) {

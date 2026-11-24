@@ -32,7 +32,6 @@ import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilt
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.index.IndexService;
-import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
 import com.bakdata.conquery.resources.api.ConceptsProcessor;
 import com.bakdata.conquery.resources.api.FilterResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
@@ -186,19 +185,11 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 		filterTemplate.setName("test");
 		filter.setTemplate(filterTemplate.getId());
 
-		// We need to persist the modification before we submit the update matching stats request
+		// We need to persist the modification before we submit the filter search update request
 		namespaceStorage.addSearchIndex(filterTemplate);
 		namespaceStorage.updateConcept(concept);
 
-		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder()
-															, AdminDatasetResource.class, "postprocessNamespace"
-													)
-													.buildFromMap(Map.of(DATASET, conquery.getDataset()));
-
-		conquery.getClient().target(matchingStatsUri)
-				.request(MediaType.APPLICATION_JSON_TYPE)
-				.post(null)
-				.close();
+		LoadingUtil.updateFilterSearch(conquery);
 
 		conquery.waitUntilWorkDone();
 

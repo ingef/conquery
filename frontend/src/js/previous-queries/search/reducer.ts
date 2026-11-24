@@ -1,6 +1,6 @@
 import { getType } from "typesafe-actions";
 
-import { Action } from "../../app/actions";
+import type { Action } from "../../app/actions";
 
 import { clearSearch, setSearch } from "./actions";
 

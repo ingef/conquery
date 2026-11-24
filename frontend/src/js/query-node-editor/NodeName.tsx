@@ -1,44 +1,34 @@
-import styled from "@emotion/styled";
 import { memo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import EditableText from "../ui-components/EditableText";
-
-const Root = styled("div")`
-  padding: 10px 15px;
-`;
+import { C2 } from "../ui-components/Typography";
 
 interface Props {
   allowEditing: boolean;
-  maxWidth?: number;
   label: string;
   onUpdateLabel: (label: string) => void;
 }
 
-const NodeName = ({ allowEditing, label, maxWidth, onUpdateLabel }: Props) => {
+const NodeName = ({ allowEditing, label, onUpdateLabel }: Props) => {
   const { t } = useTranslation();
   const [editingLabel, setEditingLabel] = useState<boolean>(false);
 
   return (
-    <Root style={{ maxWidth }}>
+    <div className="min-w-0">
       {allowEditing ? (
         <EditableText
-          large
-          loading={false}
+          size="md"
           text={label}
           tooltip={t("help.editConceptName")}
-          selectTextOnMount={true}
           editing={editingLabel}
-          onSubmit={(value) => {
-            onUpdateLabel(value);
-            setEditingLabel(false);
-          }}
+          onSubmit={onUpdateLabel}
           onToggleEdit={() => setEditingLabel(!editingLabel)}
         />
       ) : (
-        label
+        <C2 truncate>{label}</C2>
       )}
-    </Root>
+    </div>
   );
 };
 

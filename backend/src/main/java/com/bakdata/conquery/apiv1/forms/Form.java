@@ -54,7 +54,7 @@ public abstract class Form implements QueryDescription {
 	}
 
 
-	/** 
+	/**
 	 * Is called in context of a request to generate a default label.
 	 * If localization is needed use:<br/>
 	 * <code>

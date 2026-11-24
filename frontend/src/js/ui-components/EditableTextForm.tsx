@@ -1,89 +1,101 @@
-import styled from "@emotion/styled";
-import { faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
-import { FC, FormEvent, useRef, useState } from "react";
+import { CheckIcon } from "lucide-react";
+import {
+  type FocusEvent,
+  type FormEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { TextField as RacTextField } from "react-aria-components";
 import { useTranslation } from "react-i18next";
-
-import IconButton from "../button/IconButton";
+import { tv } from "tailwind-variants";
 import { useClickOutside } from "../common/helpers/useClickOutside";
-import WithTooltip from "../tooltip/WithTooltip";
+import { Button } from "./Button";
+import { Input } from "./Input";
+import { Tooltip, TooltipTrigger } from "./Tooltip";
 
-interface PropsT {
-  className?: string;
-  text: string;
-  loading?: boolean;
-  selectTextOnMount?: boolean;
-  saveOnClickoutside?: boolean;
-  onSubmit: (text: string) => void;
-  onCancel: () => void;
-}
+const form = tv({
+  base: "flex min-w-0 items-center gap-1",
+  variants: {
+    size: {
+      // the input frame has a single 30 px height; shrunk to the small button's 24 px
+      sm: "[&_:has(>input)]:h-6",
+      md: "",
+    },
+  },
+});
 
-const Input = styled("input")`
-  font-size: ${({ theme }) => theme.font.sm};
-  padding: 0 8px;
-  height: 28px;
-  border: 1px solid ${({ theme }) => theme.col.gray};
-  border-radius: ${({ theme }) => theme.borderRadius};
-`;
-
-const Form = styled("form")`
-  display: flex;
-  align-items: center;
-`;
-
-const SxIconButton = styled(IconButton)`
-  padding: 6px 10px;
-  margin-left: 3px;
-`;
-
-const EditableTextForm: FC<PropsT> = ({
-  className,
+/** Enter or the check saves a changed text; Escape, a click or a tab elsewhere discards it */
+const EditableTextForm = ({
+  size,
+  label,
   text,
-  loading,
-  selectTextOnMount,
-  saveOnClickoutside,
   onSubmit,
   onCancel,
+}: {
+  size: "sm" | "md";
+  label?: string;
+  text: string;
+  onSubmit: (text: string) => void;
+  onCancel: () => void;
 }) => {
   const { t } = useTranslation();
-  const [value, setValue] = useState<string>(text);
-  const [textSelected, setTextSelected] = useState<boolean>(false);
-  const ref = useRef(null);
+  const [value, setValue] = useState(text);
+  const formRef = useRef<HTMLFormElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  function onSubmitForm(e: FormEvent<HTMLFormElement>) {
+  useEffect(() => {
+    inputRef.current?.focus();
+    inputRef.current?.select();
+  }, []);
+
+  useClickOutside(formRef, onCancel);
+
+  const onSubmitForm = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    onSubmit(value);
-  }
+    const trimmed = value.trim();
+    if (trimmed && trimmed !== text) {
+      onSubmit(trimmed);
+    } else {
+      onCancel();
+    }
+  };
 
-  useClickOutside(ref, saveOnClickoutside ? () => onSubmit(value) : onCancel);
+  // no related target: a window switch, or a click, which the click outside handles
+  const onBlur = (e: FocusEvent<HTMLFormElement>) => {
+    if (e.relatedTarget && !e.currentTarget.contains(e.relatedTarget)) {
+      onCancel();
+    }
+  };
 
   return (
-    <Form ref={ref} className={className} onSubmit={onSubmitForm}>
-      <Input
-        type="text"
+    <form
+      ref={formRef}
+      className={form({ size })}
+      onSubmit={onSubmitForm}
+      onBlur={onBlur}
+    >
+      <RacTextField
+        aria-label={label}
+        className="min-w-0"
         value={value}
-        onChange={(e) => setValue(e.target.value)}
-        ref={(instance: HTMLInputElement) => {
-          if (instance) {
-            instance.focus();
-            if (selectTextOnMount && !textSelected) {
-              instance.select();
-              setTextSelected(true);
-            }
-          }
-        }}
-      />
-      {!saveOnClickoutside && (
-        <WithTooltip text={t("common.save")}>
-          <SxIconButton
-            type="submit"
-            frame
-            disabled={loading}
-            icon={loading ? faSpinner : faCheck}
-          />
-        </WithTooltip>
-      )}
-    </Form>
+        onChange={setValue}
+      >
+        <Input
+          ref={inputRef}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") onCancel();
+          }}
+        />
+      </RacTextField>
+      <TooltipTrigger>
+        <Button aria-label={t("common.save")} type="submit" size={size}>
+          <CheckIcon />
+        </Button>
+        <Tooltip>{t("common.save")}</Tooltip>
+      </TooltipTrigger>
+    </form>
   );
 };
 

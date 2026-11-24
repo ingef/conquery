@@ -58,7 +58,7 @@ public class ResultCsvProcessor {
 
 		// Get the locale extracted by the LocaleFilter
 		final Locale locale = I18n.LOCALE.get();
-		final PrintSettings settings = new PrintSettings(pretty, locale, namespace, config, idPrinter::createId, null);
+		final PrintSettings settings = new PrintSettings(pretty, locale, config, idPrinter::createId, null);
 
 		final StreamingOutput out = os -> {
 			try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, charset))) {

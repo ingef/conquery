@@ -24,7 +24,7 @@ public class JacksonTest {
 		assertThat(Jackson.MAPPER.writeValueAsString(arr))
 			.isEqualTo("[\"singular\"]");
 	}
-	
+
 	@Test
 	public void testSingleElementListSerialization() throws JsonProcessingException {
 		List<String> list = Arrays.asList("singular");
@@ -54,7 +54,7 @@ public class JacksonTest {
 		assertThat(writer.writeValueAsString(test))
 				.isEqualTo(expected);
 	}
-	
+
 	@Data
 	public static class InternalTestClass {
 
@@ -81,6 +81,6 @@ public class JacksonTest {
 		@JsonView(View.Api.class)
 		private int api = 8;
 	}
-	
+
 	public static class Marker {}
 }

@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter @RequiredArgsConstructor
 public class TableStatistics {
-		
+
 	private final Table table;
 	private final long numberOfEntries;
 	private final long size;

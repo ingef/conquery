@@ -4,8 +4,6 @@ import java.util.Map;
 
 import com.bakdata.conquery.models.config.DatabaseConnectionConfig;
 import com.bakdata.conquery.models.config.SqlConnectorConfig;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.NoArgsConstructor;
 
@@ -16,7 +14,7 @@ public class TestSqlConnectorConfig extends SqlConnectorConfig {
 	private static final String TEST_DATASET = "test";
 
 	public TestSqlConnectorConfig(DatabaseConnectionConfig databaseConfig) {
-		super(true, true, Map.of(TEST_DATASET, databaseConfig));
+		super(true, false, true, Map.of(TEST_DATASET, databaseConfig));
 	}
 
 }

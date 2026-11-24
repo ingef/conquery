@@ -6,8 +6,6 @@ import static org.jooq.impl.DSL.name;
 import com.bakdata.conquery.models.datasets.Table;
 import org.jooq.Field;
 
-import java.util.Objects;
-
 public class TablePrimaryColumnUtil {
 
 	public static Field<String> findPrimaryColumn(Table table, String defaultPrimaryColumn) {

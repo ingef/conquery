@@ -1,26 +1,17 @@
-import styled from "@emotion/styled";
 import { memo } from "react";
 
-import {
+import type {
   ColumnDescription,
   ConceptIdT,
-  CurrencyConfigT,
   TimeStratifiedInfo,
 } from "../../api/types";
-import { ContentFilterValue } from "../ContentControl";
-import { DetailLevel } from "../DetailControl";
-import { ColumnBuckets } from "./util/useColumnInformation";
-
+import type { ContentFilterValue } from "../ContentControl";
+import type { DetailLevel } from "../DetailControl";
 import { useTimelineSearch } from "../timeline-search/timelineSearchState";
 import { Quarter } from "./Quarter";
+import type { EventsByQuarterWithGroups } from "./util/findEventGroups";
+import type { ColumnBuckets } from "./util/useColumnInformation";
 import YearHead from "./YearHead";
-import { EventsByQuarterWithGroups } from "./util/findEventGroups";
-
-const YearGroup = styled("div")`
-  display: flex;
-  flex-direction: column;
-  border-radius: ${({ theme }) => theme.borderRadius};
-`;
 
 const Year = ({
   year,
@@ -34,7 +25,6 @@ const Year = ({
   dateColumn,
   sourceColumn,
   columnBuckets,
-  currencyConfig,
   rootConceptIdsByColumn,
   timeStratifiedInfos,
 }: {
@@ -46,7 +36,6 @@ const Year = ({
   detailLevel: DetailLevel;
   contentFilter: ContentFilterValue;
   rootConceptIdsByColumn: Record<string, ConceptIdT>;
-  currencyConfig: CurrencyConfigT;
   columnBuckets: ColumnBuckets;
   columns: Record<string, ColumnDescription>;
   dateColumn: ColumnDescription;
@@ -71,7 +60,7 @@ const Year = ({
         onClick={() => toggleOpenYear(year)}
         timeStratifiedInfos={timeStratifiedInfos}
       />
-      <YearGroup key={year}>
+      <div className="flex flex-col rounded" key={year}>
         {quarterwiseData.map(({ quarter, groupedEvents, differences }) => {
           const totalEventsPerQuarter = groupedEvents.reduce(
             (s, evts) => s + evts.length,
@@ -95,12 +84,11 @@ const Year = ({
               dateColumn={dateColumn}
               sourceColumn={sourceColumn}
               columnBuckets={columnBuckets}
-              currencyConfig={currencyConfig}
               rootConceptIdsByColumn={rootConceptIdsByColumn}
             />
           );
         })}
-      </YearGroup>
+      </div>
     </>
   );
 };

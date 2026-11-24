@@ -16,10 +16,10 @@ import org.apache.shiro.authz.Permission;
 import org.junit.jupiter.api.Test;
 
 public class InstancePermissionImplificationTest {
-	
+
 	private static final String DATASET1 = "dataset1";
 	private static final String DATASET2 = "dataset2";
-	
+
 
 	@Test
 	public void testEqual() {
@@ -32,7 +32,7 @@ public class InstancePermissionImplificationTest {
 				new DatasetId(DATASET1));
 		assert pStored.implies(pRequested);
 	}
-	
+
 	@Test
 	public void testDivergingPrincipals() {
 		// Test different user principals
@@ -44,7 +44,7 @@ public class InstancePermissionImplificationTest {
 				new DatasetId(DATASET1));
 		assert pStored.implies(pRequested);
 	}
-	
+
 	@Test
 	public void testDivergingAccesTypes() {
 		// Test different access types
@@ -56,7 +56,7 @@ public class InstancePermissionImplificationTest {
 				new DatasetId(DATASET1));
 		assert !pStored.implies(pRequested);
 	}
-	
+
 	@Test
 	public void testDivergingInstances() {
 		// Test different Instances
@@ -68,7 +68,7 @@ public class InstancePermissionImplificationTest {
 				new DatasetId(DATASET2));
 		assert !pStored.implies(pRequested);
 	}
-	
+
 	@Test
 	public void testMultipleAccessesProhibit() {
 		// Test different Instances
@@ -93,7 +93,7 @@ public class InstancePermissionImplificationTest {
 				new DatasetId(DATASET1));
 		assert pStored.implies(pRequested);
 	}
-	
+
 	@Test
 	public void permissionTypesFail() {
 		Permission dPerm = DatasetPermission.onInstance(Ability.READ.asSet(), new DatasetId(DATASET1));

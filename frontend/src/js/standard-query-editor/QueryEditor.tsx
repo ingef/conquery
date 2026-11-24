@@ -1,17 +1,14 @@
-import styled from "@emotion/styled";
 import { useCallback, useEffect, useState } from "react";
+import { tv } from "tailwind-variants";
 
 import { useDatasetId } from "../dataset/selectors";
 
 import Query from "./Query";
 import StandardQueryNodeEditor from "./StandardQueryNodeEditor";
 
-const Root = styled("div")`
-  flex-grow: 1;
-  height: 100%;
-  padding: 8px 10px 10px 10px;
-  overflow: hidden;
-`;
+const root = tv({
+  base: ["pt-2 px-[10px] pb-[10px]", "overflow-hidden"],
+});
 
 export const QueryEditor = () => {
   const [editedNode, setEditedNode] = useState<{
@@ -22,16 +19,17 @@ export const QueryEditor = () => {
   const datasetId = useDatasetId();
   const onClose = useCallback(() => setEditedNode(null), []);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: close the editor whenever the dataset changes
   useEffect(() => {
     onClose();
   }, [datasetId, onClose]);
 
   return (
-    <Root>
+    <div className={root()}>
       <Query setEditedNode={setEditedNode} />
       {editedNode && (
         <StandardQueryNodeEditor editedNode={editedNode} onClose={onClose} />
       )}
-    </Root>
+    </div>
   );
 };

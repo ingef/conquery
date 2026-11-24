@@ -2,15 +2,15 @@ package com.bakdata.conquery.resources.admin;
 
 import java.io.IOException;
 import java.util.Set;
+import jakarta.ws.rs.NotAuthorizedException;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
 
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.AdminPermission;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
-import jakarta.ws.rs.NotAuthorizedException;
-import jakarta.ws.rs.container.ContainerRequestContext;
-import jakarta.ws.rs.container.ContainerRequestFilter;
 
 /**
  * Enforces that the requesting subject has the admin permission.

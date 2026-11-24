@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.datasets.concepts.select.concept.specific;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.query.TemporalSamplerFactory;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -10,10 +9,12 @@ import com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSel
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.QuarterAggregator;
 import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.sql.conversion.model.select.QuarterSelectConverter;
+import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -22,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 @CPSType(id = "QUARTER", base = Select.class)
 @Data
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator)
+@EqualsAndHashCode(callSuper = true)
 public class QuarterSelect extends UniversalSelect {
 
 	@NotNull
@@ -30,6 +32,16 @@ public class QuarterSelect extends UniversalSelect {
 	@Override
 	public Aggregator<?> createAggregator() {
 		return new QuarterAggregator(sample);
+	}
+
+	@Override
+	public boolean isEventDateSelect() {
+		return true;
+	}
+
+	@Override
+	public SelectConverter<QuarterSelect> createConverter() {
+		return new QuarterSelectConverter();
 	}
 
 	@Override

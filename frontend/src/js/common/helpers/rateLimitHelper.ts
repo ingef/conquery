@@ -22,7 +22,9 @@ class EventEmitter {
   emit(event: string, data?: string) {
     const cbs = this.callbacks[event];
     if (cbs) {
-      cbs.forEach((cb) => cb(data));
+      for (const cb of cbs) {
+        cb(data);
+      }
     }
   }
 }

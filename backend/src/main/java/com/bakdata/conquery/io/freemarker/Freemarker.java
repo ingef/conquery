@@ -14,9 +14,9 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class Freemarker {
-	
+
 	public static final Version VERSION = Configuration.VERSION_2_3_27;
-	
+
 	public static final FreemarkerViewRenderer HTML_RENDERER = rendererForHtml();
 
 
@@ -25,7 +25,7 @@ public class Freemarker {
 		freemarker.configure(Freemarker.asMap());
 		return freemarker;
 	}
-	
+
 	private static Map<String, String> asMap() {
 		return ImmutableMap
 			.<String, String>builder()

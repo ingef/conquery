@@ -1,5 +1,11 @@
 package com.bakdata.conquery.models.config;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+
 import com.bakdata.conquery.io.mina.MdcFilter;
 import com.bakdata.conquery.io.mina.jackson.AsyncJacksonProtocolFilter;
 import com.bakdata.conquery.models.messages.namespaces.specific.CollectColumnValuesMessage;
@@ -10,9 +16,6 @@ import io.dropwizard.util.DataSize;
 import io.dropwizard.util.Duration;
 import io.dropwizard.validation.DataSizeRange;
 import io.dropwizard.validation.PortRange;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.mina.core.filterchain.IoFilter;
@@ -20,10 +23,6 @@ import org.apache.mina.core.service.IoHandler;
 import org.apache.mina.transport.socket.DefaultSocketSessionConfig;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
-
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 
 @Getter
 @Setter

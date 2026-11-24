@@ -1,44 +1,43 @@
-import styled from "@emotion/styled";
 import { Fragment, memo } from "react";
 import { useSelector } from "react-redux";
+import { tv } from "tailwind-variants";
 
-import { CurrencyConfigT, EntityInfo, TimeStratifiedInfo } from "../api/types";
+import type { EntityInfo, TimeStratifiedInfo } from "../api/types";
 import type { StateT } from "../app/reducers";
 
-import { ContentFilterValue } from "./ContentControl";
+import type { ContentFilterValue } from "./ContentControl";
 import type { DetailLevel } from "./DetailControl";
 import { EntityCard } from "./EntityCard";
 import type { EntityHistoryStateT } from "./reducer";
-import { TimelineSearch } from "./timeline-search/TimelineSearch";
-import { useTimelineSearch } from "./timeline-search/timelineSearchState";
 import { TimelineEmptyPlaceholder } from "./timeline/TimelineEmptyPlaceholder";
-import Year from "./timeline/Year";
 import { useColumnInformation } from "./timeline/util/useColumnInformation";
 import { useTimeBucketedSortedData } from "./timeline/util/useTimeBucketedSortedData";
+import Year from "./timeline/Year";
+import { TimelineSearch } from "./timeline-search/TimelineSearch";
+import { useTimelineSearch } from "./timeline-search/timelineSearchState";
 
-const Root = styled("div")<{ isEmpty?: boolean }>`
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: 0 20px 20px 10px;
-  display: inline-grid;
-  grid-template-columns: 280px auto;
-  grid-auto-rows: ${({ isEmpty }) =>
-    isEmpty ? "1fr" : "minmax(min-content, max-content) 1fr"};
-  gap: 20px 4px;
-  width: 100%;
-  height: 100%;
-`;
+const root = tv({
+  base: [
+    "overflow-y-auto",
+    "[-webkit-overflow-scrolling:touch]",
+    "pt-0 pr-5 pb-5 pl-[10px]",
+    "inline-grid",
+    "grid-cols-[360px_auto]",
+    "gap-x-[4px] gap-y-5",
+    "w-full",
+    "h-full",
+  ],
+  variants: {
+    isEmpty: {
+      true: "auto-rows-fr",
+      false: "auto-rows-[minmax(min-content,max-content)_1fr]",
+    },
+  },
+});
 
-const Divider = styled("div")`
-  grid-column: 1 / span 2;
-  height: 1px;
-  background: ${({ theme }) => theme.col.grayLight};
-`;
-
-const SxTimelineEmptyPlaceholder = styled(TimelineEmptyPlaceholder)`
-  grid-column: span 2;
-  height: 100%;
-`;
+const divider = tv({
+  base: ["col-start-1 col-span-2", "h-px", "bg-gray-100"],
+});
 
 export const Timeline = memo(
   ({
@@ -66,9 +65,6 @@ export const Timeline = memo(
   }) => {
     const data = useSelector<StateT, EntityHistoryStateT["currentEntityData"]>(
       (state) => state.entityHistory.currentEntityData,
-    );
-    const currencyConfig = useSelector<StateT, CurrencyConfigT>(
-      (state) => state.startup.config.currency,
     );
 
     const { searchTerm } = useTimelineSearch();
@@ -99,7 +95,7 @@ export const Timeline = memo(
     return (
       <div className="overflow-hidden w-full flex flex-col">
         <TimelineSearch matches={matches} />
-        <Root className={className} isEmpty={isEmpty}>
+        <div className={root({ isEmpty, className })}>
           {!isEmpty && !searchTerm && (
             <EntityCard
               className="col-span-2"
@@ -108,7 +104,12 @@ export const Timeline = memo(
               timeStratifiedInfos={currentEntityTimeStratifiedInfos}
             />
           )}
-          {isEmpty && <SxTimelineEmptyPlaceholder searchTerm={searchTerm} />}
+          {isEmpty && (
+            <TimelineEmptyPlaceholder
+              className="col-span-2 h-full"
+              searchTerm={searchTerm}
+            />
+          )}
           {dateColumn &&
             sourceColumn &&
             eventsByQuarterWithGroups.map(({ year, quarterwiseData }, i) => (
@@ -121,7 +122,6 @@ export const Timeline = memo(
                   toggleOpenYear={toggleOpenYear}
                   toggleOpenQuarter={toggleOpenQuarter}
                   detailLevel={detailLevel}
-                  currencyConfig={currencyConfig}
                   rootConceptIdsByColumn={rootConceptIdsByColumn}
                   columnBuckets={columnBuckets}
                   contentFilter={contentFilter}
@@ -129,10 +129,12 @@ export const Timeline = memo(
                   dateColumn={dateColumn}
                   sourceColumn={sourceColumn}
                 />
-                {i < eventsByQuarterWithGroups.length - 1 && <Divider />}
+                {i < eventsByQuarterWithGroups.length - 1 && (
+                  <div className={divider()} />
+                )}
               </Fragment>
             ))}
-        </Root>
+        </div>
       </div>
     );
   },

@@ -1,10 +1,10 @@
 import { useMemo } from "react";
-import { ColumnDescription, ConceptIdT } from "../../../api/types";
-import { EntityHistoryStateT } from "../../reducer";
+import type { ColumnDescription, ConceptIdT } from "../../../api/types";
+import type { EntityHistoryStateT } from "../../reducer";
 import { useTimelineSearch } from "../../timeline-search/timelineSearchState";
 import { findEventGroups } from "./findEventGroups";
 import { groupByQuarter } from "./groupByQuarter";
-import { ColumnBuckets } from "./useColumnInformation";
+import type { ColumnBuckets } from "./useColumnInformation";
 
 export const useTimeBucketedSortedData = (
   data: EntityHistoryStateT["currentEntityData"],

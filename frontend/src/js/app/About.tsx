@@ -1,21 +1,25 @@
-import { faCopy } from "@fortawesome/free-regular-svg-icons";
+import { CopyIcon } from "lucide-react";
 import {
-  Fragment,
-  ReactNode,
   createContext,
+  Fragment,
   memo,
+  type ReactNode,
   useCallback,
   useContext,
   useState,
 } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useSelector } from "react-redux";
-
-import IconButton from "../button/IconButton";
-import Modal from "../modal/Modal";
-
-import { GetFrontendConfigResponseT } from "../api/types";
-import { StateT } from "./reducers";
+import type { GetFrontendConfigResponseT } from "../api/types";
+import { Button } from "../ui-components/Button";
+import {
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+} from "../ui-components/Modal";
+import { C2 } from "../ui-components/Typography";
+import type { StateT } from "./reducers";
 
 const initialState = {
   isOpen: false,
@@ -38,15 +42,15 @@ export const useAbout = () => {
   return useContext(Context);
 };
 
+// build-time constants, see `define` in vite.config.ts
+const frontendTimestamp = __BUILD_TIMESTAMP__;
+const frontendGitDescribe = __BUILD_GIT_DESCRIBE__;
+
 const useVersion = () => {
   const backendVersions = useSelector<
     StateT,
     GetFrontendConfigResponseT["versions"]
   >((state) => state.startup.config.versions);
-
-  // THIS IS GETTING STATICALLY REPLACED USING "VITE DEFINE"
-  const frontendTimestamp = `__BUILD_TIMESTAMP__`.replace(/"/g, "");
-  const frontendGitDescribe = `__BUILD_GIT_DESCRIBE__`.replace(/"/g, "");
 
   return {
     backendVersions,
@@ -55,9 +59,7 @@ const useVersion = () => {
   };
 };
 
-export const About = memo(() => {
-  const { isOpen, setOpen } = useAbout();
-  const toggleOpen = useCallback(() => setOpen((open) => !open), [setOpen]);
+const AboutContent = ({ close }: { close: () => void }) => {
   const { backendVersions, frontendTimestamp, frontendGitDescribe } =
     useVersion();
 
@@ -67,35 +69,49 @@ export const About = memo(() => {
         .map(({ name, version }) => `${name}: ${version}`)
         .join(" ")} Frontend: ${frontendGitDescribe}`,
     );
-    setOpen(false);
+    close();
   };
 
-  useHotkeys("shift+?", toggleOpen, [toggleOpen]);
-
-  if (!isOpen) return null;
-
   return (
-    <Modal headline="Version" onClose={() => setOpen(false)}>
-      <div className="space-y-5">
+    <>
+      <ModalHeader>Version</ModalHeader>
+      <ModalBody>
         <div className="grid grid-cols-[auto_1fr] gap-x-5 gap-y-1">
           {backendVersions.map((version) => (
             <Fragment key={version.name}>
-              <div>{version.name}</div>
-              <code className="font-bold">
+              <C2>{version.name}</C2>
+              <C2 as="code">
                 {version.version || "-"}
                 {version.buildTime && ` – ${version.buildTime}`}
-              </code>
+              </C2>
             </Fragment>
           ))}
-          <div>Frontend</div>
-          <code className="font-bold">
+          <C2>Frontend</C2>
+          <C2 as="code">
             {frontendGitDescribe} – {frontendTimestamp}
-          </code>
+          </C2>
         </div>
-        <IconButton frame icon={faCopy} onClick={copyVersionToClipboard}>
+      </ModalBody>
+      <ModalFooter>
+        <Button intent="secondary" onPress={copyVersionToClipboard}>
+          <CopyIcon />
           Copy version info
-        </IconButton>
-      </div>
+        </Button>
+      </ModalFooter>
+    </>
+  );
+};
+
+export const About = memo(() => {
+  const { isOpen, setOpen } = useAbout();
+  const toggleOpen = useCallback(() => setOpen((open) => !open), [setOpen]);
+
+  // the library compares modifiers too, and "?" is a shifted key
+  useHotkeys("shift+?", toggleOpen, { useKey: true }, [toggleOpen]);
+
+  return (
+    <Modal isOpen={isOpen} onOpenChange={setOpen}>
+      {({ close }) => <AboutContent close={close} />}
     </Modal>
   );
 });

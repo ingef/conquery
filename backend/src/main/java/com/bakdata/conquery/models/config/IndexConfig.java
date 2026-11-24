@@ -5,12 +5,10 @@ import java.net.URI;
 import java.net.URL;
 import javax.annotation.Nullable;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.validation.constraints.NotNull;
-
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.models.index.IndexKey;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;

@@ -5,7 +5,7 @@ import type { StateT } from "../app/reducers";
 import { exists } from "../common/helpers/exists";
 import { useActiveLang } from "../localization/useActiveLang";
 
-import { ConceptListField, Form, GeneralField } from "./config-types";
+import type { ConceptListField, Form, GeneralField } from "./config-types";
 import type { FormConceptGroupT } from "./form-concept-group/formConceptGroupState";
 
 export const selectAvailableForms = (state: StateT) =>

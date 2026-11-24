@@ -1,27 +1,14 @@
-import styled from "@emotion/styled";
-import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
-
+import { tv } from "tailwind-variants";
 import EditableText from "../../ui-components/EditableText";
+import { Highlighter } from "../../ui-components/Highlighter";
 
-const Text = styled("div")`
-  display: block;
-  font-weight: 400;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`;
-const SxEditableText = styled(EditableText)`
-  font-weight: 400;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`;
+const labelText = tv({
+  base: ["whitespace-nowrap", "overflow-hidden text-ellipsis"],
+});
 
 const ProjectItemLabel = ({
   mayEdit,
-  loading,
-  selectTextOnMount,
   label,
   highlightedWords,
   onSubmit,
@@ -31,8 +18,6 @@ const ProjectItemLabel = ({
   mayEdit?: boolean;
   label: string;
   highlightedWords: string[];
-  selectTextOnMount: boolean;
-  loading?: boolean;
   onSubmit: (text: string) => void;
   isEditing: boolean;
   setIsEditing: (value: boolean) => void;
@@ -40,10 +25,9 @@ const ProjectItemLabel = ({
   const { t } = useTranslation();
 
   return mayEdit ? (
-    <SxEditableText
-      loading={loading}
+    <EditableText
+      size="sm"
       text={label}
-      selectTextOnMount={selectTextOnMount}
       editing={isEditing}
       onSubmit={onSubmit}
       onToggleEdit={() => setIsEditing(!isEditing)}
@@ -51,17 +35,13 @@ const ProjectItemLabel = ({
       tooltip={t("common.edit")}
     />
   ) : (
-    <Text>
+    <div className={labelText()}>
       {highlightedWords.length > 0 ? (
-        <Highlighter
-          searchWords={highlightedWords}
-          autoEscape
-          textToHighlight={label}
-        />
+        <Highlighter searchWords={highlightedWords} textToHighlight={label} />
       ) : (
         label
       )}
-    </Text>
+    </div>
   );
 };
 

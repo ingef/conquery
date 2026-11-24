@@ -36,6 +36,9 @@ frontend:
   lang: de
   # defines if a local login should be presented (for backend basic-auth-realm only)
   disableLogin: true
+  # defines if the extended query editor should be available
+  editorV2:
+    enabled: true
   # use external authentication (oauth/openid idp provider)
   idp:
     enabled: true
@@ -116,6 +119,8 @@ backend:
     sqlConnectorConfig:
       # flag to enable the usage of an external databases
       enabled: false
+      # preserve and reuse compatible concept ID mapping tables across concept updates
+      reuseExistingConceptIdTables: false
       # Mapping of datasets (key) to database configuration
       databaseConfigs:
         example_database:

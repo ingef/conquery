@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
-import { Tree } from "../types";
+import type { Tree } from "../types";
 
 export const useQueryNodeEditing = ({
   enabled,

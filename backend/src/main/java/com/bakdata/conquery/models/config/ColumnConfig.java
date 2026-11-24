@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.config;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
@@ -12,7 +13,6 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.base.Strings;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

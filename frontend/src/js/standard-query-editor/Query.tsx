@@ -1,26 +1,20 @@
-import styled from "@emotion/styled";
 import { Fragment, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
+import { tv } from "tailwind-variants";
 
 import type { QueryT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { exists } from "../common/helpers/exists";
 import { getUniqueFileRows } from "../common/helpers/fileHelper";
-import { TreesT } from "../concept-trees/reducer";
+import type { TreesT } from "../concept-trees/reducer";
 import { useDatasetId } from "../dataset/selectors";
 import { useLoadQuery } from "../previous-queries/list/actions";
-import { PreviousQueryT } from "../previous-queries/list/reducer";
+import type { PreviousQueryT } from "../previous-queries/list/reducer";
 import QueryGroupModal from "../query-group-modal/QueryGroupModal";
 import QueryUploadConceptListModal from "../query-upload-concept-list-modal/QueryUploadConceptListModal";
+import { C2 } from "../ui-components/Typography";
 import { initUploadConceptListModal } from "../upload-concept-list-modal/actions";
-
-import ExpandPreviousQueryModal from "./ExpandPreviousQueryModal";
-import QueryAndDropzone from "./QueryAndDropzone";
-import QueryEditorDropzone from "./QueryEditorDropzone";
-import QueryGroup from "./QueryGroup";
-import QueryHeader from "./QueryHeader";
-import SecondaryIdSelector from "./SecondaryIdSelector";
 import {
   deleteGroup,
   deleteNode,
@@ -31,7 +25,13 @@ import {
   toggleTimestamps,
   useExpandPreviousQuery,
 } from "./actions";
+import ExpandPreviousQueryModal from "./ExpandPreviousQueryModal";
+import QueryAndDropzone from "./QueryAndDropzone";
+import QueryEditorDropzone from "./QueryEditorDropzone";
+import QueryGroup from "./QueryGroup";
+import QueryHeader from "./QueryHeader";
 import type { StandardQueryStateT } from "./queryReducer";
+import SecondaryIdSelector from "./SecondaryIdSelector";
 import type { DragItemConceptTreeNode, DragItemQuery } from "./types";
 
 const useImport = () => {
@@ -84,28 +84,13 @@ const useImport = () => {
   };
 };
 
-const Container = styled("div")`
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-`;
+const groups = tv({
+  base: ["flex flex-row items-start", "grow", "mb-[10px]", "overflow-auto"],
+});
 
-const Groups = styled("div")`
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  margin: 0 0 10px;
-  flex-grow: 1;
-  overflow: auto;
-`;
-
-const QueryGroupConnector = styled("p")`
-  padding: 110px 6px 0;
-  margin: 0;
-  font-size: ${({ theme }) => theme.font.sm};
-  color: ${({ theme }) => theme.col.gray};
-  text-align: center;
-`;
+const queryGroupConnector = tv({
+  base: ["pt-[110px] px-[6px]", "text-center"],
+});
 
 const Query = ({
   setEditedNode,
@@ -206,7 +191,7 @@ const Query = ({
   }
 
   return (
-    <Container>
+    <div className="flex h-full flex-col">
       {dropFileModalOpen && (
         <QueryUploadConceptListModal
           andIdx={dropFileModalAndIdx}
@@ -239,7 +224,7 @@ const Query = ({
       ) : (
         <>
           <QueryHeader />
-          <Groups>
+          <div className={groups()}>
             {query.map((group, andIdx) => (
               <Fragment key={andIdx}>
                 <QueryGroup
@@ -259,9 +244,9 @@ const Query = ({
                   onToggleTimestamps={onToggleTimestamps}
                   onToggleSecondaryIdExclude={onToggleSecondaryIdExclude}
                 />
-                <QueryGroupConnector key={`${andIdx}.and`}>
-                  {t("common.and")}
-                </QueryGroupConnector>
+                <div className={queryGroupConnector()} key={`${andIdx}.and`}>
+                  <C2 tone="muted">{t("common.and")}</C2>
+                </div>
               </Fragment>
             ))}
             <QueryAndDropzone
@@ -270,11 +255,11 @@ const Query = ({
               onDropFile={onDropFile}
               onImportLines={onImportLines}
             />
-          </Groups>
+          </div>
           <SecondaryIdSelector />
         </>
       )}
-    </Container>
+    </div>
   );
 };
 

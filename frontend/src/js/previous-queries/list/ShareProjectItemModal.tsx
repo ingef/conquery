@@ -1,17 +1,16 @@
-import styled from "@emotion/styled";
-import { faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
-
 import type { SelectOptionT, UserGroupT } from "../../api/types";
 import type { StateT } from "../../app/reducers";
-import IconButton from "../../button/IconButton";
-import Modal from "../../modal/Modal";
-import WithTooltip from "../../tooltip/WithTooltip";
-import InputMultiSelect from "../../ui-components/InputMultiSelect/InputMultiSelect";
-
-import type { ProjectItemT } from "./ProjectItem";
+import { Button } from "../../ui-components/Button";
+import { ComboBoxMultiField } from "../../ui-components/ComboBoxMultiField";
+import {
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+} from "../../ui-components/Modal";
 import {
   useLoadFormConfig,
   useLoadQuery,
@@ -19,23 +18,13 @@ import {
   useUpdateQuery,
 } from "./actions";
 import { isFormConfig } from "./helpers";
-
-const Row = styled("div")`
-  width: 100%;
-  display: flex;
-  align-items: flex-end;
-`;
-
-const SxIconButton = styled(IconButton)`
-  padding: 7px 10px;
-  margin-left: 3px;
-`;
+import type { ProjectItemT } from "./ProjectItem";
 
 const getInitialUserGroupsValue = (
   userGroups: UserGroupT[],
   projectItem?: ProjectItemT,
 ) => {
-  return projectItem && projectItem.groups
+  return projectItem?.groups
     ? userGroups
         .filter((group) => projectItem.groups?.includes(group.id))
         .map((group) => ({
@@ -50,7 +39,7 @@ interface PropsT {
   onClose: () => void;
 }
 
-const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
+const ShareProjectItemModalContent = ({ item, onClose }: PropsT) => {
   const { t } = useTranslation();
   const userGroups = useSelector<StateT, UserGroupT[]>((state) =>
     state.user.me ? state.user.me.groups : [],
@@ -140,37 +129,51 @@ const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
   }
 
   return (
-    <Modal
-      onClose={onClose}
-      headline={t("sharePreviousQueryModal.headline")}
-      subtitle={item.label}
-    >
+    <>
+      <ModalHeader subtitle={item.label}>
+        {t("sharePreviousQueryModal.headline")}
+      </ModalHeader>
       <form
+        className="flex flex-col gap-5"
         onSubmit={(e) => {
           e.preventDefault();
           onShareClicked();
         }}
       >
-        <Row>
-          <InputMultiSelect
+        <ModalBody>
+          <ComboBoxMultiField
             autoFocus
             value={userGroupsValue}
             onChange={onSetUserGroupsValue}
             label={groupsLabel}
             options={userGroupOptions}
           />
-          <WithTooltip text={shareLabel}>
-            <SxIconButton
-              type="submit"
-              frame
-              disabled={buttonDisabled}
-              icon={loading ? faSpinner : faCheck}
-            />
-          </WithTooltip>
-        </Row>
+        </ModalBody>
+        <ModalFooter>
+          <Button slot="close">{t("common.cancel")}</Button>
+          <Button
+            intent="primary"
+            type="submit"
+            isDisabled={loading || buttonDisabled}
+          >
+            {shareLabel}
+          </Button>
+        </ModalFooter>
       </form>
-    </Modal>
+    </>
   );
 };
+
+// opened by the list, not a DialogTrigger in the row: rows remount when the list reloads
+const ShareProjectItemModal = (props: PropsT) => (
+  <Modal
+    isOpen
+    onOpenChange={(isOpen) => {
+      if (!isOpen) props.onClose();
+    }}
+  >
+    <ShareProjectItemModalContent {...props} />
+  </Modal>
+);
 
 export default ShareProjectItemModal;

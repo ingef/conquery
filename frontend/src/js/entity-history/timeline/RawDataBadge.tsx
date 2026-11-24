@@ -1,16 +1,17 @@
-import styled from "@emotion/styled";
+import { tv } from "tailwind-variants";
+import type { ColumnDescription } from "../../api/types";
+import { textStyle } from "../../ui-components/Typography";
+import type { EntityEvent } from "../reducer";
 
-import { ColumnDescription } from "../../api/types";
-import { EntityEvent } from "../reducer";
-
-const Badge = styled("div")`
-  border-radius: ${({ theme }) => theme.borderRadius};
-  background-color: ${({ theme }) => theme.col.blueGrayDark};
-  padding: 1px 4px;
-  font-size: ${({ theme }) => theme.font.xs};
-  color: white;
-  font-weight: 700;
-`;
+const badge = tv({
+  base: [
+    "rounded",
+    "bg-primary-500",
+    "px-1 py-px",
+    textStyle({ size: 3, strong: true }),
+    "text-white",
+  ],
+});
 
 interface Props {
   event: EntityEvent;
@@ -20,8 +21,10 @@ interface Props {
 
 export const RawDataBadge = ({ className, event, sourceColumn }: Props) => {
   return (
-    <Badge
-      className={className}
+    // biome-ignore lint/a11y/noStaticElementInteractions: TODO make this a button
+    // biome-ignore lint/a11y/useKeyWithClickEvents: TODO make this a button
+    <div
+      className={badge({ className })}
       onClick={() => {
         if (navigator.clipboard) {
           navigator.clipboard.writeText(JSON.stringify(event, null, 2));
@@ -29,6 +32,6 @@ export const RawDataBadge = ({ className, event, sourceColumn }: Props) => {
       }}
     >
       {event[sourceColumn.label] as string}
-    </Badge>
+    </div>
   );
 };

@@ -9,7 +9,7 @@ describe("Visit Form Editor", () => {
   });
 
   it("Can open help menu", () => {
-    cy.get('[data-test-id="help-menu"]').click();
+    cy.get('[data-test-id="header-menu"]').click();
 
     cy.get('[data-test-id="help-manual"]').should("have.attr", "href", "https://example.org");
 

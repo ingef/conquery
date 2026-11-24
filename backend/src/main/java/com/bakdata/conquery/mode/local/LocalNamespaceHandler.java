@@ -1,5 +1,7 @@
 package com.bakdata.conquery.mode.local;
 
+import java.time.Clock;
+
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.mode.NamespaceHandler;
@@ -20,8 +22,6 @@ import io.dropwizard.core.setup.Environment;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
-
-import java.time.Clock;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -64,7 +64,8 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 					namespaceData.jobManager(),
 					namespaceData.filterSearch(),
 					sqlEntityResolver,
-					connection.getConnection()
+					connection.getConnection(),
+					config.getSqlConnectorConfig().isReuseExistingConceptIdTables()
 			);
 		} catch (Exception e) {
 			log.error("Failed to load namespaceStorage for {}", namespaceStorage.getPathName(), e);

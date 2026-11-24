@@ -50,7 +50,7 @@ public class NetworkSession implements MessageSender<NetworkMessage<?>> {
 			return DefaultWriteFuture.newNotWrittenFuture(session, e);
 		}
 		WriteFuture future = session.write(message);
-    
+
 		future.addListener(f -> {
 			if (f instanceof WriteFuture writeFuture && !writeFuture.isWritten()) {
 				log.error("Could not write message: {} ({} -> {})", message, session.getLocalAddress(), session.getRemoteAddress(), writeFuture.getException());

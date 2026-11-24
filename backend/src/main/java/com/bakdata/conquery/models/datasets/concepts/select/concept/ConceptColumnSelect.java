@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.datasets.concepts.select.concept;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Set;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
@@ -84,7 +82,7 @@ public class ConceptColumnSelect extends UniversalSelect {
 	}
 
 	@Override
-	public ResultSetProcessor.Reader<String> createResultSetReader(ResultSetProcessor processor) {
-		return processor::getString;
+	public ResultSetProcessor.Reader<?> createResultSetReader(ResultSetProcessor processor) {
+		return isAsIds() ? processor::getIntegerList : processor::getStringList;
 	}
 }

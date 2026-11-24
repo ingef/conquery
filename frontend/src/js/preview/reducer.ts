@@ -1,8 +1,11 @@
-import { AsyncRecordBatchStreamReader, RecordBatch } from "apache-arrow";
+import type { AsyncRecordBatchStreamReader, RecordBatch } from "apache-arrow";
 import { getType } from "typesafe-actions";
-import { GetQueryResponseT, PreviewStatisticsResponse } from "../api/types";
+import type {
+  GetQueryResponseT,
+  PreviewStatisticsResponse,
+} from "../api/types";
 
-import { Action } from "../app/actions";
+import type { Action } from "../app/actions";
 
 import {
   closePreview,

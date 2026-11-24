@@ -64,7 +64,7 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 			// The lone concept that is used in the test.
 			Concept<?> concept = allConcepts.iterator().next();
 
-			IntegrationUtils.assertQueryResult(conquery, query, -1, ExecutionState.FAILED, user, 403);
+			IntegrationUtils.assertQueryResult(conquery, query, null, -1, ExecutionState.FAILED, user, 403);
 
 			// Add the necessary Permission
 			{
@@ -75,7 +75,7 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 		}
 
 		// Only assert permissions
-		IntegrationUtils.assertQueryResult(conquery, query, -1, ExecutionState.DONE, user, 201);
+		IntegrationUtils.assertQueryResult(conquery, query, null, -1, ExecutionState.DONE, user, 201);
 
 		conquery.waitUntilWorkDone();
 		// Clean up

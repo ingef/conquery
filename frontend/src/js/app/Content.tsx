@@ -1,29 +1,29 @@
-import styled from "@emotion/styled";
 import { useSelector } from "react-redux";
-
-import { History } from "../entity-history/History";
-import ActivateTooltip from "../tooltip/ActivateTooltip";
-import Tooltip from "../tooltip/Tooltip";
-
-import { useMemo } from "react";
-import { Panel, PanelGroup } from "react-resizable-panels";
+import { Group, Panel } from "react-resizable-panels";
 import { ResizeHandle } from "../common/ResizeHandle";
+import { History } from "../entity-history/History";
+import InfoPane from "../info-pane/InfoPane";
+import { useInfoPanePanel } from "../info-pane/useInfoPanePanel";
 import Preview from "../preview/Preview";
 import DndProvider from "./DndProvider";
 import LeftPane from "./LeftPane";
 import RightPane from "./RightPane";
 import type { StateT } from "./reducers";
 
-const Root = styled("div")`
-  width: 100%;
-  height: 100%;
-  position: relative;
-`;
+const INFO_PANE_MIN = 200;
+const INFO_PANE_MAX = 600;
+const LEFT_PANE_MIN = 350;
+const LEFT_PANE_DEFAULT = 600;
+const RIGHT_PANE_MIN = 250;
+const SEPARATOR_WIDTH = 1;
+const MIN_WIDTH_FOR_INFO_PANE =
+  INFO_PANE_MIN + LEFT_PANE_MIN + RIGHT_PANE_MIN + 2 * SEPARATOR_WIDTH;
 
 const Content = () => {
-  const displayTooltip = useSelector<StateT, boolean>(
-    (state) => state.tooltip.displayTooltip,
-  );
+  const infoPane = useInfoPanePanel({
+    openSize: INFO_PANE_MIN,
+    minGroupWidth: MIN_WIDTH_FOR_INFO_PANE,
+  });
 
   const isPreviewOpen = useSelector<StateT, boolean>(
     (state) => state.preview.isOpen,
@@ -33,41 +33,29 @@ const Content = () => {
     (state) => state.entityHistory.isOpen,
   );
 
-  const collapsedStyles = useMemo(() => {
-    if (displayTooltip) return {};
-
-    return {
-      width: "30px",
-      minWidth: "30px",
-      maxWidth: "30px",
-      overflow: "hidden",
-    };
-  }, [displayTooltip]);
-
   return (
     <DndProvider>
-      <Root>
-        <PanelGroup direction="horizontal" units="pixels">
+      <div className="relative h-full w-full">
+        <Group orientation="horizontal" {...infoPane.groupProps}>
           <Panel
-            style={collapsedStyles}
-            minSize={200}
-            maxSize={600}
-            defaultSize={displayTooltip ? 200 : 30}
+            {...infoPane.panelProps}
+            minSize={INFO_PANE_MIN}
+            maxSize={INFO_PANE_MAX}
           >
-            {displayTooltip ? <Tooltip /> : <ActivateTooltip />}
+            {infoPane.isOpen && <InfoPane />}
           </Panel>
           <ResizeHandle />
-          <Panel minSize={350} defaultSize={600}>
+          <Panel minSize={LEFT_PANE_MIN} defaultSize={LEFT_PANE_DEFAULT}>
             <LeftPane />
           </Panel>
           <ResizeHandle />
-          <Panel minSize={250}>
+          <Panel minSize={RIGHT_PANE_MIN}>
             <RightPane />
           </Panel>
-        </PanelGroup>
+        </Group>
         {isHistoryOpen && <History />}
         {isPreviewOpen && <Preview />}
-      </Root>
+      </div>
     </DndProvider>
   );
 };

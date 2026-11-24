@@ -14,7 +14,7 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public class RelExportGenerator {
-	
+
 	public static RelativeFormQuery generate(RelativeMode mode) {
 
 		List<ExportForm.ResolutionAndAlignment>

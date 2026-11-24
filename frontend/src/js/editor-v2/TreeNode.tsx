@@ -1,62 +1,62 @@
-import styled from "@emotion/styled";
-import { faCalendarMinus } from "@fortawesome/free-regular-svg-icons";
 import { createId } from "@paralleldrive/cuid2";
-import { DOMAttributes, memo } from "react";
+import { CalendarMinusIcon } from "lucide-react";
+import { type DOMAttributes, memo } from "react";
 import { useTranslation } from "react-i18next";
-
+import { tv } from "tailwind-variants";
 import { DNDType } from "../common/constants/dndTypes";
-import { Icon } from "../icon/FaIcon";
 import { nodeIsConceptQueryNode, useActiveState } from "../model/node";
 import { getRootNodeLabel } from "../standard-query-editor/helper";
-import WithTooltip from "../tooltip/WithTooltip";
-import Dropzone, { DropzoneProps } from "../ui-components/Dropzone";
-
-import {
+import type {
   DragItemConceptTreeNode,
   DragItemQuery,
 } from "../standard-query-editor/types";
-import { Connector, Grid } from "./EditorLayout";
-import { TreeNodeConcept } from "./TreeNodeConcept";
+import Dropzone, {
+  type DropzoneProps,
+  type PossibleDroppableObject,
+} from "../ui-components/Dropzone";
+import {
+  Tooltip,
+  TooltipTarget,
+  TooltipTrigger,
+} from "../ui-components/Tooltip";
+import { C2, C3 } from "../ui-components/Typography";
 import { EDITOR_DROP_TYPES } from "./config";
 import { DateRange } from "./date-restriction/DateRange";
+import { Connector, Grid } from "./EditorLayout";
+import { TreeNodeConcept } from "./TreeNodeConcept";
 import { TimeConnection } from "./time-connection/TimeConnection";
-import { ConnectionKind, Tree } from "./types";
+import type { ConnectionKind, Tree } from "./types";
 import { useGetTranslatedConnection } from "./util";
 
-const NodeContainer = styled("div")`
-  display: grid;
-  gap: 5px;
-`;
+const nodeContainer = tv({
+  base: ["grid", "gap-[5px]"],
+});
 
-const Node = styled("div")<{
-  selected?: boolean;
-  active?: boolean;
-  negated?: boolean;
-  leaf?: boolean;
-  isDragging?: boolean;
-}>`
-  padding: ${({ leaf, isDragging }) =>
-    leaf ? "8px 10px" : isDragging ? "5px" : "24px"};
-  border: 2px solid
-    ${({ negated, theme, selected, active }) =>
-      negated
-        ? theme.col.red
-        : active
-          ? theme.col.blueGrayDark
-          : selected
-            ? theme.col.gray
-            : theme.col.grayMediumLight};
-  box-shadow: ${({ selected, theme }) =>
-    selected ? `inset 0px 0px 0px 4px ${theme.col.blueGrayVeryLight}` : "none"};
-
-  border-radius: ${({ theme }) => theme.borderRadius};
-  width: ${({ leaf }) => (leaf ? "230px" : "inherit")};
-  background-color: ${({ leaf, theme }) => (leaf ? "white" : theme.col.bg)};
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-`;
+const node = tv({
+  base: [
+    "flex flex-col",
+    "gap-[10px]",
+    "p-6",
+    "w-[inherit]",
+    "rounded",
+    "border-2 border-gray-400",
+    "bg-bg-50",
+    "cursor-pointer",
+  ],
+  variants: {
+    // later wins when several are set
+    isDragging: { true: "p-[5px]" },
+    leaf: { true: ["px-[10px] py-2", "w-[230px]", "bg-white"] },
+    selected: {
+      true: [
+        "border-gray-500",
+        "shadow-[inset_0px_0px_0px_4px_var(--color-primary-50)]",
+      ],
+    },
+    active: { true: "border-primary-500" },
+    negated: { true: "border-red" },
+  },
+});
 
 function getGridStyles(tree: Tree) {
   if (!tree.children) {
@@ -74,11 +74,22 @@ function getGridStyles(tree: Tree) {
   }
 }
 
-const InvisibleDropzoneContainer = styled(Dropzone)<{ bare?: boolean }>`
-  width: 100%;
-  height: 100%;
-  padding: ${({ bare }) => (bare ? "6px" : "20px")};
-`;
+const invisibleDropzone = tv({
+  base: ["h-full w-full", "p-5"],
+  variants: {
+    bare: { true: "p-[6px]" },
+  },
+});
+
+const InvisibleDropzoneContainer = ({
+  className,
+  ...props
+}: DropzoneProps<PossibleDroppableObject> & { className?: string }) => (
+  <Dropzone
+    className={invisibleDropzone({ bare: props.bare, className })}
+    {...props}
+  />
+);
 
 const InvisibleDropzone = (
   props: Omit<DropzoneProps<unknown>, "acceptedDropTypes">,
@@ -93,43 +104,7 @@ const InvisibleDropzone = (
   );
 };
 
-const Name = styled("div")`
-  font-size: ${({ theme }) => theme.font.sm};
-  font-weight: 400;
-  color: ${({ theme }) => theme.col.black};
-`;
-
-const PreviousQueryLabel = styled("p")`
-  margin: 0;
-  line-height: 1.2;
-  font-size: ${({ theme }) => theme.font.xs};
-  text-transform: uppercase;
-  font-weight: 700;
-  color: ${({ theme }) => theme.col.blueGrayDark};
-`;
-
-const ContentContainer = styled("div")`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-`;
-
-const RootNode = styled("p")`
-  margin: 0;
-  line-height: 1;
-  text-transform: uppercase;
-  font-weight: 700;
-  font-size: ${({ theme }) => theme.font.xs};
-  color: ${({ theme }) => theme.col.blueGrayDark};
-  word-break: break-word;
-`;
-
-const Dates = styled("div")`
-  text-align: right;
-  font-size: ${({ theme }) => theme.font.xs};
-  text-transform: uppercase;
-  font-weight: 400;
-`;
+const dates = tv({ base: "text-right" });
 
 export function TreeNode({
   tree,
@@ -232,7 +207,7 @@ export function TreeNode({
   };
 
   return (
-    <NodeContainer>
+    <div className={nodeContainer()}>
       {droppable.v && (
         <InvisibleDropzone
           onDrop={(item) =>
@@ -240,7 +215,8 @@ export function TreeNode({
           }
         />
       )}
-      <NodeContainer
+      <div
+        className={nodeContainer()}
         style={{
           gridAutoFlow: "column",
         }}
@@ -263,13 +239,17 @@ export function TreeNode({
           onDrop={() => {}}
         >
           {({ canDrop }) => (
-            <WithTooltip text={tooltipText}>
-              <Node
-                isDragging={canDrop}
-                active={active}
-                negated={tree.negation}
-                leaf={!tree.children}
-                selected={selectedNode?.id === tree.id}
+            <TooltipTrigger>
+              <TooltipTarget
+                as="div"
+                excludeFromTabOrder
+                className={node({
+                  isDragging: canDrop,
+                  active,
+                  negated: tree.negation,
+                  leaf: !tree.children,
+                  selected: selectedNode?.id === tree.id,
+                })}
                 onDoubleClick={(e) => {
                   if (tree.data && nodeIsConceptQueryNode(tree.data)) {
                     e.stopPropagation();
@@ -291,32 +271,36 @@ export function TreeNode({
                   />
                 )}
                 {tree.dates?.restriction && (
-                  <Dates>
+                  <div className={dates()}>
                     <DateRange dateRange={tree.dates.restriction} />
-                  </Dates>
+                  </div>
                 )}
                 {tree.dates?.excluded && (
-                  <Dates>
-                    <Icon red icon={faCalendarMinus} left />
-                    {t("editorV2.datesExcluded")}
-                  </Dates>
+                  <div className={dates()}>
+                    <CalendarMinusIcon className="mr-[10px] text-red" />
+                    <C3 as="span">{t("editorV2.datesExcluded")}</C3>
+                  </div>
                 )}
                 {(!tree.children || tree.data) && (
-                  <ContentContainer>
+                  <div className="flex flex-col gap-1">
                     {tree.data?.type !== DNDType.CONCEPT_TREE_NODE && (
-                      <PreviousQueryLabel>
+                      <C3 tone="muted" strong>
                         {t("queryEditor.previousQuery")}
-                      </PreviousQueryLabel>
+                      </C3>
                     )}
-                    {rootNodeLabel && <RootNode>{rootNodeLabel}</RootNode>}
-                    {tree.data?.label && <Name>{tree.data.label}</Name>}
+                    {rootNodeLabel && (
+                      <C3 tone="muted" strong>
+                        {rootNodeLabel}
+                      </C3>
+                    )}
+                    {tree.data?.label && <C2>{tree.data.label}</C2>}
                     {tree.data && nodeIsConceptQueryNode(tree.data) && (
                       <TreeNodeConcept
                         node={tree.data}
                         featureContentInfos={featureContentInfos}
                       />
                     )}
-                  </ContentContainer>
+                  </div>
                 )}
                 {tree.children && (
                   <Grid style={gridStyles}>
@@ -354,7 +338,7 @@ export function TreeNode({
                         />
                         {i < items.length - 1 && (
                           <InvisibleDropzoneContainer
-                            key={item.id + "connector"}
+                            key={`${item.id}connector`}
                             acceptedDropTypes={[DNDType.CONCEPT_TREE_NODE]}
                             naked
                             bare
@@ -393,8 +377,9 @@ export function TreeNode({
                     </InvisibleDropzone>
                   </Grid>
                 )}
-              </Node>
-            </WithTooltip>
+              </TooltipTarget>
+              <Tooltip>{tooltipText}</Tooltip>
+            </TooltipTrigger>
           )}
         </Dropzone>
         {droppable.h && (
@@ -404,7 +389,7 @@ export function TreeNode({
             }
           />
         )}
-      </NodeContainer>
+      </div>
       {droppable.v && (
         <InvisibleDropzone
           onDrop={(item) =>
@@ -412,7 +397,7 @@ export function TreeNode({
           }
         />
       )}
-    </NodeContainer>
+    </div>
   );
 }
 

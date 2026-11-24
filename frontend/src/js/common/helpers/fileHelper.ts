@@ -1,4 +1,4 @@
-export const readFileAsText = (file: File) =>
+const readFileAsText = (file: File) =>
   new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
 
@@ -11,7 +11,7 @@ export const readFileAsText = (file: File) =>
     reader.readAsText(file);
   });
 
-export const cleanFileContent = (fileContent: string) => {
+const cleanFileContent = (fileContent: string) => {
   return fileContent
     .split("\n")
     .map((row) => row.trim())

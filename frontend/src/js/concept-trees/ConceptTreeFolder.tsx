@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import { useMemo } from "react";
 
 import type { ConceptIdT, ConceptT } from "../api/types";
@@ -9,10 +8,6 @@ import ConceptTreeNodeTextContainer from "./ConceptTreeNodeTextContainer";
 import { getConceptById } from "./globalTreeStoreHelper";
 import type { LoadedConcept, SearchT, TreesT } from "./reducer";
 import { isNodeInSearchResult } from "./selectors";
-
-const Root = styled("div")`
-  font-size: ${({ theme }) => theme.font.sm};
-`;
 
 const sumMatchingEntities = (children: string[], initSum: number) => {
   return children.reduce((sum, treeId) => {
@@ -102,7 +97,7 @@ const ConceptTreeFolder = ({
   const isOpen = open || search.allOpen;
 
   return (
-    <Root>
+    <div>
       <ConceptTreeNodeTextContainer
         node={{
           label: tree.label,
@@ -123,12 +118,10 @@ const ConceptTreeFolder = ({
         search={search}
       />
       {isOpen &&
-        tree.children &&
-        tree.children.map((childId) => {
+        tree.children?.map((childId) => {
           const tree = trees[childId];
 
           const treeProps = {
-            key: childId,
             conceptId: childId as ConceptIdT,
             depth: depth + 1,
             search,
@@ -140,6 +133,7 @@ const ConceptTreeFolder = ({
 
             return (
               <ConceptTree
+                key={childId}
                 label={tree.label}
                 error={tree.error}
                 loading={tree.loading}
@@ -155,10 +149,16 @@ const ConceptTreeFolder = ({
               active: tree.active,
             };
 
-            return <ConceptTreeFolder {...treeFolderProps} {...treeProps} />;
+            return (
+              <ConceptTreeFolder
+                key={childId}
+                {...treeFolderProps}
+                {...treeProps}
+              />
+            );
           }
         })}
-    </Root>
+    </div>
   );
 };
 

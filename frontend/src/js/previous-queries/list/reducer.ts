@@ -5,12 +5,14 @@ import type {
   ResultUrlWithLabel,
   UserGroupIdT,
 } from "../../api/types";
-import { Action } from "../../app/actions";
+import type { Action } from "../../app/actions";
+import { selectDatasetInput } from "../../dataset/actions";
 
 import {
   addFolder,
   deleteFormConfigSuccess,
   deleteQuerySuccess,
+  loadDefaultFoldersSuccess,
   loadFormConfigsSuccess,
   loadQueriesSuccess,
   loadQuerySuccess,
@@ -19,7 +21,7 @@ import {
   removeFolder,
 } from "./actions";
 
-export interface BaseFormConfigT {
+interface BaseFormConfigT {
   formType: string;
   values: Record<string, unknown>;
   label: string;
@@ -58,12 +60,14 @@ export interface PreviousQueryT {
 
 export interface PreviousQueriesStateT {
   localFolders: string[];
+  defaultFolders: string[];
   queries: PreviousQueryT[];
   formConfigs: FormConfigT[];
 }
 
 const initialState: PreviousQueriesStateT = {
   localFolders: [],
+  defaultFolders: [],
   queries: [],
   formConfigs: [],
 };
@@ -96,7 +100,7 @@ const updatePreviousQuery = (
       {
         ...item,
         ...attributes,
-        shared: attributes.groups ? attributes.groups.length > 0 : false,
+        ...(attributes.groups && { shared: attributes.groups.length > 0 }),
       },
       ...state.queries.slice(itemIdx + 1),
     ],
@@ -119,7 +123,7 @@ const updateFormConfig = (
       {
         ...item,
         ...attributes,
-        shared: attributes.groups ? attributes.groups.length > 0 : false,
+        ...(attributes.groups && { shared: attributes.groups.length > 0 }),
       },
       ...state.formConfigs.slice(itemIdx + 1),
     ],
@@ -169,7 +173,7 @@ const removeLocalFolder = (
   { folderName }: { folderName: string },
 ) => {
   const { localFolders } = state;
-  const idx = localFolders.findIndex((f) => f === folderName);
+  const idx = localFolders.indexOf(folderName);
 
   return idx === -1
     ? state
@@ -225,6 +229,10 @@ const previousQueriesReducer = (
       };
     case getType(removeFolder):
       return removeLocalFolder(state, action.payload);
+    case getType(selectDatasetInput):
+      return { ...state, localFolders: [] };
+    case getType(loadDefaultFoldersSuccess):
+      return { ...state, defaultFolders: action.payload.folders };
     default:
       return state;
   }

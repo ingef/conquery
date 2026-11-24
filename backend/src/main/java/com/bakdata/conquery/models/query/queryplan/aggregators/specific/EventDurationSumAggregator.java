@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
 import java.util.Optional;
-
 import javax.annotation.CheckForNull;
 
 import com.bakdata.conquery.models.common.CDateSet;

@@ -7,15 +7,15 @@ public interface DateContextResolutionC10n {
 	@En("complete")
 	@De("Gesamt")
 	String complete();
-	
+
 	@En("year")
 	@De("Jahr")
 	String year();
-	
+
 	@En("quarter")
 	@De("Quartal")
 	String quarter();
-	
+
 	@En("day")
 	@De("Tag")
 	String day();

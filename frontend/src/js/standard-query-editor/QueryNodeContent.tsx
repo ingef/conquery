@@ -1,51 +1,12 @@
-import styled from "@emotion/styled";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
-
 import ErrorMessage from "../error-message/ErrorMessage";
-import WithTooltip from "../tooltip/WithTooltip";
-
-const Label = styled("p")`
-  margin: 0;
-  word-break: break-word;
-  line-height: 1.2;
-  font-size: ${({ theme }) => theme.font.md};
-`;
-const Description = styled("p")`
-  margin: 3px 0 0;
-  word-break: break-word;
-  line-height: 1.2;
-  text-transform: uppercase;
-  font-size: ${({ theme }) => theme.font.xs};
-`;
-
-const PreviousQueryLabel = styled("p")`
-  margin: 0 0 3px;
-  line-height: 1.2;
-  font-size: ${({ theme }) => theme.font.xs};
-  text-transform: uppercase;
-  font-weight: 700;
-  color: ${({ theme }) => theme.col.blueGrayDark};
-`;
-
-const StyledErrorMessage = styled(ErrorMessage)`
-  margin: 0;
-`;
-
-const RootNode = styled("p")`
-  margin: 0 0 4px;
-  line-height: 1;
-  text-transform: uppercase;
-  font-weight: 700;
-  font-size: ${({ theme }) => theme.font.xs};
-  color: ${({ theme }) => theme.col.blueGrayDark};
-  word-break: break-word;
-`;
-
-const Node = styled("div")`
-  flex-grow: 1;
-  padding-top: 2px;
-`;
+import {
+  Tooltip,
+  TooltipTarget,
+  TooltipTrigger,
+} from "../ui-components/Tooltip";
+import { C2, C3 } from "../ui-components/Typography";
 
 interface Props {
   tooltipText?: string;
@@ -67,24 +28,33 @@ const QueryNodeContent = ({
   const { t } = useTranslation();
 
   return (
-    <WithTooltip text={tooltipText}>
-      <Node>
+    <TooltipTrigger>
+      <TooltipTarget
+        as="div"
+        excludeFromTabOrder
+        className="grow pt-[2px] [word-break:break-word]"
+      >
         {!isConceptQueryNode && (
-          <PreviousQueryLabel>
+          <C3 tone="muted" strong>
             {t("queryEditor.previousQuery")}
-          </PreviousQueryLabel>
+          </C3>
         )}
         {error ? (
-          <StyledErrorMessage message={error} />
+          <ErrorMessage className="m-0" message={error} />
         ) : (
           <>
-            {rootNodeLabel && <RootNode>{rootNodeLabel}</RootNode>}
-            <Label>{label}</Label>
-            {description && <Description>{description}</Description>}
+            {rootNodeLabel && (
+              <C3 tone="muted" strong>
+                {rootNodeLabel}
+              </C3>
+            )}
+            <C2>{label}</C2>
+            {description && <C3>{description}</C3>}
           </>
         )}
-      </Node>
-    </WithTooltip>
+      </TooltipTarget>
+      <Tooltip>{tooltipText}</Tooltip>
+    </TooltipTrigger>
   );
 };
 

@@ -26,7 +26,8 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This class is the abstract superclass for all filters.
+ * Common base class for all filters. Implementations should extend either {@link EventFilter} or
+ * {@link AggregationFilter}, depending on when their filter node is evaluated.
  */
 @Getter
 @Setter
@@ -35,7 +36,8 @@ import lombok.extern.slf4j.Slf4j;
 @CPSBase
 @Slf4j
 @EqualsAndHashCode(callSuper = true)
-public abstract class Filter<FILTER_VALUE> extends LabeledNamespaceIdentifiable<FilterId> {
+public abstract sealed class Filter<FILTER_VALUE> extends LabeledNamespaceIdentifiable<FilterId>
+		permits AggregationFilter, EventFilter {
 
 	private String unit;
 	@JsonAlias("description")

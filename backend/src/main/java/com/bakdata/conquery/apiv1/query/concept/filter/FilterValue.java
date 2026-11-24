@@ -2,8 +2,8 @@ package com.bakdata.conquery.apiv1.query.concept.filter;
 
 import java.math.BigDecimal;
 import java.util.Set;
-import javax.annotation.Nonnull;
 import jakarta.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSBase;
@@ -15,22 +15,14 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.query.QueryResolveContext;
-import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
-import com.fasterxml.jackson.annotation.JacksonInject;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.annotation.OptBoolean;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.Setter;
-import lombok.ToString;
+import com.bakdata.conquery.util.validation.ResolvableId;
+import com.fasterxml.jackson.annotation.*;
+import lombok.*;
 import org.jetbrains.annotations.TestOnly;
 import org.jooq.Condition;
 
@@ -46,6 +38,7 @@ public abstract class FilterValue<VALUE> {
 	@NotNull
 	@Nonnull
 	@ToString.Exclude
+	@ResolvableId
 	private FilterId filter;
 
 	@NotNull
@@ -53,11 +46,6 @@ public abstract class FilterValue<VALUE> {
 	private Object value;
 
 	public void resolve(QueryResolveContext context) {
-	}
-
-	public FilterNode<?> createNode() {
-		final Filter<VALUE> resolve = (Filter<VALUE>) getFilter().resolve();
-		return resolve.createFilterNode(readValue());
 	}
 
 	public VALUE readValue() {
@@ -184,7 +172,7 @@ public abstract class FilterValue<VALUE> {
 
 		@Override
 		public MoneyRange readValue() {
-			return MoneyRange.fromNumberRange((LongRange) getValue(), config.getFrontend().getCurrency());
+			return MoneyRange.fromNumberRange((LongRange) getValue(), config.getPreprocessor().getParsers().getCurrency());
 		}
 	}
 
