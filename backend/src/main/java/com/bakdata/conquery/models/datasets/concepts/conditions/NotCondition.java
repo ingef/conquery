@@ -7,10 +7,10 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
-import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.util.CalculatedValue;
 import lombok.Getter;
 import lombok.Setter;
+import org.jooq.Condition;
 
 /**
  * This condition matches if its child does not.
@@ -33,9 +33,8 @@ public class NotCondition implements CTCondition {
 	}
 
 	@Override
-	public WhereCondition convertToSqlCondition(CTConditionContext context) {
-		WhereCondition whereCondition = condition.convertToSqlCondition(context);
-		return whereCondition.negate();
+	public Condition convertToSqlCondition(CTConditionContext context) {
+		return condition.convertNegatedToSqlCondition(context);
 	}
 
 	@Override

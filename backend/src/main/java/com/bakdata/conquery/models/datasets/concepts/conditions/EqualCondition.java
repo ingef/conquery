@@ -12,14 +12,15 @@ import jakarta.validation.constraints.NotEmpty;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
-import com.bakdata.conquery.sql.conversion.model.filter.MultiSelectCondition;
-import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
+import com.bakdata.conquery.sql.translate.ir.Conditions;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.CollectionsUtil;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import org.jooq.Condition;
+import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 /**
@@ -45,8 +46,14 @@ public class EqualCondition implements CTCondition {
 	}
 
 	@Override
-	public WhereCondition convertToSqlCondition(CTConditionContext context) {
-		return new MultiSelectCondition(field(context.getConnectorColumn(), VARCHAR), values.toArray(String[]::new), context.getFunctionProvider());
+	public Condition convertToSqlCondition(CTConditionContext context) {
+		return Conditions.stringValues(field(context.getConnectorColumn(), VARCHAR), values.toArray(String[]::new));
+	}
+
+	@Override
+	public Condition convertNegatedToSqlCondition(CTConditionContext context) {
+		final Field<String> value = field(context.getConnectorColumn(), VARCHAR);
+		return Conditions.negatedStringValues(value, values.toArray(String[]::new));
 	}
 
 	private int fieldLength() {

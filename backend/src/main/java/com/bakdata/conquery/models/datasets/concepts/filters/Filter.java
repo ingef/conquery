@@ -13,7 +13,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -95,11 +94,6 @@ public abstract sealed class Filter<FILTER_VALUE> extends LabeledNamespaceIdenti
 
 	@JsonIgnore
 	public abstract List<ColumnId> getRequiredColumns();
-
-	@JsonIgnore
-	public <F extends Filter<FILTER_VALUE>> FilterConverter<F, FILTER_VALUE> createConverter() {
-		throw new UnsupportedOperationException("No converter implemented for Filter %s".formatted(getClass()));
-	}
 
 	@Override
 	public FilterId createId() {

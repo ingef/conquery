@@ -1,0 +1,35 @@
+package com.bakdata.conquery.sql.model.range;
+
+import java.math.BigDecimal;
+import java.util.Optional;
+import jakarta.validation.constraints.NotNull;
+
+import com.bakdata.conquery.models.common.InclusiveRange;
+import lombok.NonNull;
+
+/** Inclusive numeric range. An empty bound represents an unbounded side. */
+public record NumberRange(
+		@NotNull Optional<BigDecimal> minimum,
+		@NotNull Optional<BigDecimal> maximum
+) implements InclusiveRange<BigDecimal> {
+
+	public static NumberRange closed(Number minimum, Number maximum) {
+		return new NumberRange(Optional.of(decimal(minimum)), Optional.of(decimal(maximum)));
+	}
+
+	public static NumberRange atLeast(Number minimum) {
+		return new NumberRange(Optional.of(decimal(minimum)), Optional.empty());
+	}
+
+	public static NumberRange atMost(Number maximum) {
+		return new NumberRange(Optional.empty(), Optional.of(decimal(maximum)));
+	}
+
+	public static NumberRange unbounded() {
+		return new NumberRange(Optional.empty(), Optional.empty());
+	}
+
+	private static BigDecimal decimal(@NonNull Number value) {
+		return value instanceof BigDecimal decimal ? decimal : new BigDecimal(value.toString());
+	}
+}

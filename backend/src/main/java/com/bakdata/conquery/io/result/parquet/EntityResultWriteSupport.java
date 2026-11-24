@@ -86,7 +86,7 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 
 	private static ColumnConsumer columnConsumerForType(ResultType resultType) {
 
-		if (resultType instanceof ResultType.ListT<?> listT) {
+		if (resultType instanceof ResultType.ListT listT) {
 			return new ListColumnConsumer(columnConsumerForType(listT.getElementType()));
 		}
 

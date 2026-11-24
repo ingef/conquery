@@ -184,7 +184,7 @@ public class CQTemporal extends CQElement {
 		resultInfos.addAll(index.getResultInfos());
 
 		if (showCompareDate) {
-			resultInfos.add(new FixedLabelResultInfo(new ResultType.ListT<>(ResultType.Primitive.DATE_RANGE), Collections.emptySet()) {
+			resultInfos.add(new FixedLabelResultInfo(new ResultType.ListT(ResultType.Primitive.DATE_RANGE), Collections.emptySet()) {
 				@Override
 				public String userColumnName(PrintSettings printSettings) {
 					return C10N.get(ResultHeadersC10n.class, printSettings.getLocale()).temporalCompareLabel(compare.userLabel(printSettings.getLocale()));

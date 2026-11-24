@@ -11,8 +11,6 @@ import jakarta.validation.constraints.NotEmpty;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
-import com.bakdata.conquery.sql.conversion.model.filter.ConditionWrappingWhereCondition;
-import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.util.CalculatedValue;
 import lombok.Getter;
 import lombok.Setter;
@@ -43,10 +41,10 @@ public class PrefixCondition implements CTCondition {
 	}
 
 	@Override
-	public WhereCondition convertToSqlCondition(CTConditionContext context) {
-		String pattern = Arrays.stream(prefixes).collect(Collectors.joining("|", "", context.getFunctionProvider().getAnyCharRegex()));
-		Condition condition = context.getFunctionProvider().likeRegex(field(context.getConnectorColumn(), VARCHAR), pattern);
-		return new ConditionWrappingWhereCondition(condition);
+	public Condition convertToSqlCondition(CTConditionContext context) {
+		final String pattern = Arrays.stream(prefixes)
+				.collect(Collectors.joining("|", "", context.getFunctionProvider().getAnyCharRegex()));
+		return context.getFunctionProvider().likeRegex(field(context.getConnectorColumn(), VARCHAR), pattern);
 	}
 
 	@Override

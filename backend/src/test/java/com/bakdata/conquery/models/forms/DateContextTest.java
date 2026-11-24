@@ -9,12 +9,13 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
-import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.forms.util.CalendarUnit;
 import com.bakdata.conquery.models.forms.util.DateContext;
+import com.bakdata.conquery.models.forms.util.IndexPlacement;
+import com.bakdata.conquery.models.forms.util.ResolutionAndAlignment;
 import org.junit.jupiter.api.Test;
 
 public class DateContextTest {
@@ -23,7 +24,7 @@ public class DateContextTest {
 	public void rangeAbsCompleteTestWithCoarse() {
 		// Because COMPLETE_ONLY is the most coarse subdivision mode this has the same output as DateContextTest#rangeAbsCompleteTestWithoutCoarse
 		CDateRange mask = CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2005, 4, 21));
-		List<DateContext> contexts = DateContext.generateAbsoluteContexts(mask, List.of(ExportForm.ResolutionAndAlignment.of(COMPLETE, NO_ALIGN)));
+		final List<DateContext> contexts = DateContext.generateAbsoluteContexts(mask, List.of(ResolutionAndAlignment.of(COMPLETE, NO_ALIGN)));
 
 		assertThat(contexts).containsExactly(
 			new DateContext(mask, FeatureGroup.SINGLE_GROUP, null, null, COMPLETE)
@@ -90,7 +91,7 @@ public class DateContextTest {
 	@Test
 	public void rangeAbsQuarterTestWithoutCoarse() {
 		CDateRange mask = CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2003, 4, 21));
-		List<DateContext> contexts = DateContext.generateAbsoluteContexts(mask, List.of(ExportForm.ResolutionAndAlignment.of(QUARTERS, QUARTER)));
+		final List<DateContext> contexts = DateContext.generateAbsoluteContexts(mask, List.of(ResolutionAndAlignment.of(QUARTERS, QUARTER)));
 
 		assertThat(contexts).extracting(DateContext::getDateRange).containsExactly (
 				CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2001, 6, 30)),
@@ -116,7 +117,7 @@ public class DateContextTest {
 		IndexPlacement indexPlacement = IndexPlacement.BEFORE;
 
 
-		List<DateContext> contexts = DateContext.generateRelativeContexts(event, indexPlacement, featureTime, outcomeTime, timeUnit, List.of(ExportForm.ResolutionAndAlignment.of(COMPLETE, NO_ALIGN), ExportForm.ResolutionAndAlignment.of(DAYS, DAY)));
+		final List<DateContext> contexts = DateContext.generateRelativeContexts(event, indexPlacement, featureTime, outcomeTime, timeUnit, List.of(ResolutionAndAlignment.of(COMPLETE, NO_ALIGN), ResolutionAndAlignment.of(DAYS, DAY)));
 
 		assertThat(contexts).containsExactly (
 				new DateContext(CDateRange.of(LocalDate.of(2001, 5, 22), LocalDate.of(2001, 5, 23)), FeatureGroup.FEATURE, null, eventDate, COMPLETE),
@@ -137,7 +138,7 @@ public class DateContextTest {
 		IndexPlacement indexPlacement = IndexPlacement.BEFORE;
 
 
-		List<DateContext> contexts = DateContext.generateRelativeContexts(event, indexPlacement, featureTime, outcomeTime, timeUnit, List.of(ExportForm.ResolutionAndAlignment.of(COMPLETE, NO_ALIGN)));
+		final List<DateContext> contexts = DateContext.generateRelativeContexts(event, indexPlacement, featureTime, outcomeTime, timeUnit, List.of(ResolutionAndAlignment.of(COMPLETE, NO_ALIGN)));
 
 		List<DateContext> expectedRanges = Arrays.asList(
 			new DateContext(CDateRange.of(LocalDate.of(2001, 5, 22), LocalDate.of(2001, 5, 23)), FeatureGroup.FEATURE, null, eventDate, COMPLETE),

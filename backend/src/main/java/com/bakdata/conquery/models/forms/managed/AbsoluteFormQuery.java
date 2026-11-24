@@ -8,7 +8,6 @@ import java.util.function.Consumer;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
-import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
@@ -17,6 +16,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.forms.util.DateContext;
+import com.bakdata.conquery.models.forms.util.ResolutionAndAlignment;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -56,9 +56,9 @@ public class AbsoluteFormQuery extends Query {
 	@Valid
 	private final ArrayConceptQuery features;
 	@NotNull
-	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap;
+	private final List<ResolutionAndAlignment> resolutionsAndAlignmentMap;
 
-	public AbsoluteFormQuery(Query query, Range<LocalDate> dateRange, ArrayConceptQuery features, List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap) {
+	public AbsoluteFormQuery(Query query, Range<LocalDate> dateRange, ArrayConceptQuery features, List<ResolutionAndAlignment> resolutionsAndAlignmentMap) {
 		this.query = query;
 		this.dateRange = dateRange;
 		this.features = features;

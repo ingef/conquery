@@ -15,10 +15,10 @@ import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
-import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.collect.Sets;
+import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Name;
 import org.jooq.Param;
@@ -36,7 +36,11 @@ public interface CTCondition {
 	boolean matches(String value, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException;
 
 	//TODO implement using join-table
-	WhereCondition convertToSqlCondition(CTConditionContext context);
+	Condition convertToSqlCondition(CTConditionContext context);
+
+	default Condition convertNegatedToSqlCondition(CTConditionContext context) {
+		return convertToSqlCondition(context).not();
+	}
 
 	ConceptConditions buildExpression(CTConditionContext context, ConceptElement<?> id);
 

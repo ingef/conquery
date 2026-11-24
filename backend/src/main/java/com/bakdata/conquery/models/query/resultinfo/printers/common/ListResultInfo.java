@@ -31,7 +31,7 @@ public class ListResultInfo extends ResultInfo {
 
 	@Override
 	public ResultType getType() {
-		return new ResultType.ListT<>(resultInfo.getType());
+		return new ResultType.ListT(resultInfo.getType());
 	}
 
 	@Override

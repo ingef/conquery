@@ -23,7 +23,7 @@ public class ArrowUtil {
 	public static final RootAllocator ROOT_ALLOCATOR = new RootAllocator();
 
 	private Field fieldFor(ResultType type, String name) {
-		if (type instanceof ResultType.ListT<?>) {
+		if (type instanceof ResultType.ListT) {
 			return ArrowUtil.listField(name, type);
 		}
 
@@ -80,7 +80,7 @@ public class ArrowUtil {
 	}
 
 	private static Field listField(@NonNull String uniqueName, ResultType type) {
-		final ResultType elementType = ((ResultType.ListT<?>) type).getElementType();
+		final ResultType elementType = ((ResultType.ListT) type).getElementType();
 		final Field nestedField = fieldFor(elementType, uniqueName);
 
 		return new Field(uniqueName, FieldType.nullable(ArrowType.List.INSTANCE), List.of(nestedField));

@@ -155,11 +155,11 @@ public class ClickhouseSqlIntegrationTests extends IntegrationTests {
 	@Getter
 	private static class RemoteClickhouseContextProvider implements TestContextProvider {
 
-		private final static String PORT = Objects.requireNonNullElse(System.getenv("CONQUERY_SQL_PORT"), "8123");
-		private final static String HOST = System.getenv("CONQUERY_SQL_HOST");
+		private final static String PORT = Objects.requireNonNullElse(System.getenv("CONQUERY_SQL_CH_PORT"), "8123");
+		private final static String HOST = Objects.requireNonNullElse(System.getenv("CONQUERY_SQL_CH_HOST"), "localhost");
 		private final static String CONNECTION_URL = "jdbc:clickhouse://%s:%s/".formatted(HOST, PORT);
-		private final static String USERNAME = Objects.requireNonNullElse(System.getenv("CONQUERY_SQL_USER"), "default");
-		private final static String PASSWORD = System.getenv("CONQUERY_SQL_PASSWORD");
+		private final static String USERNAME = Objects.requireNonNullElse(System.getenv("CONQUERY_SQL_CH_USER"), "default");
+		private final static String PASSWORD = System.getenv("CONQUERY_SQL_CH_PASSWORD");
 
 		private final DatabaseConnectionConfig databaseConfig;
 		private final TestSqlConnectorConfig sqlConnectorConfig;

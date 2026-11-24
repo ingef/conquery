@@ -6,7 +6,7 @@
 * Don't use `var`.
 * Declare local variables final, unless reassignment is necessary.
 * When committing, always add a `Co-Authored-By` trailer for the active AI model.
-  
+
 ## Testing
 
 - Run the narrowest relevant tests.

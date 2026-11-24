@@ -9,7 +9,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
-import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
@@ -17,6 +16,7 @@ import com.bakdata.conquery.apiv1.query.ResultHeaders;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.forms.util.ResolutionAndAlignment;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -48,7 +48,7 @@ public class EntityDateQuery extends Query {
 
 	@NotNull
 	@NotEmpty
-	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments;
+	private final List<ResolutionAndAlignment> resolutionsAndAlignments;
 
 	private final CDateRange dateRange;
 

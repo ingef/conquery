@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
+import com.bakdata.conquery.models.query.DateAggregationAction;
 import com.bakdata.conquery.models.query.queryplan.DateAggregator;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QPParentNode;

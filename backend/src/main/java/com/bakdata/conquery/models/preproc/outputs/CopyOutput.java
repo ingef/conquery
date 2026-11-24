@@ -4,8 +4,9 @@ import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.events.MajorTypeId;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.preproc.TypeParserSupplier;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.DateReader;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
@@ -73,6 +74,6 @@ public class CopyOutput extends OutputDescription {
 	}
 
 	public Parser<?, ?> createParser(ConqueryConfig config) {
-		return inputType.createParser(config);
+		return TypeParserSupplier.createParser(inputType,config);
 	}
 }

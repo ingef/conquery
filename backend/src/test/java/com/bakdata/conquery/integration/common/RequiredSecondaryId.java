@@ -10,9 +10,11 @@ import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import lombok.Data;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
-@Data
+@Getter
+@RequiredArgsConstructor(onConstructor_ = @JsonCreator(mode = JsonCreator.Mode.PROPERTIES))
 public class RequiredSecondaryId {
 	@NotEmpty
 	public final String name;
@@ -36,7 +38,7 @@ public class RequiredSecondaryId {
 	}
 
 
-	@JsonCreator
+	@JsonCreator(mode = JsonCreator.Mode.DELEGATING)
 	public static RequiredSecondaryId fromFile(String fileResource) throws IOException {
 		return Jackson.MAPPER.readValue(
 				Objects.requireNonNull(

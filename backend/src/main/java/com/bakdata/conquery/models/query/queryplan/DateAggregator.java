@@ -2,10 +2,12 @@ package com.bakdata.conquery.models.query.queryplan;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.query.DateAggregationAction;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
@@ -61,9 +63,43 @@ public class DateAggregator extends Aggregator<CDateSet> {
             }
         });
 
-        // Repackage to get the results sorted. Might need some optimization.
-        return action.aggregate(all);
+		// Repackage to get the results sorted. Might need some optimization.
+		return aggregate(action, all);
     }
+
+	static CDateSet aggregate(DateAggregationAction action, Set<CDateSet> dateSets) {
+		return switch (action) {
+			case BLOCK -> null;
+			case MERGE -> merge(dateSets);
+			case INTERSECT -> intersect(dateSets);
+			case NEGATE -> negate(dateSets);
+		};
+	}
+
+	private static CDateSet merge(Set<CDateSet> dateSets) {
+		CDateSet combined = CDateSet.createEmpty();
+		dateSets.forEach(combined::addAll);
+		return combined;
+	}
+
+	private static CDateSet intersect(Set<CDateSet> dateSets) {
+		if (dateSets.isEmpty()) {
+			return CDateSet.createEmpty();
+		}
+
+		Iterator<CDateSet> iterator = dateSets.iterator();
+		CDateSet intersection = iterator.next();
+		while (iterator.hasNext()) {
+			intersection.retainAll(iterator.next());
+		}
+		return intersection;
+	}
+
+	private static CDateSet negate(Set<CDateSet> dateSets) {
+		CDateSet negative = CDateSet.createFull();
+		dateSets.forEach(negative::removeAll);
+		return negative;
+	}
 
 	public boolean hasChildren() {
         return !children.isEmpty();

@@ -337,7 +337,7 @@ public class ArrowRenderer {
 	}
 
 	private static RowConsumer generateVectorFiller(ValueVector vector, ResultType type) {
-		if (type instanceof ResultType.ListT<?> listT) {
+		if (type instanceof ResultType.ListT listT) {
 			final ValueVector nestedVector = ((ListVector) vector).getDataVector();
 
 			return listVectorFiller(((ListVector) vector), generateVectorFiller(nestedVector, listT.getElementType()));

@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.preproc;
 
-import com.bakdata.conquery.models.events.MajorTypeId;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.fasterxml.jackson.annotation.JsonCreator;

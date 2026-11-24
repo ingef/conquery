@@ -8,8 +8,6 @@ import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.query.filter.event.MultiSelectFilterNode;
 import com.bakdata.conquery.models.query.filter.event.SubstringMultiSelectFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
-import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
-import com.bakdata.conquery.sql.conversion.model.filter.SingleSelectFilterConverter;
 import net.minidev.json.annotate.JsonIgnore;
 
 /**
@@ -35,8 +33,4 @@ public class SingleSelectFilter extends SelectFilter<String> {
 		return FrontendFilterType.Fields.SELECT;
 	}
 
-	@Override
-	public FilterConverter<SingleSelectFilter, String> createConverter() {
-		return new SingleSelectFilterConverter();
-	}
 }

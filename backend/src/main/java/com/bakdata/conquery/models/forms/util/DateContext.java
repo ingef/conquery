@@ -7,8 +7,6 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
-import com.bakdata.conquery.apiv1.forms.IndexPlacement;
-import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -69,10 +67,10 @@ public class DateContext {
 	 * @param resolutionAndAlignment The resolutions to produce and their alignment
 	 * @return A sorted list of all generated contexts
 	 */
-	public static List<DateContext> generateAbsoluteContexts(CDateRange dateRangeMask, List<ExportForm.ResolutionAndAlignment> resolutionAndAlignment) {
+	public static List<DateContext> generateAbsoluteContexts(CDateRange dateRangeMask, List<ResolutionAndAlignment> resolutionAndAlignment) {
 		List<DateContext> dcList = new ArrayList<>();
 
-		for (ExportForm.ResolutionAndAlignment mode : resolutionAndAlignment) {
+		for (final ResolutionAndAlignment mode : resolutionAndAlignment) {
 			Function<CDateRange, List<CDateRange>> divider = getDateRangeSubdivider(AlignmentReference.START, mode.getResolution(), mode.getAlignment());
 			// Start counting index form 0 for every subdivision mode
 			int index = 0;
@@ -96,11 +94,11 @@ public class DateContext {
 
 		if (alignedPerResolution == 1) {
 			// When the alignment fits the resolution we can use the alignment subdivision directly
-			return (dateRange) -> alignment.getSubdivider().apply(dateRange);
+			return (dateRange) -> subdivide(dateRange, alignment);
 		}
 
 		return (dateRange) -> {
-			List<CDateRange> alignedSubdivisions = alignRef.getAlignedIterationDirection(alignment.getSubdivider().apply(dateRange));
+			final List<CDateRange> alignedSubdivisions = alignRef.getAlignedIterationDirection(subdivide(dateRange, alignment));
 
 			if(alignedSubdivisions.isEmpty()){
 				return alignedSubdivisions;
@@ -131,6 +129,15 @@ public class DateContext {
 		};
 	}
 
+	private static List<CDateRange> subdivide(CDateRange dateRange, Alignment alignment) {
+		return switch (alignment) {
+			case NO_ALIGN -> List.of(dateRange);
+			case DAY -> dateRange.getCoveredDays();
+			case QUARTER -> dateRange.getCoveredQuarters();
+			case YEAR -> dateRange.getCoveredYears();
+		};
+	}
+
 	/**
 	 * Generates a list of date contexts around an index date which belong either to the feature group (before the index)
 	 * or the outcome group (after the index). The computed feature and outcome date ranges cover a date range
@@ -139,7 +146,7 @@ public class DateContext {
 	 * The event (a certain day) itself is expanded to a date range according to the desired alignment and the indexPlacement
 	 * determines to which group it belongs.
 	 */
-	public static List<DateContext> generateRelativeContexts(int event, IndexPlacement indexPlacement, int featureTime, int outcomeTime, CalendarUnit timeUnit, List<ExportForm.ResolutionAndAlignment> resolutionAndAlignment) {
+	public static List<DateContext> generateRelativeContexts(int event, IndexPlacement indexPlacement, int featureTime, int outcomeTime, CalendarUnit timeUnit, List<ResolutionAndAlignment> resolutionAndAlignment) {
 		if (featureTime < 1 && outcomeTime < 1) {
 			throw new IllegalArgumentException("Both relative times were smaller than 1 (featureTime: " + featureTime
 					+ "; outcomeTime: " + outcomeTime + ")");
@@ -152,7 +159,7 @@ public class DateContext {
 		CDateRange outcomeRange = generateOutcomeRange(event, indexPlacement, outcomeTime, timeUnit);
 
 
-		for(ExportForm.ResolutionAndAlignment mode : resolutionAndAlignment) {
+		for(final ResolutionAndAlignment mode : resolutionAndAlignment) {
 			Function<CDateRange, List<CDateRange>> featureRangeDivider = getDateRangeSubdivider(AlignmentReference.END, mode.getResolution(), mode.getAlignment());
 			Function<CDateRange, List<CDateRange>> outcomeRangeDivider = getDateRangeSubdivider(AlignmentReference.START, mode.getResolution(), mode.getAlignment());
 

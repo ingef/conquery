@@ -5,9 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import jakarta.validation.Valid;
-import jakarta.validation.ValidationException;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import javax.annotation.Nullable;
@@ -30,6 +28,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.forms.util.Alignment;
 import com.bakdata.conquery.models.forms.util.Resolution;
+import com.bakdata.conquery.models.forms.util.ResolutionAndAlignment;
 import com.bakdata.conquery.models.forms.util.ResolutionShortNames;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -39,16 +38,13 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
-import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
@@ -105,17 +101,7 @@ public class ExportForm extends Form implements InternalForm {
 	 * @return The given resolutions mapped to a fitting calendar alignment.
 	 */
 	public static List<ResolutionAndAlignment> getResolutionAlignmentMap(List<Resolution> resolutions, Alignment alignmentHint) {
-
-		return resolutions.stream()
-				.map(r -> ResolutionAndAlignment.of(r, getFittingAlignment(alignmentHint, r)))
-				.collect(Collectors.toList());
-	}
-
-	private static Alignment getFittingAlignment(Alignment alignmentHint, Resolution resolution) {
-		if(resolution.isAlignmentSupported(alignmentHint) ) {
-			return alignmentHint;
-		}
-		return resolution.getDefaultAlignment();
+		return ResolutionAndAlignment.forResolutions(resolutions, alignmentHint);
 	}
 
 	@Override
@@ -210,22 +196,4 @@ public class ExportForm extends Form implements InternalForm {
 		void setDefaultSelects();
 	}
 
-	/**
-	 * Serializable helper container to combine a resolution and an alignment.
-	 */
-	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-	@Getter
-	public static class ResolutionAndAlignment {
-		private final Resolution resolution;
-		private final Alignment alignment;
-
-		@JsonCreator
-		public static ResolutionAndAlignment of(Resolution resolution, Alignment alignment){
-			if (!resolution.isAlignmentSupported(alignment)) {
-				throw new ValidationException(String.format("The alignment %s is not supported by the resolution %s", alignment, resolution));
-			}
-
-			return new ResolutionAndAlignment(resolution, alignment);
-		}
-	}
 }

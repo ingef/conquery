@@ -170,7 +170,7 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 			return (obj, con) -> con.accept(CDateRange.exactly((LocalDate) printer.apply(obj)));
 		}
 
-		if (dateType instanceof ResultType.ListT<?> listT) {
+		if (dateType instanceof ResultType.ListT listT) {
 			final BiConsumer<Object, Consumer<CDateRange>> extractor = validityDateExtractor(listT.getElementType(), printSettings, printers);
 			return (obj, con) -> ((List<?>) obj).forEach(date -> extractor.accept(date, con));
 		}

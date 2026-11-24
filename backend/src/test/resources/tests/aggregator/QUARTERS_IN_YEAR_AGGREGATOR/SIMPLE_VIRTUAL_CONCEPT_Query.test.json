@@ -5,16 +5,12 @@
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
-      "ids": [
-        "concept"
-      ],
+      "ids": ["concept"],
       "type": "CONCEPT",
       "tables": [
         {
           "id": "concept.connector",
-          "selects": [
-            "concept.connector.select"
-          ]
+          "selects": ["concept.connector.select"]
         }
       ]
     }
@@ -47,19 +43,10 @@
       {
         "csv": "tests/aggregator/QUARTERS_IN_YEAR_AGGREGATOR/content.csv",
         "name": "table",
-        "primaryColumn": {
-          "name": "pid",
-          "type": "STRING"
-        },
+        "primaryColumn": {"name": "pid", "type": "STRING"},
         "columns": [
-          {
-            "name": "behandlungsdatum",
-            "type": "DATE"
-          },
-          {
-            "name": "datum",
-            "type": "DATE"
-          }
+          {"name": "behandlungsdatum", "type": "DATE"},
+          {"name": "datum", "type": "DATE"}
         ]
       }
     ]

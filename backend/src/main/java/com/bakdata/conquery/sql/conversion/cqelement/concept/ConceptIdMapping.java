@@ -1,7 +1,6 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
 import static org.jooq.impl.DSL.*;
-import static org.jooq.impl.SQLDataType.VARCHAR;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -13,130 +12,57 @@ import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.google.common.collect.Sets;
-import lombok.AccessLevel;
-import lombok.Getter;
+import com.bakdata.conquery.sql.mapping.ConceptIdMappingResolver;
+import com.bakdata.conquery.sql.mapping.ConceptIdMappingSource;
+import com.bakdata.conquery.sql.mapping.ConceptIdMappingTable;
+import lombok.Data;
 import org.jooq.*;
 import org.jooq.Record;
-import org.jooq.impl.DSL;
 
 /**
  * Description of the physical lookup table that maps connector values to their most specific concept element.
  */
-@Getter
+@Data
 public final class ConceptIdMapping {
 
-	public static final String RESOLVED_ID_COLUMN = "resolved_id";
+	public static final String RESOLVED_ID_COLUMN = ConceptIdMappingTable.RESOLVED_ID_COLUMN;
 
 	private final TreeConcept concept;
 	private final SqlFunctionProvider functionProvider;
 	private final Name tableName;
 	private final List<Field<?>> keyFields;
-	@Getter(AccessLevel.NONE)
-	private List<CTCondition.ConceptConditions> expressions;
-	private List<RowN> rows;
+	private final ConceptIdMappingTable mappingTable;
 
 	public ConceptIdMapping(TreeConcept concept, SqlFunctionProvider functionProvider) {
 		this.concept = concept;
 		this.functionProvider = functionProvider;
-		this.expressions = collectAllExpressions(concept, null, CTConditionContext.forJoinTables(functionProvider));
-		this.keyFields = collectKeyFields(expressions);
+		CTConditionContext context = CTConditionContext.forJoinTables(functionProvider);
+		List<CTCondition.ConceptConditions> expressions = collectAllExpressions(concept, null, context);
 		this.tableName = tableName(concept.getId());
+		this.mappingTable = ConceptIdMappingResolver.resolve(
+				concept.getId().toString(), tableName, resolveExpressions(expressions)
+		);
+		this.keyFields = mappingTable.keyFields();
 	}
 
 	public static Name tableName(ConceptId conceptId) {
 		return name("%s_ids".formatted(conceptId));
 	}
 
-	private static List<Field<?>> collectKeyFields(List<CTCondition.ConceptConditions> expressions) {
-		Map<String, Field<?>> fields = new TreeMap<>();
-		for (CTCondition.ConceptConditions expression : expressions) {
-			for (Field<?> field : expression.conditions().keySet()) {
-				fields.merge(field.getName(), field, ConceptIdMapping::mergeFieldType);
-			}
-		}
-		return List.copyOf(fields.values());
-	}
-
-	private static Field<?> mergeFieldType(Field<?> left, Field<?> right) {
-		DataType<?> leftType = left.getDataType();
-		DataType<?> rightType = right.getDataType();
-
-		if (!leftType.getType().equals(rightType.getType())) {
-			throw new IllegalArgumentException(
-					"Concept mapping field `%s` is used with incompatible types %s and %s"
-							.formatted(left.getName(), leftType, rightType)
-			);
-		}
-
-		if (leftType.isString() && rightType.isString()) {
-			int length = Math.max(leftType.length(), rightType.length());
-			return length > 0 ? field(left.getUnqualifiedName(), VARCHAR(length)) : field(left.getUnqualifiedName(), VARCHAR);
-		}
-
-		return left;
-	}
-
-	private static Map<String, Field<?>> collectExtractors(List<CTCondition.ConceptConditions> expressions) {
-		Map<String, Field<?>> extractors = new LinkedHashMap<>();
-		for (CTCondition.ConceptConditions expression : expressions) {
-			for (Map.Entry<Field<?>, CTCondition.FieldCondition> entry : expression.conditions().entrySet()) {
-				extractors.putIfAbsent(entry.getKey().getName(), entry.getValue().extractor());
-			}
-		}
-		return extractors;
-	}
-
-	private static List<RowN> expressionsToRows(
-			TreeConcept concept,
-			List<CTCondition.ConceptConditions> expressions,
-			List<Field<?>> keyFields
+	private static List<ConceptIdMappingResolver.MappingExpression> resolveExpressions(
+			List<CTCondition.ConceptConditions> expressions
 	) {
-		Map<List<Param<?>>, ConceptElement<?>> resolvedMappings = new HashMap<>();
-
-		for (CTCondition.ConceptConditions expression : expressions) {
-			Map<String, CTCondition.FieldCondition> conditions = expression.conditions().entrySet().stream()
-					.collect(Collectors.toMap(entry -> entry.getKey().getName(), Map.Entry::getValue));
-			List<Set<Param<?>>> valuesByField = new ArrayList<>();
-			for (Field<?> keyField : keyFields) {
-				CTCondition.FieldCondition fieldCondition = conditions.get(keyField.getName());
-				valuesByField.add(fieldCondition != null ? fieldCondition.params() : Set.of(defaultValue(keyField)));
-			}
-
-			for (List<Param<?>> params : Sets.cartesianProduct(valuesByField)) {
-				ConceptElement<?> previous = resolvedMappings.get(params);
-				ConceptElement<?> current = expression.conceptElement();
-				if (previous == null || previous.getDepth() < current.getDepth()) {
-					resolvedMappings.put(params, current);
-					continue;
-				}
-				if (previous.getDepth() == current.getDepth() && !previous.equals(current)) {
-					throw new IllegalArgumentException(
-							"Concept %s has overlapping sibling mappings for %s and %s on values %s"
-									.formatted(concept.getId(), previous.getId(), current.getId(), params)
-					);
-				}
-			}
-		}
-
-		return resolvedMappings.entrySet().stream()
-				.map(entry -> {
-					List<Param<?>> values = new ArrayList<>(entry.getKey().size() + 1);
-					values.add(val(entry.getValue().getLocalId()));
-					values.addAll(entry.getKey());
-					return row(values);
-				})
-				.toList();
-	}
-
-	private static Param<?> defaultValue(Field<?> field) {
-		if (field.getDataType().isBoolean()) {
-			return inline(false);
-		}
-		if (field.getDataType().isString()) {
-			return inline(null, String.class);
-		}
-		throw new IllegalStateException("Fields of type %s are not expected".formatted(field.getDataType()));
+		return expressions.stream().map(expression -> new ConceptIdMappingResolver.MappingExpression(
+				expression.conceptElement().getId().toString(),
+				expression.conceptElement().getLocalId(),
+				expression.conceptElement().getDepth(),
+				expression.conditions().entrySet().stream().collect(Collectors.toMap(
+						Map.Entry::getKey,
+						entry -> new ConceptIdMappingResolver.FieldCondition(
+								entry.getValue().extractor(), entry.getValue().params()
+						)
+				))
+		)).toList();
 	}
 
 	private static List<CTCondition.ConceptConditions> collectAllExpressions(
@@ -158,51 +84,35 @@ public final class ConceptIdMapping {
 		return expressions;
 	}
 
-	/**
-	 * Materialize mapping rows only while creating the physical mapping table. Query conversion only needs the table metadata.
-	 */
-	public synchronized List<RowN> getRows() {
-		if (rows == null) {
-			rows = expressionsToRows(concept, expressions, keyFields);
-			expressions = null;
-		}
-		return rows;
-	}
-
 	public Table<Record> table() {
-		return DSL.table(tableName);
+		return mappingTable().table();
 	}
 
 	public Field<Integer> resolvedId() {
-		return field(name(tableName, name(RESOLVED_ID_COLUMN)), Integer.class);
+		return mappingTable().resolvedId();
 	}
 
 	public List<Field<?>> tableFields() {
-		List<Field<?>> fields = new ArrayList<>(keyFields.size() + 1);
-		fields.add(field(name(RESOLVED_ID_COLUMN), Integer.class));
-		fields.addAll(keyFields);
-		return fields;
+		return mappingTable().tableFields();
+	}
+
+	public ConceptIdMappingTable mappingTable() {
+		return mappingTable;
+	}
+
+	public List<RowN> getRows() {
+		return mappingTable.rows();
+	}
+
+	public ConceptIdMappingSource source(Connector connector) {
+		CTConditionContext context = CTConditionContext.forConnector(connector, functionProvider);
+		List<CTCondition.ConceptConditions> expressions = collectAllExpressions(concept, null, context);
+		Map<String, Field<?>> extractors = ConceptIdMappingResolver.collectExtractors(resolveExpressions(expressions));
+		return new ConceptIdMappingSource(mappingTable(), extractors);
 	}
 
 	public Condition joinCondition(Connector connector) {
-		CTConditionContext context = CTConditionContext.forConnector(connector, functionProvider);
-		List<CTCondition.ConceptConditions> expressions = collectAllExpressions(concept, null, context);
-		Map<String, Field<?>> extractors = collectExtractors(expressions);
-
-		Condition condition = noCondition();
-		for (Field<?> keyField : keyFields) {
-			Field<?> extractor = extractors.get(keyField.getName());
-			if (extractor == null) {
-				throw new IllegalArgumentException(
-						"No connector expression for concept mapping field `%s` in connector %s"
-								.formatted(keyField.getName(), connector.getId())
-				);
-			}
-			Field<?> mappingField = field(name(tableName, keyField.getUnqualifiedName()), keyField.getDataType());
-			condition = condition.and(mappingField.eq((Field) extractor));
-		}
-
-		return condition.equals(noCondition()) ? functionProvider.unconditionalJoinCondition() : condition;
+		return source(connector).joinCondition(functionProvider.unconditionalJoinCondition());
 	}
 
 	/**

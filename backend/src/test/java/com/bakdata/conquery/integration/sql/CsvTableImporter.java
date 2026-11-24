@@ -22,7 +22,7 @@ import com.bakdata.conquery.integration.sql.dialect.TestDialectBundle;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.DatabaseConnectionConfig;
 import com.bakdata.conquery.models.config.LocaleConfig;
-import com.bakdata.conquery.models.events.MajorTypeId;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.util.DateReader;
 import com.univocity.parsers.csv.CsvParser;
 import lombok.SneakyThrows;

@@ -11,8 +11,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQuartersOfDatesAggregator;
 import com.bakdata.conquery.models.types.ResultType;
-import com.bakdata.conquery.sql.conversion.model.aggregator.CountQuartersSqlAggregator;
-import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
@@ -61,8 +59,4 @@ public class CountQuartersSelect extends Select implements DaterangeSelectOrFilt
 		return processor::getInteger;
 	}
 
-	@Override
-	public SelectConverter<CountQuartersSelect> createConverter() {
-		return new CountQuartersSqlAggregator();
-	}
 }

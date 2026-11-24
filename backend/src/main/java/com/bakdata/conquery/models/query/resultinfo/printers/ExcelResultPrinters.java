@@ -20,9 +20,10 @@ public class ExcelResultPrinters extends StringResultPrinters {
 		super(NEGATIVE_INF, POSITIVE_INF);
 	}
 
+	@SuppressWarnings("unchecked")
 	public Printer<?> printerFor(ResultType type, PrintSettings printSettings) {
-		if (type instanceof ResultType.ListT<?> listT) {
-			final Printer elementPrinter = partialDelegate.printerFor(listT.getElementType(), printSettings);
+		if (type instanceof ResultType.ListT listT) {
+			final Printer<?> elementPrinter = partialDelegate.printerFor(listT.getElementType(), printSettings);
 			return getListPrinter(elementPrinter, printSettings);
 		}
 

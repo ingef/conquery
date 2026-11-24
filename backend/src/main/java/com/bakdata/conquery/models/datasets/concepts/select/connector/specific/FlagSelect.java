@@ -7,15 +7,13 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.MultiSelectFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
-import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.FlagsAggregator;
 import com.bakdata.conquery.models.types.ResultType;
-import com.bakdata.conquery.sql.conversion.model.aggregator.FlagSqlAggregator;
-import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -69,12 +67,7 @@ public class FlagSelect extends Select {
 	}
 
 	@Override
-	public SelectConverter<FlagSelect> createConverter() {
-		return new FlagSqlAggregator();
-	}
-
-	@Override
 	public ResultType getResultType() {
-		return new ResultType.ListT<>(ResultType.Primitive.STRING);
+		return new ResultType.ListT(ResultType.Primitive.STRING);
 	}
 }

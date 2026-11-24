@@ -17,7 +17,7 @@ import java.util.zip.GZIPOutputStream;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.events.MajorTypeId;
+import com.bakdata.conquery.models.datasets.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
@@ -68,7 +68,7 @@ public class Preprocessed {
 		final TableInputDescriptor input = descriptor.getInputs()[0];
 		columns = new PPColumn[input.getWidth()];
 
-		primaryColumn = (StringParser) MajorTypeId.STRING.createParser(config);
+		primaryColumn = TypeParserSupplier.createParser(MajorTypeId.STRING,config);
 
 		values = new ColumnValues[columns.length];
 

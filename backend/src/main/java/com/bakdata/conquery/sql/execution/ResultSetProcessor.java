@@ -12,7 +12,7 @@ public interface ResultSetProcessor {
 	char UNIT_SEPARATOR = (char) 31; // https://www.ascii-code.com/character/%E2%90%9F
 
 	static Reader<?> readerForType(ResultType type, ResultSetProcessor processor) {
-		if (type instanceof ResultType.ListT<?> listT) {
+		if (type instanceof ResultType.ListT listT) {
 			return switch ((ResultType.Primitive) listT.getElementType()) {
 				case STRING -> processor::getStringList;
 				case BOOLEAN -> processor::getBooleanList;
