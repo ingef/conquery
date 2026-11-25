@@ -555,17 +555,19 @@ export interface EntityInfo {
   semantics: ColumnDescriptionSemantic[];
 }
 
+type TimeStratifiedValue = number | string | string[];
+
 interface TimeStratifiedInfoQuarter {
   quarter: number;
   values: {
-    [label: string]: string;
+    [label: string]: TimeStratifiedValue;
   };
 }
 
 interface TimeStratifiedInfoYear {
   year: number;
   values: {
-    [label: string]: number | string[];
+    [label: string]: TimeStratifiedValue;
   };
   quarters: TimeStratifiedInfoQuarter[];
 }
@@ -574,7 +576,7 @@ export interface TimeStratifiedInfo {
   label: string;
   description: string | null;
   totals: {
-    [label: string]: number | string[];
+    [label: string]: TimeStratifiedValue;
   };
   // `columns[].label` matches with
   // `year.values` and `year.quarters[].values`

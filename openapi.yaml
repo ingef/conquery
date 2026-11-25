@@ -2181,8 +2181,7 @@ components:
                   totals:
                     description: "Values for the entire observation period."
                     type: object
-                    additionalProperties:
-                      type: string
+                    additionalProperties: true
                   years:
                     description: "One entry for each year, containing the values aggregated for each year and its quarters."
                     type: array

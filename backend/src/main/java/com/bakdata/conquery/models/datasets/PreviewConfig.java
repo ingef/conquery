@@ -12,6 +12,7 @@ import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
@@ -19,6 +20,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescript
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
+import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JacksonInject;
@@ -98,12 +100,13 @@ public class PreviewConfig {
 	 * @param label  User facing label of the select.
 	 * @param select Id (without dataset) of the select.
 	 */
-	public record InfoCardSelect(@NotNull String label, SelectId select, String description) {
+	public record InfoCardSelect(@NotNull String label, @NotNull SelectId select, String description) {
 	}
 
 
 	/**
 	 * Defines a group of selects that will be evaluated per quarter and year in the requested period of the entity-preview.
+	 * Selects returning {@link ResultType.Primitive#STRING} or {@code LIST[STRING]} must be the only select in their group.
 	 */
 	public record TimeStratifiedSelects(@NotNull String label, String description, @NotEmpty List<InfoCardSelect> selects) {
 	}
@@ -144,6 +147,26 @@ public class PreviewConfig {
 	@ValidationMethod(message = "timeStratifiedSelects' labels must be unique.")
 	public boolean isStratifiedInfosUnique() {
 		return timeStratifiedSelects.stream().map(TimeStratifiedSelects::label).distinct().count() == timeStratifiedSelects.size();
+	}
+
+	@JsonIgnore
+	@ValidationMethod(message = "Time-stratified STRING or LIST[STRING] Selects must be configured as the only Select in their group.")
+	public boolean isStringTimeStratifiedSelectsStandalone() {
+		return timeStratifiedSelects.stream().allMatch(selects -> {
+			final boolean containsStringSelect = selects.selects().stream().anyMatch(PreviewConfig::isStringSelect);
+			return !containsStringSelect || selects.selects().size() == 1;
+		});
+	}
+
+	private static boolean isStringSelect(InfoCardSelect infoCardSelect) {
+		final Select select = infoCardSelect.select().get();
+		if (select == null) {
+			return false;
+		}
+
+		final ResultType resultType = select.getResultType();
+		return resultType == ResultType.Primitive.STRING
+			   || (resultType instanceof ResultType.ListT<?> listType && listType.getElementType() == ResultType.Primitive.STRING);
 	}
 
 

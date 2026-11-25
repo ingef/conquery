@@ -64,6 +64,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 
 		// Manually import data, so we can do our own work.
 		final SelectId valuesSelectId = SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2.connector.values");
+		final SelectId firstValueSelectId = SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2.connector.first-value");
 		{
 			ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 
@@ -79,6 +80,8 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 
 			LoadingUtil.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
+			valuesSelectId.setDomain(conquery.getDatasetRegistry());
+			firstValueSelectId.setDomain(conquery.getDatasetRegistry());
 
 			LoadingUtil.importTableContents(conquery, content.getTables());
 			conquery.waitUntilWorkDone();
@@ -96,16 +99,39 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 					new PreviewConfig.InfoCardSelect("Values", valuesSelectId, null)
 			));
 
-			previewConfig.setTimeStratifiedSelects(List.of(new PreviewConfig.TimeStratifiedSelects(
-					"Values in Time", "Description",
-					List.of(new PreviewConfig.InfoCardSelect(
-							"Values",
-							valuesSelectId,
-							"Description"
-					))
-			)));
+			previewConfig.setTimeStratifiedSelects(List.of(
+					new PreviewConfig.TimeStratifiedSelects(
+							"Values in Time", "Description",
+							List.of(new PreviewConfig.InfoCardSelect(
+									"Values",
+									valuesSelectId,
+									"Description"
+							))
+					),
+					new PreviewConfig.TimeStratifiedSelects(
+							"First Value in Time", "First value by validity date",
+							List.of(new PreviewConfig.InfoCardSelect(
+									"First Value",
+									firstValueSelectId,
+									null
+							))
+					)
+			));
 
 			previewConfig.setHidden(Set.of(ColumnId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "table1.column")));
+
+			final PreviewConfig invalidPreviewConfig = new PreviewConfig();
+			invalidPreviewConfig.setTimeStratifiedSelects(List.of(new PreviewConfig.TimeStratifiedSelects(
+					"Mixed Text Values", null,
+					List.of(
+							new PreviewConfig.InfoCardSelect("Values", valuesSelectId, null),
+							new PreviewConfig.InfoCardSelect("First Value", firstValueSelectId, null)
+					)
+			)));
+
+			assertThat(conquery.getValidator().validate(invalidPreviewConfig))
+					.anySatisfy(violation -> assertThat(violation.getMessage())
+							.isEqualTo("Time-stratified STRING or LIST[STRING] Selects must be configured as the only Select in their group."));
 
 			try (Response response = conquery.getClient().target(setPreviewConfig)
 											 .request(MediaType.APPLICATION_JSON_TYPE)
@@ -139,6 +165,8 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 			result = allEntityDataResponse.readEntity(EntityPreviewStatus.class);
 		}
 
+		assertThat(result.getTimeStratifiedInfos()).hasSize(2);
+
 		final EntityPreviewStatus.TimeStratifiedInfos infos = result.getTimeStratifiedInfos().get(0);
 
 		assertThat(infos.description()).isEqualTo("Description");
@@ -171,6 +199,40 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 		assertThat(result.getTimeStratifiedInfos().get(0).totals()).isEqualTo(
 				Map.of("Values", List.of("A1", "B2"))
 		);
+
+		final EntityPreviewStatus.TimeStratifiedInfos firstValueInfos = result.getTimeStratifiedInfos().get(1);
+
+		assertThat(firstValueInfos.description()).isEqualTo("First value by validity date");
+		assertThat(firstValueInfos.label()).isEqualTo("First Value in Time");
+		assertThat(firstValueInfos.columns()).containsExactly(
+				new ColumnDescriptor(
+						"First Value", "First Value", null, ResultType.Primitive.STRING.typeInfo(),
+						Set.of(new SemanticType.SelectResultT(firstValueSelectId))
+				)
+		);
+		assertThat(firstValueInfos.totals()).isEqualTo(Map.of("First Value", "B2"));
+		assertThat(firstValueInfos.years())
+				.filteredOn(entry -> entry.year() == 2010)
+				.singleElement()
+				.satisfies(entry -> {
+					assertThat(entry.values()).isEqualTo(Map.of("First Value", "B2"));
+					final EntityPreviewStatus.QuarterEntry quarter = entry.quarters().stream()
+							.filter(candidate -> candidate.quarter() == 3)
+							.findFirst()
+							.orElseThrow();
+					assertThat(quarter.values()).isEqualTo(Map.of("First Value", "B2"));
+				});
+		assertThat(firstValueInfos.years())
+				.filteredOn(entry -> entry.year() == 2012)
+				.singleElement()
+				.satisfies(entry -> {
+					assertThat(entry.values()).isEqualTo(Map.of("First Value", "A1"));
+					final EntityPreviewStatus.QuarterEntry quarter = entry.quarters().stream()
+							.filter(candidate -> candidate.quarter() == 1)
+							.findFirst()
+							.orElseThrow();
+					assertThat(quarter.values()).isEqualTo(Map.of("First Value", "A1"));
+				});
 
 
 		assertThat(result.getInfos()).containsExactly(
