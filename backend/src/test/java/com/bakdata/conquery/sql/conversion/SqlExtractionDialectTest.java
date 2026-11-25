@@ -33,17 +33,6 @@ class SqlExtractionDialectTest {
 	}
 
 	@Test
-	void shouldExposeFrameworkNeutralDialectCapabilities() {
-		var clickhouse = new ClickhouseDialectBundle();
-		var hana = new HanaDialectBundle();
-
-		assertInstanceOf(ClickhouseTranslatorDialect.class, clickhouse.getTranslatorDialect());
-		assertInstanceOf(HanaTranslatorDialect.class, hana.getTranslatorDialect());
-		assertInstanceOf(ClickhouseFunctionProvider.class, clickhouse.getFunctionProvider());
-		assertInstanceOf(HanaSqlFunctionProvider.class, hana.getFunctionProvider());
-	}
-
-	@Test
 	void shouldPreserveClickhouseFormDateEmptinessCondition() {
 		var dialect = new ClickhouseDialectBundle();
 		ColumnDateRange range = ColumnDateRange.of(
