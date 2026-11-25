@@ -1,6 +1,7 @@
 package com.bakdata.conquery.sql.mapping;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -82,10 +83,10 @@ public class ConceptIdMappingResolver {
 		for (MappingExpression expression : expressions) {
 			Map<String, FieldCondition> conditions = new HashMap<>();
 			expression.conditions().forEach((field, condition) -> conditions.put(field.getName(), condition));
-			List<List<Param<?>>> valuesByField = new ArrayList<>();
+			List<Collection<Param<?>>> valuesByField = new ArrayList<>(keyFields.size());
 			for (Field<?> keyField : keyFields) {
 				FieldCondition condition = conditions.get(keyField.getName());
-				valuesByField.add(condition == null ? List.of(defaultValue(keyField)) : List.copyOf(condition.params()));
+				valuesByField.add(condition == null ? List.of(defaultValue(keyField)) : condition.params());
 			}
 			for (List<Param<?>> params : cartesianProduct(valuesByField)) {
 				MappingExpression previous = resolvedMappings.get(params);
@@ -119,17 +120,17 @@ public class ConceptIdMappingResolver {
 		throw new IllegalStateException("Fields of type %s are not expected".formatted(field.getDataType()));
 	}
 
-	private static List<List<Param<?>>> cartesianProduct(List<List<Param<?>>> valuesByField) {
+	private static List<List<Param<?>>> cartesianProduct(List<Collection<Param<?>>> valuesByField) {
 		List<List<Param<?>>> product = new ArrayList<>();
 		product.add(List.of());
-		for (List<Param<?>> values : valuesByField) {
+		for (Collection<Param<?>> values : valuesByField) {
 			List<List<Param<?>>> next = new ArrayList<>();
 			for (List<Param<?>> prefix : product) {
 				for (Param<?> value : values) {
 					List<Param<?>> combined = new ArrayList<>(prefix.size() + 1);
 					combined.addAll(prefix);
 					combined.add(value);
-					next.add(List.copyOf(combined));
+					next.add(combined);
 				}
 			}
 			product = next;
