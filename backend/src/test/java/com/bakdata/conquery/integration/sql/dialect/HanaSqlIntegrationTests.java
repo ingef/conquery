@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFilePermission;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -29,17 +30,11 @@ import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.jooq.DSLContext;
-import org.jooq.Field;
+import org.jooq.*;
 import org.jooq.Record;
-import org.jooq.RowN;
-import org.jooq.Table;
 import org.jooq.conf.ParamType;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DynamicNode;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.TestFactory;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.utility.DockerImageName;
 
@@ -66,14 +61,16 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 
 	@SneakyThrows
 	@BeforeAll
-	static void before() throws Exception {
+	static void before() {
 		if (useLocalHanaDb) {
 			Path masterPasswordFile = TMP_HANA_MOUNT_DIR.resolve("password.json");
 			String content = "{\"master_password\":\"%s\"}".formatted(HanaContainer.DEFAULT_MASTER_PASSWORD);
 
 			Files.createDirectories(TMP_HANA_MOUNT_DIR);
 			Files.write(masterPasswordFile, content.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-			Files.setPosixFilePermissions(TMP_HANA_MOUNT_DIR, Set.of(PosixFilePermission.values()));
+			if (Files.getFileStore(TMP_HANA_MOUNT_DIR).supportsFileAttributeView(PosixFileAttributeView.class)) {
+				Files.setPosixFilePermissions(TMP_HANA_MOUNT_DIR, Set.of(PosixFilePermission.values()));
+			}
 		}
 
 
@@ -91,7 +88,9 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 
 	@AfterAll
 	static void after() throws Exception {
-		managedConnection.stop();
+		if (managedConnection != null) {
+			managedConnection.stop();
+		}
 
 		if (Files.exists(TMP_HANA_MOUNT_DIR)) {
 			try (Stream<Path> walk = Files.walk(TMP_HANA_MOUNT_DIR)) {
