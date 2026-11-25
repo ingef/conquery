@@ -53,6 +53,5 @@ jobs:
           gh pr merge
           --merge
           --auto
-          --delete-branch
         env:
           GH_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
