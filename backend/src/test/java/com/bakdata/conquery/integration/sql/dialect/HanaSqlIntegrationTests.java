@@ -1,5 +1,20 @@
 package com.bakdata.conquery.integration.sql.dialect;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.PosixFileAttributeView;
+import java.nio.file.attribute.PosixFilePermission;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Stream;
+
 import com.bakdata.conquery.TestTags;
 import com.bakdata.conquery.integration.ConqueryIntegrationTests;
 import com.bakdata.conquery.integration.IntegrationTests;
@@ -22,21 +37,6 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.Tag;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.utility.DockerImageName;
-
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.nio.file.attribute.PosixFileAttributeView;
-import java.nio.file.attribute.PosixFilePermission;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Stream;
 
 @Slf4j
 public class HanaSqlIntegrationTests extends IntegrationTests {
