@@ -18,8 +18,6 @@ import java.sql.Date;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
@@ -30,6 +28,7 @@ import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.dialect.Interval;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import com.bakdata.conquery.sql.conversion.model.PartitioningUtil;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import org.jooq.Condition;
 import org.jooq.Field;
@@ -215,15 +214,12 @@ public abstract class StratificationFunctions {
 	 */
 	public Field<Integer> index(SqlIdColumns ids, Optional<ColumnDateRange> stratificationBounds) {
 
-		List<Field<?>> partitioningFields =
-				Stream.concat(
-							  ids.toFields().stream(),
-							  stratificationBounds.stream().flatMap(columnDateRange -> columnDateRange.toFields().stream())
-					  )
-					  .collect(Collectors.toList());
+		final List<Field<?>> additionalPartitioningFields = stratificationBounds.stream()
+				.flatMap(columnDateRange -> columnDateRange.toFields().stream())
+				.toList();
 
 		return DSL.rowNumber()
-				  .over(DSL.partitionBy(partitioningFields))
+				  .over(PartitioningUtil.partitionBy(ids, additionalPartitioningFields))
 				  .as(SharedAliases.INDEX.getAlias());
 	}
 

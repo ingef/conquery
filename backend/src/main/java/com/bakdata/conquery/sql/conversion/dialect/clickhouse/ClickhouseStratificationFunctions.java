@@ -19,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Table;
-import org.jooq.impl.SQLDataType;
 
 @Getter
 @RequiredArgsConstructor
@@ -134,7 +133,7 @@ public class ClickhouseStratificationFunctions extends StratificationFunctions {
 				// we calculate a random int which is in range of the date distance between upper and lower bound
 				Field<Integer> dateDistanceInDays = functionProvider.dateDistance(ChronoUnit.DAYS, validityDate.getStart(), validityDate.getEnd());
 				Field<Double> randomAmountOfDays = function("RAND", Double.class).times(dateDistanceInDays);
-				Field<Integer> flooredAsInt = functionProvider.cast(floor(randomAmountOfDays), SQLDataType.INTEGER);
+				Field<Integer> flooredAsInt = functionProvider.castToInteger(floor(randomAmountOfDays));
 				// then we add this random amount (of days) to the start date
 				Field<Date> randomDateInRange = functionProvider.addDays(lower(validityDate), flooredAsInt);
 				// finally, we handle multiple ranges by randomizing which range we use to select a random date from
@@ -170,7 +169,7 @@ public class ClickhouseStratificationFunctions extends StratificationFunctions {
 	private Field<Integer> getQuartersInMonths(Field<Date> date, Offset offset) {
 		Field<String> quarterExpression = functionProvider.yearQuarter(date);
 		Field<String> rightMostCharacter = function("RIGHT", String.class, quarterExpression, inline(1));
-		Field<Integer> amountOfQuarters = functionProvider.cast(rightMostCharacter, SQLDataType.INTEGER)
+		Field<Integer> amountOfQuarters = functionProvider.castToInteger(rightMostCharacter)
 														  .plus(offset.getOffset());
 		return amountOfQuarters.times(MONTHS_PER_QUARTER);
 	}

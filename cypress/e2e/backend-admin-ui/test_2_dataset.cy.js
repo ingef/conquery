@@ -138,8 +138,8 @@ context("Admin UI Single Dataset", () => {
 
     it("Counts are right", () => {
       visitAdminUI(`datasets/${testDSID}/connectors/${testDSID}.concept1.column`);
-      cy.get('[data-test-id="accordion-Filters"] > .card-header').contains("20 entries");
-      cy.get('[data-test-id="accordion-Selects"] > .card-header').contains("16 entries");
+      cy.get('[data-test-id="accordion-Filters"] > .card-header').contains("19 entries");
+      cy.get('[data-test-id="accordion-Selects"] > .card-header').contains("15 entries");
     });
   });
 
@@ -194,6 +194,19 @@ context("Admin UI Single Dataset", () => {
     })
 
     it("Wait for Update Matching Stats to finish", () => {
+      visitAdminUI("jobs");
+      cy.get('#origin_Manager > .card-header > .row > .accordion-infotext > div > .jobsAmount').eq(0);
+    })
+  });
+  describe("Perform Update Filter Search", () => {
+
+    it("Start Update Filter Search", () => {
+      visitAdminUI("datasets");
+      cy.get('[data-cy="datasets"]').contains(testDSID).click();
+      cy.get('[data-cy="update-filter-search"]').click();
+    })
+
+    it("Wait for Update Filter Search to finish", () => {
       visitAdminUI("jobs");
       cy.get('#origin_Manager > .card-header > .row > .accordion-infotext > div > .jobsAmount').eq(0);
     })

@@ -1,25 +1,25 @@
 import { CalendarIcon } from "lucide-react";
-import { type Ref, useRef } from "react";
-import { useObjectRef } from "react-aria";
+import { type Ref, useImperativeHandle, useRef, useState } from "react";
 import {
+  Dialog,
   TextField as RacTextField,
   type TextFieldProps as RacTextFieldProps,
 } from "react-aria-components";
 import ReactDatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useTranslation } from "react-i18next";
-import { tv } from "tailwind-variants";
 
 import { formatDate, parseDate } from "../../common/helpers/dateHelper";
 import { exists } from "../../common/helpers/exists";
 import { FieldError } from "../FieldError";
 import { Input, InputButton, InputClearButton } from "../Input";
 import { type FieldLabelProps, Label } from "../Label";
+import { Popover } from "../Popover";
 import { CustomHeader } from "./CustomHeader";
 
-// react-datepicker's own elements are styled in index.css under this class
-// and under #datepicker-portal (the popup renders into a body-level portal)
-const picker = tv({ base: ["relative", "conquery-datepicker"] });
+export interface DateFieldHandle {
+  openCalendar: () => void;
+}
 
 export type DateFieldProps = Omit<
   RacTextFieldProps,
@@ -47,8 +47,8 @@ export type DateFieldProps = Omit<
     errorMessage?: string;
     /** a date was picked in the calendar */
     onCalendarSelect?: (value: string) => void;
-    /** the calendar, to open it from outside */
-    ref?: Ref<ReactDatePicker>;
+    /** opens the calendar from outside */
+    ref?: Ref<DateFieldHandle>;
   };
 
 /**
@@ -67,93 +67,101 @@ export const DateField = ({
   dateFormat,
   onChange,
   onCalendarSelect,
-  onKeyDown,
   ...props
 }: DateFieldProps) => {
   const { t } = useTranslation();
-  const datePickerRef = useObjectRef(ref);
+  const [isCalendarOpen, setCalendarOpen] = useState(false);
+  const anchorRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  return (
-    <RacTextField
-      className="min-w-0"
-      type="text"
-      validationBehavior="aria"
-      isInvalid={exists(errorMessage)}
-      value={value}
-      onChange={onChange}
-      onKeyDown={(e) => {
-        datePickerRef.current?.setOpen(false);
-        onKeyDown?.(e);
-      }}
-      {...props}
-    >
-      {({ isDisabled, isReadOnly, isInvalid }) => (
-        <>
-          {label && (
-            <Label indexPrefix={indexPrefix} tooltip={tooltip}>
-              {label}
-            </Label>
-          )}
-          {/* biome-ignore lint/a11y/noStaticElementInteractions: escape inside the calendar closes it */}
-          <div
-            className={picker()}
-            onKeyDown={(e) => {
-              if (e.key === "Escape") datePickerRef.current?.setOpen(false);
-            }}
-          >
-            <Input
-              ref={inputRef}
-              placeholder={placeholder}
-              isDisabled={isDisabled}
-              isInvalid={isInvalid}
-              addonLeft={
-                <InputButton
-                  aria-label={t("inputDateRange.openCalendar")}
-                  isDisabled={isDisabled}
-                  onPress={() => datePickerRef.current?.setOpen(true)}
-                >
-                  <CalendarIcon />
-                </InputButton>
-              }
-              addonRight={
-                // the input is content-sized, so an absent clear button would change its width
-                value ? (
-                  <InputClearButton
-                    isDisabled={isDisabled || isReadOnly}
-                    onPress={() => {
-                      onChange("");
-                      inputRef.current?.focus();
-                    }}
-                  />
-                ) : (
-                  <span className="size-6" />
-                )
-              }
-            />
-            <ReactDatePicker
-              ref={datePickerRef}
-              portalId="datepicker-portal"
-              selected={value ? parseDate(value, dateFormat) : new Date()}
-              onChange={(val: Date | null) => {
-                if (!val) {
-                  return;
-                }
+  useImperativeHandle(ref, () => ({
+    openCalendar: () => setCalendarOpen(true),
+  }));
 
-                const selectedDate = formatDate(val, dateFormat);
-                onChange(selectedDate);
-                onCalendarSelect?.(selectedDate);
-                datePickerRef.current?.setOpen(false);
-              }}
-              onClickOutside={() => datePickerRef.current?.setOpen(false)}
-              renderCustomHeader={(props) => <CustomHeader {...props} />}
-              customInput={<input className="hidden" />}
-              calendarStartDay={1}
-            />
-          </div>
-          <FieldError>{errorMessage}</FieldError>
-        </>
-      )}
-    </RacTextField>
+  return (
+    <>
+      <RacTextField
+        className="min-w-0"
+        type="text"
+        validationBehavior="aria"
+        isInvalid={exists(errorMessage)}
+        value={value}
+        onChange={onChange}
+        {...props}
+      >
+        {({ isDisabled, isReadOnly, isInvalid }) => (
+          <>
+            {label && (
+              <Label indexPrefix={indexPrefix} tooltip={tooltip}>
+                {label}
+              </Label>
+            )}
+            <div ref={anchorRef}>
+              <Input
+                ref={inputRef}
+                placeholder={placeholder}
+                isDisabled={isDisabled}
+                isInvalid={isInvalid}
+                addonLeft={
+                  <InputButton
+                    aria-label={t("inputDateRange.openCalendar")}
+                    isDisabled={isDisabled}
+                    onPress={() => setCalendarOpen(true)}
+                  >
+                    <CalendarIcon />
+                  </InputButton>
+                }
+                addonRight={
+                  // the input is content-sized, so an absent clear button would change its width
+                  value ? (
+                    <InputClearButton
+                      isDisabled={isDisabled || isReadOnly}
+                      onPress={() => {
+                        onChange("");
+                        inputRef.current?.focus();
+                      }}
+                    />
+                  ) : (
+                    <span className="size-6" />
+                  )
+                }
+              />
+            </div>
+            <FieldError>{errorMessage}</FieldError>
+          </>
+        )}
+      </RacTextField>
+      {/* outside the text field, whose context would reach the calendar's inputs */}
+      <Popover
+        className="overflow-hidden"
+        triggerRef={anchorRef}
+        placement="bottom start"
+        isOpen={isCalendarOpen}
+        onOpenChange={setCalendarOpen}
+      >
+        <Dialog
+          className="conquery-datepicker outline-none"
+          aria-label={t("inputDateRange.calendar")}
+        >
+          <ReactDatePicker
+            inline
+            fixedHeight
+            selected={value ? parseDate(value, dateFormat) : null}
+            onChange={(val: Date | null) => {
+              if (!val) {
+                return;
+              }
+
+              const selectedDate = formatDate(val, dateFormat);
+              onChange(selectedDate);
+              setCalendarOpen(false);
+              onCalendarSelect?.(selectedDate);
+            }}
+            renderCustomHeader={(props) => <CustomHeader {...props} />}
+            calendarStartDay={1}
+          />
+        </Dialog>
+      </Popover>
+    </>
   );
 };

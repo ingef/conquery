@@ -169,6 +169,7 @@
   "inputDateRange": {
     "from": "From",
     "to": "To",
+    "calendar": "Calendar",
     "openCalendar": "Open calendar",
     "dateFormat": "MM/dd/yyyy",
     "tooltip": {

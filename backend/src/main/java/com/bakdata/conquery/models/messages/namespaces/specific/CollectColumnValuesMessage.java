@@ -25,6 +25,7 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
@@ -38,7 +39,6 @@ import org.apache.commons.lang3.concurrent.BasicThreadFactory;
  * This Job collects the distinct values in the given columns and returns a {@link RegisterColumnValues} message for each column to the namespace on the manager.
  */
 @Slf4j
-@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 @CPSType(id = "COLLECT_COLUMN_VALUES", base = NamespacedMessage.class)
 public class CollectColumnValuesMessage extends WorkerMessage implements ActionReactionMessage {
 
@@ -56,6 +56,19 @@ public class CollectColumnValuesMessage extends WorkerMessage implements ActionR
 	 */
 	@JsonIgnore
 	private final Namespace namespace;
+
+	@JsonCreator
+	public CollectColumnValuesMessage(
+			@JsonProperty("columValueChunkSize") int columValueChunkSize,
+			@JsonProperty("columns") Set<ColumnId> columns) {
+		this(columValueChunkSize, columns, null);
+	}
+
+	public CollectColumnValuesMessage(int columValueChunkSize, Set<ColumnId> columns, Namespace namespace) {
+		this.columValueChunkSize = columValueChunkSize;
+		this.columns = columns;
+		this.namespace = namespace;
+	}
 
 	@Override
 	public void react(Worker context) throws Exception {

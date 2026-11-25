@@ -417,11 +417,23 @@ public class LoadingUtil {
 
 	public static void updateMatchingStats(@NonNull StandaloneSupport support) {
 		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder()
-															, AdminDatasetResource.class, "postprocessNamespace"
+													, AdminDatasetResource.class, "updateMatchingStats"
 													)
 													.buildFromMap(Map.of(DATASET, support.getDataset()));
 
 		final Response post = support.getClient().target(matchingStatsUri)
+									 .request(MediaType.APPLICATION_JSON_TYPE)
+									 .post(null);
+		post.close();
+	}
+
+	public static void updateFilterSearch(@NonNull StandaloneSupport support) {
+		final URI filterSearchUri = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder()
+													, AdminDatasetResource.class, "updateFilterSearch"
+											)
+											.buildFromMap(Map.of(DATASET, support.getDataset()));
+
+		final Response post = support.getClient().target(filterSearchUri)
 									 .request(MediaType.APPLICATION_JSON_TYPE)
 									 .post(null);
 		post.close();

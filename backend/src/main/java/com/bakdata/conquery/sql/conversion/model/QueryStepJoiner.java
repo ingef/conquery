@@ -61,6 +61,7 @@ public class QueryStepJoiner {
 		Selects selects = Selects.builder()
 								 .ids(new SqlIdColumns(allIdsPrimaryColumn))
 								 .validityDate(validityDate.map(cdr -> cdr.asValidityDateRange(cteName)))
+								 .sqlSelects(queryStep.getQualifiedSelects().getSqlSelects())
 								 .build();
 
 		return QueryStep.builder()

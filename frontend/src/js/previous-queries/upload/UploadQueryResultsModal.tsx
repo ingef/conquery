@@ -18,19 +18,22 @@ const dropzone = tv({
   base: ["w-full", "cursor-pointer", "py-[180px]"],
 });
 
-const UploadQueryResultsModal = ({
-  loading,
-  config,
-  uploadResult,
-  onClearUploadResult,
-  onUpload,
-}: {
+interface Props {
   loading: boolean;
   config: QueryUploadConfigT;
   uploadResult: UploadQueryResponseT | null;
   onClearUploadResult: () => void;
   onUpload: (query: QueryToUploadT) => void;
-}) => {
+}
+
+const UploadQueryResultsModalContent = ({
+  loading,
+  config,
+  uploadResult,
+  onClearUploadResult,
+  onUpload,
+  close,
+}: Props & { close: () => void }) => {
   const { t } = useTranslation();
   const [file, setFile] = useState<File | null>(null);
 
@@ -41,63 +44,65 @@ const UploadQueryResultsModal = ({
     uploadResult.unresolvedId.length === 0;
 
   return (
-    <Modal size="lg" scrollable>
-      {({ close }) => (
-        <>
-          <ModalHeader>
-            {t("uploadQueryResultsModal.headline")}
-            <InfoTooltip
-              size="wide"
-              text={t("uploadQueryResultsModal.formatInfo.text")}
-            />
-          </ModalHeader>
-          <ModalBody>
-            {fullUploadSuccess ? (
-              <div className="my-[25px]">
-                <CircleCheckIcon className={successIcon()} />
-                <p className="m-0">
-                  {t("uploadQueryResultsModal.uploadSucceeded", {
-                    count: uploadResult?.resolved || 0,
-                  })}
-                </p>
-              </div>
-            ) : (
-              <div>
-                {file && (
-                  <CSVColumnPicker
-                    file={file}
-                    uploadResult={uploadResult}
-                    config={config}
-                    loading={loading}
-                    onUpload={onUpload}
-                    onCancel={close}
-                    onReset={() => {
-                      setFile(null);
-                      onClearUploadResult();
-                    }}
-                  />
-                )}
-                {!file && (
-                  <DropzoneWithFileInput
-                    className={dropzone()}
-                    onDrop={(item) => {
-                      if (item.type === "__NATIVE_FILE__") {
-                        setFile(item.files[0]);
-                      }
-                    }}
-                    onSelectFile={setFile}
-                    accept="text/csv"
-                  >
-                    {() => t("uploadQueryResultsModal.dropzone")}
-                  </DropzoneWithFileInput>
-                )}
-              </div>
+    <>
+      <ModalHeader>
+        {t("uploadQueryResultsModal.headline")}
+        <InfoTooltip
+          size="wide"
+          text={t("uploadQueryResultsModal.formatInfo.text")}
+        />
+      </ModalHeader>
+      <ModalBody>
+        {fullUploadSuccess ? (
+          <div className="my-[25px]">
+            <CircleCheckIcon className={successIcon()} />
+            <p className="m-0">
+              {t("uploadQueryResultsModal.uploadSucceeded", {
+                count: uploadResult?.resolved || 0,
+              })}
+            </p>
+          </div>
+        ) : (
+          <div>
+            {file && (
+              <CSVColumnPicker
+                file={file}
+                uploadResult={uploadResult}
+                config={config}
+                loading={loading}
+                onUpload={onUpload}
+                onCancel={close}
+                onReset={() => {
+                  setFile(null);
+                  onClearUploadResult();
+                }}
+              />
             )}
-          </ModalBody>
-        </>
-      )}
-    </Modal>
+            {!file && (
+              <DropzoneWithFileInput
+                className={dropzone()}
+                onDrop={(item) => {
+                  if (item.type === "__NATIVE_FILE__") {
+                    setFile(item.files[0]);
+                  }
+                }}
+                onSelectFile={setFile}
+                accept="text/csv"
+              >
+                {() => t("uploadQueryResultsModal.dropzone")}
+              </DropzoneWithFileInput>
+            )}
+          </div>
+        )}
+      </ModalBody>
+    </>
   );
 };
+
+const UploadQueryResultsModal = (props: Props) => (
+  <Modal size="lg" scrollable>
+    {({ close }) => <UploadQueryResultsModalContent {...props} close={close} />}
+  </Modal>
+);
 
 export default UploadQueryResultsModal;

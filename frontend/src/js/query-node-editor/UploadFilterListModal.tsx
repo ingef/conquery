@@ -45,13 +45,7 @@ const selectUnresolvedItemsCount = (
   return resolved?.unknownCodes?.length ? resolved.unknownCodes.length : 0;
 };
 
-const UploadFilterListModal = ({
-  loading,
-  resolved,
-  error,
-  onSubmit,
-  onClose,
-}: {
+interface Props {
   loading: boolean;
   resolved: PostFilterResolveResponseT;
   error: boolean;
@@ -60,7 +54,15 @@ const UploadFilterListModal = ({
     { includeUnresolved }: { includeUnresolved: boolean },
   ) => void;
   onClose: () => void;
-}) => {
+}
+
+const UploadFilterListModalContent = ({
+  loading,
+  resolved,
+  error,
+  onSubmit,
+  onClose,
+}: Props) => {
   const { t } = useTranslation();
   const [includeUnresolved, setIncludeUnresolved] = useState(false);
 
@@ -75,12 +77,7 @@ const UploadFilterListModal = ({
     (!hasResolvedItems && !includeUnresolved);
 
   return (
-    <Modal
-      isOpen
-      onOpenChange={(isOpen) => {
-        if (!isOpen) onClose();
-      }}
-    >
+    <>
       <ModalHeader>{t("uploadFilterListModal.headline")}</ModalHeader>
       <ModalBody>
         <div className={root()}>
@@ -147,8 +144,19 @@ const UploadFilterListModal = ({
           {t("uploadConceptListModal.insertNode")}
         </Button>
       </ModalFooter>
-    </Modal>
+    </>
   );
 };
+
+const UploadFilterListModal = (props: Props) => (
+  <Modal
+    isOpen
+    onOpenChange={(isOpen) => {
+      if (!isOpen) props.onClose();
+    }}
+  >
+    <UploadFilterListModalContent {...props} />
+  </Modal>
+);
 
 export default UploadFilterListModal;

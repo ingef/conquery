@@ -18,16 +18,11 @@ const NodeName = ({ allowEditing, label, onUpdateLabel }: Props) => {
     <div className="min-w-0">
       {allowEditing ? (
         <EditableText
-          large
-          loading={false}
+          size="md"
           text={label}
           tooltip={t("help.editConceptName")}
-          selectTextOnMount={true}
           editing={editingLabel}
-          onSubmit={(value) => {
-            onUpdateLabel(value);
-            setEditingLabel(false);
-          }}
+          onSubmit={onUpdateLabel}
           onToggleEdit={() => setEditingLabel(!editingLabel)}
         />
       ) : (

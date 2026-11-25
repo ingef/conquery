@@ -1,88 +1,100 @@
-import { CheckIcon, LoaderCircleIcon } from "lucide-react";
-import { type FormEvent, useRef, useState } from "react";
+import { CheckIcon } from "lucide-react";
+import {
+  type FocusEvent,
+  type FormEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { TextField as RacTextField } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import { useClickOutside } from "../common/helpers/useClickOutside";
 import { Button } from "./Button";
+import { Input } from "./Input";
 import { Tooltip, TooltipTrigger } from "./Tooltip";
-import { textStyle } from "./Typography";
-
-const input = tv({
-  base: [
-    "h-[30px]",
-    "px-2",
-    "rounded",
-    "border border-gray-500",
-    textStyle({ size: 2 }),
-  ],
-});
 
 const form = tv({
-  base: "flex items-center",
+  base: "flex min-w-0 items-center gap-1",
+  variants: {
+    size: {
+      // the input frame has a single 30 px height; shrunk to the small button's 24 px
+      sm: "[&_:has(>input)]:h-6",
+      md: "",
+    },
+  },
 });
 
+/** Enter or the check saves a changed text; Escape, a click or a tab elsewhere discards it */
 const EditableTextForm = ({
-  className,
+  size,
+  label,
   text,
-  loading,
-  selectTextOnMount,
-  saveOnClickoutside,
   onSubmit,
   onCancel,
 }: {
-  className?: string;
+  size: "sm" | "md";
+  label?: string;
   text: string;
-  loading?: boolean;
-  selectTextOnMount?: boolean;
-  saveOnClickoutside?: boolean;
   onSubmit: (text: string) => void;
   onCancel: () => void;
 }) => {
   const { t } = useTranslation();
-  const [value, setValue] = useState<string>(text);
-  const [textSelected, setTextSelected] = useState<boolean>(false);
-  const ref = useRef(null);
+  const [value, setValue] = useState(text);
+  const formRef = useRef<HTMLFormElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  function onSubmitForm(e: FormEvent<HTMLFormElement>) {
+  useEffect(() => {
+    inputRef.current?.focus();
+    inputRef.current?.select();
+  }, []);
+
+  useClickOutside(formRef, onCancel);
+
+  const onSubmitForm = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    onSubmit(value);
-  }
+    const trimmed = value.trim();
+    if (trimmed && trimmed !== text) {
+      onSubmit(trimmed);
+    } else {
+      onCancel();
+    }
+  };
 
-  useClickOutside(ref, saveOnClickoutside ? () => onSubmit(value) : onCancel);
+  // no related target: a window switch, or a click, which the click outside handles
+  const onBlur = (e: FocusEvent<HTMLFormElement>) => {
+    if (e.relatedTarget && !e.currentTarget.contains(e.relatedTarget)) {
+      onCancel();
+    }
+  };
 
   return (
-    <form ref={ref} className={form({ className })} onSubmit={onSubmitForm}>
-      <input
-        className={input()}
-        type="text"
+    <form
+      ref={formRef}
+      className={form({ size })}
+      onSubmit={onSubmitForm}
+      onBlur={onBlur}
+    >
+      <RacTextField
+        aria-label={label}
+        className="min-w-0"
         value={value}
-        onChange={(e) => setValue(e.target.value)}
-        ref={(instance: HTMLInputElement) => {
-          if (instance) {
-            instance.focus();
-            if (selectTextOnMount && !textSelected) {
-              instance.select();
-              setTextSelected(true);
-            }
-          }
-        }}
-      />
-      {!saveOnClickoutside && (
-        <div className="ml-[3px]">
-          <TooltipTrigger>
-            <Button
-              aria-label={t("common.save")}
-              intent="secondary"
-              type="submit"
-              isDisabled={loading}
-            >
-              {loading ? <LoaderCircleIcon /> : <CheckIcon />}
-            </Button>
-            <Tooltip>{t("common.save")}</Tooltip>
-          </TooltipTrigger>
-        </div>
-      )}
+        onChange={setValue}
+      >
+        <Input
+          ref={inputRef}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") onCancel();
+          }}
+        />
+      </RacTextField>
+      <TooltipTrigger>
+        <Button aria-label={t("common.save")} type="submit" size={size}>
+          <CheckIcon />
+        </Button>
+        <Tooltip>{t("common.save")}</Tooltip>
+      </TooltipTrigger>
     </form>
   );
 };

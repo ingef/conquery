@@ -64,7 +64,8 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 					namespaceData.jobManager(),
 					namespaceData.filterSearch(),
 					sqlEntityResolver,
-					connection.getConnection()
+					connection.getConnection(),
+					config.getSqlConnectorConfig().isReuseExistingConceptIdTables()
 			);
 		} catch (Exception e) {
 			log.error("Failed to load namespaceStorage for {}", namespaceStorage.getPathName(), e);

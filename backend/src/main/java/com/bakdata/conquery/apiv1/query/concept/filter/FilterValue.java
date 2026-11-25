@@ -52,8 +52,8 @@ public abstract class FilterValue<VALUE> {
 		return ((VALUE) value);
 	}
 
-	public SqlFilters convertToSqlFilter(SqlIdColumns ids, ConversionContext context, ConnectorSqlTables tables) {
-		FilterContext<VALUE> filterContext = FilterContext.forConceptConversion(ids, readValue(), context, tables);
+	public SqlFilters convertToSqlFilter(SqlIdColumns ids, SqlIdColumns preprocessingIds, ConversionContext context, ConnectorSqlTables tables) {
+		FilterContext<VALUE> filterContext = FilterContext.forConceptConversion(ids, preprocessingIds, readValue(), context, tables);
 		final Filter<VALUE> resolve = (Filter<VALUE>) filter.resolve();
 		SqlFilters sqlFilters = resolve.createConverter().convertToSqlFilter(resolve, filterContext);
 		return sqlFilters;

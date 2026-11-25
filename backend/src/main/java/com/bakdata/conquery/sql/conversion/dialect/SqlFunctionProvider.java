@@ -21,7 +21,6 @@ import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import org.jooq.Condition;
-import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.OrderField;
 import org.jooq.Record;
@@ -68,7 +67,9 @@ public interface SqlFunctionProvider {
 	 */
 	Field<Date> getMaxDateExpression();
 
-	<T> Field<T> cast(Field<?> field, DataType<T> type);
+	Field<String> castToString(Field<?> field);
+
+	Field<Integer> castToInteger(Field<?> field);
 
 	/**
 	 * @return The regex that matches any char repeated any times (including 0), for example:
@@ -220,6 +221,11 @@ public interface SqlFunctionProvider {
 	 */
 	Field<String> yearQuarter(Field<Date> dateField);
 
+	/**
+	 * @return The calendar year of the given date column.
+	 */
+	Field<Integer> year(Field<Date> dateField);
+
 	default Field<String> stringAggregation(Field<String> stringField, Field<String> delimiter, List<Field<?>> orderByFields) {
 		return field(
 				"{0}({1}, {2} {3})",
@@ -317,5 +323,9 @@ public interface SqlFunctionProvider {
 
 	default Field<Boolean> isNull(Field<?> field){
 		return field.isNull();
+	}
+
+	default Field<Integer> dateToInteger(Field<Date> field) {
+		return castToInteger(field);
 	}
 }

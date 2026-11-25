@@ -311,7 +311,6 @@ const ProjectItem = ({
           <ProjectItemLabel
             mayEdit={mayEdit}
             label={label}
-            selectTextOnMount={true}
             onSubmit={onRenameLabel}
             highlightedWords={highlightedWords}
             isEditing={isEditingLabel}
