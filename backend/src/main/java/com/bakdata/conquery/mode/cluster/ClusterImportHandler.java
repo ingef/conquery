@@ -12,6 +12,7 @@ import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.mode.ImportHandler;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
@@ -65,7 +66,7 @@ public class ClusterImportHandler implements ImportHandler {
 			readAndDistributeImport(((DistributedNamespace) namespace), table, header, parser);
 
 			try(Stream<Concept<?>> allConcepts = namespace.getStorage().getAllConcepts()) {
-				clearDependentConcepts(allConcepts, table.getId());
+				clearDependentConcepts(namespace.getStorage(), allConcepts, table.getId());
 			}
 		}
 	}
@@ -163,12 +164,13 @@ public class ClusterImportHandler implements ImportHandler {
 
 	}
 
-	private static void clearDependentConcepts(Stream<Concept<?>> allConcepts, TableId table) {
+	private static void clearDependentConcepts(NamespaceStorage storage, Stream<Concept<?>> allConcepts, TableId table) {
 		allConcepts.map(Concept::getConnectors)
 				   .flatMap(List::stream)
 				   .filter(con -> con.resolveTableId().equals(table))
 				   .map(Connector::getConcept)
-				   .forEach(Concept::clearMatchingStats);
+				   .distinct()
+				   .forEach(storage::removeMatchingStats);
 	}
 
 	/**
@@ -193,7 +195,7 @@ public class ClusterImportHandler implements ImportHandler {
 		final DistributedNamespace namespace = datasetRegistry.get(id);
 
 		try(Stream<Concept<?>> allConcepts = namespace.getStorage().getAllConcepts()) {
-			clearDependentConcepts(allConcepts, imp.getTable());
+			clearDependentConcepts(namespace.getStorage(), allConcepts, imp.getTable());
 		}
 
 		namespace.getStorage().removeImport(imp);

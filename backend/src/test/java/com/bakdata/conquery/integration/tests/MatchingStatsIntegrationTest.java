@@ -9,8 +9,10 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.MatchingStats;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -43,20 +45,23 @@ public class MatchingStatsIntegrationTest extends IntegrationTest.Simple impleme
 			concept = (TreeConcept) allConcepts.findFirst().orElseThrow();
 		}
 
-		assertThat(concept.getMatchingStats()).isNotNull();
-		assertThat(concept.getMatchingStats().countEvents()).isEqualTo(4);
-		assertThat(concept.getMatchingStats().countEntities()).isEqualTo(4);
+		final NamespaceStorage storage = conquery.getNamespace().getStorage();
+		final MatchingStats conceptMatchingStats = storage.getMatchingStats(concept.getId());
+		assertThat(conceptMatchingStats).isNotNull();
+		assertThat(conceptMatchingStats.countEvents()).isEqualTo(4);
+		assertThat(conceptMatchingStats.countEntities()).isEqualTo(4);
 		assertThat(concept.getChildren()).allSatisfy(child -> {
-			assertThat(child.getMatchingStats()).isNotNull();
-			assertThat(child.getMatchingStats().countEvents()).isEqualTo(2);
-			assertThat(child.getMatchingStats().countEntities()).isEqualTo(2);
+			final MatchingStats childMatchingStats = storage.getMatchingStats(child.getId());
+			assertThat(childMatchingStats).isNotNull();
+			assertThat(childMatchingStats.countEvents()).isEqualTo(2);
+			assertThat(childMatchingStats.countEntities()).isEqualTo(2);
 		});
 
-		assertThat(concept.getMatchingStats().spanEvents())
+		assertThat(conceptMatchingStats.spanEvents())
 				.isEqualTo(CDateRange.of(LocalDate.parse("2010-07-15"), LocalDate.parse("2013-11-10")));
-		assertThat(concept.getChildren().get(0).getMatchingStats().spanEvents())
+		assertThat(storage.getMatchingStats(concept.getChildren().get(0).getId()).spanEvents())
 				.isEqualTo(CDateRange.of(LocalDate.parse("2012-01-01"), LocalDate.parse("2013-11-10")));
-		assertThat(concept.getChildren().get(1).getMatchingStats().spanEvents())
+		assertThat(storage.getMatchingStats(concept.getChildren().get(1).getId()).spanEvents())
 				.isEqualTo(CDateRange.of(LocalDate.parse("2010-07-15"), LocalDate.parse("2012-11-11")));
 	}
 }

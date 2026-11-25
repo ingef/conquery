@@ -69,8 +69,8 @@ public class FrontEndConceptBuilder {
 				continue;
 			}
 
-			Concept<?> concept = allConcepts.get(i);
-			roots.put(concept.getId(), createConceptRoot(concept, storage.getStructure()));
+			final Concept<?> concept = allConcepts.get(i);
+			roots.put(concept.getId(), createConceptRoot(concept, storage.getStructure(), storage));
 		}
 
 		if (!allConcepts.isEmpty() && roots.isEmpty()) {
@@ -96,7 +96,7 @@ public class FrontEndConceptBuilder {
 		return root;
 	}
 
-	private FrontendNode createConceptRoot(Concept<?> concept, StructureNode[] structureNodes) {
+	private FrontendNode createConceptRoot(Concept<?> concept, StructureNode[] structureNodes, NamespaceStorage storage) {
 
 		final StructureNodeId
 				structureParent =
@@ -107,8 +107,8 @@ public class FrontEndConceptBuilder {
 					  .map(StructureNode::getId)
 					  .orElse(null);
 
-		final MatchingStats matchingStats = concept.getMatchingStats();
-		boolean hasStats = matchingStats != null;
+		final MatchingStats matchingStats = storage.getMatchingStats(concept.getId());
+		final boolean hasStats = matchingStats != null;
 
 		final FrontendNode node =
 				FrontendNode.builder()
@@ -235,8 +235,8 @@ public class FrontEndConceptBuilder {
 		}
 	}
 
-	private FrontendNode createCTNode(ConceptElement<?> ce) {
-		final MatchingStats matchingStats = ce.getMatchingStats();
+	private FrontendNode createCTNode(ConceptElement<?> ce, NamespaceStorage storage) {
+		final MatchingStats matchingStats = storage.getMatchingStats(ce.getId());
 		FrontendNode.FrontendNodeBuilder nodeBuilder =
 				FrontendNode.builder()
 							.active(null)
@@ -271,17 +271,17 @@ public class FrontEndConceptBuilder {
 		return nodeBuilder.build();
 	}
 
-	public FrontendList createTreeMap(Concept<?> concept) {
+	public FrontendList createTreeMap(Concept<?> concept, NamespaceStorage storage) {
 		final FrontendList map = new FrontendList();
-		fillTreeMap(concept, map);
+		fillTreeMap(concept, map, storage);
 		return map;
 	}
 
-	private void fillTreeMap(ConceptElement<?> ce, FrontendList map) {
-		map.add(ce.getId(), createCTNode(ce));
+	private void fillTreeMap(ConceptElement<?> ce, FrontendList map, NamespaceStorage storage) {
+		map.add(ce.getId(), createCTNode(ce, storage));
 		if (ce.getChildren() != null) {
 			for (ConceptTreeChild c : ce.getChildren()) {
-				fillTreeMap(c, map);
+				fillTreeMap(c, map, storage);
 			}
 		}
 	}

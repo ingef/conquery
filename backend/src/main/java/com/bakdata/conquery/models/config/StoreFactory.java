@@ -17,11 +17,13 @@ import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.MatchingStats;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
@@ -52,6 +54,8 @@ public interface StoreFactory {
 	IdentifiableStore<Table> createTableStore(String pathName, ObjectMapper objectMapper);
 
 	IdentifiableStore<Concept<?>> createConceptStore(String pathName, ObjectMapper objectMapper);
+
+	Store<ConceptElementId<?>, MatchingStats> createMatchingStatsStore(String pathName, ObjectMapper objectMapper);
 
 	IdentifiableStore<Import> createImportStore(String pathName, ObjectMapper objectMapper);
 

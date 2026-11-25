@@ -7,7 +7,12 @@ import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
+import com.bakdata.conquery.models.datasets.concepts.MatchingStats;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SearchIndexId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
@@ -27,6 +32,7 @@ public class NamespaceStorage extends NamespacedStorageImpl {
 	protected SingletonStore<StructureNode[]> structure;
 	protected SingletonStore<PreviewConfig> preview;
 	protected SingletonStore<WorkerToBucketsMap> workerToBuckets;
+	protected Store<ConceptElementId<?>, MatchingStats> matchingStats;
 
 
 	public NamespaceStorage(StoreFactory storageFactory, String pathName) {
@@ -43,6 +49,7 @@ public class NamespaceStorage extends NamespacedStorageImpl {
 		structure = getStorageFactory().createStructureStore(super.getPathName(), objectMapper);
 		workerToBuckets = getStorageFactory().createWorkerToBucketsStore(super.getPathName(), objectMapper);
 		preview = getStorageFactory().createPreviewStore(super.getPathName(), objectMapper);
+		matchingStats = getStorageFactory().createMatchingStatsStore(super.getPathName(), objectMapper);
 	}
 
 	@Override
@@ -59,6 +66,7 @@ public class NamespaceStorage extends NamespacedStorageImpl {
 
 				// Concepts depend on internToExternMappers
 				concepts,
+				matchingStats,
 
 				preview,
 				idMapping,
@@ -66,6 +74,34 @@ public class NamespaceStorage extends NamespacedStorageImpl {
 				workerToBuckets,
 				entity2Bucket
 		);
+	}
+
+	public MatchingStats getMatchingStats(ConceptElementId<?> conceptElement) {
+		return matchingStats.get(conceptElement);
+	}
+
+	public void updateMatchingStats(ConceptElementId<?> conceptElement, MatchingStats stats) {
+		matchingStats.update(conceptElement, stats);
+	}
+
+	public void removeMatchingStats(Concept<?> concept) {
+		removeMatchingStats((ConceptElement<?>) concept);
+	}
+
+	private void removeMatchingStats(ConceptElement<?> conceptElement) {
+		matchingStats.remove(conceptElement.getId());
+		if (conceptElement.getChildren() != null) {
+			conceptElement.getChildren().forEach(this::removeMatchingStats);
+		}
+	}
+
+	@Override
+	public void removeConcept(ConceptId id) {
+		final Concept<?> concept = getConcept(id);
+		if (concept != null) {
+			removeMatchingStats(concept);
+		}
+		super.removeConcept(id);
 	}
 
 
