@@ -60,7 +60,9 @@ public final class ResolvedTableExportMapper {
 		List<Optional<ResolvedColumn>> output = new ArrayList<>(java.util.Collections.nCopies(width, Optional.empty()));
 		for (Column column : connector.getResolvedTable().getColumns()) {
 			Integer position = positions.get(column.getId());
+			// Columns used in validity dates are omitted from positions.
 			if (position != null) {
+				// Position 0 is reserved for the separately handled validity dates, so position 1 maps to index 0 here.
 				output.set(position - 1, Optional.of(ModelMapper.map(column)));
 			}
 		}
