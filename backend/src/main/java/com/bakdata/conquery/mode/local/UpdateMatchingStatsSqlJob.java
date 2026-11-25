@@ -8,7 +8,9 @@ import java.util.concurrent.*;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.MatchingStats;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.sql.conquery.SqlMatchingStats;
 import com.google.common.base.Stopwatch;
@@ -73,8 +75,9 @@ public class UpdateMatchingStatsSqlJob extends Job {
 			for (Concept<?> concept : concepts) {
 				if (concept instanceof TreeConcept treeConcept) {
 					Future<Void> future = completionService.submit(() -> {
-						matchingStats.collectMatchingStatsForConcept(treeConcept, matchingStats.getMatchingStatsRetries());
-						storage.updateConcept(treeConcept);
+						final Map<ConceptElementId<?>, MatchingStats> collectedMatchingStats =
+								matchingStats.collectMatchingStatsForConcept(treeConcept, matchingStats.getMatchingStatsRetries());
+						collectedMatchingStats.forEach(storage::updateMatchingStats);
 						return null;
 					});
 

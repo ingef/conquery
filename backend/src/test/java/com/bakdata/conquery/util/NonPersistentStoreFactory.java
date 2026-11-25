@@ -24,12 +24,14 @@ import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.MatchingStats;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.ids.Id;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
@@ -45,6 +47,7 @@ public class NonPersistentStoreFactory implements StoreFactory {
 	private final Map<String, NonPersistentStore<Id<SecondaryIdDescription, ?>, SecondaryIdDescription>> secondaryIdDescriptionStore = new ConcurrentHashMap<>();
 	private final Map<String, NonPersistentStore<Id<Table, ?>, Table>> tableStore = new ConcurrentHashMap<>();
 	private final Map<String, NonPersistentStore<Id<Concept<?>, ?>, Concept<?>>> conceptStore = new ConcurrentHashMap<>();
+	private final Map<String, NonPersistentStore<ConceptElementId<?>, MatchingStats>> matchingStatsStore = new ConcurrentHashMap<>();
 	private final Map<String, NonPersistentStore<Id<Import, ?>, Import>> importStore = new ConcurrentHashMap<>();
 	private final Map<String, NonPersistentStore<Id<CBlock, ?>, CBlock>> cBlockStore = new ConcurrentHashMap<>();
 	private final Map<String, NonPersistentStore<Id<Bucket, ?>, Bucket>> bucketStore = new ConcurrentHashMap<>();
@@ -100,6 +103,11 @@ public class NonPersistentStoreFactory implements StoreFactory {
 	@Override
 	public IdentifiableStore<Concept<?>> createConceptStore(String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(conceptStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()));
+	}
+
+	@Override
+	public Store<ConceptElementId<?>, MatchingStats> createMatchingStatsStore(String pathName, ObjectMapper objectMapper) {
+		return matchingStatsStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>());
 	}
 
 	@Override

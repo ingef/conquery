@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.MatchingStats;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptIdMapping;
@@ -199,11 +200,13 @@ public class SqlMatchingStats {
         return (Field<Date>[]) validityDates.toArray(Field[]::new);
     }
 
-    private void assignStats(TreeConcept concept, MatchingStats.Accumulator[] matchingStats) {
+    private Map<ConceptElementId<?>, MatchingStats> assignStats(TreeConcept concept, MatchingStats.Accumulator[] matchingStats) {
+        final Map<ConceptElementId<?>, MatchingStats> result = new LinkedHashMap<>(matchingStats.length);
         for (int localId = 0; localId < matchingStats.length; localId++) {
-            ConceptElement<?> element = concept.getElementByLocalId(localId);
-            element.setMatchingStats(MatchingStats.singleEntry(SQL_SOURCE_MATCHING_STATS_LABEL, matchingStats[localId].toEntry()));
+            final ConceptElement<?> element = concept.getElementByLocalId(localId);
+            result.put(element.getId(), MatchingStats.singleEntry(SQL_SOURCE_MATCHING_STATS_LABEL, matchingStats[localId].toEntry()));
         }
+        return result;
     }
 
     /**
@@ -284,14 +287,13 @@ public class SqlMatchingStats {
         return fields;
     }
 
-    public void collectMatchingStatsForConcept(TreeConcept concept, int tries) {
+    public Map<ConceptElementId<?>, MatchingStats> collectMatchingStatsForConcept(TreeConcept concept, int tries) {
         int remainingTries = tries;
         while (true) {
             try {
                 SelectJoinStep<Record4<Integer, String, Integer, Integer>> matchingStatsStatement = createMatchingStatsStatement(concept);
                 MatchingStats.Accumulator[] matchingStats = readStats(concept, matchingStatsStatement);
-                assignStats(concept, matchingStats);
-                return;
+                return assignStats(concept, matchingStats);
             } catch (DataAccessException e) {
                 if (remainingTries == 0) {
                     log.error("Failed to collect matching stats for concept {}. No retries remaining.", concept.getId(), e);

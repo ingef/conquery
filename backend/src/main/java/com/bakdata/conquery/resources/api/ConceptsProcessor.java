@@ -67,7 +67,8 @@ public class ConceptsProcessor {
 			CacheBuilder.newBuilder().softValues().expireAfterWrite(10, TimeUnit.MINUTES).build(new CacheLoader<>() {
 				@Override
 				public FrontendList load(Concept<?> concept) {
-					return getFrontEndConceptBuilder().createTreeMap(concept);
+					final NamespaceStorage storage = namespaces.get(concept.getDataset()).getStorage();
+					return getFrontEndConceptBuilder().createTreeMap(concept, storage);
 				}
 			});
 

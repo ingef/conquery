@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.MatchingStats;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
@@ -20,6 +21,7 @@ import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
@@ -65,6 +67,7 @@ public enum StoreMappings {
 	ID_MAPPING(EntityIdMap.class, Boolean.class),
 	IMPORTS(Import.class, ImportId.class),
 	INTERN_TO_EXTERN(InternToExternMapper.class, InternToExternMapperId.class),
+	MATCHING_STATS(MatchingStats.class, ConceptElementId.class),
 	NAMESPACES(DatasetRegistry.class, Boolean.class),
 	SEARCH_INDEX(SearchIndex.class, SearchIndexId.class),
 	SECONDARY_IDS(SecondaryIdDescription.class, SecondaryIdDescriptionId.class),

@@ -45,11 +45,6 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> {
 	private CTCondition condition = null;
 
 
-	@Override
-	public void clearMatchingStats() {
-		setMatchingStats(null);
-	}
-
 	public void init() throws ConceptConfigurationException {
 		if (condition != null) {
 			condition.init(this);
