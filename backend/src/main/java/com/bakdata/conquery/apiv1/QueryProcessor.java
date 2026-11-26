@@ -32,6 +32,7 @@ import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.metrics.ExecutionMetrics;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
+import com.bakdata.conquery.models.auth.ExecutionPermissionIndex;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -170,6 +171,7 @@ public class QueryProcessor {
 			Subject subject,
 			Stream<ManagedExecutionId> allQueries,
 			boolean allProviders) {
+		final ExecutionPermissionIndex readPermissions = ExecutionPermissionIndex.create(subject, Ability.READ);
 
 		return allQueries
 				// Checks that are possible on the execution id alone (no cache load necessary)
@@ -184,9 +186,9 @@ public class QueryProcessor {
 				.filter(Objects::nonNull) // Cautionary
 				// Checks that are only possible on the execution object (cache might need to fetch some data)
 				.filter(QueryProcessor::canFrontendRender)
-				// Ownership check only works on the object not on the id :/
-				.filter(exec -> subject.isPermitted(exec, Ability.READ))
 				.filter(Predicate.not(ManagedExecution::isSystem))
+				// Ownership check only works on the object not on the id :/
+				.filter(readPermissions::isPermitted)
 
 				.map(mq -> {
 					try {
