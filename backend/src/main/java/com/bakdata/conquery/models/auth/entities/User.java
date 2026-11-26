@@ -21,7 +21,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.Sets;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -55,29 +54,33 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 
 	@Override
 	public Set<ConqueryPermission> getEffectivePermissions() {
-		Set<ConqueryPermission> permissions = getPermissions();
-		for (RoleId roleId : roles) {
-			Role role = getMetaStorage().getRole(roleId);
+		final Set<ConqueryPermission> permissions = new HashSet<>(getPermissions());
+		final Set<RoleId> rolesSnapshot;
+		synchronized (roles) {
+			rolesSnapshot = new HashSet<>(roles);
+		}
+
+		for (final RoleId roleId : rolesSnapshot) {
+			final Role role = getMetaStorage().getRole(roleId);
 			if (role == null) {
 				log.warn("Could not find role {} to gather permissions", roleId);
 				continue;
 			}
-			permissions = Sets.union(permissions, role.getEffectivePermissions());
+			permissions.addAll(role.getEffectivePermissions());
 		}
 
 		try (Stream<Group> allGroups = getMetaStorage().getAllGroups()) {
 
-			for (Iterator<Group> it = allGroups.iterator(); it.hasNext(); ) {
-				Group group = it.next();
+			for (final Iterator<Group> it = allGroups.iterator(); it.hasNext(); ) {
+				final Group group = it.next();
 				if (!group.containsUser(getId())) {
 					continue;
 				}
-				permissions = Sets.union(permissions, group.getEffectivePermissions());
+				permissions.addAll(group.getEffectivePermissions());
 			}
 		}
 
-
-		return permissions;
+		return Collections.unmodifiableSet(permissions);
 	}
 
 	public synchronized void addRole(RoleId role) {

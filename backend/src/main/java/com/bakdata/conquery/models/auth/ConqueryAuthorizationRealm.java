@@ -2,14 +2,13 @@ package com.bakdata.conquery.models.auth;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.ConcurrentModificationException;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.google.common.collect.Sets;
 import lombok.RequiredArgsConstructor;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
@@ -76,9 +75,8 @@ public class ConqueryAuthorizationRealm extends AuthorizingRealm {
 	}
 
 	/**
-	 * This AuthorizationInfo handles the collection of large amounts of {@link Permission}s by wrapping collections into a view
-	 * instead of running an iterator over them. This also prevents a {@link ConcurrentModificationException} which occurred when
-	 * Permission were collected
+	 * This AuthorizationInfo avoids copying the effective permission snapshot on its normal, single assignment. If permissions are
+	 * added more than once, they are eagerly merged into a concrete, unmodifiable set to keep permission lookups flat.
 	 */
 	@SuppressWarnings("serial")
 	public static class ConqueryAuthorizationInfo extends SimpleAuthorizationInfo {
@@ -111,17 +109,20 @@ public class ConqueryAuthorizationRealm extends AuthorizingRealm {
 		public void addObjectPermissions(Collection<Permission> permissions) {
 			if (!(permissions instanceof Set)) {
 				super.addObjectPermissions(permissions);
+				return;
 			}
 			if (objectPermissions == null) {
 				objectPermissions = (Set<Permission>) permissions;
 				return;
 			}
-			objectPermissions = Sets.union(objectPermissions, (Set<Permission>)permissions);
+			final Set<Permission> mergedPermissions = new HashSet<>(objectPermissions);
+			mergedPermissions.addAll(permissions);
+			objectPermissions = Collections.unmodifiableSet(mergedPermissions);
 		}
 
 	}
 
-	// We override this to work only on SetViews and allocate new sets
+	// The AuthorizationInfo only holds object permissions; roles and string permissions are unsupported above.
 	@Override
 	protected Collection<Permission> getPermissions(AuthorizationInfo info) {
 		// The AuthorizationInfo must be a ConqueryAuthorizationInfo and should only hold ObjectPermissions
