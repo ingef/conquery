@@ -13,7 +13,7 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import joptsimple.internal.Strings;
+import com.google.common.base.Strings;
 import lombok.ToString;
 
 /**
