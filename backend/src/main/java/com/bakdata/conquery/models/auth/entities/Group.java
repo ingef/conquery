@@ -11,7 +11,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -38,11 +37,16 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 
 	@Override
 	public Set<ConqueryPermission> getEffectivePermissions() {
-		Set<ConqueryPermission> permissions = getPermissions();
-		for (RoleId roleId : roles) {
-			permissions = Sets.union(permissions, getMetaStorage().getRole(roleId).getEffectivePermissions());
+		final Set<ConqueryPermission> permissions = new HashSet<>(getPermissions());
+		final Set<RoleId> rolesSnapshot;
+		synchronized (roles) {
+			rolesSnapshot = new HashSet<>(roles);
 		}
-		return permissions;
+
+		for (final RoleId roleId : rolesSnapshot) {
+			permissions.addAll(getMetaStorage().getRole(roleId).getEffectivePermissions());
+		}
+		return Collections.unmodifiableSet(permissions);
 	}
 
 
