@@ -2,6 +2,10 @@
   "type": "FILTER_TEST",
   "label": "NUMBER_DECIMAL Test",
   "expectedCsv": "tests/filter/NUMBER_DECIMAL/expected_NUMBER_Filter.csv",
+  "expectedFrontendConfig": {
+    "label": "filter",
+    "type": "REAL_RANGE"
+  },
   "content": {
     "tables": {
       "csv": "tests/filter/NUMBER_DECIMAL/content_NUMBER_Filter.csv",

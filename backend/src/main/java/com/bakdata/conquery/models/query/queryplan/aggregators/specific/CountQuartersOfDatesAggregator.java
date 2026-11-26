@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.temporal.IsoFields;
 
 import com.bakdata.conquery.models.common.CDate;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -36,8 +37,15 @@ public class CountQuartersOfDatesAggregator extends SingleColumnAggregator<Long>
 			return;
 		}
 
-		LocalDate date = CDate.toLocalDate(bucket.getDate(event, getColumn()));
-		quarters.add(date.getYear() * 4 + date.get(IsoFields.QUARTER_OF_YEAR));
+		final CDateRange dateRange = bucket.getAsDateRange(event, getColumn());
+		final LocalDate start = CDate.toLocalDate(dateRange.getMinValue());
+		final LocalDate end = CDate.toLocalDate(dateRange.getMaxValue());
+		final int startQuarter = start.getYear() * 4 + start.get(IsoFields.QUARTER_OF_YEAR);
+		final int endQuarter = end.getYear() * 4 + end.get(IsoFields.QUARTER_OF_YEAR);
+
+		for (int quarter = startQuarter; quarter <= endQuarter; quarter++) {
+			quarters.add(quarter);
+		}
 	}
 
 	@Override

@@ -1,0 +1,4 @@
+pid,date,real-plus,real-minus,decimal-plus,decimal-minus,money-plus,money-minus
+1,2012-01-01,1.5,0.5,10.25,2.25,100,40
+1,2012-01-02,2.5,1.0,20.75,3.75,200,50
+2,2013-01-01,1.25,,5.5,,50,

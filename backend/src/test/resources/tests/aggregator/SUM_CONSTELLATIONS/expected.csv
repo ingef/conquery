@@ -1,0 +1,3 @@
+result,dates,concept sum-real,concept diff-real,concept sum-decimal,concept diff-decimal,concept sum-money,concept diff-money
+1,{2012-01-01/2012-01-02},4.0,2.5,31.00,25.00,300.00,210.00
+2,{2013-01-01/2013-01-01},1.25,1.25,5.50,5.50,50.00,50.00

@@ -1,0 +1,124 @@
+{
+  "type": "QUERY_TEST",
+  "label": "SUM_CONSTELLATIONS Test",
+  "sqlSpec": {
+    "isEnabled": true,
+    "supportedDialects": []
+  },
+  "expectedCsv": "tests/aggregator/SUM_CONSTELLATIONS/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "CONCEPT",
+      "ids": [
+        "concept"
+      ],
+      "tables": [
+        {
+          "id": "concept.connector",
+          "selects": [
+            "concept.connector.sum-real",
+            "concept.connector.diff-real",
+            "concept.connector.sum-decimal",
+            "concept.connector.diff-decimal",
+            "concept.connector.sum-money",
+            "concept.connector.diff-money"
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "name": "concept",
+      "type": "TREE",
+      "connectors": [
+        {
+          "name": "connector",
+          "table": "table",
+          "validityDates": {
+            "name": "date",
+            "column": "table.date"
+          },
+          "selects": [
+            {
+              "type": "SUM",
+              "name": "sum-real",
+              "column": "table.real-plus"
+            },
+            {
+              "type": "SUM",
+              "name": "diff-real",
+              "column": "table.real-plus",
+              "subtractColumn": "table.real-minus"
+            },
+            {
+              "type": "SUM",
+              "name": "sum-decimal",
+              "column": "table.decimal-plus"
+            },
+            {
+              "type": "SUM",
+              "name": "diff-decimal",
+              "column": "table.decimal-plus",
+              "subtractColumn": "table.decimal-minus"
+            },
+            {
+              "type": "SUM",
+              "name": "sum-money",
+              "column": "table.money-plus"
+            },
+            {
+              "type": "SUM",
+              "name": "diff-money",
+              "column": "table.money-plus",
+              "subtractColumn": "table.money-minus"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/aggregator/SUM_CONSTELLATIONS/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "date",
+            "type": "DATE"
+          },
+          {
+            "name": "real-plus",
+            "type": "REAL"
+          },
+          {
+            "name": "real-minus",
+            "type": "REAL"
+          },
+          {
+            "name": "decimal-plus",
+            "type": "DECIMAL"
+          },
+          {
+            "name": "decimal-minus",
+            "type": "DECIMAL"
+          },
+          {
+            "name": "money-plus",
+            "type": "MONEY"
+          },
+          {
+            "name": "money-minus",
+            "type": "MONEY"
+          }
+        ]
+      }
+    ]
+  }
+}

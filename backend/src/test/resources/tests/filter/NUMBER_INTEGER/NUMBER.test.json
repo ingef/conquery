@@ -2,6 +2,10 @@
   "type": "FILTER_TEST",
   "label": "NUMBER_INTEGER Test",
   "expectedCsv": "tests/filter/NUMBER_INTEGER/expected_NUMBER_Filter.csv",
+  "expectedFrontendConfig": {
+    "label": "filter",
+    "type": "INTEGER_RANGE"
+  },
   "content": {
     "tables": {
       "csv": "tests/filter/NUMBER_INTEGER/content_NUMBER_Filter.csv",

@@ -1,7 +1,18 @@
 {
   "type": "FILTER_TEST",
   "label": "QUARTERS_IN_YEAR Test",
+    "sqlSpec": {
+    "isEnabled": true,
+    "supportedDialects": [
+    ]
+  },
   "expectedCsv": "tests/filter/QUARTERS_IN_YEAR/expected_QUARTERS_IN_YEAR_Filter.csv",
+  "expectedFrontendConfig": {
+    "label": "filter",
+    "type": "INTEGER_RANGE",
+    "min": 1,
+    "max": 4
+  },
   "content": {
     "tables": {
       "csv": "tests/filter/QUARTERS_IN_YEAR/content_QUARTERS_IN_YEAR_Filter.csv",

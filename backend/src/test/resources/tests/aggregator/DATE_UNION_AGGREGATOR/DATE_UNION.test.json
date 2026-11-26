@@ -1,0 +1,69 @@
+{
+  "type": "QUERY_TEST",
+  "label": "DATE_UNION_AGGREGATOR Test",
+  "sqlSpec": {
+    "isEnabled": true,
+    "supportedDialects": []
+  },
+  "expectedCsv": "tests/aggregator/DATE_UNION_AGGREGATOR/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "CONCEPT",
+      "ids": [
+        "concept"
+      ],
+      "tables": [
+        {
+          "id": "concept.connector",
+          "selects": [
+            "concept.connector.select"
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "name": "concept",
+      "type": "TREE",
+      "connectors": [
+        {
+          "name": "connector",
+          "table": "table",
+          "validityDates": {
+            "name": "date",
+            "column": "table.date"
+          },
+          "selects": {
+            "type": "DATE_UNION",
+            "name": "select",
+            "column": "table.value"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/aggregator/DATE_UNION_AGGREGATOR/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "date",
+            "type": "DATE"
+          },
+          {
+            "name": "value",
+            "type": "DATE_RANGE"
+          }
+        ]
+      }
+    ]
+  }
+}

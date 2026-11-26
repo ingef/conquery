@@ -2,7 +2,7 @@
   "type": "FILTER_TEST",
   "label": "SELECT Substring",
   "sqlSpec": {
-    "isEnabled": false,
+    "isEnabled": true,
     "supportedDialects": [
     ]
   },

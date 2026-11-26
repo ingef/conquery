@@ -2,8 +2,9 @@
   "type": "QUERY_TEST",
   "label": "DURATION_SUM (distinctBy)",
   "sqlSpec": {
-    "isEnabled": false,
-    "comment" : "distinctBy not yet implemented."
+    "isEnabled": true,
+    "supportedDialects": [],
+    "comment" : "distinctBy is not implemented for SQL."
   },
   "expectedCsv": "tests/aggregator/DURATION_SUM_DISTINCT_AGGREGATOR/expected.csv",
   "query": {
