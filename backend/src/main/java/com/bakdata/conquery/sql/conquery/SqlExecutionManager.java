@@ -1,6 +1,7 @@
 package com.bakdata.conquery.sql.conquery;
 
 
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -62,9 +63,13 @@ public class SqlExecutionManager extends ExecutionManager {
 	}
 
 	private CompletableFuture<Void> executeAsync(ManagedQuery managedQuery) {
-		SqlQuery sqlQuery = converter.convert(managedQuery.getQuery());
+		final SqlQuery sqlQuery = converter.convert(managedQuery.getQuery());
+		final Map<String, String> metadata = Map.of(
+				"queryId", managedQuery.getId().toString(),
+				"queryOwnerId", managedQuery.getOwner().toString()
+		);
 
-		return CompletableFuture.supplyAsync(() -> executionService.execute(sqlQuery))
+		return CompletableFuture.supplyAsync(() -> executionService.execute(sqlQuery, metadata))
 								.thenAccept(result -> {
 									ManagedExecutionId id = managedQuery.getId();
 

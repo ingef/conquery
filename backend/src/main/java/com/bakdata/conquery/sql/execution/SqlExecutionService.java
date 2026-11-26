@@ -1,12 +1,12 @@
 package com.bakdata.conquery.sql.execution;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -21,9 +21,11 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
+import org.jooq.ExecuteListener;
 import org.jooq.Record;
 import org.jooq.Select;
 import org.jooq.exception.DataAccessException;
+import org.jooq.impl.DSL;
 
 
 @Slf4j
@@ -38,25 +40,56 @@ public class SqlExecutionService {
 
 	private final ResultSetProcessor resultSetProcessor;
 
-	public SqlExecutionExecutionInfo execute(SqlQuery sqlQuery) {
+	public DSLContext withMetadata(Map<String, String> metadata) {
+		final String metadataComments = createMetadataComments(metadata);
+		return withMetadataComments(metadataComments);
+	}
 
-		final SqlExecutionExecutionInfo result = dslContext.connectionResult(connection -> createStatementAndExecute(sqlQuery, connection));
+	private DSLContext withMetadataComments(String metadataComments) {
+		if (metadataComments.isEmpty()) {
+			return dslContext;
+		}
+
+		final ExecuteListener metadataListener = ExecuteListener.onRenderEnd(context -> context.sql(metadataComments + context.sql()));
+		return dslContext.configuration().deriveAppending(metadataListener).dsl();
+	}
+
+	public SqlExecutionExecutionInfo execute(SqlQuery sqlQuery, Map<String, String> metadata) {
+
+		final String metadataComments = createMetadataComments(metadata);
+		final SqlExecutionExecutionInfo result = createStatementAndExecute(sqlQuery, withMetadataComments(metadataComments), metadataComments);
 
 		return result;
 	}
 
-	private SqlExecutionExecutionInfo createStatementAndExecute(SqlQuery sqlQuery, Connection connection) {
+	private static String createMetadataComments(Map<String, String> metadata) {
+		Objects.requireNonNull(metadata, "metadata");
+
+		return metadata.entrySet().stream()
+					   .map(entry -> Map.entry(
+							   Objects.requireNonNull(entry.getKey(), "metadata key"),
+							   Objects.requireNonNull(entry.getValue(), "metadata value")
+					   ))
+					   .sorted(Map.Entry.comparingByKey())
+					   .map(entry -> "-- %s=%s\n".formatted(escapeLineBreaks(entry.getKey()), escapeLineBreaks(entry.getValue())))
+					   .collect(Collectors.joining());
+	}
+
+	private static String escapeLineBreaks(String value) {
+		return value.replace("\r", "\\r").replace("\n", "\\n");
+	}
+
+	private SqlExecutionExecutionInfo createStatementAndExecute(SqlQuery sqlQuery, DSLContext executionContext, String metadataComments) {
 
 		final String sqlString = sqlQuery.getSql();
-		List<ResultInfo> resultInfos = sqlQuery.getResultInfos();
+		final List<ResultInfo> resultInfos = sqlQuery.getResultInfos();
 		final List<ResultSetProcessor.Reader<?>> resultTypes = resultInfos.stream()
 														.map(resultInfo -> resultInfo.createReader(resultSetProcessor))
 														.collect(Collectors.toList());
 
-		log.info("Executing query: \n{}", sqlString);
+		log.info("Executing query: \n{}{}", metadataComments, sqlString);
 
-		try (Statement statement = connection.createStatement();
-			 ResultSet resultSet = statement.executeQuery(sqlString)) {
+		try (ResultSet resultSet = executionContext.resultQuery(DSL.raw(sqlString)).fetchResultSet()) {
 			final int columnCount = resultSet.getMetaData().getColumnCount();
 			final List<String> columnNames = getColumnNames(resultSet, columnCount);
 			final List<EntityResult> resultTable = createResultTable(resultSet, resultTypes, columnCount);

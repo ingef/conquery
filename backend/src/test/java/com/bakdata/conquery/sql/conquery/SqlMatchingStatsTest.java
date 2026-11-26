@@ -12,12 +12,14 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Map;
 
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptIdMapping;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
+import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import org.jooq.DSLContext;
 import org.jooq.DropTableStep;
 import org.jooq.Field;
@@ -108,9 +110,35 @@ class SqlMatchingStatsTest {
 		verify(dropTableStep).execute();
 	}
 
+	@Test
+	void shouldUseMatchingStatsMetadata() {
+		final DSLContext dslContext = mock(DSLContext.class);
+		final DropTableStep dropTableStep = mock(DropTableStep.class);
+		final SqlExecutionService executionService = mock(SqlExecutionService.class);
+		when(executionService.withMetadata(any())).thenReturn(dslContext);
+		when(dslContext.dropTable(TABLE_NAME)).thenReturn(dropTableStep);
+		final SqlMatchingStats matchingStats = new SqlMatchingStats(
+				executionService,
+				mock(SqlFunctionProvider.class),
+				"pid",
+				1,
+				0,
+				false
+		);
+
+		matchingStats.deleteConceptIdJoinTable(CONCEPT_ID);
+
+		verify(executionService).withMetadata(Map.of(
+				"conceptId", CONCEPT_ID.toString(),
+				"queryType", "matchingStats"
+		));
+	}
+
 	private static SqlMatchingStats createMatchingStats(DSLContext dslContext, boolean reuseExistingConceptIdTables) {
+		final SqlExecutionService executionService = mock(SqlExecutionService.class);
+		when(executionService.withMetadata(any())).thenReturn(dslContext);
 		return new SqlMatchingStats(
-				dslContext,
+				executionService,
 				mock(SqlFunctionProvider.class),
 				"pid",
 				1,

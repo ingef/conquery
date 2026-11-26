@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.sql.conquery.SqlMatchingStats;
 import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
+import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import com.bakdata.conquery.util.search.SearchProcessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
@@ -35,6 +36,7 @@ public class LocalNamespace extends Namespace {
 			NamespaceStorage storage,
 			ExecutionManager executionManager,
 			DSLContext dslContext,
+			SqlExecutionService sqlExecutionService,
 			SqlStorageHandler storageHandler,
 			JobManager jobManager,
 			SearchProcessor filterSearch,
@@ -48,7 +50,7 @@ public class LocalNamespace extends Namespace {
 		this.storageHandler = storageHandler;
 		this.dialect = dialect;
 		this.matchingStats = new SqlMatchingStats(
-				dslContext,
+				sqlExecutionService,
 				dialect.getFunctionProvider(),
 				databaseConfig.getPrimaryColumn(),
 				databaseConfig.getMatchingStatsWorkers(),

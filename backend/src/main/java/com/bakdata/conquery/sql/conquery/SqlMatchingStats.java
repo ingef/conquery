@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptIdMapping;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
+import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import com.bakdata.conquery.util.TablePrimaryColumnUtil;
 import com.google.common.base.Stopwatch;
 import lombok.Data;
@@ -36,13 +37,14 @@ public class SqlMatchingStats {
      * Legacy backend implementation requires separation by source (in that case different shards). For sql it's a constant.
      */
     private static final String SQL_SOURCE_MATCHING_STATS_LABEL = "sql";
+    private static final String MATCHING_STATS_QUERY_TYPE = "matchingStats";
 
     private static final Field<String> PID_FIELD = field(name("pid"), String.class);
     private static final Field<Date> LB_FIELD = field(name("lower_bound"), Date.class);
     private static final Field<Date> UB_FIELD = field(name("upper_bound"), Date.class);
     private static final Field<Integer> CONCEPT_ID_FIELD = field(name(ConceptIdMapping.RESOLVED_ID_COLUMN), Integer.class);
 
-    private final DSLContext dslContext;
+    private final SqlExecutionService executionService;
     private final SqlFunctionProvider functionProvider;
     private final String defaultPrimaryColumn;
     private final int fetchBatchSize = 100;
@@ -87,21 +89,22 @@ public class SqlMatchingStats {
      * @param concept
      */
     public void createConceptIdJoinTable(TreeConcept concept) {
+        final DSLContext dslContext = withMetadata(concept.getId());
         final ConceptIdMapping mapping = new ConceptIdMapping(concept, functionProvider);
         final Name tableName = mapping.getTableName();
 
-        if (reuseExistingConceptIdTables && reuseExistingConceptIdJoinTable(mapping)) {
+        if (reuseExistingConceptIdTables && reuseExistingConceptIdJoinTable(mapping, dslContext)) {
             return;
         }
 
-        deleteConceptIdJoinTable(concept.getId());
-        final List<Field<?>> fields = createConceptIdsTable(tableName, mapping.tableFields());
+        deleteConceptIdJoinTable(concept.getId(), dslContext);
+        final List<Field<?>> fields = createConceptIdsTable(tableName, mapping.tableFields(), dslContext);
 
         insertConceptIdMappings(tableName, fields, mapping.getRows(), dslContext);
-        createConceptIdIndexes(mapping);
+        createConceptIdIndexes(mapping, dslContext);
     }
 
-    private boolean reuseExistingConceptIdJoinTable(ConceptIdMapping mapping) {
+    private boolean reuseExistingConceptIdJoinTable(ConceptIdMapping mapping, DSLContext dslContext) {
         final Name tableName = mapping.getTableName();
         final List<Table<?>> existingTables = dslContext.meta().getTables(tableName);
 
@@ -164,7 +167,7 @@ public class SqlMatchingStats {
                 && expected.isNumeric() == actual.isNumeric();
     }
 
-    private void createConceptIdIndexes(ConceptIdMapping mapping) {
+    private void createConceptIdIndexes(ConceptIdMapping mapping, DSLContext dslContext) {
         if (dslContext.dialect().equals(SQLDialect.CLICKHOUSE)) {
             //TODO test if skip indices would still do something.
             log.trace("Skipping secondary indexes for ClickHouse concept id table {}", mapping.getTableName());
@@ -272,7 +275,7 @@ public class SqlMatchingStats {
     /**
      * Create a table and its fields. Assumes the table has been dropped already.
      */
-    private List<Field<?>> createConceptIdsTable(Name tableName, List<Field<?>> fields) {
+    private List<Field<?>> createConceptIdsTable(Name tableName, List<Field<?>> fields, DSLContext dslContext) {
         log.debug("Creating table {} with fields {}", tableName, fields);
 
         CreateTableElementListStep createTable =
@@ -285,11 +288,12 @@ public class SqlMatchingStats {
     }
 
     public void collectMatchingStatsForConcept(TreeConcept concept, int tries) {
+        final DSLContext dslContext = withMetadata(concept.getId());
         int remainingTries = tries;
         while (true) {
             try {
-                SelectJoinStep<Record4<Integer, String, Integer, Integer>> matchingStatsStatement = createMatchingStatsStatement(concept);
-                MatchingStats.Accumulator[] matchingStats = readStats(concept, matchingStatsStatement);
+                final SelectJoinStep<Record4<Integer, String, Integer, Integer>> matchingStatsStatement = createMatchingStatsStatement(concept, dslContext);
+                final MatchingStats.Accumulator[] matchingStats = readStats(concept, matchingStatsStatement);
                 assignStats(concept, matchingStats);
                 return;
             } catch (DataAccessException e) {
@@ -305,7 +309,7 @@ public class SqlMatchingStats {
     }
 
     @NotNull
-    private SelectJoinStep<Record4<Integer, String, Integer, Integer>> createMatchingStatsStatement(TreeConcept concept) {
+    private SelectJoinStep<Record4<Integer, String, Integer, Integer>> createMatchingStatsStatement(TreeConcept concept, DSLContext dslContext) {
 
         List<Select<? extends Record>> connectorTables = new ArrayList<>();
         ConceptIdMapping mapping = new ConceptIdMapping(concept, functionProvider);
@@ -360,6 +364,10 @@ public class SqlMatchingStats {
     }
 
     public void deleteConceptIdJoinTable(ConceptId concept) {
+        deleteConceptIdJoinTable(concept, withMetadata(concept));
+    }
+
+    private void deleteConceptIdJoinTable(ConceptId concept, DSLContext dslContext) {
         final Name tableName = ConceptIdMapping.tableName(concept);
 
         if (reuseExistingConceptIdTables) {
@@ -375,6 +383,13 @@ public class SqlMatchingStats {
             // Likely it doesn't exist. Some DBMS just don't support drop-IfExists so this is the next best thing :^)
             log.trace("Failed to drop table {}", tableName, exception);
         }
+    }
+
+    private DSLContext withMetadata(ConceptId concept) {
+        return executionService.withMetadata(Map.of(
+                "conceptId", concept.toString(),
+                "queryType", MATCHING_STATS_QUERY_TYPE
+        ));
     }
 
 }
