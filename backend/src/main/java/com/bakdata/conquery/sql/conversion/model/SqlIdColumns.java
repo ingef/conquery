@@ -157,4 +157,27 @@ public class SqlIdColumns implements Qualifiable<SqlIdColumns> {
 		return out;
 	}
 
+	public SqlIdColumns coalesceForJoin(List<SqlIdColumns> otherIds) {
+		final List<Field<String>> primaryColumns = new ArrayList<>();
+		final List<Field<String>> secondaryIds = new ArrayList<>();
+
+		primaryColumns.add(this.primaryColumn);
+		getSecondaryId().ifPresent(secondaryIds::add);
+
+		otherIds.forEach(ids -> {
+			primaryColumns.add(ids.getPrimaryColumn());
+			ids.getSecondaryId().ifPresent(secondaryIds::add);
+		});
+
+		final Field<String> coalescedPrimaryColumn = coalesceFields(primaryColumns, String.class).coerce(String.class);
+
+		if (secondaryIds.isEmpty()) {
+			return new SqlIdColumns(coalescedPrimaryColumn);
+		}
+
+		final Field<String> coalescedSecondaryId = coalesceFields(secondaryIds, String.class).coerce(String.class);
+
+		return new SqlIdColumns(coalescedPrimaryColumn, coalescedSecondaryId);
+	}
+
 }

@@ -162,4 +162,58 @@ class StratificationSqlIdColumns extends SqlIdColumns {
 										 .eventDate(eventDate)
 										 .build();
 	}
+
+	@Override
+	public SqlIdColumns coalesceForJoin(List<SqlIdColumns> otherIds) {
+
+		Preconditions.checkArgument(
+				otherIds.stream().allMatch(SqlIdColumns::isWithStratification),
+				"Can only coalesce SqlIdColumns if all are with stratification"
+		);
+
+		final List<Field<String>> primaryColumns = new ArrayList<>();
+		final List<Field<String>> resolutions = new ArrayList<>();
+		final List<Field<Integer>> indices = new ArrayList<>();
+		final List<Field<?>> eventDates = new ArrayList<>();
+
+		primaryColumns.add(getPrimaryColumn());
+		resolutions.add(this.resolution);
+		indices.add(this.index);
+
+		if (this.eventDate != null) {
+			eventDates.add(this.eventDate);
+		}
+
+		for (SqlIdColumns ids : otherIds) {
+			final StratificationSqlIdColumns stratificationIds = (StratificationSqlIdColumns) ids;
+
+			primaryColumns.add(stratificationIds.getPrimaryColumn());
+			resolutions.add(stratificationIds.getResolution());
+			indices.add(stratificationIds.getIndex());
+
+			if (stratificationIds.getEventDate() != null) {
+				eventDates.add(stratificationIds.getEventDate());
+			}
+		}
+
+		final Field<String> coalescedPrimaryColumn = coalesceFields(primaryColumns, String.class).coerce(String.class);
+
+		final Field<String> coalescedResolution = coalesceFields(resolutions, String.class);
+
+		final Field<Integer> coalescedIndex = coalesceFields(indices, Integer.class);
+
+		Field<Date> coalescedEventDate = null;
+
+		if (!eventDates.isEmpty()) {
+			coalescedEventDate = coalesceFields(eventDates, Date.class);
+		}
+
+		return StratificationSqlIdColumns.builder()
+										 .primaryColumn(coalescedPrimaryColumn)
+										 .secondaryId(null)
+										 .resolution(coalescedResolution)
+										 .index(coalescedIndex)
+										 .eventDate(coalescedEventDate)
+										 .build();
+	}
 }
