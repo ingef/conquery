@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.models.config.ColumnConfig;
@@ -245,23 +244,35 @@ public class QueryStepJoiner {
 					case LEFT_JOIN -> functionProvider::leftJoin;
 				};
 
-		Table<Record> joinedQuery = getIntitialJoinTable(queriesToJoin);
+		Table<Record> joinedQuery = getInitialJoinTable(queriesToJoin);
 
-		for (int i = 0; i < queriesToJoin.size() - 1; i++) {
+		for (int i = 1; i < queriesToJoin.size(); i++) {
+			final QueryStep rightPartQS = queriesToJoin.get(i);
+			final SqlIdColumns rightIds = rightPartQS.getQualifiedSelects().getIds();
 
-			QueryStep leftPartQS = queriesToJoin.get(i);
-			QueryStep rightPartQS = queriesToJoin.get(i + 1);
+			final List<Condition> joinIdsConditions;
+			final Condition joinDateCondition;
 
-			SqlIdColumns leftIds = leftPartQS.getQualifiedSelects().getIds();
-			SqlIdColumns rightIds = rightPartQS.getQualifiedSelects().getIds();
+			// For chained full outer joins, join against the coalesced keys of all
+			// previously joined steps. Joining only against the immediately preceding
+			// step creates duplicate entity rows when that intermediate step is missing.
+			if (logicalOperation == ConqueryJoinType.OUTER_JOIN) {
+				final List<QueryStep> alreadyJoinedSteps = queriesToJoin.subList(0, i);
 
-			List<Condition> joinIdsCondition = leftIds.join(rightIds);
+				joinIdsConditions = joinOnAccumulatedIds(alreadyJoinedSteps, rightIds);
+				joinDateCondition = joinOnAccumulatedStratification(alreadyJoinedSteps, rightPartQS);
+			}
+			else {
+				final QueryStep leftPartQS = queriesToJoin.get(i - 1);
 
-			Condition joinDateCondition = joinOnStratification(leftPartQS, rightPartQS);
+				joinIdsConditions = leftPartQS.getQualifiedSelects().getIds().join(rightIds);
+				joinDateCondition = joinOnStratification(leftPartQS, rightPartQS);
+			}
 
-			List<Condition> joinConditions = Stream.concat(joinIdsCondition.stream(), Stream.of(joinDateCondition)).collect(Collectors.toList());
+			final List<Condition> joinConditions = new ArrayList<>(joinIdsConditions);
+			joinConditions.add(joinDateCondition);
 
-			Table<Record> rightPartTable = table(name(rightPartQS.getCteName()));
+			final Table<Record> rightPartTable = table(name(rightPartQS.getCteName()));
 			joinedQuery = joinType.apply(joinedQuery, rightPartTable, joinConditions);
 		}
 
@@ -283,6 +294,17 @@ public class QueryStepJoiner {
 		return leftStratificationDate.join(rightStratificationDate);
 	}
 
+	private static Condition joinOnAccumulatedStratification(List<QueryStep> alreadyJoinedSteps, QueryStep rightPartQS) {
+		final Optional<ColumnDateRange> accumulatedLeftDate = coalesceStratificationDatesForJoin(alreadyJoinedSteps);
+		final Optional<ColumnDateRange> rightDate = rightPartQS.getQualifiedSelects().getStratificationDate();
+
+		if (accumulatedLeftDate.isEmpty() || rightDate.isEmpty()) {
+			return DSL.noCondition();
+		}
+
+		return accumulatedLeftDate.get().join(rightDate.get());
+	}
+
 	public static List<SqlSelect> mergeSelects(List<QueryStep> querySteps) {
 		return querySteps.stream()
 						 .flatMap(queryStep -> queryStep.getQualifiedSelects().getSqlSelects().stream())
@@ -295,7 +317,27 @@ public class QueryStepJoiner {
 		return ids.getFirst().coalesce(ids.subList(1, ids.size()));
 	}
 
-	private static Table<Record> getIntitialJoinTable(List<QueryStep> queriesToJoin) {
+	private static List<Condition> joinOnAccumulatedIds(List<QueryStep> querySteps, SqlIdColumns rightIds) {
+		final List<SqlIdColumns> ids = querySteps.stream().map(QueryStep::getQualifiedSelects).map(Selects::getIds).toList();
+		final SqlIdColumns leftIds = ids.getFirst().coalesceForJoin(ids.subList(1, ids.size()));
+		final Optional<Field<String>> leftSecondaryId = leftIds.getSecondaryId();
+		final Optional<Field<String>> rightSecondaryId = rightIds.getSecondaryId();
+		if (leftSecondaryId.isEmpty() || rightSecondaryId.isEmpty() || ids.stream().allMatch(id -> id.getSecondaryId().isPresent())) {
+			return leftIds.join(rightIds);
+		}
+
+		// A left row can match on the primary ID alone when it contains no row from a step using a secondary ID.
+		final Condition noRowWithSecondaryId = DSL.and(ids.stream()
+				.filter(id -> id.getSecondaryId().isPresent())
+				.map(id -> id.getPrimaryColumn().isNull())
+				.toList());
+		return List.of(
+				leftIds.getPrimaryColumn().eq(rightIds.getPrimaryColumn()),
+				leftSecondaryId.get().eq(rightSecondaryId.get()).or(noRowWithSecondaryId)
+		);
+	}
+
+	private static Table<Record> getInitialJoinTable(List<QueryStep> queriesToJoin) {
 		return table(name(queriesToJoin.getFirst().getCteName()));
 	}
 
@@ -338,12 +380,39 @@ public class QueryStepJoiner {
 	}
 
 	private static Optional<ColumnDateRange> coalesceStratificationDates(List<QueryStep> queriesToJoin) {
-		return queriesToJoin.stream()
-							.map(QueryStep::getQualifiedSelects)
-							.map(Selects::getStratificationDate)
-							.filter(Optional::isPresent)
-							.map(Optional::get)
-							.reduce(ColumnDateRange::coalesce);
+		final List<ColumnDateRange> ranges = queriesToJoin.stream()
+				.map(QueryStep::getQualifiedSelects)
+				.map(Selects::getStratificationDate)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.toList();
+
+		if (ranges.isEmpty()) {
+			return Optional.empty();
+		}
+
+		return Optional.of(ColumnDateRange.of(
+				DSL.coalesce(ranges.getFirst().getStart(), ranges.stream().skip(1).map(ColumnDateRange::getStart).toArray(Field[]::new)),
+				DSL.coalesce(ranges.getFirst().getEnd(), ranges.stream().skip(1).map(ColumnDateRange::getEnd).toArray(Field[]::new))
+		).as(ranges.getFirst().getAlias()));
+	}
+
+	private static Optional<ColumnDateRange> coalesceStratificationDatesForJoin(List<QueryStep> querySteps) {
+		final List<ColumnDateRange> ranges = querySteps.stream()
+				.map(QueryStep::getQualifiedSelects)
+				.map(Selects::getStratificationDate)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.toList();
+
+		if (ranges.isEmpty()) {
+			return Optional.empty();
+		}
+
+		return Optional.of(ColumnDateRange.of(
+				DSL.coalesce(ranges.getFirst().getStart(), ranges.stream().skip(1).map(ColumnDateRange::getStart).toArray(Field[]::new)),
+				DSL.coalesce(ranges.getFirst().getEnd(), ranges.stream().skip(1).map(ColumnDateRange::getEnd).toArray(Field[]::new))
+		));
 	}
 
 
